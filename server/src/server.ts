@@ -3,32 +3,35 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 import {
-	createConnection,
-	TextDocuments,
-	Diagnostic,
-	DiagnosticSeverity,
-	ProposedFeatures,
-	InitializeParams,
-	DidChangeConfigurationNotification,
-	CompletionItem,
-	CompletionItemKind,
-	TextDocumentPositionParams,
-	TextDocumentSyncKind,
-	InitializeResult,
-	DiagnosticTag,
-	Range,
-	Position,
-} from 'vscode-languageserver/node';
-import { assign, createMachine, interpret, MachineConfig } from 'xstate';
+  createConnection,
+  TextDocuments,
+  Diagnostic,
+  DiagnosticSeverity,
+  ProposedFeatures,
+  InitializeParams,
+  DidChangeConfigurationNotification,
+  CompletionItem,
+  CompletionItemKind,
+  TextDocumentPositionParams,
+  TextDocumentSyncKind,
+  InitializeResult,
+  DiagnosticTag,
+  Range,
+  Position,
+  SymbolInformation,
+  SymbolKind,
+  DocumentSymbol,
+} from "vscode-languageserver/node";
+import { assign, createMachine, interpret, MachineConfig } from "xstate";
 
-import { TextDocument } from 'vscode-languageserver-textdocument';
+import { TextDocument } from "vscode-languageserver-textdocument";
 import {
-	Location,
-	MachineParseResult,
-	MachineParseResultState,
-	parseMachinesFromFile,
-} from 'xstate-parser-demo';
-import { getTransitionsFromNode } from './getTransitionsFromNode';
+  Location,
+  MachineParseResult,
+  MachineParseResultState,
+  parseMachinesFromFile,
+} from "xstate-parser-demo";
+import { getTransitionsFromNode } from "./getTransitionsFromNode";
 
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -42,56 +45,59 @@ let hasWorkspaceFolderCapability = false;
 let hasDiagnosticRelatedInformationCapability = false;
 
 connection.onInitialize((params: InitializeParams) => {
-	const capabilities = params.capabilities;
+  const capabilities = params.capabilities;
 
-	// Does the client support the `workspace/configuration` request?
-	// If not, we fall back using global settings.
-	hasConfigurationCapability = !!(
-		capabilities.workspace && !!capabilities.workspace.configuration
-	);
-	hasWorkspaceFolderCapability = !!(
-		capabilities.workspace && !!capabilities.workspace.workspaceFolders
-	);
-	hasDiagnosticRelatedInformationCapability = !!(
-		capabilities.textDocument &&
-		capabilities.textDocument.publishDiagnostics &&
-		capabilities.textDocument.publishDiagnostics.relatedInformation
-	);
+  // Does the client support the `workspace/configuration` request?
+  // If not, we fall back using global settings.
+  hasConfigurationCapability = !!(
+    capabilities.workspace && !!capabilities.workspace.configuration
+  );
+  hasWorkspaceFolderCapability = !!(
+    capabilities.workspace && !!capabilities.workspace.workspaceFolders
+  );
+  hasDiagnosticRelatedInformationCapability = !!(
+    capabilities.textDocument &&
+    capabilities.textDocument.publishDiagnostics &&
+    capabilities.textDocument.publishDiagnostics.relatedInformation
+  );
 
-	const result: InitializeResult = {
-		capabilities: {
-			textDocumentSync: TextDocumentSyncKind.Incremental,
-			// Tell the client that this server supports code completion.
-			completionProvider: {
-				resolveProvider: true,
-			},
-		},
-	};
-	if (hasWorkspaceFolderCapability) {
-		result.capabilities.workspace = {
-			workspaceFolders: {
-				supported: true,
-			},
-		};
-	}
-	return result;
+  const result: InitializeResult = {
+    capabilities: {
+      textDocumentSync: TextDocumentSyncKind.Incremental,
+      // Tell the client that this server supports code completion.
+      completionProvider: {
+        resolveProvider: true,
+      },
+    },
+  };
+  if (hasWorkspaceFolderCapability) {
+    result.capabilities.workspace = {
+      workspaceFolders: {
+        supported: true,
+      },
+    };
+  }
+  return result;
 });
 
 connection.onInitialized(() => {
-	if (hasConfigurationCapability) {
-		// Register for all configuration changes.
-		connection.client.register(DidChangeConfigurationNotification.type, undefined);
-	}
-	if (hasWorkspaceFolderCapability) {
-		connection.workspace.onDidChangeWorkspaceFolders((_event) => {
-			connection.console.log('Workspace folder change event received.');
-		});
-	}
+  if (hasConfigurationCapability) {
+    // Register for all configuration changes.
+    connection.client.register(
+      DidChangeConfigurationNotification.type,
+      undefined,
+    );
+  }
+  if (hasWorkspaceFolderCapability) {
+    connection.workspace.onDidChangeWorkspaceFolders((_event) => {
+      connection.console.log("Workspace folder change event received.");
+    });
+  }
 });
 
 // The example settings
 interface ExampleSettings {
-	maxNumberOfProblems: number;
+  maxNumberOfProblems: number;
 }
 
 // The global settings, used when the `workspace/configuration` request is not supported by the client.
@@ -106,197 +112,205 @@ const documentSettings: Map<string, Thenable<ExampleSettings>> = new Map();
 const documentValidationsCache: Map<string, MachineParseResult[]> = new Map();
 
 connection.onDidChangeConfiguration((change) => {
-	if (hasConfigurationCapability) {
-		// Reset all cached document settings
-		documentSettings.clear();
-	} else {
-		globalSettings = <ExampleSettings>(
-			(change.settings.languageServerExample || defaultSettings)
-		);
-	}
+  if (hasConfigurationCapability) {
+    // Reset all cached document settings
+    documentSettings.clear();
+  } else {
+    globalSettings = <ExampleSettings>(
+      (change.settings.languageServerExample || defaultSettings)
+    );
+  }
 
-	// Revalidate all open text documents
-	documents.all().forEach(validateDocument);
+  // Revalidate all open text documents
+  documents.all().forEach(validateDocument);
 });
 
 function getDocumentSettings(resource: string): Thenable<ExampleSettings> {
-	if (!hasConfigurationCapability) {
-		return Promise.resolve(globalSettings);
-	}
-	let result = documentSettings.get(resource);
-	if (!result) {
-		result = connection.workspace.getConfiguration({
-			scopeUri: resource,
-			section: 'languageServerExample',
-		});
-		documentSettings.set(resource, result);
-	}
-	return result;
+  if (!hasConfigurationCapability) {
+    return Promise.resolve(globalSettings);
+  }
+  let result = documentSettings.get(resource);
+  if (!result) {
+    result = connection.workspace.getConfiguration({
+      scopeUri: resource,
+      section: "languageServerExample",
+    });
+    documentSettings.set(resource, result);
+  }
+  return result;
 }
 
 // Only keep settings for open documents
 documents.onDidClose((e) => {
-	documentSettings.delete(e.document.uri);
+  documentSettings.delete(e.document.uri);
 });
 
 async function validateDocument(textDocument: TextDocument): Promise<void> {
-	// In this simple example we get the settings for every validate run.
-	const settings = await getDocumentSettings(textDocument.uri);
+  // In this simple example we get the settings for every validate run.
+  const settings = await getDocumentSettings(textDocument.uri);
 
-	// The validator creates diagnostics for all uppercase words length 2 and more
-	const text = textDocument.getText();
-	const pattern = /\b[A-Z]{2,}\b/g;
-	let m: RegExpExecArray | null;
+  // The validator creates diagnostics for all uppercase words length 2 and more
+  const text = textDocument.getText();
+  const pattern = /\b[A-Z]{2,}\b/g;
+  let m: RegExpExecArray | null;
 
-	const diagnostics: Diagnostic[] = [];
+  const diagnostics: Diagnostic[] = [];
 
-	try {
-		const machines = parseMachinesFromFile(text);
-		documentValidationsCache.set(textDocument.uri, machines);
+  try {
+    const machines = parseMachinesFromFile(text);
+    documentValidationsCache.set(textDocument.uri, machines);
 
-		machines.forEach((machine) => {
-			try {
-				const createdMachine = createMachine(machine.config);
+    machines.forEach((machine) => {
+      try {
+        const createdMachine = createMachine(machine.config);
 
-				createdMachine.transition(createdMachine.initialState, {});
-			} catch (e) {
-				let range: Range = {
-					start: textDocument.positionAt(machine.node.start || 0),
-					end: textDocument.positionAt(machine.node.end || 0),
-				};
-				if (e.message.includes('Invalid transition definition for state node')) {
-					const index = (e.message as string).indexOf('Child state');
+        createdMachine.transition(createdMachine.initialState, {});
+      } catch (e) {
+        let range: Range = {
+          start: textDocument.positionAt(machine.node.start || 0),
+          end: textDocument.positionAt(machine.node.end || 0),
+        };
+        if (
+          e.message.includes("Invalid transition definition for state node")
+        ) {
+          const index = (e.message as string).indexOf("Child state");
 
-					const stateId = e.message.slice(
-						'Invalid transition definition for state node '.length + 1,
-						index - 3
-					);
+          const stateId = e.message.slice(
+            "Invalid transition definition for state node ".length + 1,
+            index - 3,
+          );
 
-					`Invalid transition definition for state node '(machine).idle': Child state 'awdawd' does not exist on '(machine)'`;
+          `Invalid transition definition for state node '(machine).idle': Child state 'awdawd' does not exist on '(machine)'`;
 
-					const itemToFind = "Child state '";
+          const itemToFind = "Child state '";
 
-					const targetValue = e.message.slice(
-						e.message.indexOf(itemToFind) + itemToFind.length,
-						e.message.indexOf("' does not exist on '")
-					);
+          const targetValue = e.message.slice(
+            e.message.indexOf(itemToFind) + itemToFind.length,
+            e.message.indexOf("' does not exist on '"),
+          );
 
-					const [, ...path] = stateId.split('.');
+          const [, ...path] = stateId.split(".");
 
-					const parsedTarget = machine.statesMeta
-						.find((state) => state.path.join() === path.join())
-						?.targets.find((target) => {
-							return target.target === targetValue;
-						});
+          const parsedTarget = machine.statesMeta
+            .find((state) => state.path.join() === path.join())
+            ?.targets.find((target) => {
+              return target.target === targetValue;
+            });
 
-					if (parsedTarget) {
-						range = {
-							end: textDocument.positionAt(parsedTarget.location.end.absoluteChar),
-							start: textDocument.positionAt(parsedTarget.location.start.absoluteChar),
-						};
-					}
-				}
-				if (e.message.includes('Initial state')) {
-					`Initial state 'awesom' not found on '(machine)'`;
-					const index = (e.message as string).indexOf("not found on '");
-					const stateId = e.message.slice(index, index - 1);
+          if (parsedTarget) {
+            range = {
+              end: textDocument.positionAt(
+                parsedTarget.location.end.absoluteChar,
+              ),
+              start: textDocument.positionAt(
+                parsedTarget.location.start.absoluteChar,
+              ),
+            };
+          }
+        }
+        if (e.message.includes("Initial state")) {
+          `Initial state 'awesom' not found on '(machine)'`;
+          const index = (e.message as string).indexOf("not found on '");
+          const stateId = e.message.slice(index, index - 1);
 
-					const [, ...path] = stateId.split('.');
+          const [, ...path] = stateId.split(".");
 
-					const parsedState = machine.statesMeta.find(
-						(state) => state.path.join() === path.join()
-					);
+          const parsedState = machine.statesMeta.find(
+            (state) => state.path.join() === path.join(),
+          );
 
-					if (parsedState?.initial) {
-						range = {
-							end: textDocument.positionAt(parsedState.initial.location.end.absoluteChar),
-							start: textDocument.positionAt(
-								parsedState.initial.location.start.absoluteChar
-							),
-						};
-					}
-				}
-				diagnostics.push({
-					message: e.message,
-					range,
-					severity: DiagnosticSeverity.Error,
-				});
-			}
-		});
-	} catch (e) {
-		diagnostics.push({
-			message: `Could not parse the machines in this file.`,
-			range: {
-				start: textDocument.positionAt(0),
-				end: textDocument.positionAt(0),
-			},
-			relatedInformation: [
-				{
-					message: `Error: ${e.message}`,
-					location: {
-						range: {
-							end: textDocument.positionAt(0),
-							start: textDocument.positionAt(0),
-						},
-						uri: textDocument.uri,
-					},
-				},
-			],
-		});
-		documentValidationsCache.delete(textDocument.uri);
-	}
+          if (parsedState?.initial) {
+            range = {
+              end: textDocument.positionAt(
+                parsedState.initial.location.end.absoluteChar,
+              ),
+              start: textDocument.positionAt(
+                parsedState.initial.location.start.absoluteChar,
+              ),
+            };
+          }
+        }
+        diagnostics.push({
+          message: e.message,
+          range,
+          severity: DiagnosticSeverity.Error,
+        });
+      }
+    });
+  } catch (e) {
+    diagnostics.push({
+      message: `Could not parse the machines in this file.`,
+      range: {
+        start: textDocument.positionAt(0),
+        end: textDocument.positionAt(0),
+      },
+      relatedInformation: [
+        {
+          message: `Error: ${e.message}`,
+          location: {
+            range: {
+              end: textDocument.positionAt(0),
+              start: textDocument.positionAt(0),
+            },
+            uri: textDocument.uri,
+          },
+        },
+      ],
+    });
+    documentValidationsCache.delete(textDocument.uri);
+  }
 
-	// Send the computed diagnostics to VSCode.
-	connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
+  // Send the computed diagnostics to VSCode.
+  connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
 }
 
 interface Context {
-	document?: TextDocument;
+  document?: TextDocument;
 }
 
 type Event = {
-	type: 'DOCUMENT_DID_CHANGE';
-	document: TextDocument;
+  type: "DOCUMENT_DID_CHANGE";
+  document: TextDocument;
 };
 
 const serverMachine = createMachine<Context, Event>({
-	initial: 'validating',
-	context: {},
-	on: {
-		DOCUMENT_DID_CHANGE: {
-			target: '.throttling',
-			actions: assign((context, event) => {
-				return {
-					document: event.document,
-				};
-			}),
-		},
-	},
-	states: {
-		throttling: {
-			after: {
-				300: 'validating',
-			},
-		},
-		validating: {
-			invoke: {
-				src: async (context) => {
-					if (!context.document) return;
-					await validateDocument(context.document);
-				},
-				onDone: {
-					target: 'idle',
-				},
-				onError: {
-					target: 'idle',
-					actions: (context, event) => {
-						connection.console.log(JSON.stringify(event.data));
-					},
-				},
-			},
-		},
-		idle: {},
-	},
+  initial: "validating",
+  context: {},
+  on: {
+    DOCUMENT_DID_CHANGE: {
+      target: ".throttling",
+      actions: assign((context, event) => {
+        return {
+          document: event.document,
+        };
+      }),
+    },
+  },
+  states: {
+    throttling: {
+      after: {
+        300: "validating",
+      },
+    },
+    validating: {
+      invoke: {
+        src: async (context) => {
+          if (!context.document) return;
+          await validateDocument(context.document);
+        },
+        onDone: {
+          target: "idle",
+        },
+        onError: {
+          target: "idle",
+          actions: (context, event) => {
+            connection.console.log(JSON.stringify(event.data));
+          },
+        },
+      },
+    },
+    idle: {},
+  },
 });
 
 const serverService = interpret(serverMachine).start();
@@ -304,127 +318,138 @@ const serverService = interpret(serverMachine).start();
 // The content of a text document has changed. This event is emitted
 // when the text document first opened or when its content has changed.
 documents.onDidChangeContent((change) => {
-	serverService.send({
-		type: 'DOCUMENT_DID_CHANGE',
-		document: change.document,
-	});
+  serverService.send({
+    type: "DOCUMENT_DID_CHANGE",
+    document: change.document,
+  });
 });
 
 connection.onDidChangeWatchedFiles((_change) => {
-	// Monitored files have change in VSCode
-	connection.console.log('We received an file change event');
+  // Monitored files have change in VSCode
+  connection.console.log("We received an file change event");
 });
 
 // This handler provides the initial list of the completion items.
 connection.onCompletion(
-	(_textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
-		// The pass parameter contains the position of the text document in
-		// which code complete got requested. For the example we ignore this
-		// info and always provide the same completion items.
-		const machinesParseResult = documentValidationsCache.get(
-			_textDocumentPosition.textDocument.uri
-		);
+  (_textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
+    const machinesParseResult = documentValidationsCache.get(
+      _textDocumentPosition.textDocument.uri,
+    );
 
-		if (!machinesParseResult) {
-			return [];
-		}
-		connection.console.log(JSON.stringify(_textDocumentPosition));
+    if (!machinesParseResult) {
+      return [];
+    }
+    connection.console.log(JSON.stringify(_textDocumentPosition));
 
-		const cursor = getCursorHoverType(machinesParseResult, _textDocumentPosition.position);
+    const cursor = getCursorHoverType(
+      machinesParseResult,
+      _textDocumentPosition.position,
+    );
 
-		if (cursor?.type === 'TARGET') {
-			const possibleTransitions = getTransitionsFromNode(
-				createMachine(cursor.machine.config).getStateNodeByPath(cursor.state.path)
-			);
+    if (cursor?.type === "TARGET") {
+      const possibleTransitions = getTransitionsFromNode(
+        createMachine(cursor.machine.config).getStateNodeByPath(
+          cursor.state.path,
+        ),
+      );
 
-			return possibleTransitions.map((transition) => {
-				return {
-					insertText: transition,
-					label: transition,
-					kind: CompletionItemKind.EnumMember,
-				};
-			});
-		}
-		if (cursor?.type === 'INITIAL') {
-			const state = createMachine(cursor.machine.config).getStateNodeByPath(
-				cursor.state.path
-			);
+      return possibleTransitions.map((transition) => {
+        return {
+          insertText: transition,
+          label: transition,
+          kind: CompletionItemKind.EnumMember,
+        };
+      });
+    }
+    if (cursor?.type === "INITIAL") {
+      const state = createMachine(cursor.machine.config).getStateNodeByPath(
+        cursor.state.path,
+      );
 
-			return Object.keys(state.states).map((state) => {
-				return {
-					label: state,
-					insertText: state,
-					kind: CompletionItemKind.EnumMember,
-				};
-			});
-		}
+      return Object.keys(state.states).map((state) => {
+        return {
+          label: state,
+          insertText: state,
+          kind: CompletionItemKind.EnumMember,
+        };
+      });
+    }
 
-		return [];
-	}
+    return [];
+  },
 );
 
-const getTargetMatchingCursor = (state: MachineParseResultState, position: Position) => {
-	return state.targets.find((target) => {
-		return isCursorInPosition(target.location, position);
-	});
+const getTargetMatchingCursor = (
+  state: MachineParseResultState,
+  position: Position,
+) => {
+  return state.targets.find((target) => {
+    return isCursorInPosition(target.location, position);
+  });
 };
 
-const getInitialMatchingCursor = (state: MachineParseResultState, position: Position) => {
-	if (!state.initial) return;
-	return isCursorInPosition(state.initial?.location, position);
+const getInitialMatchingCursor = (
+  state: MachineParseResultState,
+  position: Position,
+) => {
+  if (!state.initial) return;
+  return isCursorInPosition(state.initial?.location, position);
 };
 
-const isCursorInPosition = (nodeLocation: Location, cursorPosition: Position) => {
-	const isOnSameLine = nodeLocation.start.line - 1 === cursorPosition.line;
+const isCursorInPosition = (
+  nodeLocation: Location,
+  cursorPosition: Position,
+) => {
+  const isOnSameLine = nodeLocation.start.line - 1 === cursorPosition.line;
 
-	if (!isOnSameLine) return false;
+  if (!isOnSameLine) return false;
 
-	const isWithinChars =
-		cursorPosition.character >= nodeLocation.start.column &&
-		cursorPosition.character <= nodeLocation.end.column;
+  const isWithinChars =
+    cursorPosition.character >= nodeLocation.start.column &&
+    cursorPosition.character <= nodeLocation.end.column;
 
-	return isWithinChars;
+  return isWithinChars;
 };
 
 const getCursorHoverType = (
-	parsedMachines: MachineParseResult[],
-	position: Position
+  parsedMachines: MachineParseResult[],
+  position: Position,
 ):
-	| {
-			type: 'TARGET';
-			state: MachineParseResultState;
-			machine: MachineParseResult;
-	  }
-	| {
-			type: 'INITIAL';
-			state: MachineParseResultState;
-			machine: MachineParseResult;
-	  }
-	| void => {
-	for (const machine of parsedMachines) {
-		for (const state of machine.statesMeta) {
-			if (getTargetMatchingCursor(state, position)) {
-				return {
-					type: 'TARGET',
-					machine,
-					state,
-				};
-			}
-			if (getInitialMatchingCursor(state, position)) {
-				return {
-					type: 'INITIAL',
-					state,
-					machine,
-				};
-			}
-		}
-	}
+  | {
+      type: "TARGET";
+      state: MachineParseResultState;
+      machine: MachineParseResult;
+    }
+  | {
+      type: "INITIAL";
+      state: MachineParseResultState;
+      machine: MachineParseResult;
+    }
+  | void => {
+  for (const machine of parsedMachines) {
+    for (const state of machine.statesMeta) {
+      if (getTargetMatchingCursor(state, position)) {
+        return {
+          type: "TARGET",
+          machine,
+          state,
+        };
+      }
+      if (getInitialMatchingCursor(state, position)) {
+        return {
+          type: "INITIAL",
+          state,
+          machine,
+        };
+      }
+    }
+  }
 };
 
 // This handler resolves additional information for the item selected in
 // the completion list.
 connection.onCompletionResolve((item: CompletionItem): CompletionItem => {
-	return item;
+  return item;
 });
 
 // Make the text document manager listen on the connection
