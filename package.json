@@ -3,7 +3,7 @@
   "description": "XState VSCode (demo)",
   "author": "Matt Pocock",
   "license": "MIT",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "repository": {
     "type": "git",
     "url": "https://github.com/mattpocock/vscode-xstate-demo"
@@ -18,13 +18,15 @@
     "onLanguage:javascript",
     "onLanguage:javascriptreact"
   ],
-  "main": "./client/out/extension.js",
+  "main": "./client/dist/index.js",
   "publisher": "mattpocock",
   "contributes": {},
   "scripts": {
     "vscode:prepublish": "npm run compile",
-    "compile": "tsc -b",
-    "watch": "tsc -b -w",
+    "compile": "ncc build server/src/server.ts -t -o server/dist && ncc build client/src/extension.ts -t -o client/dist",
+    "server:watch": "ncc build server/src/server.ts -t -w -o server/dist",
+    "client:watch": "ncc build client/src/extension.ts -t -w -o client/dist",
+    "watch": "concurrently \"npm:server:watch\" \"npm:client:watch\"",
     "postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
     "test": "sh ./scripts/e2e.sh"
   },
@@ -35,6 +37,8 @@
     "@typescript-eslint/parser": "^4.23.0",
     "eslint": "^7.26.0",
     "mocha": "^8.3.2",
-    "typescript": "^4.3.2"
+    "typescript": "^4.3.2",
+    "@vercel/ncc": "0.28.4",
+    "concurrently": "6.2.0"
   }
 }
