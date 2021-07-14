@@ -21,14 +21,26 @@ import {
   SymbolInformation,
   SymbolKind,
   DocumentSymbol,
+  Declaration,
+  LocationLink,
+  Location as VSCodeLocation,
+  TextDocumentIdentifier,
 } from "vscode-languageserver/node";
-import { assign, createMachine, interpret, MachineConfig } from "xstate";
+import {
+  assign,
+  createMachine,
+  interpret,
+  MachineConfig,
+  State,
+  StateNode,
+} from "xstate";
 
 import { TextDocument } from "vscode-languageserver-textdocument";
 import {
   Location,
   MachineParseResult,
   MachineParseResultState,
+  MachineParseResultTarget,
   parseMachinesFromFile,
 } from "xstate-parser-demo";
 import { getTransitionsFromNode } from "./getTransitionsFromNode";
@@ -63,7 +75,20 @@ connection.onInitialize((params: InitializeParams) => {
 
   const result: InitializeResult = {
     capabilities: {
-      textDocumentSync: TextDocumentSyncKind.Incremental,
+      textDocumentSync: TextDocumentSyncKind.Full,
+      // documentSymbolProvider: {
+      //   label: "XState",
+      // },
+      declarationProvider: {
+        documentSelector: [
+          "typescript",
+          "typescriptreact",
+          "javascript",
+          "javascriptreact",
+        ],
+      },
+      definitionProvider: true,
+      referencesProvider: true,
       // Tell the client that this server supports code completion.
       completionProvider: {
         resolveProvider: true,
@@ -143,6 +168,75 @@ function getDocumentSettings(resource: string): Thenable<ExampleSettings> {
 // Only keep settings for open documents
 documents.onDidClose((e) => {
   documentSettings.delete(e.document.uri);
+});
+
+const getReferences = (params: {
+  textDocument: TextDocumentIdentifier;
+  position: Position;
+}) => {
+  const machinesParseResult = documentValidationsCache.get(
+    params.textDocument.uri,
+  );
+
+  if (!machinesParseResult) {
+    return [];
+  }
+
+  const cursorHover = getCursorHoverType(machinesParseResult, params.position);
+
+  if (cursorHover?.type === "TARGET" || cursorHover?.type === "INITIAL") {
+    const fullMachine = createMachine(cursorHover.machine.config);
+
+    const state = fullMachine.getStateNodeByPath(cursorHover.state.path);
+
+    // @ts-ignore
+    const targetStates: { id: string }[] = state.resolveTarget([
+      cursorHover.target.target,
+    ]);
+
+    // connection.console.log(JSON.stringify(targetStates, null, 2));
+
+    if (!targetStates) {
+      return [];
+    }
+
+    const resolvedTargetState = state.getStateNodeById(targetStates[0].id);
+
+    connection.console.log(JSON.stringify(resolvedTargetState));
+
+    const node = cursorHover.machine.statesMeta.find((stateMeta) => {
+      return stateMeta.path.join() === resolvedTargetState.path.join();
+    });
+
+    if (!node) {
+      return [];
+    }
+
+    return [
+      {
+        uri: params.textDocument.uri,
+        range: {
+          start: {
+            character: node.location.start.column,
+            line: node.location.start.line - 1,
+          },
+          end: {
+            character: node.location.end.column,
+            line: node.location.end.line - 1,
+          },
+        },
+      },
+    ];
+  }
+  return [];
+};
+
+connection.onReferences((params) => {
+  return getReferences(params);
+});
+
+connection.onDefinition((params) => {
+  return getReferences(params);
 });
 
 async function validateDocument(textDocument: TextDocument): Promise<void> {
@@ -419,20 +513,24 @@ const getCursorHoverType = (
       type: "TARGET";
       state: MachineParseResultState;
       machine: MachineParseResult;
+      target: MachineParseResultTarget;
     }
   | {
       type: "INITIAL";
       state: MachineParseResultState;
       machine: MachineParseResult;
+      target: MachineParseResultTarget;
     }
   | void => {
   for (const machine of parsedMachines) {
     for (const state of machine.statesMeta) {
-      if (getTargetMatchingCursor(state, position)) {
+      const target = getTargetMatchingCursor(state, position);
+      if (target) {
         return {
           type: "TARGET",
           machine,
           state,
+          target,
         };
       }
       if (getInitialMatchingCursor(state, position)) {
@@ -440,6 +538,7 @@ const getCursorHoverType = (
           type: "INITIAL",
           state,
           machine,
+          target: state.initial!,
         };
       }
     }
