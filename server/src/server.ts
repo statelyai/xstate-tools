@@ -33,6 +33,7 @@ import {
   interpret,
   MachineConfig,
   State,
+  StateMachine,
   StateNode,
 } from "xstate";
 
@@ -45,6 +46,10 @@ import {
   parseMachinesFromFile,
 } from "xstate-parser-demo";
 import { getTransitionsFromNode } from "./getTransitionsFromNode";
+import {
+  introspectMachine,
+  IntrospectMachineResult,
+} from "./introspectMachine";
 
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -94,9 +99,9 @@ connection.onInitialize((params: InitializeParams) => {
       completionProvider: {
         resolveProvider: true,
       },
-      // codeLensProvider: {
-      //   resolveProvider: true,
-      // },
+      codeLensProvider: {
+        resolveProvider: true,
+      },
     },
   };
   if (hasWorkspaceFolderCapability) {
@@ -138,7 +143,13 @@ let globalSettings: ExampleSettings = defaultSettings;
 // Cache the settings of all open documents
 const documentSettings: Map<string, Thenable<ExampleSettings>> = new Map();
 
-const documentValidationsCache: Map<string, MachineParseResult[]> = new Map();
+const documentValidationsCache: Map<
+  string,
+  (MachineParseResult & {
+    machine: StateMachine<any, any, any>;
+    introspectionResult: IntrospectMachineResult;
+  })[]
+> = new Map();
 
 connection.onDidChangeConfiguration((change) => {
   if (hasConfigurationCapability) {
@@ -242,13 +253,14 @@ connection.onCodeLens((params) => {
   if (!machinesParseResult) {
     return [];
   }
-  return machinesParseResult.map((machine) => {
+  return machinesParseResult.flatMap((machine) => {
     const firstState = machine.statesMeta[0];
     return {
       range: getRangeFromLocation(firstState.location),
       command: {
-        title: "View in Inspector",
-        command: "vscode.awd",
+        title: "Create Typed Options",
+        command: "xstate.create-typed-options",
+        arguments: [machine.introspectionResult],
       },
     };
   });
@@ -280,7 +292,18 @@ async function validateDocument(textDocument: TextDocument): Promise<void> {
 
   try {
     const machines = parseMachinesFromFile(text);
-    documentValidationsCache.set(textDocument.uri, machines);
+    documentValidationsCache.set(
+      textDocument.uri,
+      machines.map((rest) => {
+        const machine = createMachine(rest.config);
+        const introspectionResult = introspectMachine(machine);
+        return {
+          ...rest,
+          machine,
+          introspectionResult,
+        };
+      }),
+    );
 
     machines.forEach((machine) => {
       try {
