@@ -4,7 +4,7 @@
  * ------------------------------------------------------------------------------------------ */
 
 import * as path from "path";
-import { workspace, ExtensionContext, commands, languages } from "vscode";
+import * as vscode from "vscode";
 
 import {
   LanguageClient,
@@ -15,7 +15,7 @@ import {
 
 let client: LanguageClient;
 
-export function activate(context: ExtensionContext) {
+export function activate(context: vscode.ExtensionContext) {
   // The server is implemented in node
   let serverModule = context.asAbsolutePath(
     path.join("server", "dist", "index.js"),
@@ -63,6 +63,10 @@ export function activate(context: ExtensionContext) {
   );
 
   client.start();
+
+  context.subscriptions.push(vscode.commands.registerCommand('xstate.create-typed-options', (introspectionResult) => {
+    vscode.
+  }))
 }
 
 export function deactivate(): Thenable<void> | undefined {
