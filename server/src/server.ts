@@ -25,6 +25,7 @@ import {
   LocationLink,
   Location as VSCodeLocation,
   TextDocumentIdentifier,
+  InsertTextMode,
 } from "vscode-languageserver/node";
 import {
   assign,
@@ -93,6 +94,9 @@ connection.onInitialize((params: InitializeParams) => {
       completionProvider: {
         resolveProvider: true,
       },
+      // codeLensProvider: {
+      //   resolveProvider: true,
+      // },
     },
   };
   if (hasWorkspaceFolderCapability) {
@@ -215,16 +219,7 @@ const getReferences = (params: {
     return [
       {
         uri: params.textDocument.uri,
-        range: {
-          start: {
-            character: node.location.start.column,
-            line: node.location.start.line - 1,
-          },
-          end: {
-            character: node.location.end.column,
-            line: node.location.end.line - 1,
-          },
-        },
+        range: getRangeFromLocation(node.location),
       },
     ];
   }
@@ -238,6 +233,39 @@ connection.onReferences((params) => {
 connection.onDefinition((params) => {
   return getReferences(params);
 });
+
+connection.onCodeLens((params) => {
+  const machinesParseResult = documentValidationsCache.get(
+    params.textDocument.uri,
+  );
+
+  if (!machinesParseResult) {
+    return [];
+  }
+  return machinesParseResult.map((machine) => {
+    const firstState = machine.statesMeta[0];
+    return {
+      range: getRangeFromLocation(firstState.location),
+      command: {
+        title: "View in Inspector",
+        command: "vscode.awd",
+      },
+    };
+  });
+});
+
+const getRangeFromLocation = (location: Location): Range => {
+  return {
+    start: {
+      character: location.start.column,
+      line: location.start.line - 1,
+    },
+    end: {
+      character: location.end.column,
+      line: location.end.line - 1,
+    },
+  };
+};
 
 async function validateDocument(textDocument: TextDocument): Promise<void> {
   // In this simple example we get the settings for every validate run.

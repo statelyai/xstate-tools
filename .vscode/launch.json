@@ -15,7 +15,7 @@
 			],
 			"preLaunchTask": {
 				"type": "npm",
-				"script": "watch"
+				"script": "compile"
 			}
 		},
 		{
@@ -39,7 +39,7 @@
 				"${workspaceRoot}/client/testFixture"
 			],
 			"outFiles": [
-				"${workspaceRoot}/client/out/test/**/*.js"
+				"${workspaceRoot}/client/dist/**.js"
 			]
 		}
 	],
