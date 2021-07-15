@@ -2,42 +2,31 @@
  * Copyright (c) Microsoft Corporation. All rights reserved.
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
+import { TextDocument } from "vscode-languageserver-textdocument";
 import {
-  createConnection,
-  TextDocuments,
-  Diagnostic,
-  DiagnosticSeverity,
-  ProposedFeatures,
-  InitializeParams,
-  DidChangeConfigurationNotification,
   CompletionItem,
   CompletionItemKind,
-  TextDocumentPositionParams,
-  TextDocumentSyncKind,
+  createConnection,
+  Diagnostic,
+  DiagnosticSeverity,
+  DidChangeConfigurationNotification,
+  InitializeParams,
   InitializeResult,
-  DiagnosticTag,
-  Range,
   Position,
-  SymbolInformation,
-  SymbolKind,
-  DocumentSymbol,
-  Declaration,
-  LocationLink,
-  Location as VSCodeLocation,
+  ProposedFeatures,
+  Range,
   TextDocumentIdentifier,
-  InsertTextMode,
+  TextDocumentPositionParams,
+  TextDocuments,
+  TextDocumentSyncKind,
 } from "vscode-languageserver/node";
 import {
   assign,
+  ConditionPredicate,
   createMachine,
   interpret,
-  MachineConfig,
-  State,
   StateMachine,
-  StateNode,
 } from "xstate";
-
-import { TextDocument } from "vscode-languageserver-textdocument";
 import {
   Location,
   MachineParseResult,
@@ -143,13 +132,13 @@ let globalSettings: ExampleSettings = defaultSettings;
 // Cache the settings of all open documents
 const documentSettings: Map<string, Thenable<ExampleSettings>> = new Map();
 
-const documentValidationsCache: Map<
-  string,
-  (MachineParseResult & {
-    machine: StateMachine<any, any, any>;
-    introspectionResult: IntrospectMachineResult;
-  })[]
-> = new Map();
+type DocumentValidationsResult = MachineParseResult & {
+  machine?: StateMachine<any, any, any>;
+  introspectionResult?: IntrospectMachineResult;
+};
+
+const documentValidationsCache: Map<string, DocumentValidationsResult[]> =
+  new Map();
 
 connection.onDidChangeConfiguration((change) => {
   if (hasConfigurationCapability) {
@@ -199,41 +188,68 @@ const getReferences = (params: {
 
   const cursorHover = getCursorHoverType(machinesParseResult, params.position);
 
-  if (cursorHover?.type === "TARGET" || cursorHover?.type === "INITIAL") {
-    const fullMachine = createMachine(cursorHover.machine.config);
+  try {
+    if (cursorHover?.type === "TARGET") {
+      const fullMachine = createMachine(cursorHover.machine.config);
 
-    const state = fullMachine.getStateNodeByPath(cursorHover.state.path);
+      const state = fullMachine.getStateNodeByPath(cursorHover.state.path);
 
-    // @ts-ignore
-    const targetStates: { id: string }[] = state.resolveTarget([
-      cursorHover.target.target,
-    ]);
+      // @ts-ignore
+      const targetStates: { id: string }[] = state.resolveTarget([
+        cursorHover.target.target,
+      ]);
 
-    // connection.console.log(JSON.stringify(targetStates, null, 2));
+      // connection.console.log(JSON.stringify(targetStates, null, 2));
 
-    if (!targetStates) {
-      return [];
+      if (!targetStates) {
+        return [];
+      }
+
+      const resolvedTargetState = state.getStateNodeById(targetStates[0].id);
+
+      const node = cursorHover.machine.statesMeta.find((stateMeta) => {
+        return stateMeta.path.join() === resolvedTargetState.path.join();
+      });
+
+      if (!node) {
+        return [];
+      }
+
+      return [
+        {
+          uri: params.textDocument.uri,
+          range: getRangeFromLocation(node.location),
+        },
+      ];
     }
+    if (cursorHover?.type === "INITIAL") {
+      const fullMachine = createMachine(cursorHover.machine.config);
 
-    const resolvedTargetState = state.getStateNodeById(targetStates[0].id);
+      const state = fullMachine.getStateNodeByPath(cursorHover.state.path);
 
-    connection.console.log(JSON.stringify(resolvedTargetState));
+      const targetState = state.states[cursorHover.target.target];
 
-    const node = cursorHover.machine.statesMeta.find((stateMeta) => {
-      return stateMeta.path.join() === resolvedTargetState.path.join();
-    });
+      if (!targetState) {
+        return [];
+      }
 
-    if (!node) {
-      return [];
+      const node = cursorHover.machine.statesMeta.find((stateMeta) => {
+        return stateMeta.path.join() === targetState.path.join();
+      });
+
+      if (!node) {
+        return [];
+      }
+
+      return [
+        {
+          uri: params.textDocument.uri,
+          range: getRangeFromLocation(node.location),
+        },
+      ];
     }
+  } catch (e) {}
 
-    return [
-      {
-        uri: params.textDocument.uri,
-        range: getRangeFromLocation(node.location),
-      },
-    ];
-  }
   return [];
 };
 
@@ -280,21 +296,16 @@ const getRangeFromLocation = (location: Location): Range => {
 };
 
 async function validateDocument(textDocument: TextDocument): Promise<void> {
-  // In this simple example we get the settings for every validate run.
-  const settings = await getDocumentSettings(textDocument.uri);
-
   // The validator creates diagnostics for all uppercase words length 2 and more
   const text = textDocument.getText();
-  const pattern = /\b[A-Z]{2,}\b/g;
-  let m: RegExpExecArray | null;
 
   const diagnostics: Diagnostic[] = [];
 
   try {
-    const machines = parseMachinesFromFile(text);
-    documentValidationsCache.set(
-      textDocument.uri,
-      machines.map((rest) => {
+    const machines: DocumentValidationsResult[] = parseMachinesFromFile(
+      text,
+    ).map((rest) => {
+      try {
         const machine = createMachine(rest.config);
         const introspectionResult = introspectMachine(machine);
         return {
@@ -302,12 +313,23 @@ async function validateDocument(textDocument: TextDocument): Promise<void> {
           machine,
           introspectionResult,
         };
-      }),
-    );
+      } catch (e) {
+        return {
+          ...rest,
+        };
+      }
+    });
+    documentValidationsCache.set(textDocument.uri, machines);
 
     machines.forEach((machine) => {
       try {
-        const createdMachine = createMachine(machine.config);
+        const guards: Record<string, ConditionPredicate<any, any>> = {};
+        machine.introspectionResult?.guards.lines.forEach((cond) => {
+          guards[cond.name] = () => true;
+        });
+        const createdMachine = createMachine(machine.config, {
+          guards,
+        });
 
         createdMachine.transition(createdMachine.initialState, {});
       } catch (e) {

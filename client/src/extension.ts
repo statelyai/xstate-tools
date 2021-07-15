@@ -63,10 +63,6 @@ export function activate(context: vscode.ExtensionContext) {
   );
 
   client.start();
-
-  context.subscriptions.push(vscode.commands.registerCommand('xstate.create-typed-options', (introspectionResult) => {
-    vscode.
-  }))
 }
 
 export function deactivate(): Thenable<void> | undefined {
