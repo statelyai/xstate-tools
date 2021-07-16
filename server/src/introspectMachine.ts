@@ -3,8 +3,8 @@ import { toStateValue, toStatePaths, pathToStateValue } from "xstate/lib/utils";
 import { getTransitionsFromNode } from "./getTransitionsFromNode";
 
 export interface SubState {
-  targets: string;
-  sources: string;
+  targets: string[];
+  sources: string[];
   states: Record<string, SubState>;
 }
 
@@ -41,16 +41,8 @@ const makeSubStateFromNode = (
 
   const targets = getTransitionsFromNode(stateNode);
   return {
-    sources:
-      Array.from(nodeFromMap.sources)
-        .filter(Boolean)
-        .map((event) => `'${event}'`)
-        .join(" | ") || "never",
-    targets:
-      Array.from(targets)
-        .filter(Boolean)
-        .map((event) => `'${event}'`)
-        .join(" | ") || "never",
+    sources: Array.from(nodeFromMap.sources).filter(Boolean),
+    targets: targets.filter(Boolean),
     states: Array.from(nodeFromMap.children).reduce((obj, child) => {
       const childNode = rootNode.getStateNodeById(child);
       return {
@@ -291,6 +283,12 @@ export const introspectMachine = (machine: XState.StateNode) => {
   const subState: SubState = makeSubStateFromNode(machine, machine, nodeMaps);
 
   return {
+    states: Object.entries(nodeMaps).map(([stateId, state]) => {
+      return {
+        id: stateId,
+        sources: state.sources,
+      };
+    }),
     stateMatches: getMatchesStates(machine),
     subState,
     guards: guards.toDataShape(),

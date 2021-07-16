@@ -26,6 +26,7 @@ import {
   createMachine,
   interpret,
   StateMachine,
+  StateNode,
 } from "xstate";
 import {
   Location,
@@ -154,20 +155,47 @@ connection.onDidChangeConfiguration((change) => {
   documents.all().forEach(validateDocument);
 });
 
-function getDocumentSettings(resource: string): Thenable<ExampleSettings> {
-  if (!hasConfigurationCapability) {
-    return Promise.resolve(globalSettings);
-  }
-  let result = documentSettings.get(resource);
-  if (!result) {
-    result = connection.workspace.getConfiguration({
-      scopeUri: resource,
-      section: "languageServerExample",
-    });
-    documentSettings.set(resource, result);
-  }
-  return result;
-}
+const getOrphanedStates = (
+  documentValidationsResult: DocumentValidationsResult,
+): MachineParseResultState[] => {
+  const orphanedStatePaths: StateNode<any, any>[] =
+    documentValidationsResult.introspectionResult?.states
+      .filter((state) => {
+        return state.sources.size === 0;
+      })
+      .map((state) => {
+        return documentValidationsResult.machine?.getStateNodeById(state.id)!;
+      })
+      .filter(Boolean)
+      .filter((state) => {
+        /**
+         * A root node is never orphaned
+         */
+        if (!state.parent) return false;
+
+        /**
+         * Initial states are never orphaned
+         */
+        if (state.parent.initial === state.key) return false;
+
+        /**
+         * Children of parallel states are never orphaned
+         */
+        if (state.parent.type === "parallel") return false;
+
+        return true;
+      }) || [];
+
+  if (!orphanedStatePaths) return [];
+
+  return orphanedStatePaths
+    .map((state) => {
+      return documentValidationsResult.statesMeta.find((meta) => {
+        return meta.path.join() === state.path.join();
+      })!;
+    })
+    .filter(Boolean);
+};
 
 // Only keep settings for open documents
 documents.onDidClose((e) => {
@@ -327,6 +355,19 @@ async function validateDocument(textDocument: TextDocument): Promise<void> {
         machine.introspectionResult?.guards.lines.forEach((cond) => {
           guards[cond.name] = () => true;
         });
+
+        const orphanedStates = getOrphanedStates(machine);
+
+        diagnostics.push(
+          ...orphanedStates.map((state) => {
+            return {
+              range: getRangeFromLocation(state.location),
+              message: `This state node is unused - no other node transitions to it.`,
+              severity: DiagnosticSeverity.Warning,
+            };
+          }),
+        );
+
         const createdMachine = createMachine(machine.config, {
           guards,
         });
@@ -346,8 +387,6 @@ async function validateDocument(textDocument: TextDocument): Promise<void> {
             "Invalid transition definition for state node ".length + 1,
             index - 3,
           );
-
-          `Invalid transition definition for state node '(machine).idle': Child state 'awdawd' does not exist on '(machine)'`;
 
           const itemToFind = "Child state '";
 
