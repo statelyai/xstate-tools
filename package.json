@@ -4,9 +4,16 @@
   "author": "Matt Pocock",
   "license": "MIT",
   "version": "1.1.2",
+  "private": true,
   "repository": {
     "type": "git",
     "url": "https://github.com/mattpocock/vscode-xstate-demo"
+  },
+  "workspaces": {
+    "packages": [
+      "client",
+      "server"
+    ]
   },
   "categories": [],
   "engines": {
@@ -27,7 +34,6 @@
     "server:watch": "ncc build server/src/server.ts -t -w -o server/dist",
     "client:watch": "ncc build client/src/extension.ts -t -w -o client/dist",
     "watch": "concurrently \"npm:server:watch\" \"npm:client:watch\"",
-    "postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
     "test": "sh ./scripts/e2e.sh"
   },
   "devDependencies": {
