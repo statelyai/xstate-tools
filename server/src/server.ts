@@ -2,13 +2,13 @@
  * Copyright (c) Microsoft Corporation. All rights reserved.
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
+import type { SourceLocation } from "@babel/types";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import {
   CompletionItem,
   CompletionItemKind,
   createConnection,
   Diagnostic,
-  DiagnosticSeverity,
   DidChangeConfigurationNotification,
   InitializeParams,
   InitializeResult,
@@ -22,25 +22,24 @@ import {
 } from "vscode-languageserver/node";
 import {
   assign,
-  ConditionPredicate,
   createMachine,
   interpret,
   StateMachine,
   StateNode,
 } from "xstate";
-import {
-  parseMachinesFromFile,
-  ParseResult,
-  StringLiteralNode,
-} from "xstate-parser-demo";
+import { parseMachinesFromFile, StringLiteralNode } from "xstate-parser-demo";
 import { MachineParseResult } from "xstate-parser-demo/lib/MachineParseResult";
+import { StateNodeReturn } from "xstate-parser-demo/lib/stateNode";
 import {
   getTransitionsFromNode,
   introspectMachine,
   IntrospectMachineResult,
 } from "xstate-vscode-shared";
-import type { SourceLocation } from "@babel/types";
-import { StateNodeReturn } from "xstate-parser-demo/lib/stateNode";
+import { miscDiagnostics } from "./diagnostics/misc";
+import { getCursorHoverType } from "./getCursorHoverType";
+import { getDiagnostics } from "./getDiagnostics";
+import { getRangeFromSourceLocation } from "./getRangeFromSourceLocation";
+import { getReferences } from "./getReferences";
 
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -134,7 +133,7 @@ let globalSettings: ExampleSettings = defaultSettings;
 // Cache the settings of all open documents
 const documentSettings: Map<string, Thenable<ExampleSettings>> = new Map();
 
-type DocumentValidationsResult = {
+export type DocumentValidationsResult = {
   machine?: StateMachine<any, any, any>;
   parseResult?: MachineParseResult;
   introspectionResult?: IntrospectMachineResult;
@@ -204,92 +203,20 @@ documents.onDidClose((e) => {
   documentSettings.delete(e.document.uri);
 });
 
-const getReferences = (params: {
-  textDocument: TextDocumentIdentifier;
-  position: Position;
-}) => {
-  const machinesParseResult = documentValidationsCache.get(
-    params.textDocument.uri,
-  );
-
-  if (!machinesParseResult) {
-    return [];
-  }
-
-  const cursorHover = getCursorHoverType(machinesParseResult, params.position);
-
-  try {
-    if (cursorHover?.type === "TARGET") {
-      const config = cursorHover.machine.toConfig();
-      if (!config) return [];
-
-      const fullMachine = createMachine(config);
-
-      const state = fullMachine.getStateNodeByPath(cursorHover.state.path);
-
-      // @ts-ignore
-      const targetStates: { id: string }[] = state.resolveTarget([
-        cursorHover.target?.target.value,
-      ]);
-
-      if (!targetStates) {
-        return [];
-      }
-
-      const resolvedTargetState = state.getStateNodeById(targetStates[0].id);
-
-      const node = cursorHover.machine.getStateNodeByPath(
-        resolvedTargetState.path,
-      );
-
-      if (!node?.ast.node.loc) {
-        return [];
-      }
-
-      return [
-        {
-          uri: params.textDocument.uri,
-          range: getRangeFromSourceLocation(node.ast.node.loc),
-        },
-      ];
-    }
-    if (cursorHover?.type === "INITIAL") {
-      const config = cursorHover.machine.toConfig();
-      if (!config) return [];
-      const fullMachine = createMachine(config);
-
-      const state = fullMachine.getStateNodeByPath(cursorHover.state.path);
-
-      const targetState = state.states[cursorHover.target.value];
-
-      if (!targetState) {
-        return [];
-      }
-
-      const node = cursorHover.machine.getStateNodeByPath(targetState.path);
-
-      if (!node?.ast.node.loc) {
-        return [];
-      }
-
-      return [
-        {
-          uri: params.textDocument.uri,
-          range: getRangeFromSourceLocation(node.ast.node.loc),
-        },
-      ];
-    }
-  } catch (e) {}
-
-  return [];
-};
-
 connection.onReferences((params) => {
-  return getReferences(params);
+  return getReferences({
+    ...params,
+    machinesParseResult:
+      documentValidationsCache.get(params.textDocument.uri) || [],
+  });
 });
 
 connection.onDefinition((params) => {
-  return getReferences(params);
+  return getReferences({
+    ...params,
+    machinesParseResult:
+      documentValidationsCache.get(params.textDocument.uri) || [],
+  });
 });
 
 connection.onCodeLens((params) => {
@@ -312,19 +239,6 @@ connection.onCodeLens((params) => {
     };
   });
 });
-
-const getRangeFromSourceLocation = (location: SourceLocation): Range => {
-  return {
-    start: {
-      character: location.start.column,
-      line: location.start.line - 1,
-    },
-    end: {
-      character: location.end.column,
-      line: location.end.line - 1,
-    },
-  };
-};
 
 async function validateDocument(textDocument: TextDocument): Promise<void> {
   // The validator creates diagnostics for all uppercase words length 2 and more
@@ -357,126 +271,10 @@ async function validateDocument(textDocument: TextDocument): Promise<void> {
     });
     documentValidationsCache.set(textDocument.uri, machines);
 
-    machines.forEach((machine) => {
-      try {
-        const config = machine.parseResult?.toConfig();
-        if (!config) return;
-
-        const guards: Record<string, ConditionPredicate<any, any>> = {};
-        machine.introspectionResult?.guards.lines.forEach((cond) => {
-          guards[cond.name] = () => true;
-        });
-
-        // const orphanedStates = getOrphanedStates(machine);
-
-        // diagnostics.push(
-        //   ...orphanedStates.map((state) => {
-        //     return {
-        //       range: getRangeFromSourceLocation(state.location),
-        //       message: `This state node is unused - no other node transitions to it.`,
-        //       severity: DiagnosticSeverity.Warning,
-        //     };
-        //   }),
-        // );
-
-        const createdMachine = createMachine(config, {
-          guards,
-        });
-
-        createdMachine.transition(createdMachine.initialState, {});
-      } catch (e) {
-        let range: Range = {
-          start: textDocument.positionAt(
-            machine.parseResult?.ast?.definition?.node.start || 0,
-          ),
-          end: textDocument.positionAt(
-            machine.parseResult?.ast?.definition?.node.end || 0,
-          ),
-        };
-        // if (
-        //   e.message.includes("Invalid transition definition for state node")
-        // ) {
-        //   const index = (e.message as string).indexOf("Child state");
-
-        //   const stateId = e.message.slice(
-        //     "Invalid transition definition for state node ".length + 1,
-        //     index - 3,
-        //   );
-
-        //   const itemToFind = "Child state '";
-
-        //   const targetValue = e.message.slice(
-        //     e.message.indexOf(itemToFind) + itemToFind.length,
-        //     e.message.indexOf("' does not exist on '"),
-        //   );
-
-        //   const [, ...path] = stateId.split(".");
-
-        //   const parsedTarget = machine.statesMeta
-        //     .find((state) => state.path.join() === path.join())
-        //     ?.targets.find((target) => {
-        //       return target.target === targetValue;
-        //     });
-
-        //   if (parsedTarget) {
-        //     range = {
-        //       end: textDocument.positionAt(
-        //         parsedTarget.location.end.absoluteChar,
-        //       ),
-        //       start: textDocument.positionAt(
-        //         parsedTarget.location.start.absoluteChar,
-        //       ),
-        //     };
-        //   }
-        // }
-        // if (e.message.includes("Initial state")) {
-        //   const index = (e.message as string).indexOf("not found on '");
-        //   const stateId = e.message.slice(index, index - 1);
-
-        //   const [, ...path] = stateId.split(".");
-
-        //   const parsedState = machine.statesMeta.find(
-        //     (state) => state.path.join() === path.join(),
-        //   );
-
-        //   if (parsedState?.initial) {
-        //     range = {
-        //       end: textDocument.positionAt(
-        //         parsedState.initial.location.end.absoluteChar,
-        //       ),
-        //       start: textDocument.positionAt(
-        //         parsedState.initial.location.start.absoluteChar,
-        //       ),
-        //     };
-        //   }
-        // }
-        diagnostics.push({
-          message: e.message,
-          range,
-          severity: DiagnosticSeverity.Error,
-        });
-      }
-    });
+    diagnostics.push(
+      ...getDiagnostics(machines, textDocument, miscDiagnostics),
+    );
   } catch (e) {
-    diagnostics.push({
-      message: `Could not parse the machines in this file.`,
-      range: {
-        start: textDocument.positionAt(0),
-        end: textDocument.positionAt(0),
-      },
-      relatedInformation: [
-        {
-          message: `Error: ${e.message}`,
-          location: {
-            range: {
-              end: textDocument.positionAt(0),
-              start: textDocument.positionAt(0),
-            },
-            uri: textDocument.uri,
-          },
-        },
-      ],
-    });
     documentValidationsCache.delete(textDocument.uri);
   }
 
@@ -598,91 +396,6 @@ connection.onCompletion(
     return [];
   },
 );
-
-const getTargetMatchingCursor = (
-  parseResult: MachineParseResult | undefined,
-  position: Position,
-) => {
-  return parseResult?.getTransitionTargets().find((target) => {
-    return isCursorInPosition(target.target.node.loc, position);
-  });
-};
-
-const getInitialMatchingCursor = (
-  state: StateNodeReturn,
-  position: Position,
-) => {
-  if (!state.initial) return;
-  return isCursorInPosition(state.initial.node.loc, position);
-};
-
-const isCursorInPosition = (
-  nodeSourceLocation: SourceLocation | null,
-  cursorPosition: Position,
-) => {
-  if (!nodeSourceLocation) return;
-  const isOnSameLine =
-    nodeSourceLocation.start.line - 1 === cursorPosition.line;
-
-  if (!isOnSameLine) return false;
-
-  const isWithinChars =
-    cursorPosition.character >= nodeSourceLocation.start.column &&
-    cursorPosition.character <= nodeSourceLocation.end.column;
-
-  return isWithinChars;
-};
-
-const getCursorHoverType = (
-  validationResult: DocumentValidationsResult[],
-  position: Position,
-):
-  | {
-      type: "TARGET";
-      machine: MachineParseResult;
-      state: {
-        path: string[];
-        ast: StateNodeReturn;
-      };
-      target:
-        | {
-            fromPath: string[];
-            target: StringLiteralNode;
-          }
-        | undefined;
-    }
-  | {
-      type: "INITIAL";
-      machine: MachineParseResult;
-      state: {
-        path: string[];
-        ast: StateNodeReturn;
-      };
-      target: StringLiteralNode;
-    }
-  | void => {
-  for (const machine of validationResult) {
-    for (const state of machine.parseResult?.getAllStateNodes() || []) {
-      const target = getTargetMatchingCursor(machine.parseResult, position);
-      if (target) {
-        return {
-          type: "TARGET",
-          machine: machine.parseResult!,
-          state,
-          target,
-        };
-      }
-      if (getInitialMatchingCursor(state.ast, position)) {
-        return {
-          type: "INITIAL",
-          state,
-          machine: machine.parseResult!,
-          target: state.ast.initial!,
-        };
-      }
-    }
-  }
-};
 
 // This handler resolves additional information for the item selected in
 // the completion list.
