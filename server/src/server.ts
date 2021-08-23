@@ -35,6 +35,7 @@ import {
   introspectMachine,
   IntrospectMachineResult,
 } from "xstate-vscode-shared";
+import { getUnusedActionImplementations } from "./diagnostics/getUnusedActionImplementations";
 import { miscDiagnostics } from "./diagnostics/misc";
 import { getCursorHoverType } from "./getCursorHoverType";
 import { getDiagnostics } from "./getDiagnostics";
@@ -272,7 +273,12 @@ async function validateDocument(textDocument: TextDocument): Promise<void> {
     documentValidationsCache.set(textDocument.uri, machines);
 
     diagnostics.push(
-      ...getDiagnostics(machines, textDocument, miscDiagnostics),
+      ...getDiagnostics(
+        machines,
+        textDocument,
+        miscDiagnostics,
+        getUnusedActionImplementations,
+      ),
     );
   } catch (e) {
     documentValidationsCache.delete(textDocument.uri);
