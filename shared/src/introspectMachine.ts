@@ -1,29 +1,15 @@
 import * as XState from "xstate";
-import { toStateValue, toStatePaths, pathToStateValue } from "xstate/lib/utils";
-import { getTransitionsFromNode } from "./getTransitionsFromNode";
+import { pathToStateValue } from "xstate/lib/utils";
+import {
+  getMatchesStates,
+  getTransitionsFromNode,
+} from "./getTransitionsFromNode";
 
 export interface SubState {
   targets: string[];
   sources: string[];
   states: Record<string, SubState>;
 }
-
-export const getMatchesStates = (machine: XState.StateNode) => {
-  const allStateNodes = machine.stateIds.map((id) =>
-    machine.getStateNodeById(id),
-  );
-
-  const states = allStateNodes.reduce((arr: string[], node) => {
-    return [
-      ...arr,
-      ...toStatePaths(pathToStateValue(node.path)).map((path) =>
-        path.join("."),
-      ),
-    ];
-  }, [] as string[]);
-
-  return states;
-};
 
 const makeSubStateFromNode = (
   node: XState.StateNode,

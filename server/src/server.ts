@@ -29,17 +29,18 @@ import {
   StateNode,
 } from "xstate";
 import {
-  Location,
-  MachineParseResult,
-  MachineParseResultState,
-  MachineParseResultTarget,
   parseMachinesFromFile,
+  ParseResult,
+  StringLiteralNode,
 } from "xstate-parser-demo";
-import { getTransitionsFromNode } from "./getTransitionsFromNode";
+import { MachineParseResult } from "xstate-parser-demo/lib/MachineParseResult";
 import {
+  getTransitionsFromNode,
   introspectMachine,
   IntrospectMachineResult,
-} from "./introspectMachine";
+} from "xstate-vscode-shared";
+import type { SourceLocation } from "@babel/types";
+import { StateNodeReturn } from "xstate-parser-demo/lib/stateNode";
 
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -133,8 +134,9 @@ let globalSettings: ExampleSettings = defaultSettings;
 // Cache the settings of all open documents
 const documentSettings: Map<string, Thenable<ExampleSettings>> = new Map();
 
-type DocumentValidationsResult = MachineParseResult & {
+type DocumentValidationsResult = {
   machine?: StateMachine<any, any, any>;
+  parseResult?: MachineParseResult;
   introspectionResult?: IntrospectMachineResult;
 };
 
@@ -157,7 +159,7 @@ connection.onDidChangeConfiguration((change) => {
 
 const getOrphanedStates = (
   documentValidationsResult: DocumentValidationsResult,
-): MachineParseResultState[] => {
+) => {
   const orphanedStatePaths: StateNode<any, any>[] =
     documentValidationsResult.introspectionResult?.states
       .filter((state) => {
@@ -190,9 +192,9 @@ const getOrphanedStates = (
 
   return orphanedStatePaths
     .map((state) => {
-      return documentValidationsResult.statesMeta.find((meta) => {
-        return meta.path.join() === state.path.join();
-      })!;
+      return documentValidationsResult.parseResult?.getStateNodeByPath(
+        state.path,
+      );
     })
     .filter(Boolean);
 };
@@ -218,16 +220,17 @@ const getReferences = (params: {
 
   try {
     if (cursorHover?.type === "TARGET") {
-      const fullMachine = createMachine(cursorHover.machine.config);
+      const config = cursorHover.machine.toConfig();
+      if (!config) return [];
+
+      const fullMachine = createMachine(config);
 
       const state = fullMachine.getStateNodeByPath(cursorHover.state.path);
 
       // @ts-ignore
       const targetStates: { id: string }[] = state.resolveTarget([
-        cursorHover.target.target,
+        cursorHover.target?.target.value,
       ]);
-
-      // connection.console.log(JSON.stringify(targetStates, null, 2));
 
       if (!targetStates) {
         return [];
@@ -235,44 +238,44 @@ const getReferences = (params: {
 
       const resolvedTargetState = state.getStateNodeById(targetStates[0].id);
 
-      const node = cursorHover.machine.statesMeta.find((stateMeta) => {
-        return stateMeta.path.join() === resolvedTargetState.path.join();
-      });
+      const node = cursorHover.machine.getStateNodeByPath(
+        resolvedTargetState.path,
+      );
 
-      if (!node) {
+      if (!node?.ast.node.loc) {
         return [];
       }
 
       return [
         {
           uri: params.textDocument.uri,
-          range: getRangeFromLocation(node.location),
+          range: getRangeFromSourceLocation(node.ast.node.loc),
         },
       ];
     }
     if (cursorHover?.type === "INITIAL") {
-      const fullMachine = createMachine(cursorHover.machine.config);
+      const config = cursorHover.machine.toConfig();
+      if (!config) return [];
+      const fullMachine = createMachine(config);
 
       const state = fullMachine.getStateNodeByPath(cursorHover.state.path);
 
-      const targetState = state.states[cursorHover.target.target];
+      const targetState = state.states[cursorHover.target.value];
 
       if (!targetState) {
         return [];
       }
 
-      const node = cursorHover.machine.statesMeta.find((stateMeta) => {
-        return stateMeta.path.join() === targetState.path.join();
-      });
+      const node = cursorHover.machine.getStateNodeByPath(targetState.path);
 
-      if (!node) {
+      if (!node?.ast.node.loc) {
         return [];
       }
 
       return [
         {
           uri: params.textDocument.uri,
-          range: getRangeFromLocation(node.location),
+          range: getRangeFromSourceLocation(node.ast.node.loc),
         },
       ];
     }
@@ -298,19 +301,19 @@ connection.onCodeLens((params) => {
     return [];
   }
   return machinesParseResult.flatMap((machine) => {
-    const firstState = machine.statesMeta[0];
+    const firstState = machine.parseResult?.ast?.definition;
     return {
-      range: getRangeFromLocation(firstState.location),
+      range: getRangeFromSourceLocation(firstState?.node.loc!)!,
       command: {
         title: "Create Typed Options",
         command: "xstate.create-typed-options",
-        arguments: [machine.introspectionResult],
+        arguments: [machine.introspectionResult, params.textDocument.uri],
       },
     };
   });
 });
 
-const getRangeFromLocation = (location: Location): Range => {
+const getRangeFromSourceLocation = (location: SourceLocation): Range => {
   return {
     start: {
       character: location.start.column,
@@ -332,18 +335,23 @@ async function validateDocument(textDocument: TextDocument): Promise<void> {
   try {
     const machines: DocumentValidationsResult[] = parseMachinesFromFile(
       text,
-    ).map((rest) => {
+    ).machines.map((parseResult) => {
+      if (!parseResult) {
+        return {};
+      }
+
+      const config = parseResult.toConfig();
       try {
-        const machine = createMachine(rest.config);
+        const machine = createMachine(config!);
         const introspectionResult = introspectMachine(machine);
         return {
-          ...rest,
+          parseResult,
           machine,
           introspectionResult,
         };
       } catch (e) {
         return {
-          ...rest,
+          parseResult,
         };
       }
     });
@@ -351,91 +359,97 @@ async function validateDocument(textDocument: TextDocument): Promise<void> {
 
     machines.forEach((machine) => {
       try {
+        const config = machine.parseResult?.toConfig();
+        if (!config) return;
+
         const guards: Record<string, ConditionPredicate<any, any>> = {};
         machine.introspectionResult?.guards.lines.forEach((cond) => {
           guards[cond.name] = () => true;
         });
 
-        const orphanedStates = getOrphanedStates(machine);
+        // const orphanedStates = getOrphanedStates(machine);
 
-        diagnostics.push(
-          ...orphanedStates.map((state) => {
-            return {
-              range: getRangeFromLocation(state.location),
-              message: `This state node is unused - no other node transitions to it.`,
-              severity: DiagnosticSeverity.Warning,
-            };
-          }),
-        );
+        // diagnostics.push(
+        //   ...orphanedStates.map((state) => {
+        //     return {
+        //       range: getRangeFromSourceLocation(state.location),
+        //       message: `This state node is unused - no other node transitions to it.`,
+        //       severity: DiagnosticSeverity.Warning,
+        //     };
+        //   }),
+        // );
 
-        const createdMachine = createMachine(machine.config, {
+        const createdMachine = createMachine(config, {
           guards,
         });
 
         createdMachine.transition(createdMachine.initialState, {});
       } catch (e) {
         let range: Range = {
-          start: textDocument.positionAt(machine.node.start || 0),
-          end: textDocument.positionAt(machine.node.end || 0),
+          start: textDocument.positionAt(
+            machine.parseResult?.ast?.definition?.node.start || 0,
+          ),
+          end: textDocument.positionAt(
+            machine.parseResult?.ast?.definition?.node.end || 0,
+          ),
         };
-        if (
-          e.message.includes("Invalid transition definition for state node")
-        ) {
-          const index = (e.message as string).indexOf("Child state");
+        // if (
+        //   e.message.includes("Invalid transition definition for state node")
+        // ) {
+        //   const index = (e.message as string).indexOf("Child state");
 
-          const stateId = e.message.slice(
-            "Invalid transition definition for state node ".length + 1,
-            index - 3,
-          );
+        //   const stateId = e.message.slice(
+        //     "Invalid transition definition for state node ".length + 1,
+        //     index - 3,
+        //   );
 
-          const itemToFind = "Child state '";
+        //   const itemToFind = "Child state '";
 
-          const targetValue = e.message.slice(
-            e.message.indexOf(itemToFind) + itemToFind.length,
-            e.message.indexOf("' does not exist on '"),
-          );
+        //   const targetValue = e.message.slice(
+        //     e.message.indexOf(itemToFind) + itemToFind.length,
+        //     e.message.indexOf("' does not exist on '"),
+        //   );
 
-          const [, ...path] = stateId.split(".");
+        //   const [, ...path] = stateId.split(".");
 
-          const parsedTarget = machine.statesMeta
-            .find((state) => state.path.join() === path.join())
-            ?.targets.find((target) => {
-              return target.target === targetValue;
-            });
+        //   const parsedTarget = machine.statesMeta
+        //     .find((state) => state.path.join() === path.join())
+        //     ?.targets.find((target) => {
+        //       return target.target === targetValue;
+        //     });
 
-          if (parsedTarget) {
-            range = {
-              end: textDocument.positionAt(
-                parsedTarget.location.end.absoluteChar,
-              ),
-              start: textDocument.positionAt(
-                parsedTarget.location.start.absoluteChar,
-              ),
-            };
-          }
-        }
-        if (e.message.includes("Initial state")) {
-          `Initial state 'awesom' not found on '(machine)'`;
-          const index = (e.message as string).indexOf("not found on '");
-          const stateId = e.message.slice(index, index - 1);
+        //   if (parsedTarget) {
+        //     range = {
+        //       end: textDocument.positionAt(
+        //         parsedTarget.location.end.absoluteChar,
+        //       ),
+        //       start: textDocument.positionAt(
+        //         parsedTarget.location.start.absoluteChar,
+        //       ),
+        //     };
+        //   }
+        // }
+        // if (e.message.includes("Initial state")) {
+        //   const index = (e.message as string).indexOf("not found on '");
+        //   const stateId = e.message.slice(index, index - 1);
 
-          const [, ...path] = stateId.split(".");
+        //   const [, ...path] = stateId.split(".");
 
-          const parsedState = machine.statesMeta.find(
-            (state) => state.path.join() === path.join(),
-          );
+        //   const parsedState = machine.statesMeta.find(
+        //     (state) => state.path.join() === path.join(),
+        //   );
 
-          if (parsedState?.initial) {
-            range = {
-              end: textDocument.positionAt(
-                parsedState.initial.location.end.absoluteChar,
-              ),
-              start: textDocument.positionAt(
-                parsedState.initial.location.start.absoluteChar,
-              ),
-            };
-          }
-        }
+        //   if (parsedState?.initial) {
+        //     range = {
+        //       end: textDocument.positionAt(
+        //         parsedState.initial.location.end.absoluteChar,
+        //       ),
+        //       start: textDocument.positionAt(
+        //         parsedState.initial.location.start.absoluteChar,
+        //       ),
+        //     };
+        //   }
+        // }
         diagnostics.push({
           message: e.message,
           range,
@@ -495,7 +509,7 @@ const serverMachine = createMachine<Context, Event>({
   states: {
     throttling: {
       after: {
-        300: "validating",
+        200: "validating",
       },
     },
     validating: {
@@ -554,7 +568,7 @@ connection.onCompletion(
 
     if (cursor?.type === "TARGET") {
       const possibleTransitions = getTransitionsFromNode(
-        createMachine(cursor.machine.config).getStateNodeByPath(
+        createMachine(cursor.machine.toConfig()!).getStateNodeByPath(
           cursor.state.path,
         ),
       );
@@ -568,9 +582,9 @@ connection.onCompletion(
       });
     }
     if (cursor?.type === "INITIAL") {
-      const state = createMachine(cursor.machine.config).getStateNodeByPath(
-        cursor.state.path,
-      );
+      const state = createMachine(
+        cursor.machine.toConfig()!,
+      ).getStateNodeByPath(cursor.state.path);
 
       return Object.keys(state.states).map((state) => {
         return {
@@ -586,71 +600,84 @@ connection.onCompletion(
 );
 
 const getTargetMatchingCursor = (
-  state: MachineParseResultState,
+  parseResult: MachineParseResult | undefined,
   position: Position,
 ) => {
-  return state.targets.find((target) => {
-    return isCursorInPosition(target.location, position);
+  return parseResult?.getTransitionTargets().find((target) => {
+    return isCursorInPosition(target.target.node.loc, position);
   });
 };
 
 const getInitialMatchingCursor = (
-  state: MachineParseResultState,
+  state: StateNodeReturn,
   position: Position,
 ) => {
   if (!state.initial) return;
-  return isCursorInPosition(state.initial?.location, position);
+  return isCursorInPosition(state.initial.node.loc, position);
 };
 
 const isCursorInPosition = (
-  nodeLocation: Location,
+  nodeSourceLocation: SourceLocation | null,
   cursorPosition: Position,
 ) => {
-  const isOnSameLine = nodeLocation.start.line - 1 === cursorPosition.line;
+  if (!nodeSourceLocation) return;
+  const isOnSameLine =
+    nodeSourceLocation.start.line - 1 === cursorPosition.line;
 
   if (!isOnSameLine) return false;
 
   const isWithinChars =
-    cursorPosition.character >= nodeLocation.start.column &&
-    cursorPosition.character <= nodeLocation.end.column;
+    cursorPosition.character >= nodeSourceLocation.start.column &&
+    cursorPosition.character <= nodeSourceLocation.end.column;
 
   return isWithinChars;
 };
 
 const getCursorHoverType = (
-  parsedMachines: MachineParseResult[],
+  validationResult: DocumentValidationsResult[],
   position: Position,
 ):
   | {
       type: "TARGET";
-      state: MachineParseResultState;
       machine: MachineParseResult;
-      target: MachineParseResultTarget;
+      state: {
+        path: string[];
+        ast: StateNodeReturn;
+      };
+      target:
+        | {
+            fromPath: string[];
+            target: StringLiteralNode;
+          }
+        | undefined;
     }
   | {
       type: "INITIAL";
-      state: MachineParseResultState;
       machine: MachineParseResult;
-      target: MachineParseResultTarget;
+      state: {
+        path: string[];
+        ast: StateNodeReturn;
+      };
+      target: StringLiteralNode;
     }
   | void => {
-  for (const machine of parsedMachines) {
-    for (const state of machine.statesMeta) {
-      const target = getTargetMatchingCursor(state, position);
+  for (const machine of validationResult) {
+    for (const state of machine.parseResult?.getAllStateNodes() || []) {
+      const target = getTargetMatchingCursor(machine.parseResult, position);
       if (target) {
         return {
           type: "TARGET",
-          machine,
+          machine: machine.parseResult!,
           state,
           target,
         };
       }
-      if (getInitialMatchingCursor(state, position)) {
+      if (getInitialMatchingCursor(state.ast, position)) {
         return {
           type: "INITIAL",
           state,
-          machine,
-          target: state.initial!,
+          machine: machine.parseResult!,
+          target: state.ast.initial!,
         };
       }
     }

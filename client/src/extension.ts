@@ -4,6 +4,7 @@
  * ------------------------------------------------------------------------------------------ */
 
 import * as path from "path";
+import { TextEncoder } from "util";
 import * as vscode from "vscode";
 
 import {
@@ -12,6 +13,10 @@ import {
   ServerOptions,
   TransportKind,
 } from "vscode-languageclient/node";
+import {
+  IntrospectMachineResult,
+  makeInterfaceFromIntrospectionResult,
+} from "xstate-vscode-shared";
 
 let client: LanguageClient;
 
@@ -63,6 +68,31 @@ export function activate(context: vscode.ExtensionContext) {
   );
 
   client.start();
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      "xstate.create-typed-options",
+      async (introspectionResult: IntrospectMachineResult, uri: string) => {
+        const content = makeInterfaceFromIntrospectionResult(
+          introspectionResult,
+          // Remove all newlines
+        ).replace(/\r?\n|\r/g, "");
+
+        const newUri = await vscode.window.showSaveDialog({
+          defaultUri: vscode.Uri.file(
+            uri.replace(/\.([j,t])sx?$/, ".types.ts"),
+          ),
+          title: "Save type definitions",
+        });
+
+        await vscode.workspace.fs.writeFile(
+          newUri,
+          new TextEncoder().encode(content),
+        );
+        await vscode.window.showTextDocument(newUri);
+      },
+    ),
+  );
 }
 
 export function deactivate(): Thenable<void> | undefined {

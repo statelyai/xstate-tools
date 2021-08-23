@@ -1,0 +1,9 @@
+{
+  "name": "xstate-vscode-shared",
+  "version": "1.0.0",
+  "main": "dist/xstate-vscode-shared.cjs.js",
+  "license": "MIT",
+  "peerDependencies": {
+    "xstate": "^4"
+  }
+}
