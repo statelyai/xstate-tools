@@ -31,7 +31,8 @@
   "contributes": {},
   "scripts": {
     "vscode:prepublish": "npm run compile",
-    "compile": "ncc build server/src/server.ts -t -o server/dist && ncc build client/src/extension.ts -t -o client/dist",
+    "fe:build": "esbuild client/src/webviewScript.ts --bundle --outfile=client/scripts/webview.js",
+    "compile": "npm run fe:build && esbuild --bundle server/src/server.ts --outfile=server/dist/index.js --external:vscode --platform=\"node\" && esbuild --bundle --platform=\"node\" client/src/extension.ts --outfile=client/dist/index.js --external:vscode",
     "server:watch": "ncc build server/src/server.ts -t -w -o server/dist",
     "client:watch": "ncc build client/src/extension.ts -t -w -o client/dist",
     "watch": "concurrently \"npm:server:watch\" \"npm:client:watch\"",
@@ -44,11 +45,11 @@
     "@types/node": "^12.12.0",
     "@typescript-eslint/eslint-plugin": "^4.23.0",
     "@typescript-eslint/parser": "^4.23.0",
-    "@vercel/ncc": "0.28.4",
     "concurrently": "6.2.0",
     "eslint": "^7.26.0",
     "mocha": "^8.3.2",
-    "typescript": "^4.3.2"
+    "typescript": "^4.3.2",
+    "esbuild": "^0.12.22"
   },
   "preconstruct": {
     "packages": [

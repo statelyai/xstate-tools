@@ -21,7 +21,7 @@ export const getUnusedActionImplementations: DiagnosticGetter = (
       return {
         message: `${action.key} is never used in the machine definition`,
         range: getRangeFromSourceLocation(action.keyNode.loc!),
-        severity: DiagnosticSeverity.Error,
+        severity: DiagnosticSeverity.Warning,
       };
     }) || []
   );

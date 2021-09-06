@@ -2,7 +2,6 @@
  * Copyright (c) Microsoft Corporation. All rights reserved.
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
-import type { SourceLocation } from "@babel/types";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import {
   CompletionItem,
@@ -12,10 +11,7 @@ import {
   DidChangeConfigurationNotification,
   InitializeParams,
   InitializeResult,
-  Position,
   ProposedFeatures,
-  Range,
-  TextDocumentIdentifier,
   TextDocumentPositionParams,
   TextDocuments,
   TextDocumentSyncKind,
@@ -27,9 +23,8 @@ import {
   StateMachine,
   StateNode,
 } from "xstate";
-import { parseMachinesFromFile, StringLiteralNode } from "xstate-parser-demo";
+import { parseMachinesFromFile } from "xstate-parser-demo";
 import { MachineParseResult } from "xstate-parser-demo/lib/MachineParseResult";
-import { StateNodeReturn } from "xstate-parser-demo/lib/stateNode";
 import {
   getTransitionsFromNode,
   introspectMachine,
@@ -228,16 +223,23 @@ connection.onCodeLens((params) => {
   if (!machinesParseResult) {
     return [];
   }
-  return machinesParseResult.flatMap((machine) => {
-    const firstState = machine.parseResult?.ast?.definition;
-    return {
-      range: getRangeFromSourceLocation(firstState?.node.loc!)!,
-      command: {
-        title: "Create Typed Options",
-        command: "xstate.create-typed-options",
-        arguments: [machine.introspectionResult, params.textDocument.uri],
+  return machinesParseResult.flatMap((machine, index) => {
+    const callee = machine.parseResult?.ast?.callee;
+    return [
+      {
+        range: getRangeFromSourceLocation(callee?.loc!),
+        command: {
+          title: "Open Inspector",
+          command: "xstate.inspect",
+          arguments: [
+            machine.parseResult?.toConfig()!,
+            index,
+            params.textDocument.uri,
+            Object.keys(machine.parseResult?.getAllNamedConds() || {}),
+          ],
+        },
       },
-    };
+    ];
   });
 });
 
@@ -272,14 +274,21 @@ async function validateDocument(textDocument: TextDocument): Promise<void> {
     });
     documentValidationsCache.set(textDocument.uri, machines);
 
-    diagnostics.push(
-      ...getDiagnostics(
-        machines,
-        textDocument,
-        miscDiagnostics,
-        getUnusedActionImplementations,
-      ),
-    );
+    diagnostics.push(...getDiagnostics(machines, textDocument));
+
+    machines.forEach((machine, index) => {
+      const config = machine.parseResult?.toConfig();
+      if (config) {
+        connection.sendNotification("xstate/update", {
+          config,
+          uri: textDocument.uri,
+          index,
+          guardsToMock: Object.keys(
+            machine.parseResult?.getAllNamedConds() || {},
+          ),
+        });
+      }
+    });
   } catch (e) {
     documentValidationsCache.delete(textDocument.uri);
   }

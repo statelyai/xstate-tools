@@ -100,7 +100,54 @@ export const getReferences = (params: {
         };
       });
     }
-    // TODO - add service and cond implementations
+
+    if (cursorHover?.type === "COND") {
+      const node = cursorHover.machine.getGuardImplementation(cursorHover.name);
+
+      if (node?.keyNode.loc) {
+        return [
+          {
+            uri: params.textDocument.uri,
+            range: getRangeFromSourceLocation(node.keyNode.loc),
+          },
+        ];
+      }
+    } else if (cursorHover?.type === "COND_IMPLEMENTATION") {
+      const guards = cursorHover.machine.getAllNamedConds()[cursorHover.name];
+
+      return guards.map((guard) => {
+        return {
+          uri: params.textDocument.uri,
+          range: getRangeFromSourceLocation(guard.node.loc!),
+        };
+      });
+    }
+    if (cursorHover?.type === "SERVICE") {
+      const node = cursorHover.machine.getServiceImplementation(
+        cursorHover.name,
+      );
+
+      if (node?.keyNode.loc) {
+        return [
+          {
+            uri: params.textDocument.uri,
+            range: getRangeFromSourceLocation(node.keyNode.loc),
+          },
+        ];
+      }
+    } else if (cursorHover?.type === "SERVICE_IMPLEMENTATION") {
+      const services =
+        cursorHover.machine.getAllNamedServices()[cursorHover.name];
+
+      return services.map((service) => {
+        return {
+          uri: params.textDocument.uri,
+          range: getRangeFromSourceLocation(
+            service.srcNode?.loc || service.node.loc!,
+          ),
+        };
+      });
+    }
   } catch (e) {}
 
   return [];

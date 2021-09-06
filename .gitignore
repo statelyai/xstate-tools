@@ -2,6 +2,8 @@ out
 dist
 node_modules
 client/server
+client/scripts
 .vscode-test
 *.vsix
 *.zip
+.DS_Store
