@@ -46,7 +46,7 @@ class ItemMap {
    */
   private map: {
     [name: string]: { events: Set<string>; states: Set<XState.StateValue> };
-  } = {};
+  };
 
   /**
    * Check if one of these items is optional -
@@ -56,6 +56,7 @@ class ItemMap {
 
   constructor(props: { checkIfOptional: (name: string) => boolean }) {
     this.checkIfOptional = props.checkIfOptional;
+    this.map = {};
   }
 
   /**
