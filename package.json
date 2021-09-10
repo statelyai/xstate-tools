@@ -3,7 +3,7 @@
   "description": "XState VSCode (demo)",
   "author": "Matt Pocock",
   "license": "MIT",
-  "version": "1.1.6",
+  "version": "1.1.7",
   "private": true,
   "repository": {
     "type": "git",
