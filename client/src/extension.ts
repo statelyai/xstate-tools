@@ -4,6 +4,7 @@
  * ------------------------------------------------------------------------------------------ */
 
 import * as path from "path";
+import * as fs from "fs";
 import { TextEncoder } from "util";
 import * as vscode from "vscode";
 
@@ -20,6 +21,23 @@ import {
 } from "xstate-vscode-shared";
 import { getWebviewContent } from "./getWebviewContent";
 import { WebviewMachineEvent } from "./webviewScript";
+import { createHash, createHmac } from "crypto";
+
+const createContentHash = (str: string): Promise<string> => {
+  return new Promise((resolve) => {
+    const hash = createHash("sha256");
+
+    hash.on("readable", () => {
+      // Only one element is going to be produced by the
+      // hash stream.
+      const data = hash.read();
+      resolve(data.toString("hex").slice(0, 8));
+    });
+
+    hash.write(str);
+    hash.end();
+  });
+};
 
 let client: LanguageClient;
 
@@ -105,14 +123,63 @@ export function activate(context: vscode.ExtensionContext) {
 
   client.onReady().then(() => {
     context.subscriptions.push(
-      client.onNotification("xstate/update", (event) => {
-        sendMessage({
-          type: "UPDATE",
-          config: event.config,
-          index: event.index,
-          uri: event.uri,
-          guardsToMock: event.guardsToMock,
+      client.onNotification("xstate/update", async (event) => {
+        if (event.machines.length === 0) return;
+
+        event.machines.forEach((machine) => {
+          sendMessage({
+            type: "UPDATE",
+            config: machine.config,
+            index: machine.index,
+            uri: event.uri,
+            guardsToMock: machine.guardsToMock,
+          });
         });
+
+        const uri = event.uri;
+
+        const newUri = vscode.Uri.file(
+          uri.replace(/\.([j,t])sx?$/, ".typegen.ts"),
+        );
+
+        const id = await createContentHash(
+          vscode.workspace.asRelativePath(uri),
+        );
+
+        fs.writeFileSync(
+          path.resolve(newUri.path).slice(6),
+          `/// <reference types="xstate" />
+        import { MachineConfig, EventObject } from 'xstate';
+
+        declare module 'xstate' {
+          export interface GeneratedMachineDefinitions<TContext, TEvent extends EventObject> {
+            ${event.machines
+              .map((_, index) => {
+                return `'${id}_${index}': {
+                  config: MachineConfig<TContext, any, TEvent> & { types?: '${id}_${index}'; };
+                  options: {};
+                  machine: unknown;
+                }`;
+              })
+              .join("\n")}
+          }
+        }
+        
+        export type TypegenIds = {
+          ${event.machines
+            .map((_, index) => {
+              return `${index}: '${id}_${index}'`;
+            })
+            .join("\n")}
+        };
+        
+        `,
+        );
+
+        // await vscode.workspace.fs.writeFile(
+        //   newUri,
+        //   new TextEncoder().encode(``),
+        // );
       }),
     );
   }),

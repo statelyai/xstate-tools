@@ -276,18 +276,18 @@ async function validateDocument(textDocument: TextDocument): Promise<void> {
 
     diagnostics.push(...getDiagnostics(machines, textDocument));
 
-    machines.forEach((machine, index) => {
-      const config = machine.parseResult?.toConfig();
-      if (config) {
-        connection.sendNotification("xstate/update", {
+    connection.sendNotification("xstate/update", {
+      uri: textDocument.uri,
+      machines: machines.map((machine, index) => {
+        const config = machine.parseResult?.toConfig();
+        return {
           config,
-          uri: textDocument.uri,
           index,
           guardsToMock: Object.keys(
             machine.parseResult?.getAllNamedConds() || {},
           ),
-        });
-      }
+        };
+      }),
     });
   } catch (e) {
     documentValidationsCache.delete(textDocument.uri);
