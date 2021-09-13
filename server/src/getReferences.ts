@@ -26,7 +26,7 @@ export const getReferences = (params: {
 
       // @ts-ignore
       const targetStates: { id: string }[] = state.resolveTarget([
-        cursorHover.target?.target.value,
+        cursorHover.target?.value,
       ]);
 
       if (!targetStates) {
