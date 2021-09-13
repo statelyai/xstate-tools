@@ -16,12 +16,7 @@ export const getCursorHoverType = (
         path: string[];
         ast: StateNodeReturn;
       };
-      target:
-        | {
-            fromPath: string[];
-            target: StringLiteralNode;
-          }
-        | undefined;
+      target: StringLiteralNode | undefined;
     }
   | {
       type: "INITIAL";
@@ -154,9 +149,13 @@ const getTargetMatchingCursor = (
   parseResult: MachineParseResult | undefined,
   position: Position,
 ) => {
-  return parseResult?.getTransitionTargets().find((target) => {
-    return isCursorInPosition(target.target.node.loc, position);
-  });
+  for (const target of parseResult?.getTransitionTargets() || []) {
+    for (const targetNode of target.target) {
+      if (isCursorInPosition(targetNode.node.loc, position)) {
+        return targetNode;
+      }
+    }
+  }
 };
 
 const getInitialMatchingCursor = (
