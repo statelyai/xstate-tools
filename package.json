@@ -1,6 +1,8 @@
 {
   "name": "xstate-vscode",
-  "description": "XState VSCode (demo)",
+  "displayName": "XState VSCode",
+  "description": "Intelligent XState tooling for VSCode",
+  "preview": true,
   "author": "Matt Pocock",
   "license": "MIT",
   "version": "1.1.10",
@@ -9,6 +11,17 @@
     "type": "git",
     "url": "https://github.com/mattpocock/vscode-xstate-demo"
   },
+  "bugs": {
+    "url": "https://github.com/mattpocock/vscode-xstate-demo/issues"
+  },
+  "keywords": [
+    "xstate",
+    "vscode",
+    "visualize",
+    "autocomplete",
+    "typescript",
+    "javascript"
+  ],
   "workspaces": {
     "packages": [
       "client",
@@ -16,7 +29,15 @@
       "shared"
     ]
   },
-  "categories": [],
+  "categories": [
+    "Linters",
+    "Visualization",
+    "Other"
+  ],
+  "galleryBanner": {
+    "color": "#679ae7"
+  },
+  "icon": "assets/icon.png",
   "engines": {
     "vscode": "^1.52.0"
   },
