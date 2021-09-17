@@ -14,34 +14,24 @@ import {
   ServerOptions,
   TransportKind,
 } from "vscode-languageclient/node";
-import { MachineConfig } from "xstate";
+import { createMachine, MachineConfig } from "xstate";
 import {
+  getRangeFromSourceLocation,
+  introspectMachine,
   IntrospectMachineResult,
   makeInterfaceFromIntrospectionResult,
+  XStateUpdateEvent,
 } from "xstate-vscode-shared";
 import { getWebviewContent } from "./getWebviewContent";
 import { WebviewMachineEvent } from "./webviewScript";
 import { createHash, createHmac } from "crypto";
-
-const createContentHash = (str: string): Promise<string> => {
-  return new Promise((resolve) => {
-    const hash = createHash("sha256");
-
-    hash.on("readable", () => {
-      // Only one element is going to be produced by the
-      // hash stream.
-      const data = hash.read();
-      resolve(data.toString("hex").slice(0, 8));
-    });
-
-    hash.write(str);
-    hash.end();
-  });
-};
+import { parseMachinesFromFile } from "xstate-parser-demo";
 
 let client: LanguageClient;
 
 let currentPanel: vscode.WebviewPanel | undefined = undefined;
+
+let latestXStateUpdateEventTracker: Record<string, XStateUpdateEvent> = {};
 
 const sendMessage = (event: WebviewMachineEvent) => {
   currentPanel?.webview.postMessage(JSON.stringify(event));
@@ -123,64 +113,90 @@ export function activate(context: vscode.ExtensionContext) {
 
   client.onReady().then(() => {
     context.subscriptions.push(
-      client.onNotification("xstate/update", async (event) => {
-        if (event.machines.length === 0) return;
+      vscode.workspace.onWillSaveTextDocument(async (event) => {
+        const result = parseMachinesFromFile(event.document.getText());
 
-        event.machines.forEach((machine) => {
-          sendMessage({
-            type: "UPDATE",
-            config: machine.config,
-            index: machine.index,
-            uri: event.uri,
-            guardsToMock: machine.guardsToMock,
-          });
-        });
+        if (result.machines.length > 0) {
+          event.waitUntil(
+            new Promise((resolve) => {
+              const fileEdits: vscode.TextEdit[] = [];
 
-        const uri = event.uri;
+              const relativePath = removeExtension(
+                path.basename(event.document.uri.path),
+              );
+              result.machines
+                .filter((machine) => Boolean(machine.ast.definition.types.node))
+                .forEach((machine, index) => {
+                  const position = getRangeFromSourceLocation(
+                    machine.ast.definition.types.node.loc,
+                  );
 
-        const newUri = vscode.Uri.file(
-          uri.replace(/\.([j,t])sx?$/, ".typegen.ts"),
-        );
+                  console.log(machine);
 
-        const id = await createContentHash(
-          vscode.workspace.asRelativePath(uri),
-        );
+                  fileEdits.push(
+                    new vscode.TextEdit(
+                      new vscode.Range(
+                        new vscode.Position(
+                          position.start.line,
+                          position.start.character,
+                        ),
+                        new vscode.Position(
+                          position.end.line,
+                          position.end.character,
+                        ),
+                      ),
+                      `{} as import('./${relativePath}.typegen').Typegen[${index}]`,
+                    ),
+                  );
+                });
 
-        fs.writeFileSync(
-          path.resolve(newUri.path).slice(6),
-          `/// <reference types="xstate" />
-        import { MachineConfig, EventObject } from 'xstate';
-
-        declare module 'xstate' {
-          export interface GeneratedMachineDefinitions<TContext, TEvent extends EventObject> {
-            ${event.machines
-              .map((_, index) => {
-                return `'${id}_${index}': {
-                  config: MachineConfig<TContext, any, TEvent> & { types?: '${id}_${index}'; };
-                  options: {};
-                  machine: unknown;
-                }`;
-              })
-              .join("\n")}
-          }
+              resolve(fileEdits);
+            }),
+          );
         }
-        
-        export type TypegenIds = {
-          ${event.machines
-            .map((_, index) => {
-              return `${index}: '${id}_${index}'`;
-            })
-            .join("\n")}
-        };
-        
-        `,
-        );
-
-        // await vscode.workspace.fs.writeFile(
-        //   newUri,
-        //   new TextEncoder().encode(``),
-        // );
       }),
+      client.onNotification(
+        "xstate/update",
+        async (event: XStateUpdateEvent) => {
+          if (event.machines.length === 0) return;
+
+          const prettyPath = vscode.Uri.file(event.uri).path.slice(8);
+
+          latestXStateUpdateEventTracker[prettyPath] = event;
+
+          event.machines.forEach((machine) => {
+            sendMessage({
+              type: "UPDATE",
+              config: machine.config,
+              index: machine.index,
+              uri: event.uri,
+              guardsToMock: machine.guardsToMock,
+            });
+          });
+
+          const uri = event.uri;
+
+          const newUri = vscode.Uri.file(
+            uri.replace(/\.([j,t])sx?$/, ".typegen.ts"),
+          );
+
+          if (
+            event.machines.filter((machine) => machine.hasTypesNode).length > 0
+          ) {
+            fs.writeFileSync(
+              path.resolve(newUri.path).slice(6),
+              getTypegenOutput(event),
+            );
+          } else {
+            fs.unlinkSync(path.resolve(newUri.path).slice(6));
+          }
+
+          // await vscode.workspace.fs.writeFile(
+          //   newUri,
+          //   new TextEncoder().encode(``),
+          // );
+        },
+      ),
     );
   }),
     context.subscriptions.push(
@@ -251,3 +267,118 @@ export function deactivate(): Thenable<void> | undefined {
   }
   return client.stop();
 }
+
+const getTypegenOutput = (event: XStateUpdateEvent) => {
+  return `
+  export type Typegen = [
+    ${event.machines
+      .filter((machine) => machine.hasTypesNode)
+      .map((machine) => {
+        try {
+          const guards: Record<string, () => boolean> = {};
+
+          machine.guardsToMock.forEach((guard) => {
+            guards[guard] = () => true;
+          });
+
+          machine.config.context = {};
+
+          const createdMachine = createMachine(machine.config || {}, {
+            guards,
+          });
+
+          const introspectResult = introspectMachine(createdMachine as any);
+
+          const requiredActions = introspectResult.actions.lines
+            .filter((action) => !machine.actionsInOptions.includes(action.name))
+            .map((action) => `'${action.name}'`)
+            .join(" | ");
+
+          const requiredServices = introspectResult.services.lines
+            .filter(
+              (service) => !machine.servicesInOptions.includes(service.name),
+            )
+            .map((service) => `'${service.name}'`)
+            .join(" | ");
+
+          const requiredGuards = introspectResult.guards.lines
+            .filter((guard) => !machine.guardsInOptions.includes(guard.name))
+            .map((guard) => `'${guard.name}'`)
+            .join(" | ");
+
+          const requiredDelays = introspectResult.delays.lines
+            .filter((delay) => !machine.delaysInOptions.includes(delay.name))
+            .map((delay) => `'${delay.name}'`)
+            .join(" | ");
+
+          const tags = machine.tags.map((tag) => `'${tag}'`).join(" | ");
+
+          const optionsRequired = Boolean(
+            requiredActions ||
+              requiredGuards ||
+              requiredDelays ||
+              requiredServices,
+          );
+
+          const matchesStates = introspectResult.stateMatches
+            .map((elem) => `'${elem}'`)
+            .join(" | ");
+
+          return `{
+            __generated: 1;
+            optionsRequired: ${optionsRequired ? 1 : 0};
+            eventsCausingActions: {
+              ${introspectResult.actions.lines
+                .map((line) => {
+                  return `'${line.name}': ${
+                    line.events.map((event) => `'${event}'`).join(" | ") ||
+                    "string"
+                  };`;
+                })
+                .join("\n")}
+            };
+            ${requiredActions ? `requiredActions: ${requiredActions};` : ""}
+            ${requiredServices ? `requiredServices: ${requiredServices};` : ""}
+            ${requiredGuards ? `requiredGuards: ${requiredGuards};` : ""}
+            ${requiredDelays ? `requiredDelays: ${requiredDelays};` : ""}
+            eventsCausingServices: {
+              ${introspectResult.services.lines
+                .map((line) => {
+                  return `'${line.name}': ${
+                    line.events.map((event) => `'${event}'`).join(" | ") ||
+                    "string"
+                  };`;
+                })
+                .join("\n")}
+            };
+            eventsCausingGuards: {
+              ${introspectResult.guards.lines
+                .map((line) => {
+                  return `'${line.name}': ${
+                    line.events.map((event) => `'${event}'`).join(" | ") ||
+                    "string"
+                  };`;
+                })
+                .join("\n")}
+            };
+            allDelays: {
+              ${introspectResult.delays.lines
+                .map((line) => {
+                  return `'${line.name}': true;`;
+                })
+                .join("\n")}
+            };
+            matchesStates: ${matchesStates || "undefined"};
+            ${tags ? `tags: ${tags};` : ""}
+          }`;
+        } catch (e) {}
+        return `{}`;
+      })
+      .join(",\n")}
+  ];
+  `;
+};
+
+const removeExtension = (input: string) => {
+  return input.substr(0, input.lastIndexOf("."));
+};

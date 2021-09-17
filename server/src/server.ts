@@ -29,6 +29,7 @@ import {
   getTransitionsFromNode,
   introspectMachine,
   IntrospectMachineResult,
+  XStateUpdateEvent,
 } from "xstate-vscode-shared";
 import { getUnusedActionImplementations } from "./diagnostics/getUnusedActionImplementations";
 import { miscDiagnostics } from "./diagnostics/misc";
@@ -276,19 +277,49 @@ async function validateDocument(textDocument: TextDocument): Promise<void> {
 
     diagnostics.push(...getDiagnostics(machines, textDocument));
 
-    connection.sendNotification("xstate/update", {
+    const event: XStateUpdateEvent = {
       uri: textDocument.uri,
       machines: machines.map((machine, index) => {
-        const config = machine.parseResult?.toConfig();
+        const config = machine.parseResult?.toConfig()!;
         return {
           config,
           index,
+          typeNodeLoc: machine.parseResult?.ast?.definition?.types?.node.loc,
+          definitionLoc: machine.parseResult?.ast?.definition?.node.loc,
           guardsToMock: Object.keys(
             machine.parseResult?.getAllNamedConds() || {},
           ),
+          actionsInOptions:
+            machine.parseResult?.ast?.options?.actions?.properties.map(
+              (property) => property.key,
+            ) || [],
+          delaysInOptions:
+            machine.parseResult?.ast?.options?.delays?.properties.map(
+              (property) => property.key,
+            ) || [],
+          guardsInOptions:
+            machine.parseResult?.ast?.options?.guards?.properties.map(
+              (property) => property.key,
+            ) || [],
+          servicesInOptions:
+            machine.parseResult?.ast?.options?.services?.properties.map(
+              (property) => property.key,
+            ) || [],
+          tags: Array.from(
+            new Set(
+              machine.parseResult
+                ?.getAllStateNodes()
+                .flatMap(
+                  (node) => node.ast.tags?.map((tag) => tag.value) || [],
+                ) || [],
+            ),
+          ),
+          hasTypesNode: Boolean(machine.parseResult?.ast?.definition?.types),
         };
       }),
-    });
+    };
+
+    connection.sendNotification("xstate/update", event);
   } catch (e) {
     documentValidationsCache.delete(textDocument.uri);
   }
