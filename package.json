@@ -49,7 +49,15 @@
   ],
   "main": "./client/dist/index.js",
   "publisher": "mattpocock",
-  "contributes": {},
+  "contributes": {
+    "commands": [
+      {
+        "command": "xstate.visualize",
+        "title": "Open Inspector",
+        "category": "XState"
+      }
+    ]
+  },
   "scripts": {
     "vscode:prepublish": "yarn preconstruct build && npm run server:build && npm run client:build",
     "fe:build": "esbuild client/src/webviewScript.ts --bundle --outfile=client/scripts/webview.js",

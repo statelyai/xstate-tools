@@ -6,6 +6,7 @@
 import * as path from "path";
 import { TextEncoder } from "util";
 import * as vscode from "vscode";
+import { Location, parseMachinesFromFile } from "xstate-parser-demo";
 
 import {
   LanguageClient,
@@ -78,29 +79,109 @@ export function activate(context: vscode.ExtensionContext) {
 
   client.start();
 
-  context.subscriptions.push(
-    vscode.commands.registerCommand(
-      "xstate.create-typed-options",
-      async (introspectionResult: IntrospectMachineResult, uri: string) => {
-        const content = makeInterfaceFromIntrospectionResult(
-          introspectionResult,
-          // Remove all newlines
-        ).replace(/\r?\n|\r/g, "");
+  const startService = (
+    config: MachineConfig<any, any, any>,
+    machineIndex: number,
+    uri: string,
+    guardsToMock: string[],
+  ) => {
+    if (currentPanel) {
+      currentPanel.reveal(vscode.ViewColumn.Beside);
 
-        const newUri = await vscode.window.showSaveDialog({
-          defaultUri: vscode.Uri.file(
-            uri.replace(/\.([j,t])sx?$/, ".types.ts"),
-          ),
-          title: "Save type definitions",
+      sendMessage({
+        type: "RECEIVE_SERVICE",
+        config,
+        index: machineIndex,
+        uri,
+        guardsToMock,
+      });
+    } else {
+      currentPanel = vscode.window.createWebviewPanel(
+        "visualizer",
+        "XState Visualizer",
+        vscode.ViewColumn.Beside,
+        { enableScripts: true, retainContextWhenHidden: true },
+      );
+
+      const onDiskPath = vscode.Uri.file(
+        path.join(context.extensionPath, "client", "scripts", "webview.js"),
+      );
+
+      const src = currentPanel.webview.asWebviewUri(onDiskPath);
+
+      currentPanel.webview.html = getWebviewContent(src);
+
+      sendMessage({
+        type: "RECEIVE_SERVICE",
+        config,
+        index: machineIndex,
+        uri,
+        guardsToMock,
+      });
+
+      // Handle disposing the current XState Visualizer
+      currentPanel.onDidDispose(
+        () => {
+          currentPanel = undefined;
+        },
+        undefined,
+        context.subscriptions,
+      );
+    }
+  };
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand("xstate.visualize", () => {
+      try {
+        const currentSelection = vscode.window.activeTextEditor.selection;
+
+        const currentText = vscode.window.activeTextEditor.document.getText();
+
+        const result = parseMachinesFromFile(currentText);
+
+        let foundIndex: number | null = null;
+
+        const machine = result.machines.find((machine, index) => {
+          if (
+            machine?.ast?.definition?.node?.loc ||
+            machine?.ast?.options?.node?.loc
+          ) {
+            const isInPosition =
+              isCursorInPosition(
+                machine?.ast?.definition?.node?.loc,
+                currentSelection.start,
+              ) ||
+              isCursorInPosition(
+                machine?.ast?.options?.node?.loc,
+                currentSelection.start,
+              );
+
+            if (isInPosition) {
+              foundIndex = index;
+              return true;
+            }
+          }
+          return false;
         });
 
-        await vscode.workspace.fs.writeFile(
-          newUri,
-          new TextEncoder().encode(content),
+        if (machine) {
+          startService(
+            machine.toConfig()!,
+            foundIndex!,
+            vscode.window.activeTextEditor.document.uri.path,
+            Object.keys(machine.getAllNamedConds()),
+          );
+        } else {
+          vscode.window.showErrorMessage(
+            "Could not find a machine at the current cursor.",
+          );
+        }
+      } catch (e) {
+        vscode.window.showErrorMessage(
+          "Could not find a machine at the current cursor.",
         );
-        await vscode.window.showTextDocument(newUri);
-      },
-    ),
+      }
+    }),
   );
 
   client.onReady().then(() => {
@@ -125,54 +206,7 @@ export function activate(context: vscode.ExtensionContext) {
           uri: string,
           guardsToMock: string[],
         ) => {
-          if (currentPanel) {
-            currentPanel.reveal(vscode.ViewColumn.Beside);
-
-            sendMessage({
-              type: "RECEIVE_SERVICE",
-              config,
-              index: machineIndex,
-              uri,
-              guardsToMock,
-            });
-          } else {
-            currentPanel = vscode.window.createWebviewPanel(
-              "visualizer",
-              "XState Visualizer",
-              vscode.ViewColumn.Beside,
-              { enableScripts: true, retainContextWhenHidden: true },
-            );
-
-            const onDiskPath = vscode.Uri.file(
-              path.join(
-                context.extensionPath,
-                "client",
-                "scripts",
-                "webview.js",
-              ),
-            );
-
-            const src = currentPanel.webview.asWebviewUri(onDiskPath);
-
-            currentPanel.webview.html = getWebviewContent(src);
-
-            sendMessage({
-              type: "RECEIVE_SERVICE",
-              config,
-              index: machineIndex,
-              uri,
-              guardsToMock,
-            });
-
-            // Handle disposing the current XState Visualizer
-            currentPanel.onDidDispose(
-              () => {
-                currentPanel = undefined;
-              },
-              undefined,
-              context.subscriptions,
-            );
-          }
+          startService(config, machineIndex, uri, guardsToMock);
         },
       ),
     );
@@ -184,3 +218,25 @@ export function deactivate(): Thenable<void> | undefined {
   }
   return client.stop();
 }
+
+const isCursorInPosition = (
+  nodeSourceLocation: Location,
+  cursorPosition: vscode.Position,
+) => {
+  if (!nodeSourceLocation) return;
+  const isOnSameLine =
+    nodeSourceLocation.start.line - 1 === cursorPosition.line;
+
+  const isWithinChars =
+    cursorPosition.character >= nodeSourceLocation.start.column &&
+    cursorPosition.character <= nodeSourceLocation.end.column;
+  if (isOnSameLine) {
+    return isWithinChars;
+  }
+
+  const isWithinLines =
+    cursorPosition.line >= nodeSourceLocation.start.line - 1 &&
+    cursorPosition.line <= nodeSourceLocation.end.line;
+
+  return isWithinLines;
+};
