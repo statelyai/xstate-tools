@@ -1,14 +1,27 @@
 {
   "name": "xstate-vscode",
-  "description": "XState VSCode (demo)",
+  "displayName": "XState VSCode",
+  "description": "Intelligent XState tooling for VSCode",
+  "preview": true,
   "author": "Matt Pocock",
   "license": "MIT",
-  "version": "1.1.10",
+  "version": "1.1.13",
   "private": true,
   "repository": {
     "type": "git",
     "url": "https://github.com/mattpocock/vscode-xstate-demo"
   },
+  "bugs": {
+    "url": "https://github.com/mattpocock/vscode-xstate-demo/issues"
+  },
+  "keywords": [
+    "xstate",
+    "vscode",
+    "visualize",
+    "autocomplete",
+    "typescript",
+    "javascript"
+  ],
   "workspaces": {
     "packages": [
       "client",
@@ -16,7 +29,15 @@
       "shared"
     ]
   },
-  "categories": [],
+  "categories": [
+    "Linters",
+    "Visualization",
+    "Other"
+  ],
+  "galleryBanner": {
+    "color": "#fff"
+  },
+  "icon": "media/icon.png",
   "engines": {
     "vscode": "^1.52.0"
   },
@@ -28,7 +49,15 @@
   ],
   "main": "./client/dist/index.js",
   "publisher": "mattpocock",
-  "contributes": {},
+  "contributes": {
+    "commands": [
+      {
+        "command": "xstate.visualize",
+        "title": "Open Inspector",
+        "category": "XState"
+      }
+    ]
+  },
   "scripts": {
     "vscode:prepublish": "yarn preconstruct build && npm run server:build && npm run client:build",
     "fe:build": "esbuild client/src/webviewScript.ts --bundle --outfile=client/scripts/webview.js",
