@@ -72,7 +72,7 @@ export function activate(context: vscode.ExtensionContext) {
   // Create the language client and start the client.
   client = new LanguageClient(
     "xstateLanguageServer",
-    "XState (Demo)",
+    "XState",
     serverOptions,
     clientOptions,
   );
@@ -168,7 +168,9 @@ export function activate(context: vscode.ExtensionContext) {
           startService(
             machine.toConfig()!,
             foundIndex!,
-            vscode.window.activeTextEditor.document.uri.path,
+            resolveUriToFilePrefix(
+              vscode.window.activeTextEditor.document.uri.path,
+            ),
             Object.keys(machine.getAllNamedConds()),
           );
         } else {
@@ -239,4 +241,11 @@ const isCursorInPosition = (
     cursorPosition.line <= nodeSourceLocation.end.line;
 
   return isWithinLines;
+};
+
+const resolveUriToFilePrefix = (uri: string) => {
+  if (!uri.startsWith("file://")) {
+    return `file://${uri}`;
+  }
+  return uri;
 };
