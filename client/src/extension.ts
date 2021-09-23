@@ -12,7 +12,7 @@ import {
   ServerOptions,
   TransportKind,
 } from "vscode-languageclient/node";
-import { createMachine, MachineConfig } from "xstate";
+import { createMachine, MachineConfig, assign, interpret } from "xstate";
 import { Location, parseMachinesFromFile } from "xstate-parser-demo";
 import {
   getRangeFromSourceLocation,
@@ -26,11 +26,79 @@ let client: LanguageClient;
 
 let currentPanel: vscode.WebviewPanel | undefined = undefined;
 
-let latestXStateUpdateEventTracker: Record<string, XStateUpdateEvent> = {};
-
 const sendMessage = (event: WebviewMachineEvent) => {
   currentPanel?.webview.postMessage(JSON.stringify(event));
 };
+
+const throttledTypegenCreationMachine = createMachine<
+  {
+    eventMap: Record<string, XStateUpdateEvent>;
+  },
+  { type: "RECEIVE_NEW_EVENT"; event: XStateUpdateEvent }
+>(
+  {
+    initial: "idle",
+    context: {
+      eventMap: {},
+    },
+    preserveActionOrder: true,
+    on: {
+      RECEIVE_NEW_EVENT: {
+        target: ".throttling",
+        internal: false,
+        actions: assign((context, event) => {
+          return {
+            eventMap: {
+              ...context.eventMap,
+              [event.event.uri]: event.event,
+            },
+          };
+        }),
+      },
+    },
+    states: {
+      idle: {
+        entry: ["executeAction", "clearActions"],
+      },
+      throttling: {
+        after: {
+          500: "idle",
+        },
+      },
+    },
+  },
+  {
+    actions: {
+      executeAction: (context) => {
+        Object.entries(context.eventMap).forEach(([, event]) => {
+          const uri = event.uri;
+
+          const newUri = vscode.Uri.file(
+            uri.replace(/\.([j,t])sx?$/, ".typegen.ts"),
+          );
+
+          if (
+            event.machines.filter((machine) => machine.hasTypesNode).length > 0
+          ) {
+            fs.writeFileSync(
+              path.resolve(newUri.path).slice(6),
+              getTypegenOutput(event),
+            );
+          } else {
+            fs.unlinkSync(path.resolve(newUri.path).slice(6));
+          }
+        });
+      },
+      clearActions: assign((context) => {
+        return {
+          eventMap: {},
+        };
+      }),
+    },
+  },
+);
+
+const typegenService = interpret(throttledTypegenCreationMachine).start();
 
 export function activate(context: vscode.ExtensionContext) {
   // The server is implemented in node
@@ -235,10 +303,6 @@ export function activate(context: vscode.ExtensionContext) {
         async (event: XStateUpdateEvent) => {
           if (event.machines.length === 0) return;
 
-          const prettyPath = vscode.Uri.file(event.uri).path.slice(8);
-
-          latestXStateUpdateEventTracker[prettyPath] = event;
-
           event.machines.forEach((machine) => {
             sendMessage({
               type: "UPDATE",
@@ -249,27 +313,10 @@ export function activate(context: vscode.ExtensionContext) {
             });
           });
 
-          const uri = event.uri;
-
-          const newUri = vscode.Uri.file(
-            uri.replace(/\.([j,t])sx?$/, ".typegen.ts"),
-          );
-
-          if (
-            event.machines.filter((machine) => machine.hasTypesNode).length > 0
-          ) {
-            fs.writeFileSync(
-              path.resolve(newUri.path).slice(6),
-              getTypegenOutput(event),
-            );
-          } else {
-            fs.unlinkSync(path.resolve(newUri.path).slice(6));
-          }
-
-          // await vscode.workspace.fs.writeFile(
-          //   newUri,
-          //   new TextEncoder().encode(``),
-          // );
+          typegenService.send({
+            type: "RECEIVE_NEW_EVENT",
+            event,
+          });
         },
       ),
     );
@@ -341,20 +388,19 @@ const getTypegenOutput = (event: XStateUpdateEvent) => {
 
           const tags = machine.tags.map((tag) => `'${tag}'`).join(" | ");
 
-          const optionsRequired = Boolean(
-            requiredActions ||
-              requiredGuards ||
-              requiredDelays ||
-              requiredServices,
-          );
+          // const optionsRequired = Boolean(
+          //   requiredActions ||
+          //     requiredGuards ||
+          //     requiredDelays ||
+          //     requiredServices,
+          // );
 
           const matchesStates = introspectResult.stateMatches
             .map((elem) => `'${elem}'`)
             .join(" | ");
 
           return `{
-            __generated: 1;
-            optionsRequired: ${optionsRequired ? 1 : 0};
+            '@@xstate/typegen': true;
             eventsCausingActions: {
               ${introspectResult.actions.lines
                 .map((line) => {
@@ -365,10 +411,12 @@ const getTypegenOutput = (event: XStateUpdateEvent) => {
                 })
                 .join("\n")}
             };
-            ${requiredActions ? `requiredActions: ${requiredActions};` : ""}
-            ${requiredServices ? `requiredServices: ${requiredServices};` : ""}
-            ${requiredGuards ? `requiredGuards: ${requiredGuards};` : ""}
-            ${requiredDelays ? `requiredDelays: ${requiredDelays};` : ""}
+            missingImplementations: {
+              ${`actions: ${requiredActions || "never"};`}
+              ${`services: ${requiredServices || "never"};`}
+              ${`guards: ${requiredGuards || "never"};`}
+              ${`delays: ${requiredDelays || "never"};`}
+            }
             eventsCausingServices: {
               ${introspectResult.services.lines
                 .map((line) => {
@@ -389,15 +437,18 @@ const getTypegenOutput = (event: XStateUpdateEvent) => {
                 })
                 .join("\n")}
             };
-            allDelays: {
+            eventsCausingDelays: {
               ${introspectResult.delays.lines
                 .map((line) => {
-                  return `'${line.name}': true;`;
+                  return `'${line.name}': ${
+                    line.events.map((event) => `'${event}'`).join(" | ") ||
+                    "string"
+                  };`;
                 })
                 .join("\n")}
             };
             matchesStates: ${matchesStates || "undefined"};
-            ${tags ? `tags: ${tags};` : ""}
+            tags: ${tags || "never"};
           }`;
         } catch (e) {}
         return `{}`;
