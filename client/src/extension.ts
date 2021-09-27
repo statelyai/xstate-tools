@@ -4,10 +4,7 @@
  * ------------------------------------------------------------------------------------------ */
 
 import * as path from "path";
-import { TextEncoder } from "util";
 import * as vscode from "vscode";
-import { Location, parseMachinesFromFile } from "xstate-parser-demo";
-
 import {
   LanguageClient,
   LanguageClientOptions,
@@ -15,12 +12,10 @@ import {
   TransportKind,
 } from "vscode-languageclient/node";
 import { MachineConfig } from "xstate";
-import {
-  IntrospectMachineResult,
-  makeInterfaceFromIntrospectionResult,
-} from "xstate-vscode-shared";
+import { Location, parseMachinesFromFile } from "xstate-parser-demo";
 import { getWebviewContent } from "./getWebviewContent";
 import { WebviewMachineEvent } from "./webviewScript";
+import { filterOutIgnoredMachines } from "xstate-vscode-shared";
 
 let client: LanguageClient;
 
@@ -137,7 +132,9 @@ export function activate(context: vscode.ExtensionContext) {
 
         const currentText = vscode.window.activeTextEditor.document.getText();
 
-        const result = parseMachinesFromFile(currentText);
+        const result = filterOutIgnoredMachines(
+          parseMachinesFromFile(currentText),
+        );
 
         let foundIndex: number | null = null;
 
@@ -166,7 +163,7 @@ export function activate(context: vscode.ExtensionContext) {
 
         if (machine) {
           startService(
-            machine.toConfig()!,
+            machine.toConfig() as any,
             foundIndex!,
             resolveUriToFilePrefix(
               vscode.window.activeTextEditor.document.uri.path,

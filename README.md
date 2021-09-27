@@ -29,3 +29,14 @@ Highlights errors and potential bugs in your XState machine definitions.
 Navigate around machines easily with jump to definition on targets, actions, guards, services and more.
 
 <img src="https://raw.githubusercontent.com/mattpocock/vscode-xstate-demo/master/assets/jump-to-definition.png" alt="" />
+
+## Hints and Tips
+
+### Ignoring machines
+
+If you'd like to ignore linting/autocomplete on a machine, add a `// xstate-ignore-next-line` comment on the line above it:
+
+```ts
+// xstate-ignore-next-line
+createMachine({});
+```
