@@ -4,8 +4,8 @@
  * ------------------------------------------------------------------------------------------ */
 
 import * as fs from "fs";
-import { promisify } from "util";
 import * as path from "path";
+import { promisify } from "util";
 import * as vscode from "vscode";
 import {
   LanguageClient,
@@ -13,9 +13,10 @@ import {
   ServerOptions,
   TransportKind,
 } from "vscode-languageclient/node";
-import { createMachine, MachineConfig, assign, interpret } from "xstate";
+import { assign, createMachine, interpret, MachineConfig } from "xstate";
 import { Location, parseMachinesFromFile } from "xstate-parser-demo";
 import {
+  filterOutIgnoredMachines,
   getRangeFromSourceLocation,
   introspectMachine,
   XStateUpdateEvent,
@@ -146,7 +147,7 @@ export function activate(context: vscode.ExtensionContext) {
   // Create the language client and start the client.
   client = new LanguageClient(
     "xstateLanguageServer",
-    "XState (Demo)",
+    "XState",
     serverOptions,
     clientOptions,
   );
@@ -211,7 +212,9 @@ export function activate(context: vscode.ExtensionContext) {
 
         const currentText = vscode.window.activeTextEditor.document.getText();
 
-        const result = parseMachinesFromFile(currentText);
+        const result = filterOutIgnoredMachines(
+          parseMachinesFromFile(currentText),
+        );
 
         let foundIndex: number | null = null;
 
@@ -240,9 +243,11 @@ export function activate(context: vscode.ExtensionContext) {
 
         if (machine) {
           startService(
-            machine.toConfig()!,
+            machine.toConfig() as any,
             foundIndex!,
-            vscode.window.activeTextEditor.document.uri.path,
+            resolveUriToFilePrefix(
+              vscode.window.activeTextEditor.document.uri.path,
+            ),
             Object.keys(machine.getAllNamedConds()),
           );
         } else {
@@ -486,4 +491,11 @@ const isCursorInPosition = (
     cursorPosition.line <= nodeSourceLocation.end.line;
 
   return isWithinLines;
+};
+
+const resolveUriToFilePrefix = (uri: string) => {
+  if (!uri.startsWith("file://")) {
+    return `file://${uri}`;
+  }
+  return uri;
 };

@@ -26,13 +26,12 @@ import {
 import { parseMachinesFromFile } from "xstate-parser-demo";
 import { MachineParseResult } from "xstate-parser-demo/lib/MachineParseResult";
 import {
+  filterOutIgnoredMachines,
   getTransitionsFromNode,
   introspectMachine,
   IntrospectMachineResult,
   XStateUpdateEvent,
 } from "xstate-vscode-shared";
-import { getUnusedActionImplementations } from "./diagnostics/getUnusedActionImplementations";
-import { miscDiagnostics } from "./diagnostics/misc";
 import { getCursorHoverType } from "./getCursorHoverType";
 import { getDiagnostics } from "./getDiagnostics";
 import { getRangeFromSourceLocation } from "./getRangeFromSourceLocation";
@@ -251,8 +250,8 @@ async function validateDocument(textDocument: TextDocument): Promise<void> {
   const diagnostics: Diagnostic[] = [];
 
   try {
-    const machines: DocumentValidationsResult[] = parseMachinesFromFile(
-      text,
+    const machines: DocumentValidationsResult[] = filterOutIgnoredMachines(
+      parseMachinesFromFile(text),
     ).machines.map((parseResult) => {
       if (!parseResult) {
         return {};
@@ -260,8 +259,8 @@ async function validateDocument(textDocument: TextDocument): Promise<void> {
 
       const config = parseResult.toConfig();
       try {
-        const machine = createMachine(config!);
-        const introspectionResult = introspectMachine(machine);
+        const machine = createMachine(config as any);
+        const introspectionResult = introspectMachine(machine as any);
         return {
           parseResult,
           machine,
@@ -412,9 +411,9 @@ connection.onCompletion(
 
     if (cursor?.type === "TARGET") {
       const possibleTransitions = getTransitionsFromNode(
-        createMachine(cursor.machine.toConfig()!).getStateNodeByPath(
+        createMachine(cursor.machine.toConfig() as any).getStateNodeByPath(
           cursor.state.path,
-        ),
+        ) as any,
       );
 
       return possibleTransitions.map((transition) => {
@@ -427,7 +426,7 @@ connection.onCompletion(
     }
     if (cursor?.type === "INITIAL") {
       const state = createMachine(
-        cursor.machine.toConfig()!,
+        cursor.machine.toConfig() as any,
       ).getStateNodeByPath(cursor.state.path);
 
       return Object.keys(state.states).map((state) => {
