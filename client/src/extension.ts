@@ -4,6 +4,7 @@
  * ------------------------------------------------------------------------------------------ */
 
 import * as fs from "fs";
+import { promisify } from "util";
 import * as path from "path";
 import * as vscode from "vscode";
 import {
@@ -69,25 +70,28 @@ const throttledTypegenCreationMachine = createMachine<
   },
   {
     actions: {
-      executeAction: (context) => {
-        Object.entries(context.eventMap).forEach(([, event]) => {
-          const uri = event.uri;
+      executeAction: async (context) => {
+        await Promise.all([
+          Object.entries(context.eventMap).map(async ([, event]) => {
+            const uri = event.uri;
 
-          const newUri = vscode.Uri.file(
-            uri.replace(/\.([j,t])sx?$/, ".typegen.ts"),
-          );
-
-          if (
-            event.machines.filter((machine) => machine.hasTypesNode).length > 0
-          ) {
-            fs.writeFileSync(
-              path.resolve(newUri.path).slice(6),
-              getTypegenOutput(event),
+            const newUri = vscode.Uri.file(
+              uri.replace(/\.([j,t])sx?$/, ".typegen.ts"),
             );
-          } else {
-            fs.unlinkSync(path.resolve(newUri.path).slice(6));
-          }
-        });
+
+            if (
+              event.machines.filter((machine) => machine.hasTypesNode).length >
+              0
+            ) {
+              await promisify(fs.writeFile)(
+                path.resolve(newUri.path).slice(6),
+                getTypegenOutput(event),
+              );
+            } else {
+              await promisify(fs.unlink)(path.resolve(newUri.path).slice(6));
+            }
+          }),
+        ]);
       },
       clearActions: assign((context) => {
         return {
