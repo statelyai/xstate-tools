@@ -397,13 +397,6 @@ const getTypegenOutput = (event: XStateUpdateEvent) => {
 
           const tags = machine.tags.map((tag) => `'${tag}'`).join(" | ");
 
-          // const optionsRequired = Boolean(
-          //   requiredActions ||
-          //     requiredGuards ||
-          //     requiredDelays ||
-          //     requiredServices,
-          // );
-
           const matchesStates = introspectResult.stateMatches
             .map((elem) => `'${elem}'`)
             .join(" | ");
@@ -411,14 +404,7 @@ const getTypegenOutput = (event: XStateUpdateEvent) => {
           return `{
             '@@xstate/typegen': true;
             eventsCausingActions: {
-              ${introspectResult.actions.lines
-                .map((line) => {
-                  return `'${line.name}': ${
-                    line.events.map((event) => `'${event}'`).join(" | ") ||
-                    "string"
-                  };`;
-                })
-                .join("\n")}
+              ${displayEventsCausing(introspectResult.actions.lines)}
             };
             missingImplementations: {
               ${`actions: ${requiredActions || "never"};`}
@@ -427,34 +413,13 @@ const getTypegenOutput = (event: XStateUpdateEvent) => {
               ${`delays: ${requiredDelays || "never"};`}
             }
             eventsCausingServices: {
-              ${introspectResult.services.lines
-                .map((line) => {
-                  return `'${line.name}': ${
-                    line.events.map((event) => `'${event}'`).join(" | ") ||
-                    "string"
-                  };`;
-                })
-                .join("\n")}
+              ${displayEventsCausing(introspectResult.services.lines)}
             };
             eventsCausingGuards: {
-              ${introspectResult.guards.lines
-                .map((line) => {
-                  return `'${line.name}': ${
-                    line.events.map((event) => `'${event}'`).join(" | ") ||
-                    "string"
-                  };`;
-                })
-                .join("\n")}
+              ${displayEventsCausing(introspectResult.guards.lines)}
             };
             eventsCausingDelays: {
-              ${introspectResult.delays.lines
-                .map((line) => {
-                  return `'${line.name}': ${
-                    line.events.map((event) => `'${event}'`).join(" | ") ||
-                    "string"
-                  };`;
-                })
-                .join("\n")}
+              ${displayEventsCausing(introspectResult.delays.lines)}
             };
             matchesStates: ${matchesStates || "undefined"};
             tags: ${tags || "never"};
@@ -498,4 +463,29 @@ const resolveUriToFilePrefix = (uri: string) => {
     return `file://${uri}`;
   }
   return uri;
+};
+
+const displayEventsCausing = (lines: { name: string; events: string[] }[]) => {
+  return lines
+    .map((line) => {
+      return `'${line.name}': ${
+        unique(
+          line.events.map((event) => {
+            if (event === "" || event.startsWith("xstate.")) {
+              return `@@xstate/internal-event`;
+            }
+            return event;
+          }),
+        )
+          .map((event) => {
+            return `'${event}'`;
+          })
+          .join(" | ") || "string"
+      };`;
+    })
+    .join("\n");
+};
+
+const unique = <T>(array: T[]) => {
+  return Array.from(new Set(array));
 };

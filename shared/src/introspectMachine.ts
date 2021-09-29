@@ -14,14 +14,14 @@ export interface SubState {
 const makeSubStateFromNode = (
   node: XState.StateNode,
   rootNode: XState.StateNode,
-  nodeMaps: {
+  nodeMap: {
     [id: string]: {
       sources: Set<string>;
       children: Set<string>;
     };
   },
 ): SubState => {
-  const nodeFromMap = nodeMaps[node.id];
+  const nodeFromMap = nodeMap[node.id];
 
   const stateNode = rootNode.getStateNodeById(node.id);
 
@@ -33,7 +33,7 @@ const makeSubStateFromNode = (
       const childNode = rootNode.getStateNodeById(child);
       return {
         ...obj,
-        [childNode.key]: makeSubStateFromNode(childNode, rootNode, nodeMaps),
+        [childNode.key]: makeSubStateFromNode(childNode, rootNode, nodeMap),
       };
     }, {}),
   };
@@ -99,7 +99,7 @@ class ItemMap {
         return {
           name,
           required: !optional,
-          events: Array.from(data.events).filter(Boolean),
+          events: Array.from(data.events),
           states: Array.from(data.states)
             .map((state) => JSON.stringify(state))
             .filter(Boolean),
@@ -133,7 +133,7 @@ export const introspectMachine = (machine: XState.StateNode) => {
     checkIfOptional: (name) => Boolean(machine.options.delays[name]),
   });
 
-  const nodeMaps: {
+  const nodeMap: {
     [id: string]: {
       sources: Set<string>;
       children: Set<string>;
@@ -145,21 +145,48 @@ export const introspectMachine = (machine: XState.StateNode) => {
   );
 
   allStateNodes?.forEach((node) => {
-    nodeMaps[node.id] = {
+    nodeMap[node.id] = {
       sources: new Set(),
       children: new Set(),
     };
   });
 
   allStateNodes?.forEach((node) => {
+    // If this node is an initial state of a parent
+    if (
+      node.parent?.initialStateNodes.find(
+        (initialNode) => initialNode.id === node.id,
+      ) ||
+      // Or it's the root state
+      !node.parent
+    ) {
+      // Add xstate.init to all invoked services
+      node.invoke.forEach((service) => {
+        if (typeof service.src === "string") {
+          services.addEventToItem(service.src, "xstate.init", node.path);
+        }
+      });
+
+      node.onEntry.forEach((action) => {
+        if (action.type) {
+          actions.addEventToItem(action.type, "xstate.init", node.path);
+        }
+      });
+
+      node.after.forEach(({ delay }) => {
+        if (typeof delay === "string") {
+          delays.addEventToItem(delay, "xstate.init", node.path);
+        }
+      });
+    }
+
     Object.values(node.states)?.forEach((childNode) => {
-      nodeMaps[node.id].children.add(childNode.id);
+      nodeMap[node.id].children.add(childNode.id);
     });
 
     // TODO - make activities pick up the events
     // that led to them
     node.activities?.forEach((activity) => {
-      if (/\./.test(activity.type)) return;
       if (activity.type && activity.type !== "xstate.invoke") {
         activities.addItem(activity.type, node.path);
       }
@@ -172,14 +199,14 @@ export const introspectMachine = (machine: XState.StateNode) => {
     });
 
     node.invoke?.forEach((service) => {
-      if (typeof service.src !== "string" || /\./.test(service.src)) return;
+      if (typeof service.src !== "string") return;
       services.addItem(service.src, node.path);
     });
 
     node.transitions?.forEach((transition) => {
       (transition.target as unknown as XState.StateNode[])?.forEach(
         (targetNode) => {
-          nodeMaps[targetNode.id].sources.add(transition.eventType);
+          nodeMap[targetNode.id].sources.add(transition.eventType);
         },
       );
       if (transition.cond && transition.cond.name) {
@@ -196,8 +223,7 @@ export const introspectMachine = (machine: XState.StateNode) => {
         (targetNode) => {
           /** Pick up invokes */
           targetNode.invoke?.forEach((service) => {
-            if (typeof service.src !== "string" || /\./.test(service.src))
-              return;
+            if (typeof service.src !== "string") return;
             services.addEventToItem(
               service.src,
               transition.eventType,
@@ -260,17 +286,17 @@ export const introspectMachine = (machine: XState.StateNode) => {
     });
 
     node.onEntry?.forEach((action) => {
-      const sources = nodeMaps[node.id].sources;
+      const sources = nodeMap[node.id].sources;
       sources?.forEach((source) => {
         actions.addEventToItem(action.type, source, node.path);
       });
     });
   });
 
-  const subState: SubState = makeSubStateFromNode(machine, machine, nodeMaps);
+  const subState: SubState = makeSubStateFromNode(machine, machine, nodeMap);
 
   return {
-    states: Object.entries(nodeMaps).map(([stateId, state]) => {
+    states: Object.entries(nodeMap).map(([stateId, state]) => {
       return {
         id: stateId,
         sources: state.sources,
