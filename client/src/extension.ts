@@ -401,10 +401,20 @@ const getTypegenOutput = (event: XStateUpdateEvent) => {
             .map((elem) => `'${elem}'`)
             .join(" | ");
 
+          const internalEvents = collectInternalEvents([
+            introspectResult.actions.lines,
+            introspectResult.services.lines,
+            introspectResult.guards.lines,
+            introspectResult.delays.lines,
+          ]);
+
           return `{
             '@@xstate/typegen': true;
             eventsCausingActions: {
               ${displayEventsCausing(introspectResult.actions.lines)}
+            };
+            internalEvents: {
+              ${internalEvents.join("\n")}
             };
             missingImplementations: {
               ${`actions: ${requiredActions || "never"};`}
@@ -458,6 +468,30 @@ const isCursorInPosition = (
   return isWithinLines;
 };
 
+const collectInternalEvents = (lineArrays: { events: string[] }[][]) => {
+  const internalEvents = new Set<string>();
+
+  lineArrays.forEach((lines) => {
+    lines.forEach((line) => {
+      line.events.forEach((event) => {
+        if (event.startsWith("done.invoke")) {
+          internalEvents.add(
+            `'${event}': { type: '${event}'; data: unknown; __tip: "Provide an event of type { type: '${event}'; data: any } to strongly type this" };`,
+          );
+        } else if (event.startsWith("xstate.") || event === "") {
+          internalEvents.add(`'${event}': { type: '${event}' };`);
+        } else if (event.startsWith("error.platform")) {
+          internalEvents.add(
+            `'${event}': { type: '${event}'; data: unknown; };`,
+          );
+        }
+      });
+    });
+  });
+
+  return Array.from(internalEvents);
+};
+
 const resolveUriToFilePrefix = (uri: string) => {
   if (!uri.startsWith("file://")) {
     return `file://${uri}`;
@@ -471,9 +505,6 @@ const displayEventsCausing = (lines: { name: string; events: string[] }[]) => {
       return `'${line.name}': ${
         unique(
           line.events.map((event) => {
-            if (event === "" || event.startsWith("xstate.")) {
-              return `@@xstate/internal-event`;
-            }
             return event;
           }),
         )
