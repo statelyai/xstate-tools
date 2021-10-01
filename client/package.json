@@ -17,10 +17,12 @@
     "xstate-vscode-shared": "*",
     "@xstate/inspect": "^0.4.1",
     "xstate": "^4.23.1",
-    "xstate-parser-demo": "0.2.0"
+    "xstate-parser-demo": "0.2.0",
+    "prettier": "^2.4.1"
   },
   "devDependencies": {
     "@types/vscode": "^1.52.0",
-    "vscode-test": "^1.3.0"
+    "vscode-test": "^1.3.0",
+    "@types/prettier": "^2.4.1"
   }
 }

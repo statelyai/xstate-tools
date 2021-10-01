@@ -4,6 +4,7 @@
  * ------------------------------------------------------------------------------------------ */
 
 import * as fs from "fs";
+import * as prettier from "prettier";
 import * as path from "path";
 import { promisify } from "util";
 import * as vscode from "vscode";
@@ -13,7 +14,13 @@ import {
   ServerOptions,
   TransportKind,
 } from "vscode-languageclient/node";
-import { assign, createMachine, interpret, MachineConfig } from "xstate";
+import {
+  assign,
+  createMachine,
+  interpret,
+  MachineConfig,
+  StateNodeConfig,
+} from "xstate";
 import { Location, parseMachinesFromFile } from "xstate-parser-demo";
 import {
   filterOutIgnoredMachines,
@@ -80,13 +87,20 @@ const throttledTypegenCreationMachine = createMachine<
               uri.replace(/\.([j,t])sx?$/, ".typegen.ts"),
             );
 
+            const pathToSave = path.resolve(newUri.path).slice(6);
+
+            const prettierConfig = await prettier.resolveConfig(pathToSave);
+
             if (
               event.machines.filter((machine) => machine.hasTypesNode).length >
               0
             ) {
               await promisify(fs.writeFile)(
-                path.resolve(newUri.path).slice(6),
-                getTypegenOutput(event),
+                pathToSave,
+                prettier.format(getTypegenOutput(event), {
+                  ...prettierConfig,
+                  parser: "typescript",
+                }),
               );
             } else {
               await promisify(fs.unlink)(path.resolve(newUri.path).slice(6));
@@ -283,8 +297,6 @@ export function activate(context: vscode.ExtensionContext) {
                     machine.ast.definition.types.node.loc,
                   );
 
-                  console.log(machine);
-
                   fileEdits.push(
                     new vscode.TextEdit(
                       new vscode.Range(
@@ -354,6 +366,8 @@ export function deactivate(): Thenable<void> | undefined {
 
 const getTypegenOutput = (event: XStateUpdateEvent) => {
   return `
+  // This file was automatically generated. Edits will be overwritten
+
   export type Typegen = [
     ${event.machines
       .filter((machine) => machine.hasTypesNode)
@@ -367,6 +381,9 @@ const getTypegenOutput = (event: XStateUpdateEvent) => {
 
           machine.config.context = {};
 
+          modifyInvokesRecursively(machine.config);
+
+          // xstate-ignore-next-line
           const createdMachine = createMachine(machine.config || {}, {
             guards,
           });
@@ -414,8 +431,15 @@ const getTypegenOutput = (event: XStateUpdateEvent) => {
               ${displayEventsCausing(introspectResult.actions.lines)}
             };
             internalEvents: {
-              ${internalEvents.join("\n")}
+              ${internalEvents.internalEvents.join("\n")}
             };
+            invokeSrcNameMap: {
+              ${introspectResult.services.lines
+                .map((line) => {
+                  return `'${line.name}': 'done.invoke.${line.name}'`;
+                })
+                .join("\n")}
+            }
             missingImplementations: {
               ${`actions: ${requiredActions || "never"};`}
               ${`services: ${requiredServices || "never"};`}
@@ -434,8 +458,13 @@ const getTypegenOutput = (event: XStateUpdateEvent) => {
             matchesStates: ${matchesStates || "undefined"};
             tags: ${tags || "never"};
           }`;
-        } catch (e) {}
-        return `{}`;
+        } catch (e) {
+          console.log(e);
+        }
+        return `{
+          // An error occured, so we couldn't generate the TS
+          '@@xstate/typegen': false;
+        }`;
       })
       .join(",\n")}
   ];
@@ -468,13 +497,21 @@ const isCursorInPosition = (
   return isWithinLines;
 };
 
+const inlineInvocationName = /done\.invoke\..{0,}:invocation\[.{0,}\]/;
+
 const collectInternalEvents = (lineArrays: { events: string[] }[][]) => {
   const internalEvents = new Set<string>();
 
   lineArrays.forEach((lines) => {
     lines.forEach((line) => {
       line.events.forEach((event) => {
-        if (event.startsWith("done.invoke")) {
+        if (inlineInvocationName.test(event)) {
+          internalEvents.add(
+            `'${event}': {
+              // Tip appears here?
+              type: '${event}'; data: unknown; __tip: "Give this service a name and move it into the machine options to strongly type it" };`,
+          );
+        } else if (event.startsWith("done.invoke")) {
           internalEvents.add(
             `'${event}': { type: '${event}'; data: unknown; __tip: "Provide an event of type { type: '${event}'; data: any } to strongly type this" };`,
           );
@@ -489,7 +526,9 @@ const collectInternalEvents = (lineArrays: { events: string[] }[][]) => {
     });
   });
 
-  return Array.from(internalEvents);
+  return {
+    internalEvents: Array.from(internalEvents),
+  };
 };
 
 const resolveUriToFilePrefix = (uri: string) => {
@@ -519,4 +558,22 @@ const displayEventsCausing = (lines: { name: string; events: string[] }[]) => {
 
 const unique = <T>(array: T[]) => {
   return Array.from(new Set(array));
+};
+
+const modifyInvokesRecursively = (state: StateNodeConfig<any, any, any>) => {
+  if (Array.isArray(state.invoke)) {
+    state.invoke.forEach((invoke) => {
+      if ("src" in invoke && invoke.src === "anonymous") {
+        invoke.src = () => () => {};
+      }
+    });
+  } else if (
+    state.invoke &&
+    "src" in state.invoke &&
+    state.invoke.src === "anonymous"
+  ) {
+    state.invoke.src = () => () => {};
+  }
+
+  Object.values(state.states || {}).forEach(modifyInvokesRecursively);
 };
