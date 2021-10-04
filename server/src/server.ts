@@ -283,7 +283,7 @@ async function validateDocument(textDocument: TextDocument): Promise<void> {
         return {
           config,
           index,
-          typeNodeLoc: machine.parseResult?.ast?.definition?.types?.node.loc,
+          typeNodeLoc: machine.parseResult?.ast?.definition?.tsTypes?.node.loc,
           definitionLoc: machine.parseResult?.ast?.definition?.node.loc,
           guardsToMock: Object.keys(
             machine.parseResult?.getAllNamedConds() || {},
@@ -313,7 +313,9 @@ async function validateDocument(textDocument: TextDocument): Promise<void> {
                 ) || [],
             ),
           ),
-          hasTypesNode: Boolean(machine.parseResult?.ast?.definition?.types),
+          hasTypesNode: Boolean(
+            machine.parseResult?.ast?.definition?.tsTypes?.value,
+          ),
         };
       }),
     };

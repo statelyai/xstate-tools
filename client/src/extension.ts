@@ -30,6 +30,8 @@ import {
 } from "xstate-vscode-shared";
 import { getWebviewContent } from "./getWebviewContent";
 import { WebviewMachineEvent } from "./webviewScript";
+import { MachineParseResult } from "xstate-parser-demo/lib/MachineParseResult";
+import { choose } from "xstate/lib/actions";
 
 let client: LanguageClient;
 
@@ -118,6 +120,323 @@ const throttledTypegenCreationMachine = createMachine<
 );
 
 const typegenService = interpret(throttledTypegenCreationMachine).start();
+
+const typeArgumentLogicMachine = (
+  machine: MachineParseResult,
+  pushTextEdit: (fileEdit: vscode.TextEdit) => void,
+  getRawText: (start: number, end: number) => string,
+  relativePath: string,
+  machineIndex: number,
+) => {
+  const typeArguments = machine?.ast?.typeArguments?.node;
+  const typeArgumentsRaw: string[] =
+    typeArguments?.params?.slice(0, -1)?.map((param) => {
+      return getRawText(param.start, param.end);
+    }) || [];
+
+  const calleeRaw = getRawText(
+    machine.ast?.callee?.start,
+    machine.ast?.callee?.end,
+  );
+  return createMachine(
+    {
+      initial: "init",
+      states: {
+        init: {
+          always: [
+            {
+              cond: "wantsTypegen",
+              target: "wantsTypegen",
+            },
+            {
+              target: "doesNotWantTypegen",
+            },
+          ],
+        },
+        wantsTypegen: {
+          initial: "init",
+          states: {
+            init: {
+              always: [
+                {
+                  cond: "isMemberExpression",
+                  target: "isMemberExpression",
+                },
+                {
+                  target: "isNotMemberExpression",
+                },
+              ],
+            },
+            isMemberExpression: {
+              initial: "init",
+              states: {
+                init: {
+                  always: [
+                    {
+                      cond: "hasAtLeastOneType",
+                      target: "hasTypes",
+                    },
+                    {
+                      target: "hasNoTypes",
+                    },
+                  ],
+                },
+                hasTypes: {
+                  entry: ["updateSingleTypeArgument"],
+                  type: "final",
+                },
+                hasNoTypes: {
+                  entry: ["addSingleTypeArgument"],
+                  type: "final",
+                },
+              },
+            },
+            isNotMemberExpression: {
+              initial: "init",
+              states: {
+                init: {
+                  always: [
+                    {
+                      cond: "hasFourTypes",
+                      target: "hasFourTypes",
+                    },
+                    {
+                      cond: "hasAtLeastOneType",
+                      target: "hasLessThanFourTypes",
+                    },
+                    {
+                      target: "hasNoTypes",
+                    },
+                  ],
+                },
+                hasNoTypes: {
+                  entry: ["appendFourTypes"],
+                  type: "final",
+                },
+                hasLessThanFourTypes: {
+                  entry: ["overwriteTypesWithFourTypes"],
+                  type: "final",
+                },
+                hasFourTypes: {
+                  entry: ["overwriteFinalType"],
+                  type: "final",
+                },
+              },
+            },
+          },
+        },
+        doesNotWantTypegen: {
+          initial: "init",
+          states: {
+            init: {
+              always: [
+                {
+                  cond: "isMemberExpression",
+                  target: "isMemberExpression",
+                },
+                {
+                  target: "isNotMemberExpression",
+                },
+              ],
+            },
+            isMemberExpression: {
+              initial: "init",
+              states: {
+                init: {
+                  always: [
+                    {
+                      cond: "hasAtLeastOneType",
+                      target: "hasTypes",
+                    },
+                    {
+                      target: "hasNoTypes",
+                    },
+                  ],
+                },
+                hasTypes: {
+                  entry: "removeTypesArgument",
+                  type: "final",
+                },
+                hasNoTypes: {
+                  type: "final",
+                },
+              },
+            },
+            isNotMemberExpression: {
+              initial: "init",
+              states: {
+                init: {
+                  always: [
+                    {
+                      cond: "hasFourTypes",
+                      target: "hasTypes",
+                    },
+                    {
+                      target: "hasNoTypes",
+                    },
+                  ],
+                },
+                hasNoTypes: {
+                  type: "final",
+                },
+                hasTypes: {
+                  entry: [
+                    choose([
+                      {
+                        cond: "areFirstThreeGenericsDefaults",
+                        actions: ["removeTypesArgument"],
+                      },
+                      {
+                        actions: "removeFinalTypeArgument",
+                      },
+                    ]),
+                  ],
+                  type: "final",
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    {
+      guards: {
+        wantsTypegen: () => Boolean(machine.ast?.definition?.tsTypes?.value),
+        isMemberExpression: () => Boolean(machine?.ast?.isMemberExpression),
+        hasAtLeastOneType: () => (typeArguments?.params.length || 0) > 0,
+        hasFourTypes: () => typeArguments?.params.length === 4,
+        areFirstThreeGenericsDefaults: () => {
+          return (
+            typeArgumentsRaw[0].trim() === "unknown" &&
+            typeArgumentsRaw[1].trim() === "{ type: string }" &&
+            typeArgumentsRaw[2].trim() === "any"
+          );
+        },
+      },
+      actions: {
+        overwriteFinalType: () => {
+          const position = getRangeFromSourceLocation(
+            typeArguments.params[3].loc,
+          );
+
+          pushTextEdit(
+            new vscode.TextEdit(
+              new vscode.Range(
+                new vscode.Position(
+                  position.start.line,
+                  position.start.character,
+                ),
+                new vscode.Position(position.end.line, position.end.character),
+              ),
+              `import('./${relativePath}.typegen').Typegen[${machineIndex}]`,
+            ),
+          );
+        },
+        removeFinalTypeArgument: () => {
+          const position = getRangeFromSourceLocation(typeArguments.loc);
+
+          pushTextEdit(
+            new vscode.TextEdit(
+              new vscode.Range(
+                new vscode.Position(
+                  position.start.line,
+                  position.start.character,
+                ),
+                new vscode.Position(position.end.line, position.end.character),
+              ),
+              `<${typeArgumentsRaw.join(", ")}>`,
+            ),
+          );
+        },
+        updateSingleTypeArgument: () => {
+          const position = getRangeFromSourceLocation(typeArguments.loc);
+
+          pushTextEdit(
+            new vscode.TextEdit(
+              new vscode.Range(
+                new vscode.Position(
+                  position.start.line,
+                  position.start.character,
+                ),
+                new vscode.Position(position.end.line, position.end.character),
+              ),
+              `<import('./${relativePath}.typegen').Typegen[${machineIndex}]>`,
+            ),
+          );
+        },
+        appendFourTypes: () => {
+          const position = getRangeFromSourceLocation(machine.ast.callee.loc);
+
+          pushTextEdit(
+            new vscode.TextEdit(
+              new vscode.Range(
+                new vscode.Position(
+                  position.start.line,
+                  position.start.character,
+                ),
+                new vscode.Position(position.end.line, position.end.character),
+              ),
+              `${calleeRaw}<unknown, { type: string }, any, import('./${relativePath}.typegen').Typegen[${machineIndex}]>`,
+            ),
+          );
+        },
+        overwriteTypesWithFourTypes: () => {
+          const position = getRangeFromSourceLocation(typeArguments.loc);
+
+          const withDefaults = addDefaultsToTypeArguments(typeArgumentsRaw);
+
+          pushTextEdit(
+            new vscode.TextEdit(
+              new vscode.Range(
+                new vscode.Position(
+                  position.start.line,
+                  position.start.character,
+                ),
+                new vscode.Position(position.end.line, position.end.character),
+              ),
+              `<${withDefaults
+                .slice(0, 3)
+                .join(
+                  ", ",
+                )}, import('./${relativePath}.typegen').Typegen[${machineIndex}]>`,
+            ),
+          );
+        },
+        removeTypesArgument: () => {
+          const position = getRangeFromSourceLocation(typeArguments.loc);
+          pushTextEdit(
+            new vscode.TextEdit(
+              new vscode.Range(
+                new vscode.Position(
+                  position.start.line,
+                  position.start.character,
+                ),
+                new vscode.Position(position.end.line, position.end.character),
+              ),
+              ``,
+            ),
+          );
+        },
+        addSingleTypeArgument: () => {
+          const position = getRangeFromSourceLocation(machine.ast.callee.loc);
+
+          pushTextEdit(
+            new vscode.TextEdit(
+              new vscode.Range(
+                new vscode.Position(
+                  position.start.line,
+                  position.start.character,
+                ),
+                new vscode.Position(position.end.line, position.end.character),
+              ),
+              `${calleeRaw}<import('./${relativePath}.typegen').Typegen[${machineIndex}]>`,
+            ),
+          );
+        },
+      },
+    },
+  );
+};
 
 export function activate(context: vscode.ExtensionContext) {
   // The server is implemented in node
@@ -280,7 +599,8 @@ export function activate(context: vscode.ExtensionContext) {
   client.onReady().then(() => {
     context.subscriptions.push(
       vscode.workspace.onWillSaveTextDocument(async (event) => {
-        const result = parseMachinesFromFile(event.document.getText());
+        const text = event.document.getText();
+        const result = parseMachinesFromFile(text);
 
         if (result.machines.length > 0) {
           event.waitUntil(
@@ -290,29 +610,25 @@ export function activate(context: vscode.ExtensionContext) {
               const relativePath = removeExtension(
                 path.basename(event.document.uri.path),
               );
-              result.machines
-                .filter((machine) => Boolean(machine.ast.definition.types.node))
-                .forEach((machine, index) => {
-                  const position = getRangeFromSourceLocation(
-                    machine.ast.definition.types.node.loc,
-                  );
 
-                  fileEdits.push(
-                    new vscode.TextEdit(
-                      new vscode.Range(
-                        new vscode.Position(
-                          position.start.line,
-                          position.start.character,
-                        ),
-                        new vscode.Position(
-                          position.end.line,
-                          position.end.character,
-                        ),
-                      ),
-                      `{} as import('./${relativePath}.typegen').Typegen[${index}]`,
-                    ),
-                  );
-                });
+              let machineIndex = 0;
+
+              result.machines.forEach((machine, index) => {
+                const service = interpret(
+                  typeArgumentLogicMachine(
+                    machine,
+                    (textEdit) => fileEdits.push(textEdit),
+                    (start, end) => text.slice(start, end),
+                    relativePath,
+                    machineIndex,
+                  ),
+                ).start();
+                service.stop();
+
+                if (machine.ast?.definition?.tsTypes?.value) {
+                  machineIndex++;
+                }
+              });
 
               resolve(fileEdits);
             }),
@@ -576,4 +892,22 @@ const modifyInvokesRecursively = (state: StateNodeConfig<any, any, any>) => {
   }
 
   Object.values(state.states || {}).forEach(modifyInvokesRecursively);
+};
+
+const addDefaultsToTypeArguments = (typeArguments: string[]) => {
+  const newTypeArguments = [...typeArguments];
+
+  if (newTypeArguments.length === 0) {
+    newTypeArguments.push("unknown");
+  }
+
+  if (newTypeArguments.length === 1) {
+    newTypeArguments.push(`{ type: string }`);
+  }
+
+  if (newTypeArguments.length === 2) {
+    newTypeArguments.push(`any`);
+  }
+
+  return newTypeArguments;
 };
