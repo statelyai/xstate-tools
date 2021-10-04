@@ -4,7 +4,7 @@
   "main": "dist/xstate-vscode-shared.cjs.js",
   "license": "MIT",
   "dependencies": {
-    "xstate-parser-demo": "0.2.3"
+    "xstate-parser-demo": "0.2.4"
   },
   "peerDependencies": {
     "xstate": "^4"

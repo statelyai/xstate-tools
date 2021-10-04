@@ -16,7 +16,7 @@
     "vscode-languageserver-textdocument": "^1.0.1",
     "xstate": "^4.22.0",
     "xstate-vscode-shared": "*",
-    "xstate-parser-demo": "0.2.3"
+    "xstate-parser-demo": "0.2.4"
   },
   "devDependencies": {},
   "scripts": {}
