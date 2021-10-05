@@ -2804,15 +2804,20 @@ wrappy@1:
   resolved "https://registry.yarnpkg.com/wrappy/-/wrappy-1.0.2.tgz#b5243d8f3ec1aa35f1364605bc0d1036e30ab69f"
   integrity sha1-tSQ9jz7BqjXxNkYFvA0QNuMKtp8=
 
-xstate-parser-demo@0.2.1:
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/xstate-parser-demo/-/xstate-parser-demo-0.2.1.tgz#3084ae178cf43cfa50f6476c5e2fbf578cf690bf"
-  integrity sha512-hSvgtOa7SC4IpMAcwCZ7H+1z6EkufC7xVJOtR3YUYwsz5AmMFxqX6e/1Cf5MIvsHN3bD68Ue2FRHaa250bwY0A==
+xstate-parser-demo@0.2.4:
+  version "0.2.4"
+  resolved "https://registry.yarnpkg.com/xstate-parser-demo/-/xstate-parser-demo-0.2.4.tgz#d10064117fa23986736c5e675f7e05512b657bd1"
+  integrity sha512-7mcyAzNGq8S25ATAubesoHP1zYob+DNL3hxHHRQbitnUqbVDUcRxlN8fbt2vrDOT9LudkBpd+azMpMyhq7mEow==
   dependencies:
     "@babel/core" "^7.12.10"
     "@babel/parser" "^7.12.11"
     "@babel/traverse" "^7.12.12"
     "@babel/types" "^7.12.12"
+
+xstate@^4.22.0:
+  version "4.25.0"
+  resolved "https://registry.yarnpkg.com/xstate/-/xstate-4.25.0.tgz#d902ef33137532043f7a88597af8e5e1c7ad6bdf"
+  integrity sha512-qP7lc/ypOuuWME4ArOBnzaCa90TfHkjiqYDmxpiCjPy6FcXstInA2vH6qRVAHbPXRK4KQIYfIEOk1X38P+TldQ==
 
 xstate@^4.23.1:
   version "4.23.1"

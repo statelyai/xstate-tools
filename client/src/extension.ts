@@ -4,34 +4,34 @@
  * ------------------------------------------------------------------------------------------ */
 
 import * as fs from "fs";
-import * as prettier from "prettier";
 import * as path from "path";
+import * as prettier from "prettier";
 import { promisify } from "util";
 import * as vscode from "vscode";
 import {
   LanguageClient,
   LanguageClientOptions,
   ServerOptions,
-  TransportKind,
+  TransportKind
 } from "vscode-languageclient/node";
 import {
   assign,
   createMachine,
   interpret,
   MachineConfig,
-  StateNodeConfig,
+  StateNodeConfig
 } from "xstate";
 import { Location, parseMachinesFromFile } from "xstate-parser-demo";
+import { MachineParseResult } from "xstate-parser-demo/lib/MachineParseResult";
 import {
   filterOutIgnoredMachines,
   getRangeFromSourceLocation,
   introspectMachine,
-  XStateUpdateEvent,
+  XStateUpdateEvent
 } from "xstate-vscode-shared";
+import { choose } from "xstate/lib/actions";
 import { getWebviewContent } from "./getWebviewContent";
 import { WebviewMachineEvent } from "./webviewScript";
-import { MachineParseResult } from "xstate-parser-demo/lib/MachineParseResult";
-import { choose } from "xstate/lib/actions";
 
 let client: LanguageClient;
 
