@@ -12,14 +12,14 @@ import {
   LanguageClient,
   LanguageClientOptions,
   ServerOptions,
-  TransportKind
+  TransportKind,
 } from "vscode-languageclient/node";
 import {
   assign,
   createMachine,
   interpret,
   MachineConfig,
-  StateNodeConfig
+  StateNodeConfig,
 } from "xstate";
 import { Location, parseMachinesFromFile } from "xstate-parser-demo";
 import { MachineParseResult } from "xstate-parser-demo/lib/MachineParseResult";
@@ -27,7 +27,7 @@ import {
   filterOutIgnoredMachines,
   getRangeFromSourceLocation,
   introspectMachine,
-  XStateUpdateEvent
+  XStateUpdateEvent,
 } from "xstate-vscode-shared";
 import { choose } from "xstate/lib/actions";
 import { getWebviewContent } from "./getWebviewContent";
@@ -130,7 +130,7 @@ const typeArgumentLogicMachine = (
 ) => {
   const typeArguments = machine?.ast?.typeArguments?.node;
   const typeArgumentsRaw: string[] =
-    typeArguments?.params?.slice(0, -1)?.map((param) => {
+    typeArguments?.params?.map((param) => {
       return getRawText(param.start, param.end);
     }) || [];
 
@@ -328,7 +328,7 @@ const typeArgumentLogicMachine = (
                 ),
                 new vscode.Position(position.end.line, position.end.character),
               ),
-              `import('./${relativePath}.typegen').Typegen[${machineIndex}]`,
+              `import('./${relativePath}.typegen').Typegen${machineIndex}`,
             ),
           );
         },
@@ -344,7 +344,7 @@ const typeArgumentLogicMachine = (
                 ),
                 new vscode.Position(position.end.line, position.end.character),
               ),
-              `<${typeArgumentsRaw.join(", ")}>`,
+              `<${typeArgumentsRaw.slice(0, -1).join(", ")}>`,
             ),
           );
         },
@@ -360,7 +360,7 @@ const typeArgumentLogicMachine = (
                 ),
                 new vscode.Position(position.end.line, position.end.character),
               ),
-              `<import('./${relativePath}.typegen').Typegen[${machineIndex}]>`,
+              `<import('./${relativePath}.typegen').Typegen${machineIndex}>`,
             ),
           );
         },
@@ -376,7 +376,7 @@ const typeArgumentLogicMachine = (
                 ),
                 new vscode.Position(position.end.line, position.end.character),
               ),
-              `${calleeRaw}<unknown, { type: string }, any, import('./${relativePath}.typegen').Typegen[${machineIndex}]>`,
+              `${calleeRaw}<unknown, { type: string }, any, import('./${relativePath}.typegen').Typegen${machineIndex}>`,
             ),
           );
         },
@@ -398,7 +398,7 @@ const typeArgumentLogicMachine = (
                 .slice(0, 3)
                 .join(
                   ", ",
-                )}, import('./${relativePath}.typegen').Typegen[${machineIndex}]>`,
+                )}, import('./${relativePath}.typegen').Typegen${machineIndex}>`,
             ),
           );
         },
@@ -429,7 +429,7 @@ const typeArgumentLogicMachine = (
                 ),
                 new vscode.Position(position.end.line, position.end.character),
               ),
-              `${calleeRaw}<import('./${relativePath}.typegen').Typegen[${machineIndex}]>`,
+              `${calleeRaw}<import('./${relativePath}.typegen').Typegen${machineIndex}>`,
             ),
           );
         },
@@ -684,106 +684,113 @@ const getTypegenOutput = (event: XStateUpdateEvent) => {
   return `
   // This file was automatically generated. Edits will be overwritten
 
-  export type Typegen = [
-    ${event.machines
-      .filter((machine) => machine.hasTypesNode)
-      .map((machine) => {
-        try {
-          const guards: Record<string, () => boolean> = {};
+  ${event.machines
+    .filter((machine) => machine.hasTypesNode)
+    .map((machine, index) => {
+      try {
+        const guards: Record<string, () => boolean> = {};
 
-          machine.guardsToMock.forEach((guard) => {
-            guards[guard] = () => true;
-          });
+        machine.guardsToMock.forEach((guard) => {
+          guards[guard] = () => true;
+        });
 
-          machine.config.context = {};
+        machine.config.context = {};
 
-          modifyInvokesRecursively(machine.config);
+        modifyInvokesRecursively(machine.config);
 
-          // xstate-ignore-next-line
-          const createdMachine = createMachine(machine.config || {}, {
-            guards,
-          });
+        // xstate-ignore-next-line
+        const createdMachine = createMachine(machine.config || {}, {
+          guards,
+        });
 
-          const introspectResult = introspectMachine(createdMachine as any);
+        const introspectResult = introspectMachine(createdMachine as any);
 
-          const requiredActions = introspectResult.actions.lines
-            .filter((action) => !machine.actionsInOptions.includes(action.name))
-            .map((action) => `'${action.name}'`)
-            .join(" | ");
+        const requiredActions = introspectResult.actions.lines
+          .filter((action) => !machine.actionsInOptions.includes(action.name))
+          .map((action) => `'${action.name}'`)
+          .join(" | ");
 
-          const requiredServices = introspectResult.services.lines
-            .filter(
-              (service) => !machine.servicesInOptions.includes(service.name),
-            )
-            .map((service) => `'${service.name}'`)
-            .join(" | ");
+        const requiredServices = introspectResult.services.lines
+          .filter(
+            (service) => !machine.servicesInOptions.includes(service.name),
+          )
+          .map((service) => `'${service.name}'`)
+          .join(" | ");
 
-          const requiredGuards = introspectResult.guards.lines
-            .filter((guard) => !machine.guardsInOptions.includes(guard.name))
-            .map((guard) => `'${guard.name}'`)
-            .join(" | ");
+        const requiredGuards = introspectResult.guards.lines
+          .filter((guard) => !machine.guardsInOptions.includes(guard.name))
+          .map((guard) => `'${guard.name}'`)
+          .join(" | ");
 
-          const requiredDelays = introspectResult.delays.lines
-            .filter((delay) => !machine.delaysInOptions.includes(delay.name))
-            .map((delay) => `'${delay.name}'`)
-            .join(" | ");
+        const requiredDelays = introspectResult.delays.lines
+          .filter((delay) => !machine.delaysInOptions.includes(delay.name))
+          .map((delay) => `'${delay.name}'`)
+          .join(" | ");
 
-          const tags = machine.tags.map((tag) => `'${tag}'`).join(" | ");
+        const tags = machine.tags.map((tag) => `'${tag}'`).join(" | ");
 
-          const matchesStates = introspectResult.stateMatches
-            .map((elem) => `'${elem}'`)
-            .join(" | ");
+        const matchesStates = introspectResult.stateMatches
+          .map((elem) => `'${elem}'`)
+          .join(" | ");
 
-          const internalEvents = collectInternalEvents([
-            introspectResult.actions.lines,
-            introspectResult.services.lines,
-            introspectResult.guards.lines,
-            introspectResult.delays.lines,
-          ]);
+        const internalEvents = collectInternalEvents([
+          introspectResult.actions.lines,
+          introspectResult.services.lines,
+          introspectResult.guards.lines,
+          introspectResult.delays.lines,
+        ]);
 
-          return `{
-            '@@xstate/typegen': true;
-            eventsCausingActions: {
-              ${displayEventsCausing(introspectResult.actions.lines)}
-            };
-            internalEvents: {
-              ${internalEvents.internalEvents.join("\n")}
-            };
-            invokeSrcNameMap: {
-              ${introspectResult.services.lines
-                .map((line) => {
-                  return `'${line.name}': 'done.invoke.${line.name}'`;
-                })
-                .join("\n")}
-            }
-            missingImplementations: {
-              ${`actions: ${requiredActions || "never"};`}
-              ${`services: ${requiredServices || "never"};`}
-              ${`guards: ${requiredGuards || "never"};`}
-              ${`delays: ${requiredDelays || "never"};`}
-            }
-            eventsCausingServices: {
-              ${displayEventsCausing(introspectResult.services.lines)}
-            };
-            eventsCausingGuards: {
-              ${displayEventsCausing(introspectResult.guards.lines)}
-            };
-            eventsCausingDelays: {
-              ${displayEventsCausing(introspectResult.delays.lines)}
-            };
-            matchesStates: ${matchesStates || "undefined"};
-            tags: ${tags || "never"};
-          }`;
-        } catch (e) {
-          console.log(e);
-        }
-        return `{
-          // An error occured, so we couldn't generate the TS
-          '@@xstate/typegen': false;
+        machine.allServices.forEach((service) => {
+          internalEvents.add(
+            `'done.invoke.${service}': { type: 'done.invoke.${service}'; data: unknown; __tip: "Provide an event of type { type: '${event}'; data: any } to strongly type this" };`,
+          );
+          internalEvents.add(
+            `'error.platform.${service}': { type: 'error.platform.${service}'; data: unknown; };`,
+          );
+        });
+
+        return `export interface Typegen${index} {
+          '@@xstate/typegen': true;
+          eventsCausingActions: {
+            ${displayEventsCausing(introspectResult.actions.lines)}
+          };
+          internalEvents: {
+            ${Array.from(internalEvents).join("\n")}
+          };
+          invokeSrcNameMap: {
+            ${introspectResult.services.lines
+              .map((line) => {
+                return `'${line.name}': 'done.invoke.${line.name}'`;
+              })
+              .join("\n")}
+          }
+          missingImplementations: {
+            ${`actions: ${requiredActions || "never"};`}
+            ${`services: ${requiredServices || "never"};`}
+            ${`guards: ${requiredGuards || "never"};`}
+            ${`delays: ${requiredDelays || "never"};`}
+          }
+          eventsCausingServices: {
+            ${displayEventsCausing(introspectResult.services.lines)}
+          };
+          eventsCausingGuards: {
+            ${displayEventsCausing(introspectResult.guards.lines)}
+          };
+          eventsCausingDelays: {
+            ${displayEventsCausing(introspectResult.delays.lines)}
+          };
+          matchesStates: ${matchesStates || "undefined"};
+          tags: ${tags || "never"};
         }`;
-      })
-      .join(",\n")}
-  ];
+      } catch (e) {
+        console.log(e);
+      }
+      return `export interface Typegen${index} {
+        // An error occured, so we couldn't generate the TS
+        '@@xstate/typegen': false;
+      }`;
+    })
+    .join(",\n")}
   `;
 };
 
@@ -823,9 +830,7 @@ const collectInternalEvents = (lineArrays: { events: string[] }[][]) => {
       line.events.forEach((event) => {
         if (inlineInvocationName.test(event)) {
           internalEvents.add(
-            `'${event}': {
-              // Tip appears here?
-              type: '${event}'; data: unknown; __tip: "Give this service a name and move it into the machine options to strongly type it" };`,
+            `'${event}': { type: '${event}'; data: unknown; __tip: "Give this service a name and move it into the machine options to strongly type it" };`,
           );
         } else if (event.startsWith("done.invoke")) {
           internalEvents.add(
@@ -842,9 +847,7 @@ const collectInternalEvents = (lineArrays: { events: string[] }[][]) => {
     });
   });
 
-  return {
-    internalEvents: Array.from(internalEvents),
-  };
+  return internalEvents;
 };
 
 const resolveUriToFilePrefix = (uri: string) => {
@@ -898,14 +901,10 @@ const addDefaultsToTypeArguments = (typeArguments: string[]) => {
   const newTypeArguments = [...typeArguments];
 
   if (newTypeArguments.length === 0) {
-    newTypeArguments.push("unknown");
-  }
-
-  if (newTypeArguments.length === 1) {
-    newTypeArguments.push(`{ type: string }`);
-  }
-
-  if (newTypeArguments.length === 2) {
+    newTypeArguments.push("unknown", `{ type: string }`, `any`);
+  } else if (newTypeArguments.length === 1) {
+    newTypeArguments.push(`{ type: string }`, `any`);
+  } else if (newTypeArguments.length === 2) {
     newTypeArguments.push(`any`);
   }
 

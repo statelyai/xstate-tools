@@ -89,7 +89,7 @@ class ItemMap {
     let isRequiredInTotal = false;
     const lines = Object.entries(this.map)
       .filter(([name]) => {
-        return !/\./.test(name);
+        return !/\./.test(name) && name !== "anonymous";
       })
       .map(([name, data]) => {
         const optional = this.checkIfOptional(name);

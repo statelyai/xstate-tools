@@ -288,6 +288,9 @@ async function validateDocument(textDocument: TextDocument): Promise<void> {
           guardsToMock: Object.keys(
             machine.parseResult?.getAllNamedConds() || {},
           ),
+          allServices: Object.keys(
+            machine.parseResult?.getAllNamedServices() || {},
+          ),
           actionsInOptions:
             machine.parseResult?.ast?.options?.actions?.properties.map(
               (property) => property.key,
