@@ -2,7 +2,8 @@
  * Copyright (c) Microsoft Corporation. All rights reserved.
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
-import { TextDocument } from "vscode-languageserver-textdocument";
+import type { Node } from "@babel/types";
+import { TextDocument, TextEdit } from "vscode-languageserver-textdocument";
 import {
   CompletionItem,
   CompletionItemKind,
@@ -15,6 +16,8 @@ import {
   TextDocumentPositionParams,
   TextDocuments,
   TextDocumentSyncKind,
+  CodeActionKind,
+  WorkspaceEdit,
 } from "vscode-languageserver/node";
 import {
   assign,
@@ -70,6 +73,9 @@ connection.onInitialize((params: InitializeParams) => {
       // documentSymbolProvider: {
       //   label: "XState",
       // },
+      codeActionProvider: {
+        resolveProvider: true,
+      },
       declarationProvider: {
         documentSelector: [
           "typescript",
@@ -132,6 +138,7 @@ export type DocumentValidationsResult = {
   machine?: StateMachine<any, any, any>;
   parseResult?: MachineParseResult;
   introspectionResult?: IntrospectMachineResult;
+  documentText: string;
 };
 
 const documentValidationsCache: Map<string, DocumentValidationsResult[]> =
@@ -253,7 +260,9 @@ async function validateDocument(textDocument: TextDocument): Promise<void> {
       parseMachinesFromFile(text),
     ).machines.map((parseResult) => {
       if (!parseResult) {
-        return {};
+        return {
+          documentText: text,
+        };
       }
 
       const config = parseResult.toConfig();
@@ -264,10 +273,12 @@ async function validateDocument(textDocument: TextDocument): Promise<void> {
           parseResult,
           machine,
           introspectionResult,
+          documentText: text,
         };
       } catch (e) {
         return {
           parseResult,
+          documentText: text,
         };
       }
     });
@@ -411,6 +422,70 @@ connection.onCompletion(
   },
 );
 
+connection.onCodeAction((params) => {
+  const machinesParseResult = documentValidationsCache.get(
+    params.textDocument.uri,
+  );
+
+  if (!machinesParseResult) {
+    return [];
+  }
+  const result = getCursorHoverType(machinesParseResult, params.range.start);
+
+  if (result?.type === "ACTION") {
+    return [
+      {
+        title: `Add ${result.name} to options`,
+        edit: {
+          changes: {
+            [params.textDocument.uri]: getTextEditsForImplementation(
+              result.machine,
+              "actions",
+              result.name,
+              machinesParseResult[0].documentText,
+            ),
+          },
+        },
+      },
+    ];
+  }
+  if (result?.type === "SERVICE") {
+    return [
+      {
+        title: `Add ${result.name} to options`,
+        edit: {
+          changes: {
+            [params.textDocument.uri]: getTextEditsForImplementation(
+              result.machine,
+              "services",
+              result.name,
+              machinesParseResult[0].documentText,
+            ),
+          },
+        },
+      },
+    ];
+  }
+  if (result?.type === "COND") {
+    return [
+      {
+        title: `Add ${result.name} to options`,
+        edit: {
+          changes: {
+            [params.textDocument.uri]: getTextEditsForImplementation(
+              result.machine,
+              "guards",
+              result.name,
+              machinesParseResult[0].documentText,
+            ),
+          },
+        },
+      },
+    ];
+  }
+  return [];
+});
+
 // This handler resolves additional information for the item selected in
 // the completion list.
 connection.onCompletionResolve((item: CompletionItem): CompletionItem => {
@@ -423,3 +498,82 @@ documents.listen(connection);
 
 // Listen on the connection
 connection.listen();
+
+const getTextEditsForImplementation = (
+  machine: MachineParseResult,
+  type: "services" | "actions" | "guards",
+  name: string,
+  text: string,
+): TextEdit[] => {
+  const machineDefinitionLoc = machine.ast.definition?.node.loc;
+
+  if (!machineDefinitionLoc) return [];
+
+  const machineOptionsLoc = machine.ast.options?.node.loc;
+
+  // There is no options object, so add it after the definition
+  if (!machineOptionsLoc) {
+    const range = getRangeFromSourceLocation(machineDefinitionLoc);
+
+    return [
+      {
+        range: {
+          start: range.end,
+          end: range.end,
+        },
+        newText: `, { ${type}: { '${name}': () => {} } }`,
+      },
+    ];
+  }
+
+  // There is an options object, but it doesn't contain an actions object
+  if (!machine.ast.options?.[type]?.node.loc) {
+    const rawText = getRawTextFromLocation(text, machine.ast.options?.node!);
+    const range = getRangeFromSourceLocation(machine.ast.options?.node.loc!);
+
+    return [
+      {
+        range: range,
+        newText: `${rawText.slice(
+          0,
+          1,
+        )} ${type}: { '${name}': () => {} }, ${rawText.slice(1)}`,
+      },
+    ];
+  }
+
+  const existingImplementation = machine.ast.options?.[type]?.properties.find(
+    (property) => {
+      return property.key === name;
+    },
+  );
+
+  // If the action already exists in the object, don't do anything
+  if (existingImplementation) return [];
+
+  // There is an actions object which does not contain the action
+  if (machine.ast.options?.[type]?.node) {
+    const rawText = getRawTextFromLocation(
+      text,
+      machine.ast.options?.[type]?.node!,
+    );
+    const range = getRangeFromSourceLocation(
+      machine.ast.options?.[type]?.node.loc!,
+    );
+
+    return [
+      {
+        range: range,
+        newText: `${rawText.slice(0, 1)} '${name}': () => {}, ${rawText.slice(
+          1,
+        )}`,
+      },
+    ];
+  }
+
+  return [];
+};
+
+const getRawTextFromLocation = (text: string, node: Node): string => {
+  return text.slice(node.start!, node.end!);
+};
