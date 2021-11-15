@@ -125,12 +125,6 @@ interface ExampleSettings {
   maxNumberOfProblems: number;
 }
 
-// The global settings, used when the `workspace/configuration` request is not supported by the client.
-// Please note that this is not the case when using this server with the client provided in this example
-// but could happen with other clients.
-const defaultSettings: ExampleSettings = { maxNumberOfProblems: 1000 };
-let globalSettings: ExampleSettings = defaultSettings;
-
 // Cache the settings of all open documents
 const documentSettings: Map<string, Thenable<ExampleSettings>> = new Map();
 
@@ -143,20 +137,6 @@ export type DocumentValidationsResult = {
 
 const documentValidationsCache: Map<string, DocumentValidationsResult[]> =
   new Map();
-
-connection.onDidChangeConfiguration((change) => {
-  if (hasConfigurationCapability) {
-    // Reset all cached document settings
-    documentSettings.clear();
-  } else {
-    globalSettings = <ExampleSettings>(
-      (change.settings.languageServerExample || defaultSettings)
-    );
-  }
-
-  // Revalidate all open text documents
-  documents.all().forEach(validateDocument);
-});
 
 const getOrphanedStates = (
   documentValidationsResult: DocumentValidationsResult,
@@ -295,7 +275,7 @@ async function validateDocument(textDocument: TextDocument): Promise<void> {
           index,
           guardsToMock: Object.keys(
             machine.parseResult?.getAllNamedConds() || {},
-          ),
+          ).filter(Boolean),
         });
       }
     });
@@ -413,6 +393,57 @@ connection.onCompletion(
         return {
           label: state,
           insertText: state,
+          kind: CompletionItemKind.EnumMember,
+        };
+      });
+    }
+
+    if (cursor?.type === "ACTION") {
+      const actions = new Set<string>(
+        Object.keys(cursor.machine.getAllNamedActions()),
+      );
+
+      cursor.machine.ast.options?.actions?.properties.forEach((action) => {
+        actions.add(action.key);
+      });
+      return Array.from(actions).map((actionName) => {
+        return {
+          label: actionName,
+          insertText: actionName,
+          kind: CompletionItemKind.EnumMember,
+        };
+      });
+    }
+
+    if (cursor?.type === "COND") {
+      const conds = new Set<string>(
+        Object.keys(cursor.machine.getAllNamedConds()),
+      );
+
+      cursor.machine.ast.options?.guards?.properties.forEach((cond) => {
+        conds.add(cond.key);
+      });
+      return Array.from(conds).map((condName) => {
+        return {
+          label: condName,
+          insertText: condName,
+          kind: CompletionItemKind.EnumMember,
+        };
+      });
+    }
+
+    if (cursor?.type === "SERVICE") {
+      const services = new Set<string>(
+        Object.keys(cursor.machine.getAllNamedServices()),
+      );
+
+      cursor.machine.ast.options?.services?.properties.forEach((service) => {
+        services.add(service.key);
+      });
+      return Array.from(services).map((serviceName) => {
+        return {
+          label: serviceName,
+          insertText: serviceName,
           kind: CompletionItemKind.EnumMember,
         };
       });

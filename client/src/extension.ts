@@ -168,7 +168,7 @@ export function activate(context: vscode.ExtensionContext) {
             resolveUriToFilePrefix(
               vscode.window.activeTextEditor.document.uri.path,
             ),
-            Object.keys(machine.getAllNamedConds()),
+            Object.keys(machine.getAllNamedConds()).filter(Boolean),
           );
         } else {
           vscode.window.showErrorMessage(

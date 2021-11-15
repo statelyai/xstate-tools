@@ -17,7 +17,7 @@
     "xstate-vscode-shared": "*",
     "@xstate/inspect": "^0.4.1",
     "xstate": "^4.23.1",
-    "xstate-parser-demo": "0.2.4"
+    "xstate-parser-demo": "0.2.5"
   },
   "devDependencies": {
     "@types/vscode": "^1.52.0",

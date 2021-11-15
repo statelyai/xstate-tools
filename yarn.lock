@@ -2794,10 +2794,10 @@ wrappy@1:
   resolved "https://registry.yarnpkg.com/wrappy/-/wrappy-1.0.2.tgz#b5243d8f3ec1aa35f1364605bc0d1036e30ab69f"
   integrity sha1-tSQ9jz7BqjXxNkYFvA0QNuMKtp8=
 
-xstate-parser-demo@0.2.4:
-  version "0.2.4"
-  resolved "https://registry.yarnpkg.com/xstate-parser-demo/-/xstate-parser-demo-0.2.4.tgz#d10064117fa23986736c5e675f7e05512b657bd1"
-  integrity sha512-7mcyAzNGq8S25ATAubesoHP1zYob+DNL3hxHHRQbitnUqbVDUcRxlN8fbt2vrDOT9LudkBpd+azMpMyhq7mEow==
+xstate-parser-demo@0.2.5:
+  version "0.2.5"
+  resolved "https://registry.yarnpkg.com/xstate-parser-demo/-/xstate-parser-demo-0.2.5.tgz#0cf4aa7101f46305054d4fbc65e26a1c3ad3cb51"
+  integrity sha512-/yvIz654RUCZGRC2l8qZg8rF7jTT4tbg3MDKHFWBpWt5p8EooxsXKbuOpo2rhWiegzMG89KNHpTOSTxLwSg65Q==
   dependencies:
     "@babel/core" "^7.12.10"
     "@babel/parser" "^7.12.11"
