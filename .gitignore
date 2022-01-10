@@ -7,3 +7,4 @@ client/scripts
 *.vsix
 *.zip
 .DS_Store
+.turbo

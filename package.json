@@ -58,6 +58,9 @@
       }
     ]
   },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx,json}": "prettier --write"
+  },
   "scripts": {
     "vscode:prepublish": "yarn preconstruct build && npm run server:build && npm run client:build",
     "fe:build": "esbuild client/src/webviewScript.ts --bundle --outfile=client/scripts/webview.js",
@@ -66,12 +69,24 @@
     "client:build": "ncc build client/src/extension.ts -t -o client/dist",
     "watch": "concurrently \"npm:server:watch\" \"npm:client:watch\"",
     "test": "sh ./scripts/e2e.sh",
-    "postinstall": "preconstruct dev"
+    "prepare": "husky install",
+    "postinstall": "preconstruct dev && manypkg check"
   },
-  "devDependencies": {
+  "preconstruct": {
+    "packages": [
+      "shared"
+    ]
+  },
+  "turbo": {
+    "pipeline": {
+      "lint": {},
+      "test": {}
+    }
+  },
+  "dependencies": {
     "@babel/preset-typescript": "^7.15.0",
+    "@manypkg/cli": "^0.19.1",
     "@preconstruct/cli": "^2.1.0",
-    "@types/mocha": "^8.2.2",
     "@types/node": "^12.12.0",
     "@typescript-eslint/eslint-plugin": "^4.23.0",
     "@typescript-eslint/parser": "^4.23.0",
@@ -79,12 +94,10 @@
     "concurrently": "6.2.0",
     "esbuild": "^0.12.22",
     "eslint": "^7.26.0",
-    "mocha": "^8.3.2",
-    "typescript": "^4.3.2"
-  },
-  "preconstruct": {
-    "packages": [
-      "shared"
-    ]
+    "turbo": "^1.0.24",
+    "prettier": "^2.3.1",
+    "typescript": "^4.3.2",
+    "husky": ">=6",
+    "lint-staged": ">=10"
   }
 }

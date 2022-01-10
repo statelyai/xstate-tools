@@ -12,12 +12,15 @@
   "engines": {
     "vscode": "^1.52.0"
   },
+  "scripts": {
+    "lint": "tsc"
+  },
   "dependencies": {
-    "vscode-languageclient": "^7.0.0",
-    "xstate-vscode-shared": "*",
     "@xstate/inspect": "^0.4.1",
+    "vscode-languageclient": "^7.0.0",
     "xstate": "^4.23.1",
-    "xstate-parser-demo": "0.2.5"
+    "xstate-parser-demo": "0.2.5",
+    "xstate-vscode-shared": "*"
   },
   "devDependencies": {
     "@types/vscode": "^1.52.0",
