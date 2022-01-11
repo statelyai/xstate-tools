@@ -1,8 +1,9 @@
-import { Position } from "vscode-languageserver-textdocument";
 import * as t from "@babel/types";
-import { Location, StringLiteralNode } from "xstate-parser-demo";
+import { Position } from "vscode-languageserver-textdocument";
+import { StringLiteralNode } from "xstate-parser-demo";
 import { MachineParseResult } from "xstate-parser-demo/lib/MachineParseResult";
 import { StateNodeReturn } from "xstate-parser-demo/lib/stateNode";
+import { isCursorInPosition } from "xstate-vscode-shared";
 import { DocumentValidationsResult } from "./server";
 
 export const getCursorHoverType = (
@@ -272,21 +273,4 @@ const getServiceImplementationMatchingCursor = (
   return serviceImplementations?.find((implementation) => {
     return isCursorInPosition(implementation.keyNode.loc, position);
   });
-};
-
-const isCursorInPosition = (
-  nodeSourceLocation: Location,
-  cursorPosition: Position,
-) => {
-  if (!nodeSourceLocation) return;
-  const isOnSameLine =
-    nodeSourceLocation.start.line - 1 === cursorPosition.line;
-
-  if (!isOnSameLine) return false;
-
-  const isWithinChars =
-    cursorPosition.character >= nodeSourceLocation.start.column &&
-    cursorPosition.character <= nodeSourceLocation.end.column;
-
-  return isWithinChars;
 };
