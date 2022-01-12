@@ -66,7 +66,7 @@ export function activate(context: vscode.ExtensionContext) {
   client.start();
 
   initiateVisualizer(context, client);
-  initiateEditor(context, client);
+  initiateEditor(context);
 }
 
 export function deactivate(): Thenable<void> | undefined {

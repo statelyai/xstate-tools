@@ -22,6 +22,7 @@ import { parseMachinesFromFile } from "xstate-parser-demo";
 import { MachineParseResult } from "xstate-parser-demo/lib/MachineParseResult";
 import {
   filterOutIgnoredMachines,
+  getSetOfNames,
   getTransitionsFromNode,
   introspectMachine,
   IntrospectMachineResult,
@@ -168,7 +169,7 @@ connection.onCodeLens((params) => {
             machine.parseResult?.toConfig()!,
             index,
             params.textDocument.uri,
-            Object.keys(machine.parseResult?.getAllNamedConds() || {}),
+            Array.from(getSetOfNames(machine.parseResult?.getAllConds() || [])),
           ],
         },
       },
@@ -220,9 +221,9 @@ async function validateDocument(textDocument: TextDocument): Promise<void> {
           config,
           uri: textDocument.uri,
           index,
-          guardsToMock: Object.keys(
-            machine.parseResult?.getAllNamedConds() || {},
-          ).filter(Boolean),
+          guardsToMock: Array.from(
+            getSetOfNames(machine.parseResult?.getAllConds(["named"]) || []),
+          ),
         });
       }
     });
@@ -346,9 +347,7 @@ connection.onCompletion(
     }
 
     if (cursor?.type === "ACTION") {
-      const actions = new Set<string>(
-        Object.keys(cursor.machine.getAllNamedActions()),
-      );
+      const actions = getSetOfNames(cursor.machine.getAllActions(["named"]));
 
       cursor.machine.ast.options?.actions?.properties.forEach((action) => {
         actions.add(action.key);
@@ -363,9 +362,7 @@ connection.onCompletion(
     }
 
     if (cursor?.type === "COND") {
-      const conds = new Set<string>(
-        Object.keys(cursor.machine.getAllNamedConds()),
-      );
+      const conds = getSetOfNames(cursor.machine.getAllConds(["named"]));
 
       cursor.machine.ast.options?.guards?.properties.forEach((cond) => {
         conds.add(cond.key);
@@ -380,9 +377,7 @@ connection.onCompletion(
     }
 
     if (cursor?.type === "SERVICE") {
-      const services = new Set<string>(
-        Object.keys(cursor.machine.getAllNamedServices()),
-      );
+      const services = getSetOfNames(cursor.machine.getAllServices(["named"]));
 
       cursor.machine.ast.options?.services?.properties.forEach((service) => {
         services.add(service.key);

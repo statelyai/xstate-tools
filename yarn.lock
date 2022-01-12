@@ -5914,10 +5914,10 @@ xmlchars@^2.2.0:
   resolved "https://registry.yarnpkg.com/xmlchars/-/xmlchars-2.2.0.tgz#060fe1bcb7f9c76fe2a17db86a9bc3ab894210cb"
   integrity sha512-JZnDKK8B0RCDw84FNdDAIpZK+JuJw+s7Lz8nksI7SIuU3UXJJslUthsi+uWBUYOwPFwW7W7PRLRfUKpxjtjFCw==
 
-xstate-parser-demo@0.2.11:
-  version "0.2.11"
-  resolved "https://registry.yarnpkg.com/xstate-parser-demo/-/xstate-parser-demo-0.2.11.tgz#d955f8fc5d0a3cb50a2cb7220a99c22c5604617c"
-  integrity sha512-KbUN9oPUGm7y+shHBprgm5svw5KoUem5k4Gy2GgsB8lOGmoXh42nuWy+eubX/P/s4dOiWdVHvwJm6i1S91Zeqw==
+xstate-parser-demo@0.3.0:
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/xstate-parser-demo/-/xstate-parser-demo-0.3.0.tgz#3f9625c39a8b3c2f17d4c7f59b83e6ddd1aae689"
+  integrity sha512-16WMkAef9PohRXiuKIsF7o/eyXTRG53X54BTt6k5b7DSxem2ziOchL0d5t0koAHjMrBJ5LizBwJiJ9Bt35AkZA==
   dependencies:
     "@babel/core" "^7.12.10"
     "@babel/parser" "^7.12.11"

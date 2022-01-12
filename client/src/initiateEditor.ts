@@ -1,16 +1,16 @@
 import * as path from "path";
 import * as vscode from "vscode";
-import { LanguageClient } from "vscode-languageclient/node";
 import { MachineConfig } from "xstate";
-import { Location, parseMachinesFromFile } from "xstate-parser-demo";
+import { parseMachinesFromFile } from "xstate-parser-demo";
 import {
   filterOutIgnoredMachines,
+  getInlineImplementations,
   isCursorInPosition,
 } from "xstate-vscode-shared";
-import { getWebviewContent } from "./getWebviewContent";
 import { EditorWebviewScriptEvent } from "./editorWebviewScript";
-import { resolveUriToFilePrefix } from "./resolveUriToFilePrefix";
+import { getWebviewContent } from "./getWebviewContent";
 import { handleDefinitionUpdate } from "./handleDefinitionUpdate";
+import { resolveUriToFilePrefix } from "./resolveUriToFilePrefix";
 
 export const initiateEditor = (context: vscode.ExtensionContext) => {
   let currentPanel: vscode.WebviewPanel | undefined = undefined;
@@ -120,21 +120,31 @@ export const initiateEditor = (context: vscode.ExtensionContext) => {
           }
           return false;
         });
-
-        if (machine) {
-          startService(
-            machine.toConfig() as any,
-            foundIndex!,
-            resolveUriToFilePrefix(
-              vscode.window.activeTextEditor.document.uri.path,
-            ),
-            machine.getLayoutComment()?.value,
-          );
-        } else {
+        if (!machine) {
           vscode.window.showErrorMessage(
             "Could not find a machine at the current cursor.",
           );
+          return;
         }
+
+        const hasInlineImplementations =
+          getInlineImplementations(machine).length > 0;
+
+        if (hasInlineImplementations) {
+          vscode.window.showErrorMessage(
+            "Machines containing inline implementations cannot be edited visually.",
+          );
+          return;
+        }
+
+        startService(
+          machine.toConfig() as any,
+          foundIndex!,
+          resolveUriToFilePrefix(
+            vscode.window.activeTextEditor.document.uri.path,
+          ),
+          machine.getLayoutComment()?.value,
+        );
       } catch (e) {
         vscode.window.showErrorMessage(
           "Could not find a machine at the current cursor.",

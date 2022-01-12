@@ -1,5 +1,7 @@
 import { Diagnostic } from "vscode-languageserver";
 import { TextDocument } from "vscode-languageserver-textdocument";
+import { getInlineImplementationsWarnings } from "./diagnostics/getInlineImplementationsWarnings";
+import { getMetaWarnings } from "./diagnostics/getMetaWarnings";
 import { getUnusedActionImplementations } from "./diagnostics/getUnusedActionImplementations";
 import { getUnusedGuardsImplementations } from "./diagnostics/getUnusedGuardImplementations";
 import { getUnusedServicesImplementations } from "./diagnostics/getUnusedServicesImplementations";
@@ -16,6 +18,8 @@ const getters: DiagnosticGetter[] = [
   getUnusedActionImplementations,
   getUnusedServicesImplementations,
   getUnusedGuardsImplementations,
+  getInlineImplementationsWarnings,
+  getMetaWarnings,
 ];
 
 export const getDiagnostics = (

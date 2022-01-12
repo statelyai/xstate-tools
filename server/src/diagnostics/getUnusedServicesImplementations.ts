@@ -1,20 +1,22 @@
 import { DiagnosticSeverity } from "vscode-languageserver";
 import { DiagnosticGetter } from "../getDiagnostics";
-import { getRangeFromSourceLocation } from "xstate-vscode-shared";
+import {
+  getRangeFromSourceLocation,
+  getSetOfNames,
+} from "xstate-vscode-shared";
 
-// TODO - add checker for conds and services
 export const getUnusedServicesImplementations: DiagnosticGetter = (
   machine,
   textDocument,
 ) => {
-  const allServices = Object.keys(
-    machine.parseResult?.getAllNamedServices() || {},
+  const allServices = getSetOfNames(
+    machine.parseResult?.getAllServices(["named"]) || [],
   );
 
   const unusedServices =
     machine.parseResult?.ast?.options?.services?.properties.filter(
       (service) => {
-        return !allServices.includes(service.key);
+        return !allServices.has(service.key);
       },
     );
 

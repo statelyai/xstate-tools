@@ -5,6 +5,7 @@ import { MachineConfig } from "xstate";
 import { Location, parseMachinesFromFile } from "xstate-parser-demo";
 import {
   filterOutIgnoredMachines,
+  getSetOfNames,
   isCursorInPosition,
 } from "xstate-vscode-shared";
 import { getWebviewContent } from "./getWebviewContent";
@@ -114,7 +115,7 @@ export const initiateVisualizer = (
             resolveUriToFilePrefix(
               vscode.window.activeTextEditor.document.uri.path,
             ),
-            Object.keys(machine.getAllNamedConds()).filter(Boolean),
+            Array.from(getSetOfNames(machine.getAllConds(["named"]))),
           );
         } else {
           vscode.window.showErrorMessage(

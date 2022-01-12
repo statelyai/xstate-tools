@@ -90,8 +90,9 @@ export const getReferences = (params: {
         ];
       }
     } else if (cursorHover?.type === "ACTION_IMPLEMENTATION") {
-      const actions =
-        cursorHover.machine.getAllNamedActions()[cursorHover.name];
+      const actions = cursorHover.machine
+        .getAllConds(["named"])
+        .filter((elem) => elem.name === cursorHover.name);
 
       return actions.map((action) => {
         return {
@@ -113,7 +114,9 @@ export const getReferences = (params: {
         ];
       }
     } else if (cursorHover?.type === "COND_IMPLEMENTATION") {
-      const guards = cursorHover.machine.getAllNamedConds()[cursorHover.name];
+      const guards = cursorHover.machine
+        .getAllConds(["named"])
+        .filter((elem) => elem.name === cursorHover.name);
 
       return guards.map((guard) => {
         return {
@@ -136,8 +139,9 @@ export const getReferences = (params: {
         ];
       }
     } else if (cursorHover?.type === "SERVICE_IMPLEMENTATION") {
-      const services =
-        cursorHover.machine.getAllNamedServices()[cursorHover.name];
+      const services = cursorHover.machine
+        .getAllServices(["named"])
+        .filter((elem) => elem.name === cursorHover.name);
 
       return services.map((service) => {
         return {
