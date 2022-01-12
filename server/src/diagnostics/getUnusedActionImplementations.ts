@@ -1,6 +1,6 @@
 import { DiagnosticSeverity } from "vscode-languageserver";
 import { DiagnosticGetter } from "../getDiagnostics";
-import { getRangeFromSourceLocation } from "../getRangeFromSourceLocation";
+import { getRangeFromSourceLocation } from "xstate-vscode-shared";
 
 // TODO - add checker for conds and services
 export const getUnusedActionImplementations: DiagnosticGetter = (

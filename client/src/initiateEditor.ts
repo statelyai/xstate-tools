@@ -8,15 +8,14 @@ import {
   isCursorInPosition,
 } from "xstate-vscode-shared";
 import { getWebviewContent } from "./getWebviewContent";
-import { VizWebviewMachineEvent } from "./vizWebviewScript";
+import { EditorWebviewScriptEvent } from "./editorWebviewScript";
+import { resolveUriToFilePrefix } from "./resolveUriToFilePrefix";
+import { handleDefinitionUpdate } from "./handleDefinitionUpdate";
 
-export const initiateVisualizer = (
-  context: vscode.ExtensionContext,
-  client: LanguageClient,
-) => {
+export const initiateEditor = (context: vscode.ExtensionContext) => {
   let currentPanel: vscode.WebviewPanel | undefined = undefined;
 
-  const sendMessage = (event: VizWebviewMachineEvent) => {
+  const sendMessage = (event: EditorWebviewScriptEvent) => {
     currentPanel?.webview.postMessage(JSON.stringify(event));
   };
 
@@ -24,7 +23,7 @@ export const initiateVisualizer = (
     config: MachineConfig<any, any, any>,
     machineIndex: number,
     uri: string,
-    guardsToMock: string[],
+    layoutString: string | undefined,
   ) => {
     if (currentPanel) {
       currentPanel.reveal(vscode.ViewColumn.Beside);
@@ -34,33 +33,48 @@ export const initiateVisualizer = (
         config,
         index: machineIndex,
         uri,
-        guardsToMock,
+        layoutString,
       });
     } else {
       currentPanel = vscode.window.createWebviewPanel(
-        "visualizer",
-        "XState Visualizer",
+        "editor",
+        "XState Editor",
         vscode.ViewColumn.Beside,
         { enableScripts: true, retainContextWhenHidden: true },
       );
 
       const onDiskPath = vscode.Uri.file(
-        path.join(context.extensionPath, "client", "scripts", "vizWebview.js"),
+        path.join(
+          context.extensionPath,
+          "client",
+          "scripts",
+          "editorWebview.js",
+        ),
       );
 
       const src = currentPanel.webview.asWebviewUri(onDiskPath);
 
-      currentPanel.webview.html = getWebviewContent(src, "XState Visualizer");
+      currentPanel.webview.html = getWebviewContent(src, "XState Editor");
 
       sendMessage({
         type: "RECEIVE_SERVICE",
         config,
         index: machineIndex,
         uri,
-        guardsToMock,
+        layoutString,
       });
 
-      // Handle disposing the current XState Visualizer
+      currentPanel.webview.onDidReceiveMessage(
+        async (event: EditorWebviewScriptEvent) => {
+          if (event.type === "UPDATE_DEFINITION") {
+            await handleDefinitionUpdate(event);
+          }
+        },
+        undefined,
+        context.subscriptions,
+      );
+
+      // Handle disposing the current XState Editor
       currentPanel.onDidDispose(
         () => {
           currentPanel = undefined;
@@ -72,7 +86,7 @@ export const initiateVisualizer = (
   };
 
   context.subscriptions.push(
-    vscode.commands.registerCommand("xstate.visualize", () => {
+    vscode.commands.registerCommand("xstate.edit", () => {
       try {
         const currentSelection = vscode.window.activeTextEditor.selection;
 
@@ -114,7 +128,7 @@ export const initiateVisualizer = (
             resolveUriToFilePrefix(
               vscode.window.activeTextEditor.document.uri.path,
             ),
-            Object.keys(machine.getAllNamedConds()).filter(Boolean),
+            machine.getLayoutComment()?.value,
           );
         } else {
           vscode.window.showErrorMessage(
@@ -128,43 +142,4 @@ export const initiateVisualizer = (
       }
     }),
   );
-
-  client.onReady().then(() => {
-    context.subscriptions.push(
-      client.onNotification("xstate/update", (event) => {
-        sendMessage({
-          type: "UPDATE",
-          config: event.config,
-          index: event.index,
-          uri: event.uri,
-          guardsToMock: event.guardsToMock,
-        });
-      }),
-    );
-  });
-  context.subscriptions.push(
-    vscode.commands.registerCommand(
-      "xstate.inspect",
-      async (
-        config: MachineConfig<any, any, any>,
-        machineIndex: number,
-        uri: string,
-        guardsToMock: string[],
-      ) => {
-        startService(config, machineIndex, uri, guardsToMock);
-      },
-    ),
-  );
-
-  return {
-    currentPanel,
-    startService,
-  };
-};
-
-const resolveUriToFilePrefix = (uri: string) => {
-  if (!uri.startsWith("file://")) {
-    return `file://${uri}`;
-  }
-  return uri;
 };

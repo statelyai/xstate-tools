@@ -1,13 +1,13 @@
 import * as vscode from "vscode";
 
-export const getWebviewContent = (scriptsSrc: vscode.Uri) => {
+export const getWebviewContent = (scriptsSrc: vscode.Uri, title: string) => {
   return `
           <!DOCTYPE html>
           <html lang="en">
               <head>
                   <meta charset="UTF-8">
                   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                  <title>XState Visualizer</title>
+                  <title>${title}</title>
                   <style>
                   
                   * {
@@ -38,7 +38,7 @@ export const getWebviewContent = (scriptsSrc: vscode.Uri) => {
               
               <body>
                   <div class="iframe-wrapper">
-                      <iframe id="iframe" title="XState Visualizer Iframe"></iframe>
+                      <iframe id="iframe" title="${title} Iframe"></iframe>
                   </div>
                   <script src="${scriptsSrc}">
               </body>

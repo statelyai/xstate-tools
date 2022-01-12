@@ -16,16 +16,8 @@ import {
   TextDocumentPositionParams,
   TextDocuments,
   TextDocumentSyncKind,
-  CodeActionKind,
-  WorkspaceEdit,
 } from "vscode-languageserver/node";
-import {
-  assign,
-  createMachine,
-  interpret,
-  StateMachine,
-  StateNode,
-} from "xstate";
+import { assign, createMachine, interpret, StateMachine } from "xstate";
 import { parseMachinesFromFile } from "xstate-parser-demo";
 import { MachineParseResult } from "xstate-parser-demo/lib/MachineParseResult";
 import {
@@ -36,7 +28,7 @@ import {
 } from "xstate-vscode-shared";
 import { getCursorHoverType } from "./getCursorHoverType";
 import { getDiagnostics } from "./getDiagnostics";
-import { getRangeFromSourceLocation } from "./getRangeFromSourceLocation";
+import { getRangeFromSourceLocation } from "xstate-vscode-shared";
 import { getReferences } from "./getReferences";
 
 // Create a connection for the server, using Node's IPC as a transport.
@@ -70,9 +62,6 @@ connection.onInitialize((params: InitializeParams) => {
   const result: InitializeResult = {
     capabilities: {
       textDocumentSync: TextDocumentSyncKind.Full,
-      // documentSymbolProvider: {
-      //   label: "XState",
-      // },
       codeActionProvider: {
         resolveProvider: true,
       },
@@ -137,48 +126,6 @@ export type DocumentValidationsResult = {
 
 const documentValidationsCache: Map<string, DocumentValidationsResult[]> =
   new Map();
-
-const getOrphanedStates = (
-  documentValidationsResult: DocumentValidationsResult,
-) => {
-  const orphanedStatePaths: StateNode<any, any>[] =
-    documentValidationsResult.introspectionResult?.states
-      .filter((state) => {
-        return state.sources.size === 0;
-      })
-      .map((state) => {
-        return documentValidationsResult.machine?.getStateNodeById(state.id)!;
-      })
-      .filter(Boolean)
-      .filter((state) => {
-        /**
-         * A root node is never orphaned
-         */
-        if (!state.parent) return false;
-
-        /**
-         * Initial states are never orphaned
-         */
-        if (state.parent.initial === state.key) return false;
-
-        /**
-         * Children of parallel states are never orphaned
-         */
-        if (state.parent.type === "parallel") return false;
-
-        return true;
-      }) || [];
-
-  if (!orphanedStatePaths) return [];
-
-  return orphanedStatePaths
-    .map((state) => {
-      return documentValidationsResult.parseResult?.getStateNodeByPath(
-        state.path,
-      );
-    })
-    .filter(Boolean);
-};
 
 // Only keep settings for open documents
 documents.onDidClose((e) => {

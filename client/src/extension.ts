@@ -11,6 +11,7 @@ import {
   ServerOptions,
   TransportKind,
 } from "vscode-languageclient/node";
+import { initiateEditor } from "./initiateEditor";
 import { initiateVisualizer } from "./initiateVisualizer";
 
 let client: LanguageClient;
@@ -65,6 +66,7 @@ export function activate(context: vscode.ExtensionContext) {
   client.start();
 
   initiateVisualizer(context, client);
+  initiateEditor(context, client);
 }
 
 export function deactivate(): Thenable<void> | undefined {

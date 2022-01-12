@@ -2,7 +2,7 @@ import { TextDocumentIdentifier } from "vscode-languageserver";
 import { Position, Range } from "vscode-languageserver-textdocument";
 import { createMachine } from "xstate";
 import { getCursorHoverType } from "./getCursorHoverType";
-import { getRangeFromSourceLocation } from "./getRangeFromSourceLocation";
+import { getRangeFromSourceLocation } from "xstate-vscode-shared";
 import { DocumentValidationsResult } from "./server";
 
 export const getReferences = (params: {
