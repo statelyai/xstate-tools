@@ -11,8 +11,10 @@ import {
   ServerOptions,
   TransportKind,
 } from "vscode-languageclient/node";
+import { getAuth, SignInResult } from "./auth";
 import { initiateEditor } from "./initiateEditor";
 import { initiateVisualizer } from "./initiateVisualizer";
+import { uriHandler } from "./UriHandler";
 
 let client: LanguageClient;
 
@@ -67,6 +69,48 @@ export function activate(context: vscode.ExtensionContext) {
 
   initiateVisualizer(context, client);
   initiateEditor(context);
+
+  context.subscriptions.push(
+    vscode.window.registerUriHandler(uriHandler),
+    vscode.commands.registerCommand("xstate.sign-out", async () => {
+      await getAuth(context).signOut();
+
+      vscode.window.showInformationMessage("Signed out successfully.");
+    }),
+  );
+  context.subscriptions.push(
+    vscode.commands.registerCommand("xstate.sign-in", async () => {
+      const result = await vscode.window.withProgress<SignInResult>(
+        {
+          location: vscode.ProgressLocation.Notification,
+          title: "Signing in via Stately...",
+          cancellable: true,
+        },
+        (_, token) => {
+          return getAuth(context).signIn(token.onCancellationRequested);
+        },
+      );
+
+      if (result === "could-not-open-external-url") {
+        vscode.window.showErrorMessage("Could not open an external URL");
+        return;
+      } else if (result === "timed-out") {
+        vscode.window.showErrorMessage(
+          "The authentication request timed out. Please try again.",
+        );
+        return;
+      } else if (result === "unknown-error") {
+        vscode.window.showErrorMessage(
+          "An unknown error occurred. Please try again.",
+        );
+        return;
+      } else if (result === "cancelled") {
+        return;
+      } else {
+        vscode.window.showInformationMessage("Signed in successfully.");
+      }
+    }),
+  );
 }
 
 export function deactivate(): Thenable<void> | undefined {
