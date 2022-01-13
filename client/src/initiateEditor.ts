@@ -28,7 +28,7 @@ export const initiateEditor = (context: vscode.ExtensionContext) => {
   ) => {
     const result = await vscode.window.withProgress<SignInResult>(
       {
-        location: vscode.ProgressLocation.Notification,
+        location: vscode.ProgressLocation.Window,
         title: "Signing in via Stately...",
         cancellable: true,
       },
