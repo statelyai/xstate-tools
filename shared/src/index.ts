@@ -6,3 +6,4 @@ export * from "./isCursorInPosition";
 export * from "./getRangeFromSourceLocation";
 export * from "./getSetOfNames";
 export * from "./getInlineImplementations";
+export * from "./types";

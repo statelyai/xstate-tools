@@ -24,6 +24,7 @@ import {
   filterOutIgnoredMachines,
   getSetOfNames,
   getTransitionsFromNode,
+  GlobalSettings,
   introspectMachine,
   IntrospectMachineResult,
 } from "xstate-vscode-shared";
@@ -31,6 +32,7 @@ import { getCursorHoverType } from "./getCursorHoverType";
 import { getDiagnostics } from "./getDiagnostics";
 import { getRangeFromSourceLocation } from "xstate-vscode-shared";
 import { getReferences } from "./getReferences";
+import { NotificationType } from "vscode-languageserver";
 
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -41,7 +43,9 @@ const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
 
 let hasConfigurationCapability = false;
 let hasWorkspaceFolderCapability = false;
-let hasDiagnosticRelatedInformationCapability = false;
+
+const defaultSettings: GlobalSettings = { showVisualEditorWarnings: true };
+let globalSettings: GlobalSettings = defaultSettings;
 
 connection.onInitialize((params: InitializeParams) => {
   const capabilities = params.capabilities;
@@ -53,11 +57,6 @@ connection.onInitialize((params: InitializeParams) => {
   );
   hasWorkspaceFolderCapability = !!(
     capabilities.workspace && !!capabilities.workspace.workspaceFolders
-  );
-  hasDiagnosticRelatedInformationCapability = !!(
-    capabilities.textDocument &&
-    capabilities.textDocument.publishDiagnostics &&
-    capabilities.textDocument.publishDiagnostics.relatedInformation
   );
 
   const result: InitializeResult = {
@@ -103,20 +102,30 @@ connection.onInitialized(() => {
       undefined,
     );
   }
-  if (hasWorkspaceFolderCapability) {
-    connection.workspace.onDidChangeWorkspaceFolders((_event) => {
-      connection.console.log("Workspace folder change event received.");
-    });
-  }
 });
 
-// The example settings
-interface ExampleSettings {
-  maxNumberOfProblems: number;
+// Cache the settings of all open documents
+let documentSettings: Map<string, Thenable<GlobalSettings>> = new Map();
+
+function getDocumentSettings(resource: string): Thenable<GlobalSettings> {
+  if (!hasConfigurationCapability) {
+    return Promise.resolve(globalSettings);
+  }
+  let result = documentSettings.get(resource);
+  if (!result) {
+    result = connection.workspace.getConfiguration({
+      scopeUri: resource,
+      section: "xstate",
+    });
+    documentSettings.set(resource, result);
+  }
+  return result;
 }
 
-// Cache the settings of all open documents
-const documentSettings: Map<string, Thenable<ExampleSettings>> = new Map();
+// Only keep settings for open documents
+documents.onDidClose((e) => {
+  documentSettings.delete(e.document.uri);
+});
 
 export type DocumentValidationsResult = {
   machine?: StateMachine<any, any, any>;
@@ -127,11 +136,6 @@ export type DocumentValidationsResult = {
 
 const documentValidationsCache: Map<string, DocumentValidationsResult[]> =
   new Map();
-
-// Only keep settings for open documents
-documents.onDidClose((e) => {
-  documentSettings.delete(e.document.uri);
-});
 
 connection.onReferences((params) => {
   return getReferences({
@@ -178,8 +182,8 @@ connection.onCodeLens((params) => {
 });
 
 async function validateDocument(textDocument: TextDocument): Promise<void> {
-  // The validator creates diagnostics for all uppercase words length 2 and more
   const text = textDocument.getText();
+  const settings = await getDocumentSettings(textDocument.uri);
 
   const diagnostics: Diagnostic[] = [];
 
@@ -212,7 +216,7 @@ async function validateDocument(textDocument: TextDocument): Promise<void> {
     });
     documentValidationsCache.set(textDocument.uri, machines);
 
-    diagnostics.push(...getDiagnostics(machines, textDocument));
+    diagnostics.push(...getDiagnostics(machines, textDocument, settings));
 
     machines.forEach((machine, index) => {
       const config = machine.parseResult?.toConfig();
@@ -295,9 +299,18 @@ documents.onDidChangeContent((change) => {
   });
 });
 
-connection.onDidChangeWatchedFiles((_change) => {
-  // Monitored files have change in VSCode
-  connection.console.log("We received an file change event");
+connection.onDidChangeConfiguration((change) => {
+  if (hasConfigurationCapability) {
+    // Reset all cached document settings
+    documentSettings.clear();
+  } else {
+    globalSettings = <GlobalSettings>(
+      (change.settings.languageServerExample || defaultSettings)
+    );
+  }
+
+  // Revalidate all open text documents
+  documents.all().forEach(validateDocument);
 });
 
 // This handler provides the initial list of the completion items.

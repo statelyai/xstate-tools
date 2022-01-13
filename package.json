@@ -61,7 +61,17 @@
         "title": "Open Visual Editor",
         "category": "XState"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "XState",
+      "properties": {
+        "xstate.showVisualEditorWarnings": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show warnings that prevent you from using the visual editor."
+        }
+      }
+    }
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx,json}": "prettier --write"
