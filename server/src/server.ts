@@ -229,6 +229,7 @@ async function validateDocument(textDocument: TextDocument): Promise<void> {
           guardsToMock: Array.from(
             getSetOfNames(machine.parseResult?.getAllConds(["named"]) || []),
           ),
+          layoutString: machine.parseResult?.getLayoutComment()?.value,
         });
       }
     });
