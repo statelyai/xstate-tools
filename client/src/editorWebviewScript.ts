@@ -103,8 +103,40 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
     states: {
       waitingForFirstContact: {},
       hasService: {
-        entry: ["setupIframe"],
+        invoke: {
+          src: (context) => () => {
+            const iframe = document.getElementById(
+              "iframe",
+            ) as HTMLIFrameElement;
+
+            if (!iframe || iframe.src) return;
+
+            iframe.src = `http://localhost:3000/registry/editor/from-url?config=${compressToEncodedURIComponent(
+              JSON.stringify(context.config),
+            )}${
+              context.layoutString ? `&layout=${context.layoutString}` : ""
+            }${getTokenHash(context.token)}`;
+          },
+        },
+        initial: "notAcceptingUpdatesFromEditor",
         on: {
+          RECEIVE_CONFIG_UPDATE_FROM_VSCODE: {
+            cond: (ctx, event) => {
+              // Ensure that the update is from the machine we are editing
+              return event.uri === ctx.uri && ctx.index === event.index;
+            },
+            actions: [
+              assign((ctx, event) => {
+                return {
+                  config: event.config,
+                  layoutString: event.layoutString,
+                };
+              }),
+              "updateIframe",
+            ],
+            target: ".notAcceptingUpdatesFromEditor",
+            internal: false,
+          },
           DEFINITION_UPDATED: {
             actions: [
               assign((context, event) => {
@@ -123,53 +155,34 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
                 });
               },
             ],
-            target: ".notAcceptingUpdates",
+            target: ".notAcceptingUpdatesFromVsCode",
+            internal: false,
           },
         },
-        initial: "notAcceptingUpdates",
         states: {
-          notAcceptingUpdates: {
+          notAcceptingUpdatesFromVsCode: {
             after: {
-              500: "acceptingUpdates",
+              800: "acceptingUpdatesFromAny",
             },
-          },
-          acceptingUpdates: {
             on: {
-              RECEIVE_CONFIG_UPDATE_FROM_VSCODE: {
-                cond: (ctx, event) => {
-                  // Ensure that the update is from the machine we are editing
-                  return event.uri === ctx.uri && ctx.index === event.index;
-                },
-                actions: [
-                  assign((ctx, event) => {
-                    return {
-                      config: event.config,
-                      layoutString: event.layoutString,
-                    };
-                  }),
-                  "updateIframe",
-                ],
-                target: "notAcceptingUpdates",
-              },
+              RECEIVE_CONFIG_UPDATE_FROM_VSCODE: {},
             },
           },
+          notAcceptingUpdatesFromEditor: {
+            after: {
+              800: "acceptingUpdatesFromAny",
+            },
+            on: {
+              DEFINITION_UPDATED: {},
+            },
+          },
+          acceptingUpdatesFromAny: {},
         },
       },
     },
   },
   {
     actions: {
-      setupIframe: (context) => {
-        const iframe = document.getElementById("iframe") as HTMLIFrameElement;
-
-        if (!iframe) return;
-
-        iframe.src = `http://localhost:3000/registry/editor/from-url?config=${compressToEncodedURIComponent(
-          JSON.stringify(context.config),
-        )}${
-          context.layoutString ? `&layout=${context.layoutString}` : ""
-        }${getTokenHash(context.token)}`;
-      },
       updateIframe: (context) => {
         const iframe = document.getElementById("iframe") as HTMLIFrameElement;
 
