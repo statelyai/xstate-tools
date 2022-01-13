@@ -7,3 +7,4 @@ export * from "./getRangeFromSourceLocation";
 export * from "./getSetOfNames";
 export * from "./getInlineImplementations";
 export * from "./types";
+export * from "./getRawTextFromNode";

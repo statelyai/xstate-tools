@@ -1,6 +1,9 @@
 import * as vscode from "vscode";
 import { parseMachinesFromFile } from "xstate-parser-demo";
-import { getRangeFromSourceLocation } from "xstate-vscode-shared";
+import {
+  getRangeFromSourceLocation,
+  getRawTextFromNode,
+} from "xstate-vscode-shared";
 import { UpdateDefinitionEvent } from "./editorWebviewScript";
 import { resolveUriToFilePrefix } from "./resolveUriToFilePrefix";
 
@@ -44,9 +47,24 @@ export const handleDefinitionUpdate = async (event: UpdateDefinitionEvent) => {
     );
   }
 
-  const range = getRangeFromSourceLocation(machine.ast.definition.node.loc);
+  const range = getRangeFromSourceLocation(machine.ast.definition?.node?.loc);
+
+  /**
+   * Grabs the context as a raw string from the machine definition
+   */
+  const contextRaw = machine.ast.definition?.context?.node
+    ? `\ncontext: ${getRawTextFromNode(
+        text,
+        machine.ast.definition?.context?.node,
+      ).replace("\n", " ")},`
+    : "";
 
   const json = JSON.stringify(event.config, null, 2);
+
+  /**
+   * Adds the context to the JSON (pretty ugly but works)
+   */
+  const jsonWithContext = `${json.slice(0, 1)}${contextRaw}${json.slice(1)}`;
 
   workspaceEdit.replace(
     doc.uri,
@@ -54,7 +72,7 @@ export const handleDefinitionUpdate = async (event: UpdateDefinitionEvent) => {
       new vscode.Position(range.start.line, range.start.character),
       new vscode.Position(range.end.line, range.end.character),
     ),
-    json,
+    jsonWithContext,
   );
 
   await vscode.workspace.applyEdit(workspaceEdit);

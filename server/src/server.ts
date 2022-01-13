@@ -22,6 +22,7 @@ import { parseMachinesFromFile } from "xstate-parser-demo";
 import { MachineParseResult } from "xstate-parser-demo/lib/MachineParseResult";
 import {
   filterOutIgnoredMachines,
+  getRawTextFromNode,
   getSetOfNames,
   getTransitionsFromNode,
   GlobalSettings,
@@ -514,7 +515,7 @@ const getTextEditsForImplementation = (
 
   // There is an options object, but it doesn't contain an actions object
   if (!machine.ast.options?.[type]?.node.loc) {
-    const rawText = getRawTextFromLocation(text, machine.ast.options?.node!);
+    const rawText = getRawTextFromNode(text, machine.ast.options?.node!);
     const range = getRangeFromSourceLocation(machine.ast.options?.node.loc!);
 
     return [
@@ -539,7 +540,7 @@ const getTextEditsForImplementation = (
 
   // There is an actions object which does not contain the action
   if (machine.ast.options?.[type]?.node) {
-    const rawText = getRawTextFromLocation(
+    const rawText = getRawTextFromNode(
       text,
       machine.ast.options?.[type]?.node!,
     );
@@ -558,8 +559,4 @@ const getTextEditsForImplementation = (
   }
 
   return [];
-};
-
-const getRawTextFromLocation = (text: string, node: Node): string => {
-  return text.slice(node.start!, node.end!);
 };
