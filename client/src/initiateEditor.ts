@@ -7,6 +7,7 @@ import {
   getInlineImplementations,
   isCursorInPosition,
 } from "xstate-vscode-shared";
+import { getAuth, SignInResult } from "./auth";
 import { EditorWebviewScriptEvent } from "./editorWebviewScript";
 import { getWebviewContent } from "./getWebviewContent";
 import { handleDefinitionUpdate } from "./handleDefinitionUpdate";
@@ -19,12 +20,40 @@ export const initiateEditor = (context: vscode.ExtensionContext) => {
     currentPanel?.webview.postMessage(JSON.stringify(event));
   };
 
-  const startService = (
+  const startService = async (
     config: MachineConfig<any, any, any>,
     machineIndex: number,
     uri: string,
     layoutString: string | undefined,
   ) => {
+    const result = await vscode.window.withProgress<SignInResult>(
+      {
+        location: vscode.ProgressLocation.Window,
+        title: "Signing in via Stately...",
+        cancellable: true,
+      },
+      (_, token) => {
+        return getAuth(context).signIn(token.onCancellationRequested);
+      },
+    );
+
+    if (result === "could-not-open-external-url") {
+      vscode.window.showErrorMessage("Could not open an external URL");
+      return;
+    } else if (result === "timed-out") {
+      vscode.window.showErrorMessage(
+        "The authentication request timed out. Please try again.",
+      );
+      return;
+    } else if (result === "unknown-error") {
+      vscode.window.showErrorMessage(
+        "An unknown error occurred. Please try again.",
+      );
+      return;
+    } else if (result === "cancelled") {
+      return;
+    }
+
     if (currentPanel) {
       currentPanel.reveal(vscode.ViewColumn.Beside);
 
@@ -34,6 +63,7 @@ export const initiateEditor = (context: vscode.ExtensionContext) => {
         index: machineIndex,
         uri,
         layoutString,
+        token: result,
       });
     } else {
       currentPanel = vscode.window.createWebviewPanel(
@@ -62,6 +92,7 @@ export const initiateEditor = (context: vscode.ExtensionContext) => {
         index: machineIndex,
         uri,
         layoutString,
+        token: result,
       });
 
       currentPanel.webview.onDidReceiveMessage(

@@ -3,6 +3,7 @@ import { MachineConfig } from "xstate";
 import { interpret } from "xstate";
 import { createMachine } from "xstate";
 import { compressToEncodedURIComponent } from "lz-string";
+import { TokenInfo } from "./auth";
 
 declare global {
   function acquireVsCodeApi(): {
@@ -15,6 +16,7 @@ export interface WebViewMachineContext {
   uri: string;
   index: number;
   layoutString: string | undefined;
+  token: TokenInfo | undefined;
 }
 
 export type EditorWebviewScriptEvent =
@@ -24,6 +26,7 @@ export type EditorWebviewScriptEvent =
       layoutString: string | undefined;
       uri: string;
       index: number;
+      token: TokenInfo;
     }
   | {
       type: "DEFINITION_UPDATED";
@@ -57,6 +60,7 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>({
     uri: "",
     index: 0,
     layoutString: undefined,
+    token: undefined,
   },
   invoke: {
     src: () => (send) => {
@@ -92,6 +96,7 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>({
           index: event.index,
           uri: event.uri,
           layoutString: event.layoutString,
+          token: event.token,
         };
       }),
       internal: false,
@@ -109,7 +114,9 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>({
 
           iframe.src = `http://localhost:3000/registry/editor/from-url?config=${compressToEncodedURIComponent(
             JSON.stringify(context.config),
-          )}${context.layoutString ? `&layout=${context.layoutString}` : ""}`;
+          )}${
+            context.layoutString ? `&layout=${context.layoutString}` : ""
+          }${getTokenHash(context.token)}`;
         },
       },
       states: {},
@@ -118,3 +125,12 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>({
 });
 
 interpret(machine).start();
+
+const getTokenHash = (tokenInfo: TokenInfo) => {
+  return `#access_token=${tokenInfo.token}&expires_in=${(
+    tokenInfo.expiresAt -
+    Date.now() / 1000
+  ).toFixed(0)}&provider_token=${tokenInfo.providerToken}&refresh_token=${
+    tokenInfo.refreshToken
+  }&token_type=bearer`;
+};

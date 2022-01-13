@@ -60,6 +60,16 @@
         "command": "xstate.edit",
         "title": "Open Visual Editor",
         "category": "XState"
+      },
+      {
+        "command": "xstate.sign-out",
+        "title": "Sign out of Stately",
+        "category": "XState"
+      },
+      {
+        "command": "xstate.sign-in",
+        "title": "Sign in to Stately",
+        "category": "XState"
       }
     ],
     "configuration": {
