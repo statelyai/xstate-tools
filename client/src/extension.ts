@@ -13,6 +13,7 @@ import {
 } from "vscode-languageclient/node";
 import { getAuth, SignInResult } from "./auth";
 import { initiateEditor } from "./initiateEditor";
+import { initiateTypegen } from "./initiateTypegen";
 import { initiateVisualizer } from "./initiateVisualizer";
 import { uriHandler } from "./UriHandler";
 
@@ -69,6 +70,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   initiateVisualizer(context, client);
   initiateEditor(context, client);
+  initiateTypegen(context, client);
 
   context.subscriptions.push(
     vscode.window.registerUriHandler(uriHandler),

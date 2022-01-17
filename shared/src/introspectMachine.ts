@@ -1,4 +1,5 @@
 import * as XState from "xstate";
+import { InvokeDefinition } from "xstate";
 import { pathToStateValue } from "xstate/lib/utils";
 import {
   getMatchesStates,
@@ -133,6 +134,8 @@ export const introspectMachine = (machine: XState.StateNode) => {
     checkIfOptional: (name) => Boolean(machine.options.delays[name]),
   });
 
+  const serviceIdToSrcMap: Record<string, string> = {};
+
   const nodeMaps: {
     [id: string]: {
       sources: Set<string>;
@@ -172,8 +175,10 @@ export const introspectMachine = (machine: XState.StateNode) => {
     });
 
     node.invoke?.forEach((service) => {
-      if (typeof service.src !== "string" || /\./.test(service.src)) return;
-      services.addItem(service.src, node.path);
+      const serviceSrc = getServiceSrc(service);
+      if (typeof serviceSrc !== "string" || /\./.test(serviceSrc)) return;
+      services.addItem(serviceSrc, node.path);
+      serviceIdToSrcMap[service.id] = serviceSrc;
     });
 
     node.transitions?.forEach((transition) => {
@@ -194,12 +199,13 @@ export const introspectMachine = (machine: XState.StateNode) => {
 
       (transition.target as unknown as XState.StateNode[])?.forEach(
         (targetNode) => {
+          console.log(targetNode);
           /** Pick up invokes */
           targetNode.invoke?.forEach((service) => {
-            if (typeof service.src !== "string" || /\./.test(service.src))
-              return;
+            const serviceSrc = getServiceSrc(service);
+            if (typeof serviceSrc !== "string" || /\./.test(serviceSrc)) return;
             services.addEventToItem(
-              service.src,
+              serviceSrc,
               transition.eventType,
               node.path,
             );
@@ -269,6 +275,8 @@ export const introspectMachine = (machine: XState.StateNode) => {
 
   const subState: SubState = makeSubStateFromNode(machine, machine, nodeMaps);
 
+  console.log(services.toDataShape());
+
   return {
     states: Object.entries(nodeMaps).map(([stateId, state]) => {
       return {
@@ -283,5 +291,14 @@ export const introspectMachine = (machine: XState.StateNode) => {
     services: services.toDataShape(),
     activities: activities.toDataShape(),
     delays: delays.toDataShape(),
+    serviceIdToSrcMap,
   };
+};
+
+const getServiceSrc = (invoke: InvokeDefinition<any, any>) => {
+  if (typeof invoke.src === "string") {
+    return invoke.src;
+  }
+
+  return invoke.src.type;
 };

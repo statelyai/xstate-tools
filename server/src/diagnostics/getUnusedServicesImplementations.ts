@@ -10,7 +10,10 @@ export const getUnusedServicesImplementations: DiagnosticGetter = (
   textDocument,
 ) => {
   const allServices = getSetOfNames(
-    machine.parseResult?.getAllServices(["named"]) || [],
+    (machine.parseResult?.getAllServices(["named"]) || []).map((invoke) => ({
+      ...invoke,
+      name: invoke.src,
+    })),
   );
 
   const unusedServices =

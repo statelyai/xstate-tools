@@ -125,7 +125,7 @@ export const getCursorHoverType = (
         return {
           type: "SERVICE",
           node: service.node,
-          name: service.name,
+          name: service.src,
           machine: machine.parseResult!,
         };
       }
