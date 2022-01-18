@@ -26,7 +26,7 @@ export interface XStateUpdateEvent {
     actionsInOptions: string[];
     guardsInOptions: string[];
     servicesInOptions: string[];
-    allServices: string[];
+    allServices: { src: string; id: string | undefined }[];
     delaysInOptions: string[];
     tags: string[];
     hasTypesNode: boolean;

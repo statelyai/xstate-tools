@@ -236,7 +236,7 @@ async function validateDocument(textDocument: TextDocument): Promise<void> {
           allServices:
             machine.parseResult
               ?.getAllServices(["named"])
-              .map((elem) => elem.src) || [],
+              .map((elem) => ({ src: elem.src, id: elem.id })) || [],
           actionsInOptions:
             machine.parseResult?.ast?.options?.actions?.properties.map(
               (property) => property.key,

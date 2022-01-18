@@ -67,12 +67,22 @@ export const getTypegenOutput = (event: XStateUpdateEvent) => {
         ]);
 
         machine.allServices.forEach((service) => {
-          internalEvents.add(
-            `'done.invoke.${service}': { type: 'done.invoke.${service}'; data: unknown; __tip: "Provide an event of type { type: '${event}'; data: any } to strongly type this" };`,
-          );
-          internalEvents.add(
-            `'error.platform.${service}': { type: 'error.platform.${service}'; data: unknown; };`,
-          );
+          if (service.id) {
+            internalEvents.add(
+              `'done.invoke.${service.id}': { type: 'done.invoke.${
+                service.id
+              }'; data: unknown; __tip: "Provide an event of type { type: 'done.invoke.${
+                service.id
+              }'; data: any } to strongly type this"; ${
+                inlineInvocationName.test(service.id)
+                  ? '__tip2: "Give this service an id property to clean up the event name"'
+                  : ""
+              } };`,
+            );
+            internalEvents.add(
+              `'error.platform.${service.id}': { type: 'error.platform.${service.id}'; data: unknown; };`,
+            );
+          }
         });
 
         return `export interface Typegen${index} {
@@ -84,11 +94,11 @@ export const getTypegenOutput = (event: XStateUpdateEvent) => {
             ${Array.from(internalEvents).join("\n")}
           };
           invokeSrcNameMap: {
-            ${Object.keys(introspectResult.serviceIdToSrcMap)
-              .map((id) => {
+            ${Object.keys(introspectResult.serviceSrcToIdMap)
+              .map((src) => {
                 // TODO - improve this so it picks up id
                 // transitions
-                return `'${id}': 'done.invoke.${introspectResult.serviceIdToSrcMap[id]}'`;
+                return `'${src}': 'done.invoke.${introspectResult.serviceSrcToIdMap[src]}'`;
               })
               .join("\n")}
           }
@@ -130,13 +140,14 @@ const collectInternalEvents = (lineArrays: { events: string[] }[][]) => {
   lineArrays.forEach((lines) => {
     lines.forEach((line) => {
       line.events.forEach((event) => {
-        if (inlineInvocationName.test(event)) {
+        if (event.startsWith("done.invoke")) {
+          if (typeof event === "object") return;
           internalEvents.add(
-            `'${event}': { type: '${event}'; data: unknown; __tip: "Give this service a name and move it into the machine options to strongly type it" };`,
-          );
-        } else if (event.startsWith("done.invoke")) {
-          internalEvents.add(
-            `'${event}': { type: '${event}'; data: unknown; __tip: "Provide an event of type { type: '${event}'; data: any } to strongly type this" };`,
+            `'${event}': { type: '${event}'; data: unknown; __tip: "Provide an event of type { type: '${event}'; data: any } to strongly type this"; ${
+              inlineInvocationName.test(event)
+                ? '__tip2: "Give this service an id property to clean up the event name"'
+                : ""
+            } };`,
           );
         } else if (event.startsWith("xstate.") || event === "") {
           internalEvents.add(`'${event}': { type: '${event}' };`);

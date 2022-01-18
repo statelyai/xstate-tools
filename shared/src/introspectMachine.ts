@@ -134,7 +134,7 @@ export const introspectMachine = (machine: XState.StateNode) => {
     checkIfOptional: (name) => Boolean(machine.options.delays[name]),
   });
 
-  const serviceIdToSrcMap: Record<string, string> = {};
+  const serviceSrcToIdMap: Record<string, string> = {};
 
   const nodeMaps: {
     [id: string]: {
@@ -178,7 +178,7 @@ export const introspectMachine = (machine: XState.StateNode) => {
       const serviceSrc = getServiceSrc(service);
       if (typeof serviceSrc !== "string" || /\./.test(serviceSrc)) return;
       services.addItem(serviceSrc, node.path);
-      serviceIdToSrcMap[service.id] = serviceSrc;
+      serviceSrcToIdMap[serviceSrc] = service.id;
     });
 
     node.transitions?.forEach((transition) => {
@@ -291,7 +291,7 @@ export const introspectMachine = (machine: XState.StateNode) => {
     services: services.toDataShape(),
     activities: activities.toDataShape(),
     delays: delays.toDataShape(),
-    serviceIdToSrcMap,
+    serviceSrcToIdMap,
   };
 };
 
