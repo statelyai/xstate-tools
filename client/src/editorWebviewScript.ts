@@ -189,11 +189,11 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
         if (!iframe) return;
 
         iframe.contentWindow.postMessage(
-          JSON.stringify({
+          {
             config: context.config,
             layoutString: context.layoutString,
             type: "UPDATE_CONFIG",
-          }),
+          },
           "*",
         );
       },
