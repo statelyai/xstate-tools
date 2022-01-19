@@ -68,7 +68,7 @@ export function activate(context: vscode.ExtensionContext) {
   client.start();
 
   initiateVisualizer(context, client);
-  initiateEditor(context);
+  initiateEditor(context, client);
 
   context.subscriptions.push(
     vscode.window.registerUriHandler(uriHandler),

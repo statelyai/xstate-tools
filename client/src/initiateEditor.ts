@@ -1,5 +1,6 @@
 import * as path from "path";
 import * as vscode from "vscode";
+import { LanguageClient } from "vscode-languageclient/node";
 import { MachineConfig } from "xstate";
 import { parseMachinesFromFile } from "xstate-parser-demo";
 import {
@@ -13,7 +14,10 @@ import { getWebviewContent } from "./getWebviewContent";
 import { handleDefinitionUpdate } from "./handleDefinitionUpdate";
 import { resolveUriToFilePrefix } from "./resolveUriToFilePrefix";
 
-export const initiateEditor = (context: vscode.ExtensionContext) => {
+export const initiateEditor = (
+  context: vscode.ExtensionContext,
+  client: LanguageClient,
+) => {
   let currentPanel: vscode.WebviewPanel | undefined = undefined;
 
   const sendMessage = (event: EditorWebviewScriptEvent) => {
@@ -115,6 +119,20 @@ export const initiateEditor = (context: vscode.ExtensionContext) => {
       );
     }
   };
+
+  client.onReady().then(() => {
+    context.subscriptions.push(
+      client.onNotification("xstate/update", (event) => {
+        sendMessage({
+          type: "RECEIVE_CONFIG_UPDATE_FROM_VSCODE",
+          config: event.config,
+          index: event.index,
+          uri: event.uri,
+          layoutString: event.layoutString,
+        });
+      }),
+    );
+  });
 
   context.subscriptions.push(
     vscode.commands.registerCommand("xstate.edit", () => {
