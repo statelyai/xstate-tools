@@ -4,6 +4,7 @@ import { interpret } from "xstate";
 import { createMachine } from "xstate";
 import { compressToEncodedURIComponent } from "lz-string";
 import { TokenInfo } from "./auth";
+import { BASE_URL } from "./constants";
 
 declare global {
   function acquireVsCodeApi(): {
@@ -111,7 +112,7 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
 
             if (!iframe || iframe.src) return;
 
-            iframe.src = `http://localhost:3000/registry/editor/from-url?config=${compressToEncodedURIComponent(
+            iframe.src = `${BASE_URL}/registry/editor/from-url?config=${compressToEncodedURIComponent(
               JSON.stringify(context.config),
             )}${
               context.layoutString ? `&layout=${context.layoutString}` : ""

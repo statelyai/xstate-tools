@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { BASE_URL, EXTENSION_ID, TOKEN_KEY } from "./constants";
 import { uriHandler } from "./UriHandler";
 
 export interface TokenInfo {
@@ -14,10 +15,6 @@ export type SignInResult =
   | "unknown-error"
   | "could-not-open-external-url"
   | "cancelled";
-
-const TOKEN_KEY = "stately-editor-key";
-const BASE_URL = "http://localhost:3000";
-const EXTENSION_ID = "mattpocock.xstate-vscode";
 
 export const getAuth = (context: vscode.ExtensionContext) => {
   /**

@@ -1,4 +1,6 @@
 import * as vscode from "vscode";
+import * as prettier from "prettier";
+import * as path from "path";
 import { parseMachinesFromFile } from "xstate-parser-demo";
 import {
   getRangeFromSourceLocation,
@@ -59,12 +61,40 @@ export const handleDefinitionUpdate = async (event: UpdateDefinitionEvent) => {
       ).replace("\n", " ")},`
     : "";
 
+  /**
+   * Grabs the context as a raw string from the machine definition
+   */
+  const tsTypesRaw = machine.ast.definition?.tsTypes?.node
+    ? `\ntsTypes: ${getRawTextFromNode(
+        text,
+        machine.ast.definition?.tsTypes?.node,
+      ).replace("\n", " ")},`
+    : "";
+
   const json = JSON.stringify(event.config, null, 2);
+
+  const pathToSave = path.resolve(doc.uri.path).slice(6);
+
+  const prettierConfig = await prettier.resolveConfig(pathToSave);
 
   /**
    * Adds the context to the JSON (pretty ugly but works)
    */
-  const jsonWithContext = `${json.slice(0, 1)}${contextRaw}${json.slice(1)}`;
+  let finalTextToInput = `${json.slice(
+    0,
+    1,
+  )}${contextRaw}${tsTypesRaw}${json.slice(1)}`;
+
+  try {
+    const result = await prettier.format(`(${finalTextToInput})`, {
+      ...prettierConfig,
+      parser: "typescript",
+    });
+
+    finalTextToInput = result.slice(1, -3);
+  } catch (e) {
+    console.log(e);
+  }
 
   workspaceEdit.replace(
     doc.uri,
@@ -72,7 +102,7 @@ export const handleDefinitionUpdate = async (event: UpdateDefinitionEvent) => {
       new vscode.Position(range.start.line, range.start.character),
       new vscode.Position(range.end.line, range.end.character),
     ),
-    jsonWithContext,
+    finalTextToInput,
   );
 
   await vscode.workspace.applyEdit(workspaceEdit);
