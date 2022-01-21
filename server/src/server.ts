@@ -169,14 +169,15 @@ connection.onCodeLens((params) => {
       {
         range: getRangeFromSourceLocation(callee?.loc!),
         command: {
+          title: "Open Visual Editor",
+          command: "xstate.edit",
+        },
+      },
+      {
+        range: getRangeFromSourceLocation(callee?.loc!),
+        command: {
           title: "Open Inspector",
           command: "xstate.inspect",
-          arguments: [
-            machine.parseResult?.toConfig()!,
-            index,
-            params.textDocument.uri,
-            Array.from(getSetOfNames(machine.parseResult?.getAllConds() || [])),
-          ],
         },
       },
     ];
