@@ -2,7 +2,6 @@
  * Copyright (c) Microsoft Corporation. All rights reserved.
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
-import type { Node } from "@babel/types";
 import { TextDocument, TextEdit } from "vscode-languageserver-textdocument";
 import {
   CompletionItem,
@@ -28,6 +27,7 @@ import {
   GlobalSettings,
   introspectMachine,
   IntrospectMachineResult,
+  XStateUpdateEvent,
 } from "xstate-vscode-shared";
 import { getCursorHoverType } from "./getCursorHoverType";
 import { getDiagnostics } from "./getDiagnostics";
@@ -168,14 +168,15 @@ connection.onCodeLens((params) => {
       {
         range: getRangeFromSourceLocation(callee?.loc!),
         command: {
+          title: "Open Visual Editor",
+          command: "xstate.edit",
+        },
+      },
+      {
+        range: getRangeFromSourceLocation(callee?.loc!),
+        command: {
           title: "Open Inspector",
           command: "xstate.inspect",
-          arguments: [
-            machine.parseResult?.toConfig()!,
-            index,
-            params.textDocument.uri,
-            Array.from(getSetOfNames(machine.parseResult?.getAllConds() || [])),
-          ],
         },
       },
     ];
@@ -219,20 +220,56 @@ async function validateDocument(textDocument: TextDocument): Promise<void> {
 
     diagnostics.push(...getDiagnostics(machines, textDocument, settings));
 
-    machines.forEach((machine, index) => {
-      const config = machine.parseResult?.toConfig();
-      if (config) {
-        connection.sendNotification("xstate/update", {
+    const event: XStateUpdateEvent = {
+      uri: textDocument.uri,
+      machines: machines.map((machine, index) => {
+        const config = machine.parseResult?.toConfig()!;
+        return {
           config,
-          uri: textDocument.uri,
           index,
-          guardsToMock: Array.from(
-            getSetOfNames(machine.parseResult?.getAllConds(["named"]) || []),
+          typeNodeLoc: machine.parseResult?.ast?.definition?.tsTypes?.node.loc,
+          definitionLoc: machine.parseResult?.ast?.definition?.node.loc,
+          guardsToMock:
+            machine.parseResult
+              ?.getAllConds(["named"])
+              .map((elem) => elem.name) || [],
+          allServices:
+            machine.parseResult
+              ?.getAllServices(["named"])
+              .map((elem) => ({ src: elem.src, id: elem.id })) || [],
+          actionsInOptions:
+            machine.parseResult?.ast?.options?.actions?.properties.map(
+              (property) => property.key,
+            ) || [],
+          delaysInOptions:
+            machine.parseResult?.ast?.options?.delays?.properties.map(
+              (property) => property.key,
+            ) || [],
+          guardsInOptions:
+            machine.parseResult?.ast?.options?.guards?.properties.map(
+              (property) => property.key,
+            ) || [],
+          servicesInOptions:
+            machine.parseResult?.ast?.options?.services?.properties.map(
+              (property) => property.key,
+            ) || [],
+          tags: Array.from(
+            new Set(
+              machine.parseResult
+                ?.getAllStateNodes()
+                .flatMap(
+                  (node) => node.ast.tags?.map((tag) => tag.value) || [],
+                ) || [],
+            ),
           ),
-          layoutString: machine.parseResult?.getLayoutComment()?.value,
-        });
-      }
-    });
+          hasTypesNode: Boolean(
+            machine.parseResult?.ast?.definition?.tsTypes?.value,
+          ),
+        };
+      }),
+    };
+
+    connection.sendNotification("xstate/update", event);
   } catch (e) {
     documentValidationsCache.delete(textDocument.uri);
   }
@@ -392,7 +429,11 @@ connection.onCompletion(
     }
 
     if (cursor?.type === "SERVICE") {
-      const services = getSetOfNames(cursor.machine.getAllServices(["named"]));
+      const services = getSetOfNames(
+        cursor.machine
+          .getAllServices(["named"])
+          .map((invoke) => ({ ...invoke, name: invoke.src })),
+      );
 
       cursor.machine.ast.options?.services?.properties.forEach((service) => {
         services.add(service.key);

@@ -13,12 +13,13 @@ import {
 } from "vscode-languageclient/node";
 import { getAuth, SignInResult } from "./auth";
 import { initiateEditor } from "./initiateEditor";
+import { initiateTypegen } from "./initiateTypegen";
 import { initiateVisualizer } from "./initiateVisualizer";
 import { uriHandler } from "./UriHandler";
 
 let client: LanguageClient;
 
-export function activate(context: vscode.ExtensionContext) {
+export async function activate(context: vscode.ExtensionContext) {
   // The server is implemented in node
   let serverModule = context.asAbsolutePath(
     path.join("server", "dist", "index.js"),
@@ -67,8 +68,11 @@ export function activate(context: vscode.ExtensionContext) {
 
   client.start();
 
+  await client.onReady();
+
   initiateVisualizer(context, client);
   initiateEditor(context, client);
+  initiateTypegen(context, client);
 
   context.subscriptions.push(
     vscode.window.registerUriHandler(uriHandler),

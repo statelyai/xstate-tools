@@ -120,19 +120,24 @@ export const initiateEditor = (
     }
   };
 
-  client.onReady().then(() => {
-    context.subscriptions.push(
-      client.onNotification("xstate/update", (event) => {
-        sendMessage({
-          type: "RECEIVE_CONFIG_UPDATE_FROM_VSCODE",
-          config: event.config,
-          index: event.index,
-          uri: event.uri,
-          layoutString: event.layoutString,
+  context.subscriptions.push(
+    vscode.workspace.onWillSaveTextDocument(async (event) => {
+      const text = event.document.getText();
+      const result = parseMachinesFromFile(text);
+
+      if (result.machines.length > 0) {
+        result.machines.forEach((machine, index) => {
+          sendMessage({
+            type: "RECEIVE_CONFIG_UPDATE_FROM_VSCODE",
+            config: machine.toConfig(),
+            index: index,
+            uri: resolveUriToFilePrefix(event.document.uri.path),
+            layoutString: machine.getLayoutComment()?.value,
+          });
         });
-      }),
-    );
-  });
+      }
+    }),
+  );
 
   context.subscriptions.push(
     vscode.commands.registerCommand("xstate.edit", () => {
