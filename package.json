@@ -1,11 +1,11 @@
 {
-  "name": "xstate-vscode",
+  "name": "stately-vscode",
   "displayName": "XState VSCode",
   "description": "Intelligent XState tooling for VSCode",
   "preview": true,
   "author": "Matt Pocock",
   "license": "MIT",
-  "version": "1.4.3",
+  "version": "1.4.5",
   "private": true,
   "repository": {
     "type": "git",
