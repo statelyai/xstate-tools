@@ -12,6 +12,7 @@ import { getAuth, SignInResult } from "./auth";
 import { EditorWebviewScriptEvent } from "./editorWebviewScript";
 import { getWebviewContent } from "./getWebviewContent";
 import { handleDefinitionUpdate } from "./handleDefinitionUpdate";
+import { handleNodeSelected } from "./handleNodeSelected";
 import { resolveUriToFilePrefix } from "./resolveUriToFilePrefix";
 
 export const initiateEditor = (
@@ -101,8 +102,10 @@ export const initiateEditor = (
 
       currentPanel.webview.onDidReceiveMessage(
         async (event: EditorWebviewScriptEvent) => {
-          if (event.type === "UPDATE_DEFINITION") {
+          if (event.type === "vscode.updateDefinition") {
             await handleDefinitionUpdate(event);
+          } else if (event.type === "vscode.selectNode") {
+            await handleNodeSelected(event);
           }
         },
         undefined,

@@ -30,6 +30,11 @@ export type EditorWebviewScriptEvent =
       token: TokenInfo;
     }
   | {
+      type: "NODE_SELECTED";
+      path: string[];
+    }
+  | VSCodeNodeSelectedEvent
+  | {
       type: "RECEIVE_CONFIG_UPDATE_FROM_VSCODE";
       config: MachineConfig<any, any, any>;
       uri: string;
@@ -43,8 +48,15 @@ export type EditorWebviewScriptEvent =
     }
   | UpdateDefinitionEvent;
 
+export type VSCodeNodeSelectedEvent = {
+  type: "vscode.selectNode";
+  path: string[];
+  uri: string;
+  index: number;
+};
+
 export type UpdateDefinitionEvent = {
-  type: "UPDATE_DEFINITION";
+  type: "vscode.updateDefinition";
   config: MachineConfig<any, any, any>;
   layoutString: string;
   uri: string;
@@ -88,6 +100,16 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
       },
     },
     on: {
+      NODE_SELECTED: {
+        actions: (context, event) => {
+          getVsCodeApi().postMessage({
+            type: "vscode.selectNode",
+            index: context.index,
+            uri: context.uri,
+            path: event.path,
+          });
+        },
+      },
       RECEIVE_SERVICE: {
         target: ".hasService",
         actions: assign((_context, event) => {
@@ -147,7 +169,7 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
               }),
               (ctx, event) => {
                 getVsCodeApi().postMessage({
-                  type: "UPDATE_DEFINITION",
+                  type: "vscode.updateDefinition",
                   config: event.config,
                   index: ctx.index,
                   uri: ctx.uri,
