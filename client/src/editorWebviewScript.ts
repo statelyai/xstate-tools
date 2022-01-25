@@ -75,7 +75,9 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
       src: () => (send) => {
         const listener = (event) => {
           try {
-            send(JSON.parse(event.data));
+            const ourEvent: EditorWebviewScriptEvent = JSON.parse(event.data);
+
+            send(ourEvent);
           } catch (e) {
             console.warn(e);
           }
@@ -119,7 +121,6 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
             }${getTokenHash(context.token)}`;
           },
         },
-        initial: "notAcceptingUpdatesFromEditor",
         on: {
           RECEIVE_CONFIG_UPDATE_FROM_VSCODE: {
             cond: (ctx, event) => {
@@ -135,8 +136,6 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
               }),
               "updateIframe",
             ],
-            target: ".notAcceptingUpdatesFromEditor",
-            internal: false,
           },
           DEFINITION_UPDATED: {
             actions: [
@@ -156,28 +155,7 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
                 });
               },
             ],
-            target: ".notAcceptingUpdatesFromVsCode",
-            internal: false,
           },
-        },
-        states: {
-          notAcceptingUpdatesFromVsCode: {
-            after: {
-              800: "acceptingUpdatesFromAny",
-            },
-            on: {
-              RECEIVE_CONFIG_UPDATE_FROM_VSCODE: {},
-            },
-          },
-          notAcceptingUpdatesFromEditor: {
-            after: {
-              800: "acceptingUpdatesFromAny",
-            },
-            on: {
-              DEFINITION_UPDATED: {},
-            },
-          },
-          acceptingUpdatesFromAny: {},
         },
       },
     },
@@ -190,11 +168,11 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
         if (!iframe) return;
 
         iframe.contentWindow.postMessage(
-          JSON.stringify({
+          {
             config: context.config,
             layoutString: context.layoutString,
             type: "UPDATE_CONFIG",
-          }),
+          },
           "*",
         );
       },

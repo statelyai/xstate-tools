@@ -199,7 +199,6 @@ export const introspectMachine = (machine: XState.StateNode) => {
 
       (transition.target as unknown as XState.StateNode[])?.forEach(
         (targetNode) => {
-          console.log(targetNode);
           /** Pick up invokes */
           targetNode.invoke?.forEach((service) => {
             const serviceSrc = getServiceSrc(service);
@@ -274,8 +273,6 @@ export const introspectMachine = (machine: XState.StateNode) => {
   });
 
   const subState: SubState = makeSubStateFromNode(machine, machine, nodeMaps);
-
-  console.log(services.toDataShape());
 
   return {
     states: Object.entries(nodeMaps).map(([stateId, state]) => {
