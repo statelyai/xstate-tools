@@ -51,9 +51,6 @@ export const handleDefinitionUpdate = async (event: UpdateDefinitionEvent) => {
 
   const range = getRangeFromSourceLocation(machine.ast.definition?.node?.loc);
 
-  /**
-   * Grabs the context as a raw string from the machine definition
-   */
   const contextRaw = machine.ast.definition?.context?.node
     ? `\ncontext: ${getRawTextFromNode(
         text,
@@ -61,9 +58,6 @@ export const handleDefinitionUpdate = async (event: UpdateDefinitionEvent) => {
       ).replace("\n", " ")},`
     : "";
 
-  /**
-   * Grabs the context as a raw string from the machine definition
-   */
   const tsTypesRaw = machine.ast.definition?.tsTypes?.node
     ? `\ntsTypes: ${getRawTextFromNode(
         text,
@@ -73,13 +67,8 @@ export const handleDefinitionUpdate = async (event: UpdateDefinitionEvent) => {
 
   const json = JSON.stringify(event.config, null, 2);
 
-  const pathToSave = path.resolve(doc.uri.path).slice(6);
+  const prettierConfig = await prettier.resolveConfig(doc.fileName);
 
-  const prettierConfig = await prettier.resolveConfig(pathToSave);
-
-  /**
-   * Adds the context to the JSON (pretty ugly but works)
-   */
   let finalTextToInput = `${json.slice(
     0,
     1,

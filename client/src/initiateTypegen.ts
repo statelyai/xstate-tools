@@ -64,7 +64,6 @@ export const initiateTypegen = (
     context.subscriptions.push(
       client.onNotification("xstate/update", (event: XStateUpdateEvent) => {
         if (event.machines.length === 0) return;
-        console.log(event.machines);
         typegenService.send({
           type: "RECEIVE_NEW_EVENT",
           event,

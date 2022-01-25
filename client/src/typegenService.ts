@@ -57,7 +57,7 @@ const throttledTypegenCreationMachine = createMachine<
 
             const pathToSave = path.resolve(newUri.path).slice(6);
 
-            const prettierConfig = await prettier.resolveConfig(pathToSave);
+            const prettierConfig = await prettier.resolveConfig(uri.slice(6));
 
             if (
               event.machines.filter((machine) => machine.hasTypesNode).length >
