@@ -55,16 +55,42 @@
         "command": "xstate.visualize",
         "title": "Open Inspector",
         "category": "XState"
+      },
+      {
+        "command": "xstate.edit",
+        "title": "Open Visual Editor",
+        "category": "XState"
+      },
+      {
+        "command": "xstate.sign-out",
+        "title": "Sign out of Stately",
+        "category": "XState"
+      },
+      {
+        "command": "xstate.sign-in",
+        "title": "Sign in to Stately",
+        "category": "XState"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "XState",
+      "properties": {
+        "xstate.showVisualEditorWarnings": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show warnings that prevent you from using the visual editor."
+        }
+      }
+    }
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx,json}": "prettier --write"
   },
   "scripts": {
-    "vscode:prepublish": "yarn preconstruct build && npm run server:build && npm run client:build",
-    "fe:build": "esbuild client/src/webviewScript.ts --bundle --outfile=client/scripts/webview.js",
-    "compile": "npm run fe:build && esbuild --bundle server/src/server.ts --outfile=server/dist/index.js --external:vscode --platform=\"node\" && esbuild --bundle --platform=\"node\" client/src/extension.ts --outfile=client/dist/index.js --external:vscode",
+    "vscode:prepublish": "yarn preconstruct build && npm run fe:viz:build && npm run fe:editor:build && npm run server:build && npm run client:build",
+    "fe:viz:build": "esbuild client/src/vizWebviewScript.ts --bundle --outfile=client/scripts/vizWebview.js",
+    "fe:editor:build": "esbuild client/src/editorWebviewScript.ts --bundle --outfile=client/scripts/editorWebview.js",
+    "compile": "npm run fe:viz:build && npm run fe:editor:build && esbuild --bundle server/src/server.ts --outfile=server/dist/index.js --external:vscode --platform=\"node\" && esbuild --bundle --platform=\"node\" client/src/extension.ts --outfile=client/dist/index.js --external:vscode",
     "server:build": "ncc build server/src/server.ts -t -o server/dist",
     "client:build": "ncc build client/src/extension.ts -t -o client/dist",
     "watch": "concurrently \"npm:server:watch\" \"npm:client:watch\"",

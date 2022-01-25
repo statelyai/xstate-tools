@@ -11,7 +11,7 @@ export interface WebViewMachineContext {
   guardsToMock: string[];
 }
 
-export type WebviewMachineEvent =
+export type VizWebviewMachineEvent =
   | {
       type: "RECEIVE_SERVICE";
       config: MachineConfig<any, any, any>;
@@ -27,7 +27,7 @@ export type WebviewMachineEvent =
       guardsToMock: string[];
     };
 
-const machine = createMachine<WebViewMachineContext, WebviewMachineEvent>({
+const machine = createMachine<WebViewMachineContext, VizWebviewMachineEvent>({
   initial: "waitingForFirstContact",
   context: {
     config: {},

@@ -5,10 +5,11 @@ import { MachineConfig } from "xstate";
 import { Location, parseMachinesFromFile } from "xstate-parser-demo";
 import {
   filterOutIgnoredMachines,
+  getSetOfNames,
   isCursorInPosition,
 } from "xstate-vscode-shared";
 import { getWebviewContent } from "./getWebviewContent";
-import { WebviewMachineEvent } from "./webviewScript";
+import { VizWebviewMachineEvent } from "./vizWebviewScript";
 
 export const initiateVisualizer = (
   context: vscode.ExtensionContext,
@@ -16,7 +17,7 @@ export const initiateVisualizer = (
 ) => {
   let currentPanel: vscode.WebviewPanel | undefined = undefined;
 
-  const sendMessage = (event: WebviewMachineEvent) => {
+  const sendMessage = (event: VizWebviewMachineEvent) => {
     currentPanel?.webview.postMessage(JSON.stringify(event));
   };
 
@@ -45,12 +46,12 @@ export const initiateVisualizer = (
       );
 
       const onDiskPath = vscode.Uri.file(
-        path.join(context.extensionPath, "client", "scripts", "webview.js"),
+        path.join(context.extensionPath, "client", "scripts", "vizWebview.js"),
       );
 
       const src = currentPanel.webview.asWebviewUri(onDiskPath);
 
-      currentPanel.webview.html = getWebviewContent(src);
+      currentPanel.webview.html = getWebviewContent(src, "XState Visualizer");
 
       sendMessage({
         type: "RECEIVE_SERVICE",
@@ -114,7 +115,7 @@ export const initiateVisualizer = (
             resolveUriToFilePrefix(
               vscode.window.activeTextEditor.document.uri.path,
             ),
-            Object.keys(machine.getAllNamedConds()).filter(Boolean),
+            Array.from(getSetOfNames(machine.getAllConds(["named"]))),
           );
         } else {
           vscode.window.showErrorMessage(

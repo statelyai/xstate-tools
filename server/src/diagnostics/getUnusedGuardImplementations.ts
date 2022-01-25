@@ -1,17 +1,21 @@
 import { DiagnosticSeverity } from "vscode-languageserver";
 import { DiagnosticGetter } from "../getDiagnostics";
-import { getRangeFromSourceLocation } from "../getRangeFromSourceLocation";
+import {
+  getRangeFromSourceLocation,
+  getSetOfNames,
+} from "xstate-vscode-shared";
 
-// TODO - add checker for conds and guards
 export const getUnusedGuardsImplementations: DiagnosticGetter = (
   machine,
   textDocument,
 ) => {
-  const allGuards = Object.keys(machine.parseResult?.getAllNamedConds() || {});
+  const allGuards = getSetOfNames(
+    machine.parseResult?.getAllConds(["named"]) || [],
+  );
 
   const unusedGuards =
     machine.parseResult?.ast?.options?.guards?.properties.filter((guard) => {
-      return !allGuards.includes(guard.key);
+      return !allGuards.has(guard.key);
     });
 
   return (
