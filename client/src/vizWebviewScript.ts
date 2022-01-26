@@ -54,7 +54,7 @@ const machine = createMachine<WebViewMachineContext, VizWebviewMachineEvent>({
           config: event.config,
           index: event.index,
           uri: event.uri,
-          guardsToMock: event.guardsToMock,
+          guardsToMock: event.guardsToMock || [],
         };
       }),
       internal: false,
@@ -75,7 +75,7 @@ const machine = createMachine<WebViewMachineContext, VizWebviewMachineEvent>({
               config: event.config,
               index: event.index,
               uri: event.uri,
-              guardsToMock: event.guardsToMock,
+              guardsToMock: event.guardsToMock || [],
             };
           }),
           internal: false,
@@ -106,7 +106,7 @@ const machine = createMachine<WebViewMachineContext, VizWebviewMachineEvent>({
             src: (context) => (send) => {
               const guards: Record<string, () => boolean> = {};
 
-              context.guardsToMock.forEach((guard) => {
+              context.guardsToMock?.forEach((guard) => {
                 guards[guard] = () => true;
               });
 
