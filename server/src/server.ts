@@ -263,7 +263,7 @@ async function validateDocument(textDocument: TextDocument): Promise<void> {
             ),
           ),
           hasTypesNode: Boolean(
-            machine.parseResult?.ast?.definition?.tsTypes?.value,
+            machine.parseResult?.ast?.definition?.tsTypes?.node,
           ),
         };
       }),

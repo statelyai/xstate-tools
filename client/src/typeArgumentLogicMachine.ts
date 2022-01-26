@@ -184,7 +184,7 @@ export const typeArgumentLogicMachine = (
     },
     {
       guards: {
-        wantsTypegen: () => Boolean(machine.ast?.definition?.tsTypes?.value),
+        wantsTypegen: () => Boolean(machine.ast?.definition?.tsTypes),
         isMemberExpression: () => Boolean(machine?.ast?.isMemberExpression),
         hasAtLeastOneType: () => (typeArguments?.params.length || 0) > 0,
         hasFourTypes: () => typeArguments?.params.length === 4,
