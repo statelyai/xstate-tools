@@ -134,7 +134,7 @@ export const introspectMachine = (machine: XState.StateNode) => {
     checkIfOptional: (name) => Boolean(machine.options.delays[name]),
   });
 
-  const serviceSrcToIdMap: Record<string, string> = {};
+  const serviceSrcToIdMap: Record<string, Set<string>> = {};
 
   const nodeMaps: {
     [id: string]: {
@@ -178,7 +178,11 @@ export const introspectMachine = (machine: XState.StateNode) => {
       const serviceSrc = getServiceSrc(service);
       if (typeof serviceSrc !== "string" || /\./.test(serviceSrc)) return;
       services.addItem(serviceSrc, node.path);
-      serviceSrcToIdMap[serviceSrc] = service.id;
+
+      if (!serviceSrcToIdMap[serviceSrc]) {
+        serviceSrcToIdMap[serviceSrc] = new Set();
+      }
+      serviceSrcToIdMap[serviceSrc].add(service.id);
     });
 
     node.transitions?.forEach((transition) => {

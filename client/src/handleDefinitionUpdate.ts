@@ -1,6 +1,5 @@
-import * as vscode from "vscode";
 import * as prettier from "prettier";
-import * as path from "path";
+import * as vscode from "vscode";
 import { parseMachinesFromFile } from "xstate-parser-demo";
 import {
   getRangeFromSourceLocation,
@@ -8,6 +7,15 @@ import {
 } from "xstate-vscode-shared";
 import { UpdateDefinitionEvent } from "./editorWebviewScript";
 import { resolveUriToFilePrefix } from "./resolveUriToFilePrefix";
+
+const STATE_KEYS_TO_PRESERVE = [
+  "context",
+  "tsTypes",
+  "schema",
+  "meta",
+  "data",
+  "delimiter",
+] as const;
 
 export const handleDefinitionUpdate = async (event: UpdateDefinitionEvent) => {
   const doc = vscode.workspace.textDocuments.find((doc) => {
@@ -51,12 +59,14 @@ export const handleDefinitionUpdate = async (event: UpdateDefinitionEvent) => {
 
   const range = getRangeFromSourceLocation(machine.ast.definition?.node?.loc);
 
-  const contextRaw = machine.ast.definition?.context?.node
-    ? `\ncontext: ${getRawTextFromNode(
-        text,
-        machine.ast.definition?.context?.node,
-      ).replace("\n", " ")},`
-    : "";
+  const nodesToPreserve: string[] = STATE_KEYS_TO_PRESERVE.map((nodeKey) => {
+    return machine.ast.definition?.[nodeKey]?.node
+      ? `\n${nodeKey}: ${getRawTextFromNode(
+          text,
+          machine.ast.definition?.[nodeKey]?.node,
+        ).replace("\n", " ")},`
+      : "";
+  });
 
   const tsTypesRaw = machine.ast.definition?.tsTypes?.node
     ? `\ntsTypes: ${getRawTextFromNode(
@@ -69,10 +79,9 @@ export const handleDefinitionUpdate = async (event: UpdateDefinitionEvent) => {
 
   const prettierConfig = await prettier.resolveConfig(doc.fileName);
 
-  let finalTextToInput = `${json.slice(
-    0,
-    1,
-  )}${contextRaw}${tsTypesRaw}${json.slice(1)}`;
+  let finalTextToInput = `${json.slice(0, 1)}${nodesToPreserve.join(
+    "",
+  )}${json.slice(1)}`;
 
   try {
     const result = await prettier.format(`(${finalTextToInput})`, {

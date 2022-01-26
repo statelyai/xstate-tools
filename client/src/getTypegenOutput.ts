@@ -68,20 +68,12 @@ export const getTypegenOutput = (event: XStateUpdateEvent) => {
 
         machine.allServices.forEach((service) => {
           if (service.id) {
-            internalEvents.add(
-              `'done.invoke.${service.id}': { type: 'done.invoke.${
-                service.id
-              }'; data: unknown; __tip: "Provide an event of type { type: 'done.invoke.${
-                service.id
-              }'; data: any } to strongly type this"; ${
-                inlineInvocationName.test(service.id)
-                  ? '__tip2: "Give this service an id property to clean up the event name"'
-                  : ""
-              } };`,
-            );
-            internalEvents.add(
-              `'error.platform.${service.id}': { type: 'error.platform.${service.id}'; data: unknown; };`,
-            );
+            internalEvents[
+              `done.invoke.${service.id}`
+            ] = `'done.invoke.${service.id}': { type: 'done.invoke.${service.id}'; data: unknown; __tip: "See the XState TS docs to learn how to strongly type this.";`;
+            internalEvents[
+              `error.platform.${service.id}`
+            ] = `'error.platform.${service.id}': { type: 'error.platform.${service.id}'; data: unknown; };`;
           }
         });
 
@@ -91,14 +83,16 @@ export const getTypegenOutput = (event: XStateUpdateEvent) => {
             ${displayEventsCausing(introspectResult.actions.lines)}
           };
           internalEvents: {
-            ${Array.from(internalEvents).join("\n")}
+            ${Object.values(internalEvents).join("\n")}
           };
           invokeSrcNameMap: {
             ${Object.keys(introspectResult.serviceSrcToIdMap)
               .map((src) => {
-                // TODO - improve this so it picks up id
-                // transitions
-                return `'${src}': 'done.invoke.${introspectResult.serviceSrcToIdMap[src]}'`;
+                const set = Array.from(introspectResult.serviceSrcToIdMap[src]);
+
+                return `'${src}': ${set
+                  .map((item) => `'done.invoke.${item}'`)
+                  .join(" | ")};`;
               })
               .join("\n")}
           }
@@ -132,29 +126,22 @@ export const getTypegenOutput = (event: XStateUpdateEvent) => {
   `;
 };
 
-const inlineInvocationName = /done\.invoke\..{0,}:invocation\[.{0,}\]/;
-
 const collectInternalEvents = (lineArrays: { events: string[] }[][]) => {
-  const internalEvents = new Set<string>();
+  const internalEvents: Record<string, string> = {};
 
   lineArrays.forEach((lines) => {
     lines.forEach((line) => {
       line.events.forEach((event) => {
         if (event.startsWith("done.invoke")) {
-          if (typeof event === "object") return;
-          internalEvents.add(
-            `'${event}': { type: '${event}'; data: unknown; __tip: "Provide an event of type { type: '${event}'; data: any } to strongly type this"; ${
-              inlineInvocationName.test(event)
-                ? '__tip2: "Give this service an id property to clean up the event name"'
-                : ""
-            } };`,
-          );
+          internalEvents[
+            event
+          ] = `'${event}': { type: '${event}'; data: unknown; __tip: "See the XState TS docs to learn how to strongly type this."; };`;
         } else if (event.startsWith("xstate.") || event === "") {
-          internalEvents.add(`'${event}': { type: '${event}' };`);
+          internalEvents[event] = `'${event}': { type: '${event}' };`;
         } else if (event.startsWith("error.platform")) {
-          internalEvents.add(
-            `'${event}': { type: '${event}'; data: unknown; };`,
-          );
+          internalEvents[
+            event
+          ] = `'${event}': { type: '${event}'; data: unknown; };`;
         }
       });
     });
