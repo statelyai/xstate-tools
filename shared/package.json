@@ -3,14 +3,15 @@
   "version": "1.0.0",
   "main": "dist/xstate-vscode-shared.cjs.js",
   "license": "MIT",
-  "dependencies": {},
+  "dependencies": {
+    "xstate-parser-demo": "0.5.2"
+  },
   "scripts": {
     "lint": "tsc",
     "test": "jest --passWithNoTests"
   },
   "peerDependencies": {
-    "xstate": "^4",
-    "xstate-parser-demo": "0.5.2"
+    "xstate": "^4"
   },
   "devDependencies": {
     "@types/jest": "^27.4.0",
