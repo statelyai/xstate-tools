@@ -1,6 +1,11 @@
+import * as path from "path";
 import * as vscode from "vscode";
 import { LanguageClient } from "vscode-languageclient/node";
-import { XStateUpdateEvent } from "xstate-vscode-shared";
+import { parseMachinesFromFile } from "xstate-parser-demo";
+import {
+  getRangeFromSourceLocation,
+  XStateUpdateEvent,
+} from "xstate-vscode-shared";
 import { startTypegenService } from "./typegenService";
 
 export const initiateTypegen = (
@@ -18,36 +23,43 @@ export const initiateTypegen = (
 
   context.subscriptions.push(
     vscode.workspace.onWillSaveTextDocument(async (event) => {
-      // TODO - re-enable
-      // const text = event.document.getText();
-      // const result = parseMachinesFromFile(text);
-      // if (result.machines.length > 0) {
-      //   event.waitUntil(
-      //     new Promise((resolve) => {
-      //       const fileEdits: vscode.TextEdit[] = [];
-      //       const relativePath = removeExtension(
-      //         path.basename(event.document.uri.path),
-      //       );
-      //       let machineIndex = 0;
-      //       result.machines.forEach((machine, index) => {
-      //         const service = interpret(
-      //           typeArgumentLogicMachine(
-      //             machine,
-      //             (textEdit) => fileEdits.push(textEdit),
-      //             (start, end) => text.slice(start, end),
-      //             relativePath,
-      //             machineIndex,
-      //           ),
-      //         ).start();
-      //         service.stop();
-      //         if (machine.ast?.definition?.tsTypes) {
-      //           machineIndex++;
-      //         }
-      //       });
-      //       resolve(fileEdits);
-      //     }),
-      //   );
-      // }
+      const text = event.document.getText();
+      const result = parseMachinesFromFile(text);
+      if (result.machines.length > 0) {
+        event.waitUntil(
+          new Promise((resolve) => {
+            const fileEdits: vscode.TextEdit[] = [];
+            const relativePath = removeExtension(
+              path.basename(event.document.uri.path),
+            );
+            let machineIndex = 0;
+            result.machines.forEach((machine, index) => {
+              if (machine.ast?.definition?.tsTypes) {
+                const position = getRangeFromSourceLocation(
+                  machine.ast.definition.tsTypes?.node?.loc,
+                );
+                fileEdits.push(
+                  new vscode.TextEdit(
+                    new vscode.Range(
+                      new vscode.Position(
+                        position.start.line,
+                        position.start.character,
+                      ),
+                      new vscode.Position(
+                        position.end.line,
+                        position.end.character,
+                      ),
+                    ),
+                    `{} as import("./${relativePath}.typegen").Typegen${machineIndex}`,
+                  ),
+                );
+                machineIndex++;
+              }
+            });
+            resolve(fileEdits);
+          }),
+        );
+      }
     }),
   );
 

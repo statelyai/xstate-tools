@@ -15,6 +15,7 @@ const STATE_KEYS_TO_PRESERVE = [
   "meta",
   "data",
   "delimiter",
+  "preserveActionOrder",
 ] as const;
 
 export const handleDefinitionUpdate = async (event: UpdateDefinitionEvent) => {

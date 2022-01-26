@@ -56,7 +56,7 @@ export const getTypegenOutput = (event: XStateUpdateEvent) => {
         const objectSyntax = getStateMatchesObjectSyntax(introspectResult);
 
         if (objectSyntax) {
-          matchesStates.push();
+          matchesStates.push(objectSyntax);
         }
 
         const internalEvents = collectInternalEvents([
@@ -70,7 +70,7 @@ export const getTypegenOutput = (event: XStateUpdateEvent) => {
           if (service.id) {
             internalEvents[
               `done.invoke.${service.id}`
-            ] = `'done.invoke.${service.id}': { type: 'done.invoke.${service.id}'; data: unknown; __tip: "See the XState TS docs to learn how to strongly type this.";`;
+            ] = `'done.invoke.${service.id}': { type: 'done.invoke.${service.id}'; data: unknown; __tip: "See the XState TS docs to learn how to strongly type this."; };`;
             internalEvents[
               `error.platform.${service.id}`
             ] = `'error.platform.${service.id}': { type: 'error.platform.${service.id}'; data: unknown; };`;

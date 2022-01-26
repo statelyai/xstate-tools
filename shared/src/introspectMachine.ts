@@ -1,6 +1,7 @@
 import * as XState from "xstate";
 import { InvokeDefinition } from "xstate";
 import { pathToStateValue } from "xstate/lib/utils";
+import { INLINE_IMPLEMENTATION_TYPE } from "xstate-parser-demo";
 import {
   getMatchesStates,
   getTransitionsFromNode,
@@ -90,7 +91,7 @@ class ItemMap {
     let isRequiredInTotal = false;
     const lines = Object.entries(this.map)
       .filter(([name]) => {
-        return !/\./.test(name);
+        return !(/\./.test(name) || name === INLINE_IMPLEMENTATION_TYPE);
       })
       .map(([name, data]) => {
         const optional = this.checkIfOptional(name);
@@ -176,7 +177,12 @@ export const introspectMachine = (machine: XState.StateNode) => {
 
     node.invoke?.forEach((service) => {
       const serviceSrc = getServiceSrc(service);
-      if (typeof serviceSrc !== "string" || /\./.test(serviceSrc)) return;
+      if (
+        typeof serviceSrc !== "string" ||
+        /\./.test(serviceSrc) ||
+        serviceSrc === INLINE_IMPLEMENTATION_TYPE
+      )
+        return;
       services.addItem(serviceSrc, node.path);
 
       if (!serviceSrcToIdMap[serviceSrc]) {

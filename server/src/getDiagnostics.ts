@@ -3,6 +3,7 @@ import { TextDocument } from "vscode-languageserver-textdocument";
 import { GlobalSettings } from "xstate-vscode-shared";
 import { getInlineImplementationsWarnings } from "./diagnostics/getInlineImplementationsWarnings";
 import { getMetaWarnings } from "./diagnostics/getMetaWarnings";
+import { getTypegenGenericWarnings } from "./diagnostics/getTypegenGenericWarnings";
 import { getUnusedActionImplementations } from "./diagnostics/getUnusedActionImplementations";
 import { getUnusedGuardsImplementations } from "./diagnostics/getUnusedGuardImplementations";
 import { getUnusedServicesImplementations } from "./diagnostics/getUnusedServicesImplementations";
@@ -22,6 +23,7 @@ const getters: DiagnosticGetter[] = [
   getUnusedGuardsImplementations,
   getInlineImplementationsWarnings,
   getMetaWarnings,
+  getTypegenGenericWarnings,
 ];
 
 export const getDiagnostics = (

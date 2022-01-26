@@ -63,9 +63,10 @@ const throttledTypegenCreationMachine = createMachine<
               event.machines.filter((machine) => machine.hasTypesNode).length >
               0
             ) {
+              const typegenOutput = getTypegenOutput(event);
               await promisify(fs.writeFile)(
                 pathToSave,
-                prettier.format(getTypegenOutput(event), {
+                prettier.format(typegenOutput, {
                   ...prettierConfig,
                   parser: "typescript",
                 }),
