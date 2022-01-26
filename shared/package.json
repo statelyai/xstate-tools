@@ -9,7 +9,8 @@
     "test": "jest --passWithNoTests"
   },
   "peerDependencies": {
-    "xstate": "^4"
+    "xstate": "^4",
+    "xstate-parser-demo": "0.5.2"
   },
   "devDependencies": {
     "@types/jest": "^27.4.0",
