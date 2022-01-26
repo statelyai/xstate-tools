@@ -66,6 +66,10 @@ export const getTypegenOutput = (event: XStateUpdateEvent) => {
           introspectResult.delays.lines,
         ]);
 
+        internalEvents[
+          "xstate.init"
+        ] = `'xstate.init': { type: 'xstate.init' };`;
+
         machine.allServices.forEach((service) => {
           if (service.id) {
             internalEvents[
@@ -162,7 +166,12 @@ const displayEventsCausing = (lines: { name: string; events: string[] }[]) => {
           .map((event) => {
             return `'${event}'`;
           })
-          .join(" | ") || "string"
+          .join(" | ") ||
+        /**
+         * If no transitions go to this guard/service/action, it's guaranteed
+         * to be caused by xstate.init.
+         */
+        "'xstate.init'"
       };`;
     })
     .join("\n");

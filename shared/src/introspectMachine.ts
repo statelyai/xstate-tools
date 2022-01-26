@@ -91,7 +91,7 @@ class ItemMap {
     let isRequiredInTotal = false;
     const lines = Object.entries(this.map)
       .filter(([name]) => {
-        return !(/\./.test(name) || name === INLINE_IMPLEMENTATION_TYPE);
+        return !(name === INLINE_IMPLEMENTATION_TYPE);
       })
       .map(([name, data]) => {
         const optional = this.checkIfOptional(name);
@@ -101,7 +101,7 @@ class ItemMap {
         return {
           name,
           required: !optional,
-          events: Array.from(data.events).filter(Boolean),
+          events: Array.from(data.events),
           states: Array.from(data.states)
             .map((state) => JSON.stringify(state))
             .filter(Boolean),
@@ -113,8 +113,6 @@ class ItemMap {
     };
   }
 }
-
-const xstateRegex = /^xstate\./;
 
 export type IntrospectMachineResult = ReturnType<typeof introspectMachine>;
 
@@ -163,7 +161,6 @@ export const introspectMachine = (machine: XState.StateNode) => {
     // TODO - make activities pick up the events
     // that led to them
     node.activities?.forEach((activity) => {
-      if (/\./.test(activity.type)) return;
       if (activity.type && activity.type !== "xstate.invoke") {
         activities.addItem(activity.type, node.path);
       }
@@ -179,7 +176,6 @@ export const introspectMachine = (machine: XState.StateNode) => {
       const serviceSrc = getServiceSrc(service);
       if (
         typeof serviceSrc !== "string" ||
-        /\./.test(serviceSrc) ||
         serviceSrc === INLINE_IMPLEMENTATION_TYPE
       )
         return;
@@ -212,7 +208,7 @@ export const introspectMachine = (machine: XState.StateNode) => {
           /** Pick up invokes */
           targetNode.invoke?.forEach((service) => {
             const serviceSrc = getServiceSrc(service);
-            if (typeof serviceSrc !== "string" || /\./.test(serviceSrc)) return;
+            if (typeof serviceSrc !== "string") return;
             services.addEventToItem(
               serviceSrc,
               transition.eventType,
@@ -224,13 +220,6 @@ export const introspectMachine = (machine: XState.StateNode) => {
 
       if (transition.actions) {
         transition.actions?.forEach((action) => {
-          if (!xstateRegex.test(action.type)) {
-            actions.addEventToItem(
-              action.type,
-              transition.eventType,
-              node.path,
-            );
-          }
           if (action.type === "xstate.choose" && Array.isArray(action.conds)) {
             action.conds.forEach(({ cond, actions: condActions }) => {
               if (typeof cond === "string") {
@@ -254,11 +243,13 @@ export const introspectMachine = (machine: XState.StateNode) => {
                 );
               }
             });
+          } else {
+            actions.addEventToItem(
+              action.type,
+              transition.eventType,
+              node.path,
+            );
           }
-          return {
-            name: action.type,
-            event: transition.eventType,
-          };
         });
       }
     });
@@ -270,7 +261,6 @@ export const introspectMachine = (machine: XState.StateNode) => {
     allActions.push(...node.onEntry);
 
     allActions?.forEach((action) => {
-      if (xstateRegex.test(action.type) || action.exec) return;
       actions.addItem(action.type, node.path);
     });
 
