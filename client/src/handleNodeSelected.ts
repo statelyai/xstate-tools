@@ -2,14 +2,14 @@ import * as vscode from "vscode";
 import { parseMachinesFromFile } from "xstate-parser-demo";
 import { getRangeFromSourceLocation } from "xstate-vscode-shared";
 import { VSCodeNodeSelectedEvent } from "./editorWebviewScript";
-import { resolveUriToFilePrefix } from "./resolveUriToFilePrefix";
 
 export const handleNodeSelected = async (event: VSCodeNodeSelectedEvent) => {
-  const activeEditor = vscode.window.activeTextEditor;
+  const activeEditor = vscode.window.visibleTextEditors.find((editor) => {
+    return editor.document.uri.toString() === event.uri;
+  });
 
-  if (resolveUriToFilePrefix(activeEditor.document.uri.path) !== event.uri) {
-    return;
-  }
+  if (!activeEditor) return;
+
   const text = activeEditor.document.getText();
 
   const result = parseMachinesFromFile(text);
@@ -24,7 +24,7 @@ export const handleNodeSelected = async (event: VSCodeNodeSelectedEvent) => {
 
   const range = getRangeFromSourceLocation(node.ast.node.loc);
 
-  vscode.window.activeTextEditor.revealRange(
+  activeEditor.revealRange(
     new vscode.Range(
       new vscode.Position(range.start.line, range.start.character),
       new vscode.Position(range.end.line, range.end.character),
