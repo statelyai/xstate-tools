@@ -21,7 +21,7 @@ export const getStateMatchesObjectSyntax = (
       states.push(
         `{ ${substatesWithChildren
           .map(([state, value]) => {
-            return `${state}?: ${getUnionForSubState(value, depth + 1)};`;
+            return `'${state}'?: ${getUnionForSubState(value, depth + 1)};`;
           })
           .join("\n")} }`,
       );
