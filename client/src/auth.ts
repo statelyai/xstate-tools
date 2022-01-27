@@ -87,7 +87,7 @@ export const getAuth = (context: vscode.ExtensionContext) => {
     return Promise.race<
       TokenInfo | "timed-out" | "unknown-error" | "cancelled"
     >([
-      delay(30000, "timed-out"),
+      delay(30000, "timed-out") as any,
       new Promise((resolve) => {
         onCancel(() => {
           resolve("cancelled");

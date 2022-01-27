@@ -10,12 +10,14 @@
 		"strict": true,
 		"outDir": "out",
 		"rootDir": "src",
-		"noEmit": true
+		"noEmit": true,
+		"skipLibCheck": true
 	},
 	"include": [
 		"src"
 	],
 	"exclude": [
 		"node_modules",
+		"src/__tests__/__examples__"
 	]
 }

@@ -1,6 +1,9 @@
 import { Diagnostic } from "vscode-languageserver";
 import { TextDocument } from "vscode-languageserver-textdocument";
-import { GlobalSettings } from "xstate-vscode-shared";
+import {
+  DocumentValidationsResult,
+  GlobalSettings,
+} from "xstate-vscode-shared";
 import { getInlineImplementationsWarnings } from "./diagnostics/getInlineImplementationsWarnings";
 import { getMetaWarnings } from "./diagnostics/getMetaWarnings";
 import { getTypegenGenericWarnings } from "./diagnostics/getTypegenGenericWarnings";
@@ -8,7 +11,6 @@ import { getUnusedActionImplementations } from "./diagnostics/getUnusedActionImp
 import { getUnusedGuardsImplementations } from "./diagnostics/getUnusedGuardImplementations";
 import { getUnusedServicesImplementations } from "./diagnostics/getUnusedServicesImplementations";
 import { miscDiagnostics } from "./diagnostics/misc";
-import { DocumentValidationsResult } from "./server";
 
 export type DiagnosticGetter = (
   result: DocumentValidationsResult,

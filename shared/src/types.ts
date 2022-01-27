@@ -1,4 +1,6 @@
-import { MachineConfig } from "xstate";
+import { MachineConfig, StateMachine } from "xstate";
+import { MachineParseResult } from "xstate-parser-demo/lib/MachineParseResult";
+import { IntrospectMachineResult } from ".";
 
 export interface GlobalSettings {
   showVisualEditorWarnings: boolean;
@@ -32,3 +34,10 @@ export interface XStateUpdateEvent {
     hasTypesNode: boolean;
   }[];
 }
+
+export type DocumentValidationsResult = {
+  machine?: StateMachine<any, any, any>;
+  parseResult?: MachineParseResult;
+  introspectionResult?: IntrospectMachineResult;
+  documentText: string;
+};

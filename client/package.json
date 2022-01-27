@@ -20,7 +20,7 @@
     "@xstate/inspect": "^0.4.1",
     "lz-string": "^1.4.4",
     "vscode-languageclient": "^7.0.0",
-    "xstate": "^4.28.0",
+    "xstate": "https://pkg.csb.dev/statelyai/xstate/commit/2200d1be/xstate",
     "xstate-vscode-shared": "*"
   },
   "devDependencies": {

@@ -4,8 +4,7 @@ import * as prettier from "prettier";
 import { promisify } from "util";
 import * as vscode from "vscode";
 import { assign, createMachine, interpret } from "xstate";
-import { XStateUpdateEvent } from "xstate-vscode-shared";
-import { getTypegenOutput } from "./getTypegenOutput";
+import { XStateUpdateEvent, getTypegenOutput } from "xstate-vscode-shared";
 
 const throttledTypegenCreationMachine = createMachine<
   {

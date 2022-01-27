@@ -8,3 +8,7 @@ export * from "./getSetOfNames";
 export * from "./getInlineImplementations";
 export * from "./types";
 export * from "./getRawTextFromNode";
+export * from "./getTypegenOutput";
+export * from "./getStateMatchesObjectSyntax";
+export * from "./makeXStateUpdateEvent";
+export * from "./getDocumentValidationsResults";

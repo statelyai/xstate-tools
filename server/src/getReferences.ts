@@ -2,8 +2,10 @@ import { TextDocumentIdentifier } from "vscode-languageserver";
 import { Position, Range } from "vscode-languageserver-textdocument";
 import { createMachine } from "xstate";
 import { getCursorHoverType } from "./getCursorHoverType";
-import { getRangeFromSourceLocation } from "xstate-vscode-shared";
-import { DocumentValidationsResult } from "./server";
+import {
+  DocumentValidationsResult,
+  getRangeFromSourceLocation,
+} from "xstate-vscode-shared";
 
 export const getReferences = (params: {
   textDocument: TextDocumentIdentifier;
@@ -141,7 +143,7 @@ export const getReferences = (params: {
     } else if (cursorHover?.type === "SERVICE_IMPLEMENTATION") {
       const services = cursorHover.machine
         .getAllServices(["named"])
-        .filter((elem) => elem.name === cursorHover.name);
+        .filter((elem) => elem.src === cursorHover.name);
 
       return services.map((service) => {
         return {

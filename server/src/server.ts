@@ -20,13 +20,16 @@ import { assign, createMachine, interpret, StateMachine } from "xstate";
 import { parseMachinesFromFile } from "xstate-parser-demo";
 import { MachineParseResult } from "xstate-parser-demo/lib/MachineParseResult";
 import {
+  DocumentValidationsResult,
   filterOutIgnoredMachines,
+  getDocumentValidationsResults,
   getRawTextFromNode,
   getSetOfNames,
   getTransitionsFromNode,
   GlobalSettings,
   introspectMachine,
   IntrospectMachineResult,
+  makeXStateUpdateEvent,
   XStateUpdateEvent,
 } from "xstate-vscode-shared";
 import { getCursorHoverType } from "./getCursorHoverType";
@@ -128,13 +131,6 @@ documents.onDidClose((e) => {
   documentSettings.delete(e.document.uri);
 });
 
-export type DocumentValidationsResult = {
-  machine?: StateMachine<any, any, any>;
-  parseResult?: MachineParseResult;
-  introspectionResult?: IntrospectMachineResult;
-  documentText: string;
-};
-
 const documentValidationsCache: Map<string, DocumentValidationsResult[]> =
   new Map();
 
@@ -190,84 +186,11 @@ async function validateDocument(textDocument: TextDocument): Promise<void> {
   const diagnostics: Diagnostic[] = [];
 
   try {
-    const machines: DocumentValidationsResult[] = filterOutIgnoredMachines(
-      parseMachinesFromFile(text),
-    ).machines.map((parseResult) => {
-      if (!parseResult) {
-        return {
-          documentText: text,
-        };
-      }
-
-      const config = parseResult.toConfig();
-      try {
-        const machine = createMachine(config as any);
-        const introspectionResult = introspectMachine(machine as any);
-        return {
-          parseResult,
-          machine,
-          introspectionResult,
-          documentText: text,
-        };
-      } catch (e) {
-        return {
-          parseResult,
-          documentText: text,
-        };
-      }
-    });
+    const machines = getDocumentValidationsResults(text);
     documentValidationsCache.set(textDocument.uri, machines);
 
     diagnostics.push(...getDiagnostics(machines, textDocument, settings));
-
-    const event: XStateUpdateEvent = {
-      uri: textDocument.uri,
-      machines: machines.map((machine, index) => {
-        const config = machine.parseResult?.toConfig()!;
-        return {
-          config,
-          index,
-          typeNodeLoc: machine.parseResult?.ast?.definition?.tsTypes?.node.loc,
-          definitionLoc: machine.parseResult?.ast?.definition?.node.loc,
-          guardsToMock:
-            machine.parseResult
-              ?.getAllConds(["named"])
-              .map((elem) => elem.name) || [],
-          allServices:
-            machine.parseResult
-              ?.getAllServices(["named"])
-              .map((elem) => ({ src: elem.src, id: elem.id })) || [],
-          actionsInOptions:
-            machine.parseResult?.ast?.options?.actions?.properties.map(
-              (property) => property.key,
-            ) || [],
-          delaysInOptions:
-            machine.parseResult?.ast?.options?.delays?.properties.map(
-              (property) => property.key,
-            ) || [],
-          guardsInOptions:
-            machine.parseResult?.ast?.options?.guards?.properties.map(
-              (property) => property.key,
-            ) || [],
-          servicesInOptions:
-            machine.parseResult?.ast?.options?.services?.properties.map(
-              (property) => property.key,
-            ) || [],
-          tags: Array.from(
-            new Set(
-              machine.parseResult
-                ?.getAllStateNodes()
-                .flatMap(
-                  (node) => node.ast.tags?.map((tag) => tag.value) || [],
-                ) || [],
-            ),
-          ),
-          hasTypesNode: Boolean(
-            machine.parseResult?.ast?.definition?.tsTypes?.node,
-          ),
-        };
-      }),
-    };
+    const event = makeXStateUpdateEvent(textDocument.uri, machines);
 
     connection.sendNotification("xstate/update", event);
   } catch (e) {

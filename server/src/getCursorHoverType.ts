@@ -3,8 +3,10 @@ import { Position } from "vscode-languageserver-textdocument";
 import { StringLiteralNode } from "xstate-parser-demo";
 import { MachineParseResult } from "xstate-parser-demo/lib/MachineParseResult";
 import { StateNodeReturn } from "xstate-parser-demo/lib/stateNode";
-import { isCursorInPosition } from "xstate-vscode-shared";
-import { DocumentValidationsResult } from "./server";
+import {
+  DocumentValidationsResult,
+  isCursorInPosition,
+} from "xstate-vscode-shared";
 
 export const getCursorHoverType = (
   validationResult: DocumentValidationsResult[],

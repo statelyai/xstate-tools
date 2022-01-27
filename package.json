@@ -87,6 +87,9 @@
     "*.{ts,tsx,js,jsx,json}": "prettier --write"
   },
   "scripts": {
+    "server": "yarn workspace xstate-vscode-server",
+    "client": "yarn workspace xstate-vscode-client",
+    "shared": "yarn workspace xstate-vscode-shared",
     "vscode:prepublish": "yarn preconstruct build && npm run fe:viz:build && npm run fe:editor:build && npm run server:build && npm run client:build",
     "fe:viz:build": "esbuild client/src/vizWebviewScript.ts --bundle --outfile=client/scripts/vizWebview.js",
     "fe:editor:build": "esbuild client/src/editorWebviewScript.ts --bundle --outfile=client/scripts/editorWebview.js",

@@ -7,17 +7,11 @@
 		"module": "commonjs",
 		"moduleResolution": "node",
 		"sourceMap": true,
+		"skipLibCheck": true,
 		"strict": true,
-		"outDir": "out",
-		"rootDir": "src",
-		"noEmit": true,
-		"skipLibCheck": true
+		"noEmit": true
 	},
 	"include": [
-		"src",
-	],
-	"exclude": [
-		"node_modules",
-		".vscode-test"
+		"*.ts"
 	]
 }

@@ -15,6 +15,7 @@ jobs:
           cache: "yarn"
 
       - run: yarn
+      - run: yarn turbo run lint test
       - run: npx vsce package
       - uses: actions/upload-artifact@v2
         with:

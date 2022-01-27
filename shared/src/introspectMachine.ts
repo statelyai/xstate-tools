@@ -118,19 +118,19 @@ export type IntrospectMachineResult = ReturnType<typeof introspectMachine>;
 
 export const introspectMachine = (machine: XState.StateNode) => {
   const guards = new ItemMap({
-    checkIfOptional: (name) => Boolean(machine.options.guards[name]),
+    checkIfOptional: (name) => Boolean(machine.options?.guards?.[name]),
   });
   const actions = new ItemMap({
-    checkIfOptional: (name) => Boolean(machine.options.actions[name]),
+    checkIfOptional: (name) => Boolean(machine.options?.actions?.[name]),
   });
   const services = new ItemMap({
-    checkIfOptional: (name) => Boolean(machine.options.services[name]),
+    checkIfOptional: (name) => Boolean(machine.options?.services?.[name]),
   });
   const activities = new ItemMap({
-    checkIfOptional: (name) => Boolean(machine.options.activities[name]),
+    checkIfOptional: (name) => Boolean(machine.options?.activities?.[name]),
   });
   const delays = new ItemMap({
-    checkIfOptional: (name) => Boolean(machine.options.delays[name]),
+    checkIfOptional: (name) => Boolean(machine.options?.delays?.[name]),
   });
 
   const serviceSrcToIdMap: Record<string, Set<string>> = {};
@@ -243,7 +243,7 @@ export const introspectMachine = (machine: XState.StateNode) => {
                 );
               }
             });
-          } else {
+          } else if (!action.type.startsWith("xstate.")) {
             actions.addEventToItem(
               action.type,
               transition.eventType,
@@ -261,7 +261,9 @@ export const introspectMachine = (machine: XState.StateNode) => {
     allActions.push(...node.onEntry);
 
     allActions?.forEach((action) => {
-      actions.addItem(action.type, node.path);
+      if (!action.type.startsWith("xstate.")) {
+        actions.addItem(action.type, node.path);
+      }
     });
 
     node.onEntry?.forEach((action) => {
