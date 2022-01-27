@@ -1,5 +1,6 @@
 import { createMachine } from "xstate";
-import { introspectMachine, XStateUpdateEvent } from "xstate-vscode-shared";
+import { introspectMachine, XStateUpdateEvent } from ".";
+
 import { getStateMatchesObjectSyntax } from "./getStateMatchesObjectSyntax";
 
 export const getTypegenOutput = (event: XStateUpdateEvent) => {

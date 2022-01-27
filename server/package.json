@@ -19,6 +19,8 @@
   },
   "devDependencies": {},
   "scripts": {
-    "lint": "tsc"
+    "lint": "tsc",
+    "build:dev": "esbuild --bundle src/server.ts --outfile=dist/index.js --external:vscode --platform=\"node\"",
+    "build:prod": "ncc build src/server.ts -t -o dist"
   }
 }

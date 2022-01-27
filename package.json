@@ -5,7 +5,7 @@
   "preview": true,
   "author": "Matt Pocock",
   "license": "MIT",
-  "version": "1.5.1",
+  "version": "1.5.2",
   "private": true,
   "repository": {
     "type": "git",
@@ -90,14 +90,8 @@
     "server": "yarn workspace xstate-vscode-server",
     "client": "yarn workspace xstate-vscode-client",
     "shared": "yarn workspace xstate-vscode-shared",
-    "vscode:prepublish": "yarn preconstruct build && npm run fe:viz:build && npm run fe:editor:build && npm run server:build && npm run client:build",
-    "fe:viz:build": "esbuild client/src/vizWebviewScript.ts --bundle --outfile=client/scripts/vizWebview.js",
-    "fe:editor:build": "esbuild client/src/editorWebviewScript.ts --bundle --outfile=client/scripts/editorWebview.js",
-    "compile": "npm run fe:viz:build && npm run fe:editor:build && esbuild --bundle server/src/server.ts --outfile=server/dist/index.js --external:vscode --platform=\"node\" && esbuild --bundle --platform=\"node\" client/src/extension.ts --outfile=client/dist/index.js --external:vscode",
-    "server:build": "ncc build server/src/server.ts -t -o server/dist",
-    "client:build": "ncc build client/src/extension.ts -t -o client/dist",
-    "watch": "concurrently \"npm:server:watch\" \"npm:client:watch\"",
-    "test": "sh ./scripts/e2e.sh",
+    "vscode:prepublish": "yarn turbo run build:prod",
+    "compile": "yarn turbo run build:dev",
     "prepare": "husky install",
     "postinstall": "preconstruct dev && manypkg check"
   },
@@ -109,7 +103,36 @@
   "turbo": {
     "pipeline": {
       "lint": {},
-      "test": {}
+      "test": {},
+      "viz:build": {
+        "outputs": [
+          "scripts/vizWebview.js"
+        ]
+      },
+      "editor:build": {
+        "outputs": [
+          "scripts/editorWebview.js"
+        ]
+      },
+      "build:dev": {
+        "dependsOn": [
+          "viz:build",
+          "editor:build"
+        ],
+        "outputs": [
+          "dist/**"
+        ]
+      },
+      "build:prod": {
+        "dependsOn": [
+          "viz:build",
+          "editor:build",
+          "^build:prod"
+        ],
+        "outputs": [
+          "dist/**"
+        ]
+      }
     }
   },
   "dependencies": {

@@ -8,7 +8,8 @@
   },
   "scripts": {
     "lint": "tsc",
-    "test": "jest --passWithNoTests"
+    "test": "jest --passWithNoTests",
+    "build:prod": "(cd ../ && preconstruct build)"
   },
   "peerDependencies": {
     "xstate": "^4"
