@@ -2,6 +2,7 @@
  * Copyright (c) Microsoft Corporation. All rights reserved.
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
+import { CodeLens } from "vscode-languageserver";
 import { TextDocument, TextEdit } from "vscode-languageserver-textdocument";
 import {
   CompletionItem,
@@ -16,27 +17,21 @@ import {
   TextDocuments,
   TextDocumentSyncKind,
 } from "vscode-languageserver/node";
-import { assign, createMachine, interpret, StateMachine } from "xstate";
-import { parseMachinesFromFile } from "xstate-parser-demo";
+import { assign, createMachine, interpret } from "xstate";
 import { MachineParseResult } from "xstate-parser-demo/lib/MachineParseResult";
 import {
   DocumentValidationsResult,
-  filterOutIgnoredMachines,
   getDocumentValidationsResults,
+  getRangeFromSourceLocation,
   getRawTextFromNode,
   getSetOfNames,
   getTransitionsFromNode,
   GlobalSettings,
-  introspectMachine,
-  IntrospectMachineResult,
   makeXStateUpdateEvent,
-  XStateUpdateEvent,
 } from "xstate-vscode-shared";
 import { getCursorHoverType } from "./getCursorHoverType";
 import { getDiagnostics } from "./getDiagnostics";
-import { getRangeFromSourceLocation } from "xstate-vscode-shared";
 import { getReferences } from "./getReferences";
-import { NotificationType } from "vscode-languageserver";
 
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -150,7 +145,7 @@ connection.onDefinition((params) => {
   });
 });
 
-connection.onCodeLens((params) => {
+connection.onCodeLens((params): CodeLens[] => {
   const machinesParseResult = documentValidationsCache.get(
     params.textDocument.uri,
   );
@@ -158,7 +153,7 @@ connection.onCodeLens((params) => {
   if (!machinesParseResult) {
     return [];
   }
-  return machinesParseResult.flatMap((machine, index) => {
+  return machinesParseResult.flatMap((machine, index): CodeLens[] => {
     const callee = machine.parseResult?.ast?.callee;
     return [
       {
@@ -173,6 +168,14 @@ connection.onCodeLens((params) => {
         command: {
           title: "Open Inspector",
           command: "xstate.inspect",
+          arguments: [
+            machine.parseResult?.toConfig(),
+            index,
+            params.textDocument.uri,
+            machine.parseResult
+              ?.getAllConds(["named"])
+              .map((cond) => cond.name),
+          ],
         },
       },
     ];
