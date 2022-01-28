@@ -11,39 +11,54 @@ export const getTypegenOutput = (event: XStateUpdateEvent) => {
     .filter((machine) => machine.hasTypesNode)
     .map((machine, index) => {
       try {
-        const guards: Record<string, () => boolean> = {};
+        const guardsToMock: Record<string, () => boolean> = {};
 
         machine.guardsToMock.forEach((guard) => {
-          guards[guard] = () => true;
+          guardsToMock[guard] = () => true;
         });
 
         machine.config.context = {};
 
         // xstate-ignore-next-line
         const createdMachine = createMachine(machine.config || {}, {
-          guards,
+          guards: guardsToMock,
         });
 
         const introspectResult = introspectMachine(createdMachine as any);
 
-        const requiredActions = introspectResult.actions.lines
+        const actions = introspectResult.actions.lines.filter(
+          (line) => !line.name.startsWith("xstate."),
+        );
+        const guards = introspectResult.guards.lines.filter(
+          (line) => !line.name.startsWith("xstate."),
+        );
+
+        const services = introspectResult.services.lines.filter(
+          (line) => !line.name.startsWith("xstate."),
+        );
+
+        const delays = introspectResult.delays.lines.filter(
+          (line) => !line.name.startsWith("xstate."),
+        );
+
+        const requiredActions = actions
           .filter((action) => !machine.actionsInOptions.includes(action.name))
           .map((action) => `'${action.name}'`)
           .join(" | ");
 
-        const requiredServices = introspectResult.services.lines
+        const requiredServices = services
           .filter(
             (service) => !machine.servicesInOptions.includes(service.name),
           )
           .map((service) => `'${service.name}'`)
           .join(" | ");
 
-        const requiredGuards = introspectResult.guards.lines
+        const requiredGuards = guards
           .filter((guard) => !machine.guardsInOptions.includes(guard.name))
           .map((guard) => `'${guard.name}'`)
           .join(" | ");
 
-        const requiredDelays = introspectResult.delays.lines
+        const requiredDelays = delays
           .filter((delay) => !machine.delaysInOptions.includes(delay.name))
           .map((delay) => `'${delay.name}'`)
           .join(" | ");
@@ -85,7 +100,7 @@ export const getTypegenOutput = (event: XStateUpdateEvent) => {
         return `export interface Typegen${index} {
           '@@xstate/typegen': true;
           eventsCausingActions: {
-            ${displayEventsCausing(introspectResult.actions.lines)}
+            ${displayEventsCausing(actions)}
           };
           internalEvents: {
             ${Object.values(internalEvents).join("\n")}
@@ -108,13 +123,13 @@ export const getTypegenOutput = (event: XStateUpdateEvent) => {
             ${`delays: ${requiredDelays || "never"};`}
           }
           eventsCausingServices: {
-            ${displayEventsCausing(introspectResult.services.lines)}
+            ${displayEventsCausing(services)}
           };
           eventsCausingGuards: {
-            ${displayEventsCausing(introspectResult.guards.lines)}
+            ${displayEventsCausing(guards)}
           };
           eventsCausingDelays: {
-            ${displayEventsCausing(introspectResult.delays.lines)}
+            ${displayEventsCausing(delays)}
           };
           matchesStates: ${matchesStates.join(" | ") || "undefined"};
           tags: ${tags || "never"};

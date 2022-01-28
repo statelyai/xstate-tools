@@ -243,7 +243,7 @@ export const introspectMachine = (machine: XState.StateNode) => {
                 );
               }
             });
-          } else if (!action.type.startsWith("xstate.")) {
+          } else {
             actions.addEventToItem(
               action.type,
               transition.eventType,
