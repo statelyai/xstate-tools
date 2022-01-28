@@ -4,7 +4,7 @@
   "main": "dist/xstate-vscode-shared.cjs.js",
   "license": "MIT",
   "dependencies": {
-    "xstate-parser-demo": "0.5.2"
+    "xstate-parser-demo": "0.5.3"
   },
   "scripts": {
     "lint": "tsc",
