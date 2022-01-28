@@ -49,14 +49,13 @@ const throttledTypegenCreationMachine = createMachine<
         await Promise.all([
           Object.entries(context.eventMap).map(async ([, event]) => {
             const uri = event.uri;
-
-            const newUri = vscode.Uri.file(
-              uri.replace(/\.([j,t])sx?$/, ".typegen.ts"),
+            const pathFromUri = vscode.Uri.parse(uri, true).path.slice(1);
+            const pathToSave = pathFromUri.replace(
+              /\.([j,t])sx?$/,
+              ".typegen.ts",
             );
 
-            const pathToSave = path.resolve(newUri.path).slice(6);
-
-            const prettierConfig = await prettier.resolveConfig(uri.slice(6));
+            const prettierConfig = await prettier.resolveConfig(pathFromUri);
 
             if (
               event.machines.filter((machine) => machine.hasTypesNode).length >
@@ -71,7 +70,7 @@ const throttledTypegenCreationMachine = createMachine<
                 }),
               );
             } else {
-              await promisify(fs.unlink)(path.resolve(newUri.path).slice(6));
+              await promisify(fs.unlink)(pathToSave);
             }
           }),
         ]);
