@@ -1,5 +1,5 @@
 import * as fs from "fs";
-import * as path from "path";
+import * as os from "os";
 import * as prettier from "prettier";
 import { promisify } from "util";
 import * as vscode from "vscode";
@@ -49,7 +49,11 @@ const throttledTypegenCreationMachine = createMachine<
         await Promise.all([
           Object.entries(context.eventMap).map(async ([, event]) => {
             const uri = event.uri;
-            const pathFromUri = vscode.Uri.parse(uri, true).path.slice(1);
+            let pathFromUri = vscode.Uri.parse(uri, true).path;
+            if (os.platform() === "win32") {
+              pathFromUri = pathFromUri.slice(1);
+            }
+
             const pathToSave = pathFromUri.replace(
               /\.([j,t])sx?$/,
               ".typegen.ts",
