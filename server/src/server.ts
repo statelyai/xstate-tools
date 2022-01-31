@@ -160,7 +160,13 @@ connection.onCodeLens((params): CodeLens[] => {
         range: getRangeFromSourceLocation(callee?.loc!),
         command: {
           title: "Open Visual Editor",
-          command: "xstate.edit",
+          command: "xstate.edit-code-lens",
+          arguments: [
+            machine.parseResult?.toConfig(),
+            index,
+            params.textDocument.uri,
+            machine.parseResult?.getLayoutComment()?.value,
+          ],
         },
       },
       {
