@@ -110,23 +110,26 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
           });
         },
       },
-      RECEIVE_SERVICE: {
-        target: ".hasService",
-        actions: assign((_context, event) => {
-          return {
-            config: event.config,
-            index: event.index,
-            uri: event.uri,
-            layoutString: event.layoutString,
-            token: event.token,
-          };
-        }),
-        internal: false,
-      },
     },
 
     states: {
-      waitingForFirstContact: {},
+      waitingForFirstContact: {
+        on: {
+          RECEIVE_SERVICE: {
+            target: "hasService",
+            actions: assign((_context, event) => {
+              return {
+                config: event.config,
+                index: event.index,
+                uri: event.uri,
+                layoutString: event.layoutString,
+                token: event.token,
+              };
+            }),
+            internal: false,
+          },
+        },
+      },
       hasService: {
         invoke: {
           src: (context) => () => {
@@ -144,6 +147,20 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
           },
         },
         on: {
+          RECEIVE_SERVICE: {
+            actions: [
+              assign((_context, event) => {
+                return {
+                  config: event.config,
+                  index: event.index,
+                  uri: event.uri,
+                  layoutString: event.layoutString,
+                  token: event.token,
+                };
+              }),
+              "updateIframe",
+            ],
+          },
           RECEIVE_CONFIG_UPDATE_FROM_VSCODE: {
             cond: (ctx, event) => {
               // Ensure that the update is from the machine we are editing
