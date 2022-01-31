@@ -2,7 +2,7 @@ XState VSCode enhances the XState development experience by providing VSCode use
 
 ## Installation
 
-**[Install via the Visual Studio Code Marketplace →](https://marketplace.visualstudio.com/items?itemName=statelyai.xstate-vscode)**
+**[Install via the Visual Studio Code Marketplace →](https://marketplace.visualstudio.com/items?itemName=statelyai.stately-vscode)**
 
 ## Features
 
