@@ -14,6 +14,7 @@
   },
   "scripts": {
     "lint": "tsc",
+    "test": "jest",
     "viz:build": "esbuild src/vizWebviewScript.ts --bundle --outfile=scripts/vizWebview.js",
     "editor:build": "esbuild src/editorWebviewScript.ts --bundle --outfile=scripts/editorWebview.js",
     "build:dev": "esbuild --bundle --platform=\"node\" src/extension.ts --outfile=dist/index.js --external:vscode",
