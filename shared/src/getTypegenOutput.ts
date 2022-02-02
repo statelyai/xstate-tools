@@ -14,7 +14,7 @@ export const getTypegenOutput = (event: XStateUpdateEvent) => {
         const guardsToMock: Record<string, () => boolean> = {};
 
         machine.guardsToMock.forEach((guard) => {
-          guardsToMock[guard] = () => true;
+          guardsToMock[guard] = () => false;
         });
 
         machine.config.context = {};

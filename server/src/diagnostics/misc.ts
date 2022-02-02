@@ -11,7 +11,7 @@ export const miscDiagnostics: DiagnosticGetter = (machine, textDocument) => {
 
     const guards: Record<string, ConditionPredicate<any, any>> = {};
     machine.introspectionResult?.guards.lines.forEach((cond) => {
-      guards[cond.name] = () => true;
+      guards[cond.name] = () => false;
     });
 
     // const orphanedStates = getOrphanedStates(machine);
