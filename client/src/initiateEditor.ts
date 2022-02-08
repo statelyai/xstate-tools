@@ -151,7 +151,14 @@ export const initiateEditor = (
         uri: string,
         layoutString?: string,
       ) => {
-        startService(config, machineIndex, uri, layoutString);
+        startService(
+          config,
+          machineIndex,
+          resolveUriToFilePrefix(
+            vscode.window.activeTextEditor.document.uri.path,
+          ),
+          layoutString,
+        );
       },
     ),
   );
