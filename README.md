@@ -6,11 +6,11 @@ XState VSCode enhances the XState development experience by providing VSCode use
 
 ## Features
 
-### Visualize machines
+### Visually edit machines
 
-Visualize any XState machine from your editor, with an interactive diagram.
+Edit any XState machine with drag-and-drop using the [Stately Visual editor](https://stately.ai/editor).
 
-<img src="https://raw.githubusercontent.com/statelyai/xstate-vscode/master/assets/visualization.png" alt="" />
+<img src="https://raw.githubusercontent.com/statelyai/xstate-vscode/master/assets/editor.png" alt="" />
 
 ### Autocomplete
 
