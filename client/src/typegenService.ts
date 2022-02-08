@@ -55,7 +55,7 @@ const throttledTypegenCreationMachine = createMachine<
             }
 
             const pathToSave = pathFromUri.replace(
-              /\.([j,t])sx?$/,
+              /\.(mjs|js|tsx|ts|jsx)$/,
               ".typegen.ts",
             );
 
