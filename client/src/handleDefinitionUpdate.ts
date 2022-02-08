@@ -4,9 +4,9 @@ import { parseMachinesFromFile } from "xstate-parser-demo";
 import {
   getRangeFromSourceLocation,
   getRawTextFromNode,
+  resolveUriToFilePrefix,
 } from "xstate-vscode-shared";
 import { UpdateDefinitionEvent } from "./editorWebviewScript";
-import { resolveUriToFilePrefix } from "./resolveUriToFilePrefix";
 
 const prettierStartRegex = /^([^{]){1,}/;
 const prettierEndRegex = /([^}]){1,}$/;

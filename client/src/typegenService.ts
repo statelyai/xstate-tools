@@ -61,20 +61,24 @@ const throttledTypegenCreationMachine = createMachine<
 
             const prettierConfig = await prettier.resolveConfig(pathFromUri);
 
-            if (
-              event.machines.filter((machine) => machine.hasTypesNode).length >
-              0
-            ) {
-              const typegenOutput = getTypegenOutput(event);
-              await promisify(fs.writeFile)(
-                pathToSave,
-                prettier.format(typegenOutput, {
-                  ...prettierConfig,
-                  parser: "typescript",
-                }),
-              );
-            } else {
-              await promisify(fs.unlink)(pathToSave);
+            try {
+              if (
+                event.machines.filter((machine) => machine.hasTypesNode)
+                  .length > 0
+              ) {
+                const typegenOutput = getTypegenOutput(event);
+                await promisify(fs.writeFile)(
+                  pathToSave,
+                  prettier.format(typegenOutput, {
+                    ...prettierConfig,
+                    parser: "typescript",
+                  }),
+                );
+              } else if (await promisify(fs.exists)(pathToSave)) {
+                await promisify(fs.unlink)(pathToSave);
+              }
+            } catch (e) {
+              console.log(e);
             }
           }),
         ]);

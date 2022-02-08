@@ -1,11 +1,12 @@
-import { DocumentValidationsResult, XStateUpdateEvent } from ".";
+import { DocumentValidationsResult, XStateUpdateEvent } from "./types";
+import { resolveUriToFilePrefix } from "./resolveUriToFilePrefix";
 
 export const makeXStateUpdateEvent = (
   uri: string,
   machines: DocumentValidationsResult[],
 ): XStateUpdateEvent => {
   return {
-    uri: uri,
+    uri: resolveUriToFilePrefix(uri),
     machines: machines.map((machine, index) => {
       const config = machine.parseResult?.toConfig()!;
       return {

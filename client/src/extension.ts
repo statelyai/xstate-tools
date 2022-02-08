@@ -11,6 +11,8 @@ import {
   ServerOptions,
   TransportKind,
 } from "vscode-languageclient/node";
+import { XStateUpdateEvent } from "xstate-vscode-shared";
+import { uniqueId } from "xstate/lib/utils";
 import { getAuth, SignInResult } from "./auth";
 import { initiateEditor } from "./initiateEditor";
 import { initiateTypegen } from "./initiateTypegen";
@@ -70,9 +72,34 @@ export async function activate(context: vscode.ExtensionContext) {
 
   await client.onReady();
 
-  initiateVisualizer(context, client);
+  const xstateUpdateListeners: Record<
+    string,
+    (event: XStateUpdateEvent) => void
+  > = {};
+
+  const addXStateUpdateListener = (
+    listener: (event: XStateUpdateEvent) => void,
+  ): vscode.Disposable => {
+    const id = uniqueId();
+    xstateUpdateListeners[id] = listener;
+    return {
+      dispose: () => {
+        delete xstateUpdateListeners[id];
+      },
+    };
+  };
+
+  context.subscriptions.push(
+    client.onNotification("xstate/update", (event: XStateUpdateEvent) => {
+      Object.values(xstateUpdateListeners).forEach((listener) => {
+        listener(event);
+      });
+    }),
+  );
+
+  initiateVisualizer(context, client, addXStateUpdateListener);
   initiateEditor(context, client);
-  initiateTypegen(context, client);
+  initiateTypegen(context, client, addXStateUpdateListener);
 
   context.subscriptions.push(
     vscode.window.registerUriHandler(uriHandler),

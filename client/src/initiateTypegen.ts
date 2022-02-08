@@ -12,6 +12,9 @@ import { startTypegenService } from "./typegenService";
 export const initiateTypegen = (
   context: vscode.ExtensionContext,
   client: LanguageClient,
+  registerXStateUpdateListener: (
+    listener: (event: XStateUpdateEvent) => void,
+  ) => vscode.Disposable,
 ) => {
   const typegenService = startTypegenService();
 
@@ -77,17 +80,15 @@ export const initiateTypegen = (
     }),
   );
 
-  client.onReady().then(() => {
-    context.subscriptions.push(
-      client.onNotification("xstate/update", (event: XStateUpdateEvent) => {
-        if (event.machines.length === 0) return;
-        typegenService.send({
-          type: "RECEIVE_NEW_EVENT",
-          event,
-        });
-      }),
-    );
-  });
+  context.subscriptions.push(
+    registerXStateUpdateListener((event) => {
+      if (event.machines.length === 0) return;
+      typegenService.send({
+        type: "RECEIVE_NEW_EVENT",
+        event,
+      });
+    }),
+  );
 };
 
 const removeExtension = (input: string) => {

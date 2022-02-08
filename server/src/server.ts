@@ -203,6 +203,7 @@ async function validateDocument(textDocument: TextDocument): Promise<void> {
 
     connection.sendNotification("xstate/update", event);
   } catch (e) {
+    connection.window.showErrorMessage(JSON.stringify(e));
     documentValidationsCache.delete(textDocument.uri);
   }
 

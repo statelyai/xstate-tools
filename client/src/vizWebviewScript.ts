@@ -39,7 +39,7 @@ const machine = createMachine<WebViewMachineContext, VizWebviewMachineEvent>({
     src: () => (send) => {
       window.addEventListener("message", (event) => {
         try {
-          send(JSON.parse(event.data));
+          send(event.data);
         } catch (e) {
           console.warn(e);
         }

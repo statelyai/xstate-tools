@@ -7,13 +7,13 @@ import {
   filterOutIgnoredMachines,
   getInlineImplementations,
   isCursorInPosition,
+  resolveUriToFilePrefix,
 } from "xstate-vscode-shared";
 import { getAuth, SignInResult } from "./auth";
 import { EditorWebviewScriptEvent } from "./editorWebviewScript";
 import { getWebviewContent } from "./getWebviewContent";
 import { handleDefinitionUpdate } from "./handleDefinitionUpdate";
 import { handleNodeSelected } from "./handleNodeSelected";
-import { resolveUriToFilePrefix } from "./resolveUriToFilePrefix";
 
 export const initiateEditor = (
   context: vscode.ExtensionContext,
@@ -66,7 +66,7 @@ export const initiateEditor = (
         type: "RECEIVE_SERVICE",
         config,
         index: machineIndex,
-        uri,
+        uri: resolveUriToFilePrefix(uri),
         layoutString,
         token: result,
       });
@@ -95,7 +95,7 @@ export const initiateEditor = (
         type: "RECEIVE_SERVICE",
         config,
         index: machineIndex,
-        uri,
+        uri: resolveUriToFilePrefix(uri),
         layoutString,
         token: result,
       });

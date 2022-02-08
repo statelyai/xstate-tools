@@ -7,6 +7,7 @@ import {
   filterOutIgnoredMachines,
   getSetOfNames,
   isCursorInPosition,
+  XStateUpdateEvent,
 } from "xstate-vscode-shared";
 import { getWebviewContent } from "./getWebviewContent";
 import { VizWebviewMachineEvent } from "./vizWebviewScript";
@@ -14,11 +15,14 @@ import { VizWebviewMachineEvent } from "./vizWebviewScript";
 export const initiateVisualizer = (
   context: vscode.ExtensionContext,
   client: LanguageClient,
+  registerXStateUpdateListener: (
+    listener: (event: XStateUpdateEvent) => void,
+  ) => vscode.Disposable,
 ) => {
   let currentPanel: vscode.WebviewPanel | undefined = undefined;
 
   const sendMessage = (event: VizWebviewMachineEvent) => {
-    currentPanel?.webview.postMessage(JSON.stringify(event));
+    currentPanel?.webview.postMessage(event);
   };
 
   const startService = (
@@ -130,19 +134,19 @@ export const initiateVisualizer = (
     }),
   );
 
-  client.onReady().then(() => {
-    context.subscriptions.push(
-      client.onNotification("xstate/update", (event) => {
+  context.subscriptions.push(
+    registerXStateUpdateListener((event) => {
+      event.machines.forEach((machine, index) => {
         sendMessage({
           type: "UPDATE",
-          config: event.config,
-          index: event.index,
+          config: machine.config,
+          index,
           uri: event.uri,
-          guardsToMock: event.guardsToMock,
+          guardsToMock: machine.guardsToMock,
         });
-      }),
-    );
-  });
+      });
+    }),
+  );
   context.subscriptions.push(
     vscode.commands.registerCommand(
       "xstate.inspect",
