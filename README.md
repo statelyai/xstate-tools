@@ -1,4 +1,4 @@
-XState VSCode enhances the XState development experience by providing VSCode users with features like in-editor visualization, autocomplete, typegen and linting.
+XState VSCode enhances the XState development experience by providing VSCode users with features like visual editing, autocomplete, typegen and linting.
 
 ## Installation
 

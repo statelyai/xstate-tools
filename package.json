@@ -1,7 +1,7 @@
 {
   "name": "stately-vscode",
   "displayName": "XState VSCode",
-  "description": "Intelligent XState tooling for VSCode",
+  "description": "Visual editing, autocomplete and typegen for XState",
   "preview": true,
   "author": "Matt Pocock",
   "license": "MIT",
