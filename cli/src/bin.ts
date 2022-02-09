@@ -9,7 +9,6 @@ import { promisify } from "util";
 import { parseMachinesFromFile } from "xstate-parser-demo";
 import {
   doesTsTypesRequireUpdate,
-  getRangeFromSourceLocation,
   makeXStateUpdateEvent,
   writeToTypegenFile,
 } from "xstate-vscode-shared";
@@ -63,7 +62,6 @@ const writeToFiles = async (uriArray: string[]) => {
   /**
    * TODO - implement batching to speed things up
    * TODO - implement pretty readout
-   * TODO - implement adding {} as import('typegen')
    */
   for (const uri of uriArray) {
     try {
