@@ -9,7 +9,7 @@ export const writeToTypegenFile = async (opts: {
 }) => {
   const prettierConfig = await prettier.resolveConfig(opts.filePath);
   const pathToSave = opts.filePath.replace(
-    /\.(mjs|js|tsx|ts|jsx)$/,
+    /\.(cjs|mjs|js|tsx|ts|jsx)$/,
     ".typegen.ts",
   );
 
