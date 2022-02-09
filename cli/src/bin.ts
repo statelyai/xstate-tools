@@ -26,59 +26,60 @@ const handleError = (uri: string, e: any) => {
 
 const writeToFiles = async (uriArray: string[]) => {
   /**
-   * TODO - implement batching to speed things up
    * TODO - implement pretty readout
    */
-  for (const uri of uriArray) {
-    try {
-      const fileContents = await fs.readFile(uri, "utf8");
-      const parseResult = parseMachinesFromFile(fileContents);
-      const event = makeXStateUpdateEvent(
-        uri,
-        parseResult.machines.map((machine) => ({
-          parseResult: machine,
-        })),
-      );
+  await Promise.all(
+    uriArray.map(async (uri) => {
+      try {
+        const fileContents = await fs.readFile(uri, "utf8");
+        const parseResult = parseMachinesFromFile(fileContents);
+        const event = makeXStateUpdateEvent(
+          uri,
+          parseResult.machines.map((machine) => ({
+            parseResult: machine,
+          })),
+        );
 
-      const fileEdits: FileEdit[] = [];
+        const fileEdits: FileEdit[] = [];
 
-      for (const machine of parseResult.machines) {
-        let machineIndex = 0;
-        if (machine.ast.definition?.tsTypes?.node) {
-          const { name } = path.parse(uri);
-          const requiresUpdate = doesTsTypesRequireUpdate({
-            fileText: fileContents,
-            machineIndex,
-            node: machine.ast.definition.tsTypes.node,
-            relativePath: name,
-          });
-
-          if (requiresUpdate) {
-            fileEdits.push({
-              start: machine.ast.definition.tsTypes.node.start!,
-              end: machine.ast.definition.tsTypes.node.end!,
-              newText: `{} as import("./${name}.typegen").Typegen${machineIndex}`,
+        for (const machine of parseResult.machines) {
+          let machineIndex = 0;
+          if (machine.ast.definition?.tsTypes?.node) {
+            const { name } = path.parse(uri);
+            const requiresUpdate = doesTsTypesRequireUpdate({
+              fileText: fileContents,
+              machineIndex,
+              node: machine.ast.definition.tsTypes.node,
+              relativePath: name,
             });
+
+            if (requiresUpdate) {
+              fileEdits.push({
+                start: machine.ast.definition.tsTypes.node.start!,
+                end: machine.ast.definition.tsTypes.node.end!,
+                newText: `{} as import("./${name}.typegen").Typegen${machineIndex}`,
+              });
+            }
+            machineIndex++;
           }
-          machineIndex++;
         }
+
+        if (fileEdits.length > 0) {
+          const newFile = processFileEdits(fileContents, fileEdits);
+
+          await fs.writeFile(uri, newFile);
+        }
+
+        await writeToTypegenFile({
+          filePath: uri,
+          event,
+        });
+        console.log(`${uri} - success`);
+      } catch (e) {
+        handleError(uri, e);
       }
-
-      if (fileEdits.length > 0) {
-        const newFile = processFileEdits(fileContents, fileEdits);
-
-        await fs.writeFile(uri, newFile);
-      }
-
-      await writeToTypegenFile({
-        filePath: uri,
-        event,
-      });
-      console.log(`${uri} - success`);
-    } catch (e) {
-      handleError(uri, e);
-    }
-  }
+    }),
+  );
 };
 
 program
