@@ -26,7 +26,8 @@
     "packages": [
       "client",
       "server",
-      "shared"
+      "shared",
+      "cli"
     ]
   },
   "categories": [
@@ -87,6 +88,7 @@
     "*.{ts,tsx,js,jsx,json}": "prettier --write"
   },
   "scripts": {
+    "cli": "yarn workspace xstate-cli",
     "server": "yarn workspace xstate-vscode-server",
     "client": "yarn workspace xstate-vscode-client",
     "shared": "yarn workspace xstate-vscode-shared",
@@ -146,7 +148,7 @@
     "@babel/types": "^7.12.12",
     "@manypkg/cli": "^0.19.1",
     "@preconstruct/cli": "^2.1.0",
-    "@types/node": "^12.12.0",
+    "@types/node": "^16.4.0",
     "@typescript-eslint/eslint-plugin": "^4.23.0",
     "@typescript-eslint/parser": "^4.23.0",
     "@vercel/ncc": "0.28.4",

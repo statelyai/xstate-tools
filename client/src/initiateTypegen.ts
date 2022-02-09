@@ -3,6 +3,7 @@ import * as vscode from "vscode";
 import { LanguageClient } from "vscode-languageclient/node";
 import { parseMachinesFromFile } from "xstate-parser-demo";
 import {
+  doesTsTypesRequireUpdate,
   getRangeFromSourceLocation,
   getRawTextFromNode,
   XStateUpdateEvent,
@@ -39,14 +40,12 @@ export const initiateTypegen = (
             let machineIndex = 0;
             result.machines.forEach((machine, index) => {
               if (machine.ast?.definition?.tsTypes) {
-                const currentText = getRawTextFromNode(
-                  text,
-                  machine.ast.definition.tsTypes.node,
-                );
-
-                const requiresUpdate =
-                  !currentText.includes(`./${relativePath}.typegen`) ||
-                  !currentText.includes(`Typegen${machineIndex}`);
+                const requiresUpdate = doesTsTypesRequireUpdate({
+                  fileText: text,
+                  machineIndex,
+                  node: machine.ast.definition.tsTypes.node,
+                  relativePath,
+                });
 
                 if (requiresUpdate) {
                   const position = getRangeFromSourceLocation(

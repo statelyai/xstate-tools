@@ -1,10 +1,7 @@
-import * as fs from "fs";
 import * as os from "os";
-import * as prettier from "prettier";
-import { promisify } from "util";
 import * as vscode from "vscode";
 import { assign, createMachine, interpret } from "xstate";
-import { XStateUpdateEvent, getTypegenOutput } from "xstate-vscode-shared";
+import { writeToTypegenFile, XStateUpdateEvent } from "xstate-vscode-shared";
 
 const throttledTypegenCreationMachine = createMachine<
   {
@@ -54,32 +51,10 @@ const throttledTypegenCreationMachine = createMachine<
               pathFromUri = pathFromUri.slice(1);
             }
 
-            const pathToSave = pathFromUri.replace(
-              /\.(mjs|js|tsx|ts|jsx)$/,
-              ".typegen.ts",
-            );
-
-            const prettierConfig = await prettier.resolveConfig(pathFromUri);
-
-            try {
-              if (
-                event.machines.filter((machine) => machine.hasTypesNode)
-                  .length > 0
-              ) {
-                const typegenOutput = getTypegenOutput(event);
-                await promisify(fs.writeFile)(
-                  pathToSave,
-                  prettier.format(typegenOutput, {
-                    ...prettierConfig,
-                    parser: "typescript",
-                  }),
-                );
-              } else if (await promisify(fs.exists)(pathToSave)) {
-                await promisify(fs.unlink)(pathToSave);
-              }
-            } catch (e) {
-              console.log(e);
-            }
+            await writeToTypegenFile({
+              filePath: pathFromUri,
+              event,
+            });
           }),
         ]);
       },

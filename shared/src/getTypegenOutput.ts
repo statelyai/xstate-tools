@@ -1,9 +1,21 @@
 import { createMachine } from "xstate";
-import { introspectMachine, XStateUpdateEvent } from ".";
-
+import { introspectMachine, XStateUpdateMachine } from ".";
 import { getStateMatchesObjectSyntax } from "./getStateMatchesObjectSyntax";
 
-export const getTypegenOutput = (event: XStateUpdateEvent) => {
+export const getTypegenOutput = (event: {
+  machines: Pick<
+    XStateUpdateMachine,
+    | "hasTypesNode"
+    | "config"
+    | "guardsToMock"
+    | "actionsInOptions"
+    | "guardsInOptions"
+    | "servicesInOptions"
+    | "delaysInOptions"
+    | "tags"
+    | "allServices"
+  >[];
+}) => {
   return `
   // This file was automatically generated. Edits will be overwritten
 

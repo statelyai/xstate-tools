@@ -1,0 +1,27 @@
+{
+  "name": "xstate-cli",
+  "version": "0.0.1",
+  "bin": {
+    "xstate": "./bin/index.js"
+  },
+  "scripts": {
+    "prepare": "esbuild src/bin.ts --outfile=bin/index.js --bundle --platform=node --target=node14 --external:fsevents"
+  },
+  "devDependencies": {
+    "@types/node": "^16.4.0",
+    "esbuild": "^0.12.22",
+    "xstate": "^4.29.0"
+  },
+  "peerDependencies": {
+    "xstate": "^4.29.0"
+  },
+  "dependencies": {
+    "chokidar": "^3.5.3",
+    "commander": "^8.0.0",
+    "fast-glob": "^3.2.11",
+    "xstate-parser-demo": "0.5.3",
+    "xstate-vscode-shared": "*"
+  },
+  "author": "Matt Pocock",
+  "license": "MIT"
+}
