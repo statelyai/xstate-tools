@@ -5,11 +5,11 @@
     "xstate": "./bin/index.js"
   },
   "scripts": {
-    "prepare": "esbuild src/bin.ts --outfile=bin/index.js --bundle --platform=node --target=node14 --external:fsevents"
+    "prepare": "esbuild src/bin.ts --outfile=bin/index.js --bundle --platform=node --external:./node_modules/* --external:../node_modules/*"
   },
   "devDependencies": {
     "@types/node": "^16.4.0",
-    "esbuild": "^0.12.22",
+    "esbuild": "^0.14.21",
     "xstate": "^4.29.0"
   },
   "peerDependencies": {
