@@ -144,7 +144,7 @@ export const initiateEditor = (
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      "xstate.edit-code-lens",
+      "stately-xstate.edit-code-lens",
       async (
         config: MachineConfig<any, any, any>,
         machineIndex: number,
@@ -164,7 +164,7 @@ export const initiateEditor = (
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand("xstate.edit", () => {
+    vscode.commands.registerCommand("stately-xstate.edit", () => {
       try {
         const currentSelection = vscode.window.activeTextEditor.selection;
 

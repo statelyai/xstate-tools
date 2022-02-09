@@ -103,14 +103,14 @@ export async function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     vscode.window.registerUriHandler(uriHandler),
-    vscode.commands.registerCommand("xstate.sign-out", async () => {
+    vscode.commands.registerCommand("stately-xstate.sign-out", async () => {
       await getAuth(context).signOut();
 
       vscode.window.showInformationMessage("Signed out successfully.");
     }),
   );
   context.subscriptions.push(
-    vscode.commands.registerCommand("xstate.sign-in", async () => {
+    vscode.commands.registerCommand("stately-xstate.sign-in", async () => {
       const result = await vscode.window.withProgress<SignInResult>(
         {
           location: vscode.ProgressLocation.Notification,

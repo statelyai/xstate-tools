@@ -160,7 +160,7 @@ connection.onCodeLens((params): CodeLens[] => {
         range: getRangeFromSourceLocation(callee?.loc!),
         command: {
           title: "Open Visual Editor",
-          command: "xstate.edit-code-lens",
+          command: "stately-xstate.edit-code-lens",
           arguments: [
             machine.parseResult?.toConfig(),
             index,
@@ -173,7 +173,7 @@ connection.onCodeLens((params): CodeLens[] => {
         range: getRangeFromSourceLocation(callee?.loc!),
         command: {
           title: "Open Inspector",
-          command: "xstate.inspect",
+          command: "stately-xstate.inspect",
           arguments: [
             machine.parseResult?.toConfig(),
             index,

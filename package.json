@@ -5,7 +5,7 @@
   "preview": true,
   "author": "Matt Pocock",
   "license": "MIT",
-  "version": "1.5.16",
+  "version": "1.6.0",
   "private": true,
   "repository": {
     "type": "git",
@@ -52,22 +52,22 @@
   "contributes": {
     "commands": [
       {
-        "command": "xstate.visualize",
+        "command": "stately-xstate.visualize",
         "title": "Open Inspector",
         "category": "XState"
       },
       {
-        "command": "xstate.edit",
+        "command": "stately-xstate.edit",
         "title": "Open Visual Editor",
         "category": "XState"
       },
       {
-        "command": "xstate.sign-out",
+        "command": "stately-xstate.sign-out",
         "title": "Sign out of Stately",
         "category": "XState"
       },
       {
-        "command": "xstate.sign-in",
+        "command": "stately-xstate.sign-in",
         "title": "Sign in to Stately",
         "category": "XState"
       }

@@ -77,7 +77,7 @@ export const initiateVisualizer = (
   };
 
   context.subscriptions.push(
-    vscode.commands.registerCommand("xstate.visualize", () => {
+    vscode.commands.registerCommand("stately-xstate.visualize", () => {
       try {
         const currentSelection = vscode.window.activeTextEditor.selection;
 
@@ -149,7 +149,7 @@ export const initiateVisualizer = (
   );
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      "xstate.inspect",
+      "stately-xstate.inspect",
       async (
         config: MachineConfig<any, any, any>,
         machineIndex: number,
