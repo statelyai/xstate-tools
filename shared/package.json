@@ -4,6 +4,7 @@
   "main": "dist/xstate-tools-shared.cjs.js",
   "license": "MIT",
   "dependencies": {
+    "prettier": "^2.3.1",
     "xstate-parser-demo": "0.5.3"
   },
   "scripts": {
