@@ -15,7 +15,7 @@ export const writeToTypegenFile = async (opts: {
 
   try {
     if (
-      opts.event.machines.filter((machine) => machine.hasTypesNode).length > 0
+      opts.event.machines.some((machine) => machine.hasTypesNode)
     ) {
       const typegenOutput = getTypegenOutput(opts.event);
       await promisify(fs.writeFile)(
