@@ -45,19 +45,19 @@ const writeToFiles = async (uriArray: string[]) => {
       for (const machine of parseResult.machines) {
         let machineIndex = 0;
         if (machine.ast.definition?.tsTypes?.node) {
-          const relativePath = removeExtension(path.basename(uri));
+          const { name } = path.parse(uri);
           const requiresUpdate = doesTsTypesRequireUpdate({
             fileText: fileContents,
             machineIndex,
             node: machine.ast.definition.tsTypes.node,
-            relativePath,
+            relativePath: name,
           });
 
           if (requiresUpdate) {
             fileEdits.push({
               start: machine.ast.definition.tsTypes.node.start!,
               end: machine.ast.definition.tsTypes.node.end!,
-              newText: `{} as import("./${relativePath}.typegen").Typegen${machineIndex}`,
+              newText: `{} as import("./${name}.typegen").Typegen${machineIndex}`,
             });
           }
           machineIndex++;
@@ -102,7 +102,3 @@ program
   });
 
 program.parse(process.argv);
-
-const removeExtension = (input: string) => {
-  return input.substr(0, input.lastIndexOf("."));
-};
