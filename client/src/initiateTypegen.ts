@@ -7,7 +7,7 @@ import {
   getRangeFromSourceLocation,
   getRawTextFromNode,
   XStateUpdateEvent,
-} from "xstate-vscode-shared";
+} from "xstate-tools-shared";
 import { startTypegenService } from "./typegenService";
 
 export const initiateTypegen = (

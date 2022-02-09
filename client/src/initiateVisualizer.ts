@@ -8,7 +8,7 @@ import {
   getSetOfNames,
   isCursorInPosition,
   XStateUpdateEvent,
-} from "xstate-vscode-shared";
+} from "xstate-tools-shared";
 import { getWebviewContent } from "./getWebviewContent";
 import { VizWebviewMachineEvent } from "./vizWebviewScript";
 

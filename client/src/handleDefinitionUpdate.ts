@@ -5,7 +5,7 @@ import {
   getRangeFromSourceLocation,
   getRawTextFromNode,
   resolveUriToFilePrefix,
-} from "xstate-vscode-shared";
+} from "xstate-tools-shared";
 import { UpdateDefinitionEvent } from "./editorWebviewScript";
 
 const prettierStartRegex = /^([^{]){1,}/;

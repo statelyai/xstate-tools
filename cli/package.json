@@ -20,7 +20,7 @@
     "commander": "^8.0.0",
     "fast-glob": "^3.2.11",
     "xstate-parser-demo": "0.5.3",
-    "xstate-vscode-shared": "*"
+    "xstate-tools-shared": "*"
   },
   "author": "Stately Team",
   "license": "MIT"

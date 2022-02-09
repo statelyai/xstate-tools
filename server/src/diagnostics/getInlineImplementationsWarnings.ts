@@ -2,7 +2,7 @@ import { DiagnosticSeverity } from "vscode-languageserver";
 import {
   getInlineImplementations,
   getRangeFromSourceLocation,
-} from "xstate-vscode-shared";
+} from "xstate-tools-shared";
 import { DiagnosticGetter } from "../getDiagnostics";
 
 export const getInlineImplementationsWarnings: DiagnosticGetter = (

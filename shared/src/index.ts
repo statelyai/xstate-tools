@@ -15,3 +15,4 @@ export * from "./getDocumentValidationsResults";
 export * from "./resolveUriToFilePrefix";
 export * from "./writeToTypegenFile";
 export * from "./doesTsTypesRequireUpdate";
+export * from "./processFileEdits";

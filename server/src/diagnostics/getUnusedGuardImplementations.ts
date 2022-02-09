@@ -1,9 +1,6 @@
 import { DiagnosticSeverity } from "vscode-languageserver";
 import { DiagnosticGetter } from "../getDiagnostics";
-import {
-  getRangeFromSourceLocation,
-  getSetOfNames,
-} from "xstate-vscode-shared";
+import { getRangeFromSourceLocation, getSetOfNames } from "xstate-tools-shared";
 
 export const getUnusedGuardsImplementations: DiagnosticGetter = (
   machine,

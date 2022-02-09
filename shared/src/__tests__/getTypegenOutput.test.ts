@@ -1,11 +1,9 @@
-import { execSync, spawnSync } from "child_process";
+import { execSync } from "child_process";
 import * as fs from "fs";
 import * as path from "path";
-import { parseMachinesFromFile } from "xstate-parser-demo";
 import {
   getDocumentValidationsResults,
   getTypegenOutput,
-  introspectMachine,
   makeXStateUpdateEvent,
 } from "..";
 

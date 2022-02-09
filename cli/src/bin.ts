@@ -4,49 +4,15 @@ import { Command } from "commander";
 import * as path from "path";
 import fg from "fast-glob";
 import { watch } from "chokidar";
-import * as fs from "fs";
-import { promisify } from "util";
+import * as fs from "fs/promises";
 import { parseMachinesFromFile } from "xstate-parser-demo";
 import {
   doesTsTypesRequireUpdate,
+  FileEdit,
   makeXStateUpdateEvent,
+  processFileEdits,
   writeToTypegenFile,
-} from "xstate-vscode-shared";
-
-const readFile = promisify(fs.readFile);
-const writeFile = promisify(fs.writeFile);
-
-type FileEdit = {
-  start: number;
-  end: number;
-  newText: string;
-};
-
-const processFileEdits = (oldText: string, fileEdits: FileEdit[]): string => {
-  let newText = oldText;
-  for (let i = 0; i < fileEdits.length; i++) {
-    const fileEdit = fileEdits[i];
-    const futureFileEdits = fileEdits.slice(i + 1);
-    newText =
-      newText.slice(0, fileEdit.start) +
-      fileEdit.newText +
-      newText.slice(fileEdit.end);
-
-    /**
-     * If the file edits are after this one, increment them
-     * by the length of the new text MINUS the length of the old
-     */
-    const oldTextLength = fileEdit.end - fileEdit.start;
-    const lengthDifference = fileEdit.newText.length - oldTextLength;
-    futureFileEdits.forEach((futureFileEdit) => {
-      if (futureFileEdit.start > fileEdit.end) {
-        futureFileEdit.start += lengthDifference;
-        futureFileEdit.end += lengthDifference;
-      }
-    });
-  }
-  return newText;
-};
+} from "xstate-tools-shared";
 
 const program = new Command();
 
@@ -65,7 +31,7 @@ const writeToFiles = async (uriArray: string[]) => {
    */
   for (const uri of uriArray) {
     try {
-      const fileContents = await readFile(uri, "utf8");
+      const fileContents = await fs.readFile(uri, "utf8");
       const parseResult = parseMachinesFromFile(fileContents);
       const event = makeXStateUpdateEvent(
         uri,
@@ -101,7 +67,7 @@ const writeToFiles = async (uriArray: string[]) => {
       if (fileEdits.length > 0) {
         const newFile = processFileEdits(fileContents, fileEdits);
 
-        await writeFile(uri, newFile);
+        await fs.writeFile(uri, newFile);
       }
 
       await writeToTypegenFile({

@@ -91,7 +91,7 @@
     "cli": "yarn workspace xstate-cli",
     "server": "yarn workspace xstate-vscode-server",
     "client": "yarn workspace xstate-vscode-client",
-    "shared": "yarn workspace xstate-vscode-shared",
+    "shared": "yarn workspace xstate-tools-shared",
     "vscode:prepublish": "yarn turbo run build:prod",
     "compile": "yarn turbo run build:dev",
     "prepare": "husky install",

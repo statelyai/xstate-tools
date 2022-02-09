@@ -8,7 +8,7 @@ import {
   getInlineImplementations,
   isCursorInPosition,
   resolveUriToFilePrefix,
-} from "xstate-vscode-shared";
+} from "xstate-tools-shared";
 import { getAuth, SignInResult } from "./auth";
 import { EditorWebviewScriptEvent } from "./editorWebviewScript";
 import { getWebviewContent } from "./getWebviewContent";

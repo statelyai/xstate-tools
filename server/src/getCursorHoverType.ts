@@ -6,7 +6,7 @@ import { StateNodeReturn } from "xstate-parser-demo/lib/stateNode";
 import {
   DocumentValidationsResult,
   isCursorInPosition,
-} from "xstate-vscode-shared";
+} from "xstate-tools-shared";
 
 export const getCursorHoverType = (
   validationResult: DocumentValidationsResult[],

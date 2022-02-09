@@ -1,6 +1,7 @@
 import { createMachine } from "xstate";
-import { introspectMachine, XStateUpdateMachine } from ".";
+import { introspectMachine } from "./introspectMachine";
 import { getStateMatchesObjectSyntax } from "./getStateMatchesObjectSyntax";
+import { XStateUpdateMachine } from "./types";
 
 export const getTypegenOutput = (event: {
   machines: Pick<
