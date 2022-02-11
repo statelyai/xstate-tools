@@ -102,8 +102,12 @@
   },
   "turbo": {
     "pipeline": {
-      "lint": {},
-      "test": {},
+      "lint": {
+        "outputs": []
+      },
+      "test": {
+        "outputs": []
+      },
       "viz:build": {
         "outputs": [
           "scripts/vizWebview.js"
