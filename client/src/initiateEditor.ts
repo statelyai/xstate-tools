@@ -151,6 +151,24 @@ export const initiateEditor = (
         uri: string,
         layoutString?: string,
       ) => {
+        const currentText = vscode.window.activeTextEditor.document.getText();
+
+        const result = filterOutIgnoredMachines(
+          parseMachinesFromFile(currentText),
+        );
+
+        const machine = result.machines[machineIndex];
+
+        const hasInlineImplementations =
+          getInlineImplementations(machine).length > 0;
+
+        if (hasInlineImplementations) {
+          vscode.window.showErrorMessage(
+            "Machines containing inline implementations cannot be edited visually.",
+          );
+          return;
+        }
+
         startService(
           config,
           machineIndex,

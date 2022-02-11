@@ -91,7 +91,7 @@
     "client": "yarn workspace xstate-vscode-client",
     "shared": "yarn workspace xstate-vscode-shared",
     "vscode:prepublish": "yarn turbo run build:prod",
-    "compile": "yarn turbo run build:dev",
+    "compile": "yarn turbo run build:dev --no-cache",
     "prepare": "husky install",
     "postinstall": "preconstruct dev && manypkg check"
   },
@@ -101,6 +101,9 @@
     ]
   },
   "turbo": {
+    "globalDependencies": [
+      "package.json"
+    ],
     "pipeline": {
       "lint": {
         "outputs": []
@@ -127,7 +130,8 @@
         ],
         "outputs": [
           "dist/**"
-        ]
+        ],
+        "cache": false
       },
       "build:prod": {
         "dependsOn": [
