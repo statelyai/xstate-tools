@@ -6215,10 +6215,10 @@ xmlchars@^2.2.0:
   resolved "https://registry.yarnpkg.com/xmlchars/-/xmlchars-2.2.0.tgz#060fe1bcb7f9c76fe2a17db86a9bc3ab894210cb"
   integrity sha512-JZnDKK8B0RCDw84FNdDAIpZK+JuJw+s7Lz8nksI7SIuU3UXJJslUthsi+uWBUYOwPFwW7W7PRLRfUKpxjtjFCw==
 
-xstate-parser-demo@0.5.4:
-  version "0.5.4"
-  resolved "https://registry.yarnpkg.com/xstate-parser-demo/-/xstate-parser-demo-0.5.4.tgz#afc53d7a62f2db123235b9143d1dacca3c8a7cdb"
-  integrity sha512-q+v6tMmnK41CV3wLmUY3aClHRSBd5eZkYBjwhs91Ajt+yD8mfR60gHefm/77tK9fJpRBIbUMbUxzczbkxpOaMw==
+xstate-parser-demo@0.5.8:
+  version "0.5.8"
+  resolved "https://registry.yarnpkg.com/xstate-parser-demo/-/xstate-parser-demo-0.5.8.tgz#236474406a58820fa869e0f434893e86554fc447"
+  integrity sha512-aGsFxcXw4zdpxipclFkk8mkVL26wKzAQ80RSMu01yxI579cD0q+1AVTpt7utt4pLIk11otxE5krP0wgLQEarmw==
 
 xstate@^4.29.0:
   version "4.29.0"

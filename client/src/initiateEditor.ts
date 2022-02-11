@@ -6,6 +6,7 @@ import { parseMachinesFromFile } from "xstate-parser-demo";
 import {
   filterOutIgnoredMachines,
   getInlineImplementations,
+  ImplementationsMetadata,
   isCursorInPosition,
   resolveUriToFilePrefix,
 } from "xstate-vscode-shared";
@@ -30,6 +31,7 @@ export const initiateEditor = (
     machineIndex: number,
     uri: string,
     layoutString: string | undefined,
+    implementations: ImplementationsMetadata,
   ) => {
     const result = await vscode.window.withProgress<SignInResult>(
       {
@@ -69,6 +71,7 @@ export const initiateEditor = (
         uri: resolveUriToFilePrefix(uri),
         layoutString,
         token: result,
+        implementations,
       });
     } else {
       currentPanel = vscode.window.createWebviewPanel(
@@ -98,6 +101,7 @@ export const initiateEditor = (
         uri: resolveUriToFilePrefix(uri),
         layoutString,
         token: result,
+        implementations,
       });
 
       currentPanel.webview.onDidReceiveMessage(
@@ -124,8 +128,8 @@ export const initiateEditor = (
   };
 
   context.subscriptions.push(
-    vscode.workspace.onWillSaveTextDocument(async (event) => {
-      const text = event.document.getText();
+    vscode.workspace.onDidSaveTextDocument(async (document) => {
+      const text = document.getText();
       const result = parseMachinesFromFile(text);
 
       if (result.machines.length > 0) {
@@ -134,8 +138,9 @@ export const initiateEditor = (
             type: "RECEIVE_CONFIG_UPDATE_FROM_VSCODE",
             config: machine.toConfig(),
             index: index,
-            uri: resolveUriToFilePrefix(event.document.uri.path),
+            uri: resolveUriToFilePrefix(document.uri.path),
             layoutString: machine.getLayoutComment()?.value,
+            implementations: getInlineImplementations(machine, text),
           });
         });
       }
@@ -159,15 +164,7 @@ export const initiateEditor = (
 
         const machine = result.machines[machineIndex];
 
-        const hasInlineImplementations =
-          getInlineImplementations(machine).length > 0;
-
-        if (hasInlineImplementations) {
-          vscode.window.showErrorMessage(
-            "Machines containing inline implementations cannot be edited visually.",
-          );
-          return;
-        }
+        const implementations = getInlineImplementations(machine, currentText);
 
         startService(
           config,
@@ -176,6 +173,7 @@ export const initiateEditor = (
             vscode.window.activeTextEditor.document.uri.path,
           ),
           layoutString,
+          implementations,
         );
       },
     ),
@@ -223,15 +221,7 @@ export const initiateEditor = (
           return;
         }
 
-        const hasInlineImplementations =
-          getInlineImplementations(machine).length > 0;
-
-        if (hasInlineImplementations) {
-          vscode.window.showErrorMessage(
-            "Machines containing inline implementations cannot be edited visually.",
-          );
-          return;
-        }
+        const implementations = getInlineImplementations(machine, currentText);
 
         startService(
           machine.toConfig() as any,
@@ -240,6 +230,7 @@ export const initiateEditor = (
             vscode.window.activeTextEditor.document.uri.path,
           ),
           machine.getLayoutComment()?.value,
+          implementations,
         );
       } catch (e) {
         vscode.window.showErrorMessage(

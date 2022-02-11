@@ -41,3 +41,26 @@ export type DocumentValidationsResult = {
   introspectionResult?: IntrospectMachineResult;
   documentText: string;
 };
+
+export interface ImplementationsMetadata {
+  implementations: {
+    guards: Record<
+      string,
+      {
+        jsImplementation?: string;
+      }
+    >;
+    actions: Record<
+      string,
+      {
+        jsImplementation?: string;
+      }
+    >;
+    services: Record<
+      string,
+      {
+        jsImplementation?: string;
+      }
+    >;
+  };
+}

@@ -10,6 +10,13 @@ import { UpdateDefinitionEvent } from "./editorWebviewScript";
 
 const prettierStartRegex = /^([^{]){1,}/;
 const prettierEndRegex = /([^}]){1,}$/;
+const UNWRAP_START = `@UNWRAP_START@`;
+const UNWRAP_END = `@UNWRAP_END@`;
+const markAsUnwrap = (str: string) => {
+  return `${UNWRAP_START}${str}${UNWRAP_END}`;
+};
+
+const UNWRAPPER_REGEX = /"@UNWRAP_START@(.{1,})@UNWRAP_END@"/g;
 
 const STATE_KEYS_TO_PRESERVE = [
   "context",
@@ -47,13 +54,71 @@ export const handleDefinitionUpdate = async (event: UpdateDefinitionEvent) => {
       : "";
   });
 
-  const json = JSON.stringify(event.config, null, 2);
+  const json = JSON.stringify(
+    event.config,
+    (key, value) => {
+      if (
+        key === "cond" &&
+        event.implementations?.implementations?.guards?.[value]
+          ?.jsImplementation
+      ) {
+        return markAsUnwrap(
+          event.implementations?.implementations?.guards?.[value]
+            ?.jsImplementation,
+        );
+      }
+      if (
+        key === "src" &&
+        event.implementations?.implementations?.services?.[value]
+          ?.jsImplementation
+      ) {
+        return markAsUnwrap(
+          event.implementations?.implementations?.services?.[value]
+            ?.jsImplementation,
+        );
+      }
+
+      if (["actions", "entry", "exit"].includes(key)) {
+        if (Array.isArray(value)) {
+          return value.map((action) => {
+            if (
+              event.implementations?.implementations?.actions?.[action]
+                ?.jsImplementation
+            ) {
+              return markAsUnwrap(
+                event.implementations?.implementations?.actions?.[action]
+                  ?.jsImplementation,
+              );
+            }
+          });
+        }
+        if (
+          event.implementations?.implementations?.actions?.[value]
+            ?.jsImplementation
+        ) {
+          return markAsUnwrap(
+            event.implementations?.implementations?.actions?.[value]
+              ?.jsImplementation,
+          );
+        }
+      }
+
+      return value;
+    },
+    2,
+  );
 
   const prettierConfig = await prettier.resolveConfig(doc.fileName);
 
   let finalTextToInput = `${json.slice(0, 1)}${nodesToPreserve.join(
     "",
-  )}${json.slice(1)}`;
+  )}${json.slice(1)}`.replace(UNWRAPPER_REGEX, (str) => {
+    // +1 and -1 for the quotes
+    return str
+      .slice(UNWRAP_START.length + 1, -UNWRAP_END.length - 1)
+      .replace(/\\n/g, "\n")
+      .replace(/\\t/g, "\t");
+  });
 
   try {
     const result = await prettier.format(`(${finalTextToInput})`, {
