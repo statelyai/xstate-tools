@@ -4,7 +4,6 @@ import {
   DocumentValidationsResult,
   GlobalSettings,
 } from "xstate-vscode-shared";
-import { getInlineImplementationsWarnings } from "./diagnostics/getInlineImplementationsWarnings";
 import { getMetaWarnings } from "./diagnostics/getMetaWarnings";
 import { getTypegenGenericWarnings } from "./diagnostics/getTypegenGenericWarnings";
 import { getUnusedActionImplementations } from "./diagnostics/getUnusedActionImplementations";
@@ -23,7 +22,6 @@ const getters: DiagnosticGetter[] = [
   getUnusedActionImplementations,
   getUnusedServicesImplementations,
   getUnusedGuardsImplementations,
-  getInlineImplementationsWarnings,
   getMetaWarnings,
   getTypegenGenericWarnings,
 ];
