@@ -90,6 +90,7 @@ export const handleDefinitionUpdate = async (event: UpdateDefinitionEvent) => {
                   ?.jsImplementation,
               );
             }
+            return action;
           });
         }
         if (
@@ -117,6 +118,7 @@ export const handleDefinitionUpdate = async (event: UpdateDefinitionEvent) => {
     return str
       .slice(UNWRAP_START.length + 1, -UNWRAP_END.length - 1)
       .replace(/\\n/g, "\n")
+      .replace(/\\"/g, '"')
       .replace(/\\t/g, "\t");
   });
 

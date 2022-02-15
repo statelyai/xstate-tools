@@ -6225,10 +6225,6 @@ xstate@^4.29.0:
   resolved "https://registry.yarnpkg.com/xstate/-/xstate-4.29.0.tgz#74161f1e4b7fadb073593085f4fbb58068ee0b86"
   integrity sha512-F6WF5s6xG/bm8Oxi2ETuzwGQW8yleL5I4JPxZl49m7Uw7D4LAXu+4dvUK78Uo4D863sM8auqw6+1Xmj9mFlmDQ==
 
-"xstate@https://pkg.csb.dev/statelyai/xstate/commit/2200d1be/xstate":
-  version "4.28.1"
-  resolved "https://pkg.csb.dev/statelyai/xstate/commit/2200d1be/xstate#d7cab30ce1401c5adb6970e970b295776fdcced1"
-
 y18n@^5.0.5:
   version "5.0.8"
   resolved "https://registry.yarnpkg.com/y18n/-/y18n-5.0.8.tgz#7f4934d0f7ca8c56f95314939ddcd2dd91ce1d55"

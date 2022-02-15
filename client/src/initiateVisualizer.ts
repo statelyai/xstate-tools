@@ -142,7 +142,7 @@ export const initiateVisualizer = (
           config: machine.config,
           index,
           uri: event.uri,
-          guardsToMock: machine.guardsToMock,
+          guardsToMock: machine.namedGuards,
         });
       });
     }),

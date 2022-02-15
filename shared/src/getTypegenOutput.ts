@@ -13,7 +13,7 @@ export const getTypegenOutput = (event: XStateUpdateEvent) => {
       try {
         const guardsToMock: Record<string, () => boolean> = {};
 
-        machine.guardsToMock.forEach((guard) => {
+        machine.namedGuards.forEach((guard) => {
           guardsToMock[guard] = () => false;
         });
 
@@ -26,16 +26,18 @@ export const getTypegenOutput = (event: XStateUpdateEvent) => {
 
         const introspectResult = introspectMachine(createdMachine as any);
 
-        const actions = introspectResult.actions.lines.filter(
-          (line) => !line.name.startsWith("xstate."),
-        );
-        const guards = introspectResult.guards.lines.filter(
-          (line) => !line.name.startsWith("xstate."),
-        );
+        const actions = introspectResult.actions.lines
+          .filter((line) => !line.name.startsWith("xstate."))
+          .filter((action) => machine.namedActions.includes(action.name));
+        const guards = introspectResult.guards.lines
+          .filter((line) => !line.name.startsWith("xstate."))
+          .filter((elem) => machine.namedGuards.includes(elem.name));
 
-        const services = introspectResult.services.lines.filter(
-          (line) => !line.name.startsWith("xstate."),
-        );
+        const services = introspectResult.services.lines
+          .filter((line) => !line.name.startsWith("xstate."))
+          .filter((invoke) =>
+            machine.allServices.some((service) => service.src === invoke.name),
+          );
 
         const delays = introspectResult.delays.lines.filter(
           (line) => !line.name.startsWith("xstate."),
@@ -107,6 +109,11 @@ export const getTypegenOutput = (event: XStateUpdateEvent) => {
           };
           invokeSrcNameMap: {
             ${Object.keys(introspectResult.serviceSrcToIdMap)
+              .filter((src) => {
+                return machine.allServices.some(
+                  (service) => service.src === src,
+                );
+              })
               .map((src) => {
                 const set = Array.from(introspectResult.serviceSrcToIdMap[src]);
 

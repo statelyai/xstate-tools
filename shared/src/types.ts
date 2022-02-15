@@ -24,7 +24,8 @@ export interface XStateUpdateEvent {
     config: MachineConfig<any, any, any>;
     typeNodeLoc?: SourceLocation | null;
     index: number;
-    guardsToMock: string[];
+    namedGuards: string[];
+    namedActions: string[];
     actionsInOptions: string[];
     guardsInOptions: string[];
     servicesInOptions: string[];
