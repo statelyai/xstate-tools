@@ -1,31 +1,22 @@
 {
   "compilerOptions": {
-    "allowSyntheticDefaultImports": true,
-    "composite": true,
-    "target": "es5",
-    "declaration": true,
-    "declarationMap": true,
-    "moduleResolution": "node",
-    // "noUnusedLocals": true,
-    // "noUnusedParameters": true,
-    "strictNullChecks": true,
-    "strict": true,
-    "downlevelIteration": true,
-    "experimentalDecorators": true,
-    "skipLibCheck": true,
-    "jsx": "react",
+    "target": "es2019",
     "lib": [
-      "es6",
-      "dom"
+      "ES2019"
     ],
-    "strictPropertyInitialization": true,
-    "outDir": "./lib",
-    "rootDir": "./src",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "strict": true,
+    "outDir": "out",
+    "rootDir": "src",
+    "noEmit": true,
+    "skipLibCheck": true
   },
   "include": [
-    "src",
+    "src"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
   ]
 }

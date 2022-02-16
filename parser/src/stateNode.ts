@@ -4,7 +4,12 @@ import { Context } from "./context";
 import { History } from "./history";
 import { Invoke } from "./invoke";
 import { StateMeta } from "./meta";
-import { AnyNode, BooleanLiteral, StringLiteral } from "./scalars";
+import {
+  AnyNode,
+  BooleanLiteral,
+  NumericLiteral,
+  StringLiteral,
+} from "./scalars";
 import { Schema } from "./schema";
 import { MaybeTransitionArray } from "./transitions";
 import { TsTypes } from "./tsTypes";
@@ -57,6 +62,15 @@ export type StateNodeReturn = {
   data?: GetParserResult<typeof AnyNode>;
   schema?: GetParserResult<typeof Schema>;
   preserveActionOrder?: GetParserResult<typeof BooleanLiteral>;
+  parallel?: GetParserResult<typeof BooleanLiteral>;
+  description?: GetParserResult<typeof StringLiteral>;
+  key?: GetParserResult<typeof StringLiteral>;
+  version?: GetParserResult<typeof AnyNode>;
+  activities?: GetParserResult<typeof AnyNode>;
+  strict?: GetParserResult<typeof BooleanLiteral>;
+  // TODO
+  parent?: GetParserResult<typeof AnyNode>;
+  order?: GetParserResult<typeof NumericLiteral>;
 };
 
 type WithObjectPropertyInfo<T extends Record<any, any>> = {
@@ -87,6 +101,14 @@ const StateNodeObject: AnyParser<WithObjectPropertyInfo<StateNodeReturn>> =
     context: Context,
     data: AnyNode,
     preserveActionOrder: BooleanLiteral,
+    parallel: BooleanLiteral,
+    description: StringLiteral,
+    version: AnyNode,
+    key: StringLiteral,
+    activities: AnyNode,
+    parent: AnyNode,
+    strict: BooleanLiteral,
+    order: NumericLiteral,
   }));
 
 export const StateNode = StateNodeObject;

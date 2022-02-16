@@ -6,7 +6,7 @@
   "license": "MIT",
   "scripts": {
     "test": "jest src",
-    "build": "tsc",
+    "lint": "tsc",
     "prepare": "patch-package && yarn build",
     "build:prod": "(cd ../ && preconstruct build)"
   },

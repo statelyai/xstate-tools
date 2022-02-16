@@ -1,6 +1,7 @@
 import { parseMachinesFromFile } from "xstate-parser-demo";
 import { getNewMachineText, ImplementationsMetadata } from "..";
 import { MachineConfig } from "xstate";
+import { hashedId } from "xstate-parser-demo/src/utils";
 
 const defaultImplementations = {
   implementations: {
@@ -21,6 +22,7 @@ const runTest = (
     machine: parseMachinesFromFile(input).machines[0],
     text: input,
     newConfig,
+    // To allow us to use tabs in the example output
   }).then((res) => res.replace(/  /g, "\t"));
 };
 
@@ -77,6 +79,30 @@ describe("getNewMachineText", () => {
     );
   });
 
+  it("Should preserve the order of top-level keys", async () => {
+    const INPUT = `
+			createMachine({
+				id: "test",
+				on: {},
+				states: {},
+			})
+		`;
+
+    const newText = await runTest(INPUT, {
+      id: "wow",
+      states: {},
+      on: {},
+    });
+
+    expect(newText).toEqual(
+      `{
+	id: "wow",
+	on: {},
+	states: {},
+}`,
+    );
+  });
+
   describe("Inline implementations", () => {
     it("Should preserve inline implementations on actions, guards and services", async () => {
       const INPUT = `
@@ -127,8 +153,6 @@ describe("getNewMachineText", () => {
         },
       );
 
-      // NOTE - use spaces, not tabs, otherwise Jest will
-      // think the indentation is wrong
       expect(newText).toEqual(
         `{
 	entry: [() => {}],
@@ -173,8 +197,6 @@ describe("getNewMachineText", () => {
         },
       );
 
-      // NOTE - use spaces, not tabs, otherwise Jest will
-      // think the indentation is wrong
       expect(newText).toEqual(
         `{
 	entry: [
@@ -186,7 +208,65 @@ describe("getNewMachineText", () => {
       );
     });
 
+    it("Should ignore whitespace differences between inline implementations when hashing them", async () => {
+      const idWithWhitespace = hashedId(`   
+			() => {
+
+
+			}   			`);
+
+      const idWithoutWhitespace = hashedId(`() => {}`);
+
+      const INPUT = `
+				createMachine({
+					entry: ['${idWithWhitespace}'],
+				})
+			`;
+
+      const newText = await runTest(
+        INPUT,
+        {
+          entry: [idWithWhitespace],
+        },
+        {
+          implementations: {
+            actions: {
+              [idWithoutWhitespace]: {
+                jsImplementation: `() => {}`,
+              },
+            },
+            services: {},
+            guards: {},
+          },
+        },
+      );
+
+      expect(newText).toEqual(
+        `{
+	entry: [() => {}],
+}`,
+      );
+    });
+
     it.todo("Should preserve type annotations on inline implementations");
+  });
+
+  it("Should preserve descriptions on nodes", async () => {
+    const INPUT = `
+			createMachine({
+				description: 'Hello',
+			})
+		`;
+
+    const newText = await runTest(INPUT, {
+      description: "Hello, world!",
+    });
+
+    expect(newText).toEqual(
+      `{
+	description: "Hello, world!",
+}`,
+    );
   });
 
   it.skip("REPL", async () => {

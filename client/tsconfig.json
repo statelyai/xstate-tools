@@ -9,6 +9,7 @@
 		"outDir": "out",
 		"rootDir": "src",
 		"sourceMap": true,
+		"noEmit": true,
 		"skipLibCheck": true
 	},
 	"include": [

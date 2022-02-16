@@ -1,10 +1,8 @@
 import * as prettier from "prettier";
 import { MachineConfig } from "xstate";
-import { MachineParseResult } from "xstate-parser-demo/src/MachineParseResult";
-import {
-  getRawTextFromNode,
-  ImplementationsMetadata,
-} from "xstate-vscode-shared";
+import type { MachineParseResult } from "xstate-parser-demo/src/MachineParseResult";
+import { getRawTextFromNode } from "./getRawTextFromNode";
+import { ImplementationsMetadata } from "./types";
 
 const prettierStartRegex = /^([^{]){1,}/;
 const prettierEndRegex = /([^}]){1,}$/;
@@ -49,8 +47,23 @@ export const getNewMachineText = async ({
       : "";
   });
 
+  const config: MachineConfig<any, any, any> = {};
+
+  const getKeyStart = (key: keyof MachineConfig<any, any, any>): number => {
+    const start = machine.ast.definition?.[key]?.node?.start;
+    return start ?? 0;
+  };
+
+  Object.keys(newConfig)
+    .sort((a, b) => {
+      return getKeyStart(a as any) - getKeyStart(b as any);
+    })
+    .forEach((key) => {
+      (config as any)[key] = (newConfig as any)[key];
+    });
+
   const json = JSON.stringify(
-    newConfig,
+    config,
     (key, value) => {
       if (
         key === "cond" &&

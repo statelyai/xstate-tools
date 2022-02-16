@@ -36,7 +36,7 @@ export const maybeArrayOf = <Result>(
         if (result && Array.isArray(result)) {
           toReturn.push(...result);
         } else if (result) {
-          toReturn.push(result);
+          toReturn.push(result as Result);
         }
       });
 
@@ -408,7 +408,7 @@ export const isFunctionOrArrowFunctionExpression = (
 };
 
 export function hashedId(str: string): string {
-  return hash(str);
+  return hash(str.replace(/\s/g, ""));
 }
 
 /**
