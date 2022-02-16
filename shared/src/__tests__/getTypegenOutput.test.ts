@@ -1,7 +1,6 @@
 import { execSync, spawnSync } from "child_process";
 import * as fs from "fs";
 import * as path from "path";
-import { parseMachinesFromFile } from "xstate-parser-demo";
 import {
   getDocumentValidationsResults,
   getTypegenOutput,
@@ -9,7 +8,6 @@ import {
   makeXStateUpdateEvent,
 } from "..";
 
-// TODO - write tests for getTypegenOutput
 describe("getTypegenOutput", () => {
   execSync("rm -rf ./__examples__/*.typegen.ts", {
     cwd: __dirname,

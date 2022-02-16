@@ -18,7 +18,7 @@ import {
   TextDocumentSyncKind,
 } from "vscode-languageserver/node";
 import { assign, createMachine, interpret } from "xstate";
-import { MachineParseResult } from "xstate-parser-demo/lib/MachineParseResult";
+import { MachineParseResult } from "xstate-parser-demo/src/MachineParseResult";
 import {
   DocumentValidationsResult,
   getDocumentValidationsResults,

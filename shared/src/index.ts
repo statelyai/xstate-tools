@@ -13,3 +13,4 @@ export * from "./getStateMatchesObjectSyntax";
 export * from "./makeXStateUpdateEvent";
 export * from "./getDocumentValidationsResults";
 export * from "./resolveUriToFilePrefix";
+export * from "./getNewMachineText";
