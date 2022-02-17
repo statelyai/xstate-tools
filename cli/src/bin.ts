@@ -2,7 +2,6 @@
 
 import { Command } from "commander";
 import * as path from "path";
-import fg from "fast-glob";
 import { watch } from "chokidar";
 import * as fs from "fs/promises";
 import { parseMachinesFromFile } from "xstate-parser-demo";
@@ -37,7 +36,7 @@ const writeToFiles = async (uriArray: string[]) => {
           uri,
           parseResult.machines.map((machine) => ({
             parseResult: machine,
-          })),
+          }))
         );
 
         const fileEdits: FileEdit[] = [];
@@ -78,7 +77,7 @@ const writeToFiles = async (uriArray: string[]) => {
       } catch (e) {
         handleError(uri, e);
       }
-    }),
+    })
   );
 };
 
@@ -87,18 +86,33 @@ program
   .description("Generate TypeScript types from XState machines")
   .argument("<files>", "The files to target, expressed as a glob pattern")
   .option("-w, --watch", "Run the typegen in watch mode")
-  .action(async (files: string, opts: { watch?: boolean }) => {
-    const allFiles = await fg(files);
-
-    await writeToFiles(allFiles);
-
+  .action(async (filesPattern: string, opts: { watch?: boolean }) => {
     if (opts.watch) {
-      watch(files, {}).on("change", (path) => {
+      // TODO: implement per path queuing to avoid tasks related to the same file from overlapping their execution
+      const processFile = (path: string) => {
         if (path.endsWith(".typegen.ts")) {
           return;
         }
         writeToFiles([path]);
-      });
+      };
+      // TODO: handle removals
+      watch(filesPattern, { awaitWriteFinish: true })
+        .on("add", processFile)
+        .on("change", processFile);
+    } else {
+      const tasks: Array<Promise<void>> = [];
+      // TODO: could this cleanup outdated typegen files?
+      watch(filesPattern, { persistent: false })
+        .on("add", (path) => {
+          if (path.endsWith(".typegen.ts")) {
+            return;
+          }
+          tasks.push(writeToFiles([path]));
+        })
+        .on("ready", async () => {
+          await Promise.all(tasks);
+          process.exit(0);
+        });
     }
   });
 
