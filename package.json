@@ -5,7 +5,7 @@
   "preview": true,
   "author": "Matt Pocock",
   "license": "MIT",
-  "version": "1.5.16",
+  "version": "1.6.1",
   "private": true,
   "repository": {
     "type": "git",
@@ -27,7 +27,8 @@
       "client",
       "server",
       "shared",
-      "cli"
+      "cli",
+      "parser"
     ]
   },
   "categories": [
@@ -53,22 +54,22 @@
   "contributes": {
     "commands": [
       {
-        "command": "xstate.visualize",
+        "command": "stately-xstate.visualize",
         "title": "Open Inspector",
         "category": "XState"
       },
       {
-        "command": "xstate.edit",
+        "command": "stately-xstate.edit",
         "title": "Open Visual Editor",
         "category": "XState"
       },
       {
-        "command": "xstate.sign-out",
+        "command": "stately-xstate.sign-out",
         "title": "Sign out of Stately",
         "category": "XState"
       },
       {
-        "command": "xstate.sign-in",
+        "command": "stately-xstate.sign-in",
         "title": "Sign in to Stately",
         "category": "XState"
       }
@@ -89,23 +90,32 @@
   },
   "scripts": {
     "cli": "yarn workspace xstate-cli",
+    "parser": "yarn workspace xstate-parser-demo",
     "server": "yarn workspace xstate-vscode-server",
     "client": "yarn workspace xstate-vscode-client",
     "shared": "yarn workspace xstate-tools-shared",
     "vscode:prepublish": "yarn turbo run build:prod",
-    "compile": "yarn turbo run build:dev",
+    "compile": "yarn turbo run build:dev --no-cache",
     "prepare": "husky install",
     "postinstall": "preconstruct dev && manypkg check"
   },
   "preconstruct": {
     "packages": [
-      "shared"
+      "shared",
+      "parser"
     ]
   },
   "turbo": {
+    "globalDependencies": [
+      "package.json"
+    ],
     "pipeline": {
-      "lint": {},
-      "test": {},
+      "lint": {
+        "outputs": []
+      },
+      "test": {
+        "outputs": []
+      },
       "viz:build": {
         "outputs": [
           "scripts/vizWebview.js"
@@ -125,7 +135,8 @@
         ],
         "outputs": [
           "dist/**"
-        ]
+        ],
+        "cache": false
       },
       "build:prod": {
         "dependsOn": [
@@ -148,7 +159,7 @@
     "@babel/types": "^7.12.12",
     "@manypkg/cli": "^0.19.1",
     "@preconstruct/cli": "^2.1.0",
-    "@types/node": "^16.4.0",
+    "@types/node": "^16.0.1",
     "@typescript-eslint/eslint-plugin": "^4.23.0",
     "@typescript-eslint/parser": "^4.23.0",
     "@vercel/ncc": "0.28.4",
@@ -159,8 +170,6 @@
     "lint-staged": ">=10",
     "prettier": "^2.3.1",
     "turbo": "^1.1.2",
-    "typescript": "^4.3.2",
-    "xstate-parser-demo": "0.5.3"
-  },
-  "prettier": {}
+    "typescript": "^4.3.5"
+  }
 }

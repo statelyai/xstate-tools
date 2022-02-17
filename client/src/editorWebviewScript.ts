@@ -5,6 +5,7 @@ import { createMachine } from "xstate";
 import { compressToEncodedURIComponent } from "lz-string";
 import { TokenInfo } from "./auth";
 import { BASE_URL } from "./constants";
+import { ImplementationsMetadata } from "xstate-vscode-shared";
 
 declare global {
   function acquireVsCodeApi(): {
@@ -18,6 +19,7 @@ export interface WebViewMachineContext {
   index: number;
   layoutString: string | undefined;
   token: TokenInfo | undefined;
+  implementations: ImplementationsMetadata;
 }
 
 export type EditorWebviewScriptEvent =
@@ -28,6 +30,7 @@ export type EditorWebviewScriptEvent =
       uri: string;
       index: number;
       token: TokenInfo;
+      implementations: ImplementationsMetadata;
     }
   | {
       type: "NODE_SELECTED";
@@ -40,11 +43,13 @@ export type EditorWebviewScriptEvent =
       uri: string;
       index: number;
       layoutString: string;
+      implementations: ImplementationsMetadata;
     }
   | {
       type: "DEFINITION_UPDATED";
       layoutString: string;
       config: MachineConfig<any, any, any>;
+      implementations: ImplementationsMetadata;
     }
   | UpdateDefinitionEvent;
 
@@ -61,6 +66,7 @@ export type UpdateDefinitionEvent = {
   layoutString: string;
   uri: string;
   index: number;
+  implementations: ImplementationsMetadata;
 };
 
 let vscodeApi: ReturnType<typeof acquireVsCodeApi>;
@@ -82,12 +88,21 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
       index: 0,
       layoutString: undefined,
       token: undefined,
+      implementations: {
+        implementations: {
+          actions: {},
+          guards: {},
+          services: {},
+        },
+      },
     },
     invoke: {
       src: () => (send) => {
         const listener = (event) => {
           try {
             const ourEvent: EditorWebviewScriptEvent = JSON.parse(event.data);
+
+            console.log(ourEvent);
 
             send(ourEvent);
           } catch (e) {
@@ -124,6 +139,7 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
                 uri: event.uri,
                 layoutString: event.layoutString,
                 token: event.token,
+                implementations: event.implementations,
               };
             }),
             internal: false,
@@ -143,7 +159,9 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
               JSON.stringify(context.config),
             )}${
               context.layoutString ? `&layout=${context.layoutString}` : ""
-            }${getTokenHash(context.token)}`;
+            }&implementations=${compressToEncodedURIComponent(
+              JSON.stringify(context.implementations),
+            )}${getTokenHash(context.token)}`;
           },
         },
         on: {
@@ -156,6 +174,7 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
                   uri: event.uri,
                   layoutString: event.layoutString,
                   token: event.token,
+                  implementations: event.implementations,
                 };
               }),
               "updateIframe",
@@ -171,6 +190,7 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
                 return {
                   config: event.config,
                   layoutString: event.layoutString,
+                  implementations: event.implementations,
                 };
               }),
               "updateIframe",
@@ -182,6 +202,7 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
                 return {
                   config: event.config,
                   layoutString: event.layoutString,
+                  implementations: event.implementations,
                 };
               }),
               (ctx, event) => {
@@ -191,6 +212,7 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
                   index: ctx.index,
                   uri: ctx.uri,
                   layoutString: event.layoutString,
+                  implementations: event.implementations,
                 });
               },
             ],
@@ -211,6 +233,7 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
             config: context.config,
             layoutString: context.layoutString,
             type: "UPDATE_CONFIG",
+            implementations: context.implementations,
           },
           "*",
         );
@@ -219,11 +242,7 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
   },
 );
 
-interpret(machine)
-  .start()
-  .subscribe((state) => {
-    console.log(state.value);
-  });
+interpret(machine).start();
 
 const getTokenHash = (tokenInfo: TokenInfo) => {
   return `#access_token=${tokenInfo.token}&expires_in=${(

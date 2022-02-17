@@ -8,7 +8,7 @@
     "prepare": "esbuild src/bin.ts --outdir=bin --platform=node --format=cjs"
   },
   "devDependencies": {
-    "@types/node": "^16.4.0",
+    "@types/node": "^16.0.1",
     "esbuild": "^0.14.21",
     "xstate": "^4.29.0"
   },
@@ -18,7 +18,7 @@
   "dependencies": {
     "chokidar": "^3.5.3",
     "commander": "^8.0.0",
-    "xstate-parser-demo": "0.5.3",
+    "xstate-parser-demo": "0.5.8",
     "xstate-tools-shared": "*"
   },
   "author": "Stately Team",

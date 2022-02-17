@@ -6,6 +6,7 @@ import { parseMachinesFromFile } from "xstate-parser-demo";
 import {
   filterOutIgnoredMachines,
   getInlineImplementations,
+  ImplementationsMetadata,
   isCursorInPosition,
   resolveUriToFilePrefix,
 } from "xstate-tools-shared";
@@ -30,6 +31,7 @@ export const initiateEditor = (
     machineIndex: number,
     uri: string,
     layoutString: string | undefined,
+    implementations: ImplementationsMetadata,
   ) => {
     const result = await vscode.window.withProgress<SignInResult>(
       {
@@ -69,6 +71,7 @@ export const initiateEditor = (
         uri: resolveUriToFilePrefix(uri),
         layoutString,
         token: result,
+        implementations,
       });
     } else {
       currentPanel = vscode.window.createWebviewPanel(
@@ -98,6 +101,7 @@ export const initiateEditor = (
         uri: resolveUriToFilePrefix(uri),
         layoutString,
         token: result,
+        implementations,
       });
 
       currentPanel.webview.onDidReceiveMessage(
@@ -124,18 +128,19 @@ export const initiateEditor = (
   };
 
   context.subscriptions.push(
-    vscode.workspace.onWillSaveTextDocument(async (event) => {
-      const text = event.document.getText();
+    vscode.workspace.onDidSaveTextDocument(async (document) => {
+      const text = document.getText();
       const result = parseMachinesFromFile(text);
 
       if (result.machines.length > 0) {
         result.machines.forEach((machine, index) => {
           sendMessage({
             type: "RECEIVE_CONFIG_UPDATE_FROM_VSCODE",
-            config: machine.toConfig(),
+            config: machine.toConfig({ hashInlineImplementations: true }),
             index: index,
-            uri: resolveUriToFilePrefix(event.document.uri.path),
+            uri: resolveUriToFilePrefix(document.uri.path),
             layoutString: machine.getLayoutComment()?.value,
+            implementations: getInlineImplementations(machine, text),
           });
         });
       }
@@ -144,13 +149,23 @@ export const initiateEditor = (
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      "xstate.edit-code-lens",
+      "stately-xstate.edit-code-lens",
       async (
         config: MachineConfig<any, any, any>,
         machineIndex: number,
         uri: string,
         layoutString?: string,
       ) => {
+        const currentText = vscode.window.activeTextEditor.document.getText();
+
+        const result = filterOutIgnoredMachines(
+          parseMachinesFromFile(currentText),
+        );
+
+        const machine = result.machines[machineIndex];
+
+        const implementations = getInlineImplementations(machine, currentText);
+
         startService(
           config,
           machineIndex,
@@ -158,13 +173,14 @@ export const initiateEditor = (
             vscode.window.activeTextEditor.document.uri.path,
           ),
           layoutString,
+          implementations,
         );
       },
     ),
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand("xstate.edit", () => {
+    vscode.commands.registerCommand("stately-xstate.edit", () => {
       try {
         const currentSelection = vscode.window.activeTextEditor.selection;
 
@@ -205,23 +221,16 @@ export const initiateEditor = (
           return;
         }
 
-        const hasInlineImplementations =
-          getInlineImplementations(machine).length > 0;
-
-        if (hasInlineImplementations) {
-          vscode.window.showErrorMessage(
-            "Machines containing inline implementations cannot be edited visually.",
-          );
-          return;
-        }
+        const implementations = getInlineImplementations(machine, currentText);
 
         startService(
-          machine.toConfig() as any,
+          machine.toConfig({ hashInlineImplementations: true }),
           foundIndex!,
           resolveUriToFilePrefix(
             vscode.window.activeTextEditor.document.uri.path,
           ),
           machine.getLayoutComment()?.value,
+          implementations,
         );
       } catch (e) {
         vscode.window.showErrorMessage(

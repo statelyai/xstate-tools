@@ -7,7 +7,6 @@ import {
   makeXStateUpdateEvent,
 } from "..";
 
-// TODO - write tests for getTypegenOutput
 describe("getTypegenOutput", () => {
   execSync("rm -rf ./__examples__/*.typegen.ts", {
     cwd: __dirname,

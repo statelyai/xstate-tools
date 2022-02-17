@@ -99,7 +99,7 @@ export const miscDiagnostics: DiagnosticGetter = (machine, textDocument) => {
     // }
     return [
       {
-        message: e.message,
+        message: (e as any).message,
         range,
         severity: DiagnosticSeverity.Error,
       },

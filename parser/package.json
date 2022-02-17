@@ -1,0 +1,38 @@
+{
+  "name": "xstate-parser-demo",
+  "version": "0.5.8",
+  "main": "dist/xstate-parser-demo.cjs.js",
+  "author": "Matt Pocock",
+  "license": "MIT",
+  "scripts": {
+    "test": "jest src",
+    "lint": "tsc",
+    "prepare": "patch-package && yarn build",
+    "build:prod": "(cd ../ && preconstruct build)"
+  },
+  "dependencies": {},
+  "peerDependencies": {
+    "@babel/core": "^7",
+    "@babel/parser": "^7",
+    "@babel/traverse": "^7",
+    "@babel/types": "^7",
+    "xstate": "^4"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.12.10",
+    "@babel/parser": "^7.12.11",
+    "@babel/preset-env": "^7.14.7",
+    "@babel/preset-react": "^7.14.5",
+    "@babel/preset-typescript": "^7.15.0",
+    "@babel/traverse": "^7.12.12",
+    "@babel/types": "^7.12.12",
+    "@types/babel__core": "^7.1.15",
+    "@types/babel__traverse": "^7.14.1",
+    "@types/jest": "^27.4.0",
+    "@types/node": "^16.0.1",
+    "jest": "^27.4.7",
+    "patch-package": "^6.4.7",
+    "typescript": "^4.3.5",
+    "xstate": "^4.29.0"
+  }
+}
