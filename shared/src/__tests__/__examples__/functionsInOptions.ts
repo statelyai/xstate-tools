@@ -4,13 +4,13 @@ createMachine(
   {
     tsTypes: {} as import("./functionsInOptions.typegen").Typegen0,
     schema: {
-      services: {} as {
-        service1: {
+      services: {
+        service1: {} as {
           data: boolean;
-        };
-        service2: {
+        },
+        service2: {} as {
           data: boolean;
-        };
+        },
       },
     },
     on: {
