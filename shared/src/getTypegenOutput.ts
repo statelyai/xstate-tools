@@ -8,7 +8,8 @@ export const getTypegenOutput = (event: {
     XStateUpdateMachine,
     | "hasTypesNode"
     | "config"
-    | "guardsToMock"
+    | "namedGuards"
+    | "namedActions"
     | "actionsInOptions"
     | "guardsInOptions"
     | "servicesInOptions"
