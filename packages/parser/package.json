@@ -1,7 +1,7 @@
 {
-  "name": "xstate-parser-demo",
+  "name": "@xstate/machine-extractor",
   "version": "0.5.8",
-  "main": "dist/xstate-parser-demo.cjs.js",
+  "main": "dist/xstate-machine-extractor.cjs.js",
   "author": "Matt Pocock",
   "license": "MIT",
   "scripts": {

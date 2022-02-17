@@ -1,4 +1,4 @@
-import type { MachineParseResult } from "xstate-parser-demo/src/MachineParseResult";
+import type { MachineParseResult } from "@xstate/machine-extractor/src/MachineParseResult";
 import { getRawTextFromNode, ImplementationsMetadata } from ".";
 
 export const getInlineImplementations = (

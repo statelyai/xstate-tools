@@ -1,7 +1,7 @@
 import * as os from "os";
 import * as vscode from "vscode";
 import { assign, createMachine, interpret } from "xstate";
-import { writeToTypegenFile, XStateUpdateEvent } from "xstate-tools-shared";
+import { writeToTypegenFile, XStateUpdateEvent } from "@xstate/tools-shared";
 
 const throttledTypegenCreationMachine = createMachine<
   {

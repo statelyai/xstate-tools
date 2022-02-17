@@ -1,4 +1,4 @@
-import { IntrospectMachineResult, SubState } from "xstate-tools-shared";
+import { IntrospectMachineResult, SubState } from "@xstate/tools-shared";
 
 export const getStateMatchesObjectSyntax = (
   introspectionResult: IntrospectMachineResult,

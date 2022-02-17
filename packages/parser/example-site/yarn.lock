@@ -2881,9 +2881,9 @@ wrappy@1:
   resolved "https://registry.yarnpkg.com/wrappy/-/wrappy-1.0.2.tgz#b5243d8f3ec1aa35f1364605bc0d1036e30ab69f"
   integrity sha1-tSQ9jz7BqjXxNkYFvA0QNuMKtp8=
 
-xstate-parser-demo@^0.1.4:
+@xstate/machine-extractor@^0.1.4:
   version "0.1.4"
-  resolved "https://registry.yarnpkg.com/xstate-parser-demo/-/xstate-parser-demo-0.1.4.tgz#b9b755e799f14d88737e9e66b78c66804549baed"
+  resolved "https://registry.yarnpkg.com/@xstate/machine-extractor/-/@xstate/machine-extractor-0.1.4.tgz#b9b755e799f14d88737e9e66b78c66804549baed"
   integrity sha512-X0wmiNNU0uA7Ucr4FfR2ovMstEJRFcW6erJJSto25nFlcxQ8j+Oo6n9+8q9tlKX3Q6GdoxUXGt8OdNrWuBUp0Q==
   dependencies:
     "@babel/core" "^7.12.10"

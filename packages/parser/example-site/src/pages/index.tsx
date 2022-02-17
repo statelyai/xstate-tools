@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { parseMachinesFromFile } from "xstate-parser-demo";
+import { parseMachinesFromFile } from "@xstate/machine-extractor";
 
 function App() {
   const [text, setText] = useState(`createMachine({ initial: 'wow' })`);

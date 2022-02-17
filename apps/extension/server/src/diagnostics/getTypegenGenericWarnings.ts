@@ -1,5 +1,5 @@
 import { DiagnosticSeverity } from "vscode-languageserver";
-import { getRangeFromSourceLocation } from "xstate-tools-shared";
+import { getRangeFromSourceLocation } from "@xstate/tools-shared";
 import { DiagnosticGetter } from "../getDiagnostics";
 
 export const getTypegenGenericWarnings: DiagnosticGetter = (machine) => {

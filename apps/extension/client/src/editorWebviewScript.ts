@@ -5,7 +5,7 @@ import { createMachine } from "xstate";
 import { compressToEncodedURIComponent } from "lz-string";
 import { TokenInfo } from "./auth";
 import { BASE_URL } from "./constants";
-import { ImplementationsMetadata } from "xstate-tools-shared";
+import { ImplementationsMetadata } from "@xstate/tools-shared";
 
 declare global {
   function acquireVsCodeApi(): {

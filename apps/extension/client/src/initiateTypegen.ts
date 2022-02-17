@@ -1,13 +1,13 @@
 import * as path from "path";
 import * as vscode from "vscode";
 import { LanguageClient } from "vscode-languageclient/node";
-import { parseMachinesFromFile } from "xstate-parser-demo";
+import { parseMachinesFromFile } from "@xstate/machine-extractor";
 import {
   doesTsTypesRequireUpdate,
   getRangeFromSourceLocation,
   getRawTextFromNode,
   XStateUpdateEvent,
-} from "xstate-tools-shared";
+} from "@xstate/tools-shared";
 import { startTypegenService } from "./typegenService";
 
 export const initiateTypegen = (

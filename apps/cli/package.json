@@ -17,10 +17,10 @@
     "xstate": "^4.29.0"
   },
   "dependencies": {
+    "@xstate/machine-extractor": "0.5.8",
+    "@xstate/tools-shared": "1.0.0",
     "chokidar": "^3.5.3",
-    "commander": "^8.0.0",
-    "xstate-parser-demo": "0.5.8",
-    "xstate-tools-shared": "*"
+    "commander": "^8.0.0"
   },
   "author": "Stately Team",
   "license": "MIT"

@@ -1,11 +1,11 @@
 import * as vscode from "vscode";
-import { parseMachinesFromFile } from "xstate-parser-demo";
+import { parseMachinesFromFile } from "@xstate/machine-extractor";
 import {
   getInlineImplementations,
   getNewMachineText,
   getRangeFromSourceLocation,
   resolveUriToFilePrefix,
-} from "xstate-tools-shared";
+} from "@xstate/tools-shared";
 import { UpdateDefinitionEvent } from "./editorWebviewScript";
 
 export const handleDefinitionUpdate = async (event: UpdateDefinitionEvent) => {

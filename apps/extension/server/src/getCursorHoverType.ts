@@ -1,12 +1,12 @@
 import * as t from "@babel/types";
 import { Position } from "vscode-languageserver-textdocument";
-import { StringLiteralNode } from "xstate-parser-demo";
-import { MachineParseResult } from "xstate-parser-demo/src/MachineParseResult";
-import { StateNodeReturn } from "xstate-parser-demo/src/stateNode";
+import { StringLiteralNode } from "@xstate/machine-extractor";
+import { MachineParseResult } from "@xstate/machine-extractor/src/MachineParseResult";
+import { StateNodeReturn } from "@xstate/machine-extractor/src/stateNode";
 import {
   DocumentValidationsResult,
   isCursorInPosition,
-} from "xstate-tools-shared";
+} from "@xstate/tools-shared";
 
 export const getCursorHoverType = (
   validationResult: DocumentValidationsResult[],

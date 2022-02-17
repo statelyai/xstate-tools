@@ -1,5 +1,5 @@
 import { createMachine } from "xstate";
-import { parseMachinesFromFile } from "xstate-parser-demo";
+import { parseMachinesFromFile } from "@xstate/machine-extractor";
 import { DocumentValidationsResult } from "./types";
 import { filterOutIgnoredMachines } from "./filterOutIgnoredMachines";
 import { introspectMachine } from "./introspectMachine";

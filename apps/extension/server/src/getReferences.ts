@@ -5,7 +5,7 @@ import { getCursorHoverType } from "./getCursorHoverType";
 import {
   DocumentValidationsResult,
   getRangeFromSourceLocation,
-} from "xstate-tools-shared";
+} from "@xstate/tools-shared";
 
 export const getReferences = (params: {
   textDocument: TextDocumentIdentifier;

@@ -1,6 +1,6 @@
 import * as prettier from "prettier";
 import { MachineConfig } from "xstate";
-import type { MachineParseResult } from "xstate-parser-demo/src/MachineParseResult";
+import type { MachineParseResult } from "@xstate/machine-extractor/src/MachineParseResult";
 import { getRawTextFromNode } from "./getRawTextFromNode";
 import { ImplementationsMetadata } from "./types";
 

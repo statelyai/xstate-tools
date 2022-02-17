@@ -1,7 +1,7 @@
 import * as XState from "xstate";
 import { InvokeDefinition } from "xstate";
 import { pathToStateValue } from "xstate/lib/utils";
-import { INLINE_IMPLEMENTATION_TYPE } from "xstate-parser-demo";
+import { INLINE_IMPLEMENTATION_TYPE } from "@xstate/machine-extractor";
 import {
   getMatchesStates,
   getTransitionsFromNode,

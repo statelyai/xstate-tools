@@ -4,14 +4,14 @@ import { Command } from "commander";
 import * as path from "path";
 import { watch } from "chokidar";
 import * as fs from "fs/promises";
-import { parseMachinesFromFile } from "xstate-parser-demo";
+import { parseMachinesFromFile } from "@xstate/machine-extractor";
 import {
   doesTsTypesRequireUpdate,
   FileEdit,
   makeXStateUpdateEvent,
   processFileEdits,
   writeToTypegenFile,
-} from "xstate-tools-shared";
+} from "@xstate/tools-shared";
 
 const program = new Command();
 
@@ -36,7 +36,7 @@ const writeToFiles = async (uriArray: string[]) => {
           uri,
           parseResult.machines.map((machine) => ({
             parseResult: machine,
-          }))
+          })),
         );
 
         const fileEdits: FileEdit[] = [];
@@ -77,7 +77,7 @@ const writeToFiles = async (uriArray: string[]) => {
       } catch (e) {
         handleError(uri, e);
       }
-    })
+    }),
   );
 };
 

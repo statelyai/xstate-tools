@@ -11,7 +11,7 @@ import {
   ServerOptions,
   TransportKind,
 } from "vscode-languageclient/node";
-import { XStateUpdateEvent } from "xstate-tools-shared";
+import { XStateUpdateEvent } from "@xstate/tools-shared";
 import { uniqueId } from "xstate/lib/utils";
 import { getAuth, SignInResult } from "./auth";
 import { initiateEditor } from "./initiateEditor";

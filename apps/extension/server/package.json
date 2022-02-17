@@ -1,9 +1,7 @@
 {
-  "name": "xstate-vscode-server",
+  "name": "@xstate/vscode-server",
   "private": true,
-  "description": "Example implementation of a language server in node.",
   "version": "1.0.0",
-  "author": "Microsoft Corporation",
   "license": "MIT",
   "engines": {
     "node": "*"
@@ -13,10 +11,10 @@
     "url": "https://github.com/Microsoft/vscode-extension-samples"
   },
   "dependencies": {
+    "@xstate/tools-shared": "1.0.0",
     "vscode-languageserver": "^7.0.0",
     "vscode-languageserver-textdocument": "^1.0.1",
-    "xstate": "^4.29.0",
-    "xstate-tools-shared": "*"
+    "xstate": "^4.29.0"
   },
   "devDependencies": {},
   "scripts": {

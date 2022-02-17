@@ -2,13 +2,13 @@ import * as path from "path";
 import * as vscode from "vscode";
 import { LanguageClient } from "vscode-languageclient/node";
 import { MachineConfig } from "xstate";
-import { Location, parseMachinesFromFile } from "xstate-parser-demo";
+import { Location, parseMachinesFromFile } from "@xstate/machine-extractor";
 import {
   filterOutIgnoredMachines,
   getSetOfNames,
   isCursorInPosition,
   XStateUpdateEvent,
-} from "xstate-tools-shared";
+} from "@xstate/tools-shared";
 import { getWebviewContent } from "./getWebviewContent";
 import { VizWebviewMachineEvent } from "./vizWebviewScript";
 

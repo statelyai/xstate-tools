@@ -18,7 +18,7 @@ import {
   TextDocumentSyncKind,
 } from "vscode-languageserver/node";
 import { assign, createMachine, interpret } from "xstate";
-import { MachineParseResult } from "xstate-parser-demo/src/MachineParseResult";
+import { MachineParseResult } from "@xstate/machine-extractor/src/MachineParseResult";
 import {
   DocumentValidationsResult,
   getDocumentValidationsResults,
@@ -28,7 +28,7 @@ import {
   getTransitionsFromNode,
   GlobalSettings,
   makeXStateUpdateEvent,
-} from "xstate-tools-shared";
+} from "@xstate/tools-shared";
 import { getCursorHoverType } from "./getCursorHoverType";
 import { getDiagnostics } from "./getDiagnostics";
 import { getReferences } from "./getReferences";

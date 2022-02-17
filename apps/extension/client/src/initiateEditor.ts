@@ -2,14 +2,14 @@ import * as path from "path";
 import * as vscode from "vscode";
 import { LanguageClient } from "vscode-languageclient/node";
 import { MachineConfig } from "xstate";
-import { parseMachinesFromFile } from "xstate-parser-demo";
+import { parseMachinesFromFile } from "@xstate/machine-extractor";
 import {
   filterOutIgnoredMachines,
   getInlineImplementations,
   ImplementationsMetadata,
   isCursorInPosition,
   resolveUriToFilePrefix,
-} from "xstate-tools-shared";
+} from "@xstate/tools-shared";
 import { getAuth, SignInResult } from "./auth";
 import { EditorWebviewScriptEvent } from "./editorWebviewScript";
 import { getWebviewContent } from "./getWebviewContent";

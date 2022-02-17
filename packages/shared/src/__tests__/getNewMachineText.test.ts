@@ -1,7 +1,7 @@
-import { parseMachinesFromFile } from "xstate-parser-demo";
+import { parseMachinesFromFile } from "@xstate/machine-extractor";
 import { getNewMachineText, ImplementationsMetadata } from "..";
 import { MachineConfig } from "xstate";
-import { hashedId } from "xstate-parser-demo/src/utils";
+import { hashedId } from "@xstate/machine-extractor/src/utils";
 
 const defaultImplementations = {
   implementations: {

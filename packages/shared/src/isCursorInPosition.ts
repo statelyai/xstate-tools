@@ -1,5 +1,5 @@
 import type { Position } from "vscode-languageserver-textdocument";
-import type { Location } from "xstate-parser-demo";
+import type { Location } from "@xstate/machine-extractor";
 
 export const isCursorInPosition = (
   nodeSourceLocation: Location,
