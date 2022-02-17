@@ -50,7 +50,14 @@ export const initiateVisualizer = (
       );
 
       const onDiskPath = vscode.Uri.file(
-        path.join(context.extensionPath, "client", "scripts", "vizWebview.js"),
+        path.join(
+          context.extensionPath,
+          "apps",
+          "extension",
+          "client",
+          "scripts",
+          "vizWebview.js",
+        ),
       );
 
       const src = currentPanel.webview.asWebviewUri(onDiskPath);

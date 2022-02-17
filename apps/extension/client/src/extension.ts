@@ -24,7 +24,7 @@ let client: LanguageClient;
 export async function activate(context: vscode.ExtensionContext) {
   // The server is implemented in node
   let serverModule = context.asAbsolutePath(
-    path.join("server", "dist", "index.js"),
+    path.join("apps", "extension", "server", "dist", "index.js"),
   );
   // The debug options for the server
   // --inspect=6009: runs the server in Node's Inspector mode so VS Code can attach to the server for debugging

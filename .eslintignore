@@ -1,5 +1,5 @@
 node_modules/**
-client/node_modules/**
-client/out/**
-server/node_modules/**
-server/out/**
+apps/extension/client/node_modules/**
+apps/extension/client/out/**
+apps/extension/server/node_modules/**
+apps/extension/server/out/**

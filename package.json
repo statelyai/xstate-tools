@@ -24,11 +24,9 @@
   ],
   "workspaces": {
     "packages": [
-      "client",
-      "server",
-      "shared",
-      "cli",
-      "parser"
+      "packages/*",
+      "apps/extension/*",
+      "apps/*"
     ]
   },
   "categories": [
@@ -49,7 +47,7 @@
     "onLanguage:javascript",
     "onLanguage:javascriptreact"
   ],
-  "main": "./client/dist/index.js",
+  "main": "./apps/extension/client/dist/index.js",
   "publisher": "statelyai",
   "contributes": {
     "commands": [
@@ -89,7 +87,7 @@
     "*.{ts,tsx,js,jsx,json}": "prettier --write"
   },
   "scripts": {
-    "cli": "yarn workspace xstate-cli",
+    "cli": "yarn workspace @xstate/cli",
     "parser": "yarn workspace xstate-parser-demo",
     "server": "yarn workspace xstate-vscode-server",
     "client": "yarn workspace xstate-vscode-client",
@@ -101,8 +99,7 @@
   },
   "preconstruct": {
     "packages": [
-      "shared",
-      "parser"
+      "packages/*"
     ]
   },
   "turbo": {

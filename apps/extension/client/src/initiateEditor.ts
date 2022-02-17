@@ -84,6 +84,8 @@ export const initiateEditor = (
       const onDiskPath = vscode.Uri.file(
         path.join(
           context.extensionPath,
+          "apps",
+          "extension",
           "client",
           "scripts",
           "editorWebview.js",

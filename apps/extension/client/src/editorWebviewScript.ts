@@ -102,7 +102,6 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
           try {
             const ourEvent: EditorWebviewScriptEvent = JSON.parse(event.data);
 
-
             send(ourEvent);
           } catch (e) {
             console.warn(e);

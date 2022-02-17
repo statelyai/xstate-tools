@@ -1,8 +1,8 @@
 out
 dist
 node_modules
-client/server
-client/scripts
+apps/extension/client/server
+apps/extension/client/scripts
 .vscode-test
 *.vsix
 *.zip

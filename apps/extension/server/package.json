@@ -1,5 +1,6 @@
 {
   "name": "xstate-vscode-server",
+  "private": true,
   "description": "Example implementation of a language server in node.",
   "version": "1.0.0",
   "author": "Microsoft Corporation",
