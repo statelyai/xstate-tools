@@ -2,7 +2,10 @@ import { Action, Condition } from "xstate";
 import * as t from "@babel/types";
 import { TMachineCallExpression } from "./machineCallExpression";
 import { StateNodeReturn } from "./stateNode";
-import { toMachineConfig } from "./toMachineConfig";
+import {
+  toMachineConfig,
+  ToMachineConfigParseOptions,
+} from "./toMachineConfig";
 import { StringLiteralNode, Comment } from "./types";
 import { TransitionConfigNode } from "./transitions";
 import { ActionNode, ParsedChooseCondition } from "./actions";
@@ -178,8 +181,8 @@ export class MachineParseResult {
 
   getAllStateNodes = () => this.stateNodes;
 
-  toConfig = () => {
-    return toMachineConfig(this.ast);
+  toConfig = (opts?: ToMachineConfigParseOptions) => {
+    return toMachineConfig(this.ast, opts);
   };
 
   getAllConds = (

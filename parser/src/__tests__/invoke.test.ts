@@ -1,22 +1,24 @@
 import { parseMachinesFromFile } from "../parseMachinesFromFile";
+import { hashedId } from "../utils";
 
 describe("Invoke", () => {
   it("Should allow for JSON stringifying anonymous invocations", () => {
+    const id = hashedId("() => {}");
     const result = parseMachinesFromFile(`
       createMachine({
         invoke: {
-          src: () => {},
+          src: "${id}",
         }
       })
     `);
 
-    const config = JSON.stringify(result.machines[0].toConfig());
+    const config = JSON.stringify(
+      result.machines[0].toConfig({
+        hashInlineImplementations: true,
+      }),
+    );
 
-    /**
-     * The function should be parsed as
-     * anonymous
-     */
-    expect(config).toContain("8ts6su");
+    expect(config).toContain(id);
   });
 
   it("Should detect inline implementations correctly", () => {

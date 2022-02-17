@@ -162,7 +162,7 @@ connection.onCodeLens((params): CodeLens[] => {
           title: "Open Visual Editor",
           command: "stately-xstate.edit-code-lens",
           arguments: [
-            machine.parseResult?.toConfig(),
+            machine.parseResult?.toConfig({ hashInlineImplementations: true }),
             index,
             params.textDocument.uri,
             machine.parseResult?.getLayoutComment()?.value,

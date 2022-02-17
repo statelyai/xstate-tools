@@ -10,8 +10,19 @@ import { StateNodeReturn } from "./stateNode";
 import { MaybeTransitionArray } from "./transitions";
 import { GetParserResult } from "./utils";
 
+export interface ToMachineConfigParseOptions {
+  /**
+   * Whether or not to hash inline implementations, which
+   * allow for parsing inline implementations as code.
+   *
+   * @default false
+   */
+  hashInlineImplementations?: boolean;
+}
+
 const parseStateNode = (
   astResult: StateNodeReturn,
+  opts?: ToMachineConfigParseOptions,
 ): StateNodeConfig<any, any, any> => {
   const config: MachineConfig<any, any, any> = {};
 
@@ -28,23 +39,26 @@ const parseStateNode = (
   }
 
   if (astResult.entry) {
-    config.entry = getActionConfig(astResult.entry);
+    config.entry = getActionConfig(astResult.entry, opts);
   }
   if (astResult.onEntry) {
-    config.onEntry = getActionConfig(astResult.onEntry);
+    config.onEntry = getActionConfig(astResult.onEntry, opts);
   }
   if (astResult.exit) {
-    config.exit = getActionConfig(astResult.exit);
+    config.exit = getActionConfig(astResult.exit, opts);
   }
   if (astResult.onExit) {
-    config.onExit = getActionConfig(astResult.onExit);
+    config.onExit = getActionConfig(astResult.onExit, opts);
   }
 
   if (astResult.on) {
     config.on = {};
 
     astResult.on.properties.forEach((onProperty) => {
-      (config.on as any)[onProperty.key] = getTransitions(onProperty.result);
+      (config.on as any)[onProperty.key] = getTransitions(
+        onProperty.result,
+        opts,
+      );
     });
   }
 
@@ -54,6 +68,7 @@ const parseStateNode = (
     astResult.after.properties.forEach((afterProperty) => {
       (config.after as any)[afterProperty.key] = getTransitions(
         afterProperty.result,
+        opts,
       );
     });
   }
@@ -73,7 +88,7 @@ const parseStateNode = (
   }
 
   if (astResult.always) {
-    config.always = getTransitions(astResult.always);
+    config.always = getTransitions(astResult.always, opts);
   }
 
   if (astResult.meta?.description) {
@@ -87,16 +102,26 @@ const parseStateNode = (
     config.onDone = getTransitions(astResult.onDone);
   }
 
+  if (astResult.description) {
+    config.description = astResult.description.value;
+  }
+
   if (astResult.invoke) {
     const invokes: typeof config.invoke = [];
 
     astResult.invoke.forEach((invoke) => {
       if (!invoke.src) return;
-      const toPush: typeof invokes[number] = {
-        src:
+      let src: string;
+      if (opts?.hashInlineImplementations) {
+        src =
           invoke.src.declarationType === "named"
             ? invoke.src.value
-            : invoke.src.inlineDeclarationId,
+            : invoke.src.inlineDeclarationId;
+      } else {
+        src = invoke.src.value;
+      }
+      const toPush: typeof invokes[number] = {
+        src,
       };
 
       if (invoke.id) {
@@ -136,23 +161,25 @@ const parseStateNode = (
 
 export const toMachineConfig = (
   result: TMachineCallExpression,
+  opts?: ToMachineConfigParseOptions,
 ): MachineConfig<any, any, any> | undefined => {
   if (!result?.definition) return undefined;
-  return parseStateNode(result?.definition);
+  return parseStateNode(result?.definition, opts);
 };
 
 export const getActionConfig = (
   astActions: GetParserResult<typeof MaybeArrayOfActions>,
+  opts: ToMachineConfigParseOptions | undefined,
 ): Actions<any, any> => {
   const actions: Actions<any, any> = [];
 
   astActions?.forEach((action) => {
-    if (action.declarationType === "named") {
-      actions.push(action.action);
-    } else {
+    if (opts?.hashInlineImplementations && action.declarationType !== "named") {
       actions.push({
         type: action.inlineDeclarationId,
       });
+    } else {
+      actions.push(action.action);
     }
   });
 
@@ -165,6 +192,7 @@ export const getActionConfig = (
 
 export const getTransitions = (
   astTransitions: GetParserResult<typeof MaybeTransitionArray>,
+  opts: ToMachineConfigParseOptions | undefined,
 ): TransitionConfigOrTarget<any, any> => {
   const transitions: TransitionConfigOrTarget<any, any> = [];
 
@@ -178,14 +206,17 @@ export const getTransitions = (
       }
     }
     if (transition?.cond) {
-      if (transition.cond.declarationType === "named") {
-        toPush.cond = transition?.cond.cond;
-      } else {
+      if (
+        opts?.hashInlineImplementations &&
+        transition.cond.declarationType !== "named"
+      ) {
         toPush.cond = transition.cond.inlineDeclarationId;
+      } else {
+        toPush.cond = transition?.cond.cond;
       }
     }
     if (transition?.actions) {
-      toPush.actions = getActionConfig(transition.actions);
+      toPush.actions = getActionConfig(transition.actions, opts);
     }
 
     transitions.push(toPush);
