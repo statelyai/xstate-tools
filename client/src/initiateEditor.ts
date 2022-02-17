@@ -136,7 +136,7 @@ export const initiateEditor = (
         result.machines.forEach((machine, index) => {
           sendMessage({
             type: "RECEIVE_CONFIG_UPDATE_FROM_VSCODE",
-            config: machine.toConfig(),
+            config: machine.toConfig({ hashInlineImplementations: true }),
             index: index,
             uri: resolveUriToFilePrefix(document.uri.path),
             layoutString: machine.getLayoutComment()?.value,
@@ -224,7 +224,7 @@ export const initiateEditor = (
         const implementations = getInlineImplementations(machine, currentText);
 
         startService(
-          machine.toConfig() as any,
+          machine.toConfig({ hashInlineImplementations: true }),
           foundIndex!,
           resolveUriToFilePrefix(
             vscode.window.activeTextEditor.document.uri.path,

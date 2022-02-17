@@ -21,22 +21,22 @@ const {
 
 export const machine = createMachine({
   entry: [
-    after(400),
-    assign({}),
-    cancel(""),
-    done(""),
-    escalate(""),
-    forwardTo(""),
-    log(),
-    pure(() => {
-      return [];
-    }),
-    raise(""),
-    respond(""),
-    send(""),
-    sendParent(""),
-    sendUpdate(),
-    start(""),
-    stop(""),
+    // after(400),
+    // assign({}),
+    // cancel(""),
+    // done(""),
+    // escalate(""),
+    // forwardTo(""),
+    // log(),
+    // pure(() => {
+    //   return [];
+    // }),
+    // raise(""),
+    // respond(""),
+    // send(""),
+    // sendParent(""),
+    // sendUpdate(),
+    // start(""),
+    // stop(""),
   ],
 });
