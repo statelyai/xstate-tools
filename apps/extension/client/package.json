@@ -81,7 +81,7 @@
     "editor:build": "esbuild src/editorWebviewScript.ts --bundle --outfile=scripts/editorWebview.js",
     "build:dev": "esbuild --bundle --platform=\"node\" src/extension.ts --outfile=dist/index.js --external:vscode",
     "build:prod": "ncc build src/extension.ts -t -o dist",
-    "vscode:prepublish": "yarn turbo run build:prod",
+    "vscode:prepublish": "(cd ../../../ && yarn turbo run build:prod)",
     "compile": "(cd ../../../ && yarn turbo run build:dev --no-cache)"
   },
   "dependencies": {
