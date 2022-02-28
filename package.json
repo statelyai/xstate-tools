@@ -37,7 +37,8 @@
     "client": "yarn workspace stately-vscode",
     "shared": "yarn workspace @xstate/tools-shared",
     "prepare": "husky install",
-    "postinstall": "preconstruct dev && manypkg check"
+    "postinstall": "preconstruct dev && manypkg check",
+    "release": "preconstruct build && (cd apps/extension/client && npx vsce package) && changeset publish && (cd apps/extension/client && npx vsce publish --packagePath $(find . -iname *.vsix))"
   },
   "preconstruct": {
     "packages": [
