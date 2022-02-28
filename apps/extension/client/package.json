@@ -5,7 +5,7 @@
   "license": "MIT",
   "author": "Stately Team",
   "version": "1.6.1",
-  "private": true
+  "private": true,
   "engines": {
     "vscode": "^1.52.0"
   },
