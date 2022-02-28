@@ -10,7 +10,7 @@
   "scripts": {
     "lint": "tsc",
     "test": "jest --passWithNoTests",
-    "build:prod": "(cd ../ && preconstruct build)"
+    "build:prod": "(cd ../../ && preconstruct build)"
   },
   "peerDependencies": {
     "xstate": "^4"
