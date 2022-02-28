@@ -7,8 +7,7 @@
   "scripts": {
     "test": "jest src",
     "lint": "tsc",
-    "prepare": "patch-package && yarn build",
-    "build:prod": "(cd ../../ && preconstruct build)"
+    "prepare": "patch-package && yarn build"
   },
   "dependencies": {},
   "peerDependencies": {

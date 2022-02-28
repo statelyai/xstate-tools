@@ -79,10 +79,7 @@
     "test": "jest",
     "viz:build": "esbuild src/vizWebviewScript.ts --bundle --outfile=scripts/vizWebview.js",
     "editor:build": "esbuild src/editorWebviewScript.ts --bundle --outfile=scripts/editorWebview.js",
-    "build:dev": "esbuild --bundle --platform=\"node\" src/extension.ts --outfile=dist/index.js --external:vscode",
-    "build:prod": "ncc build src/extension.ts -t -o dist",
-    "vscode:prepublish": "(cd ../../../ && yarn turbo run build:prod)",
-    "compile": "(cd ../../../ && yarn turbo run build:dev --no-cache)"
+    "build": "esbuild --bundle --platform=\"node\" src/extension.ts --outfile=dist/index.js --external:vscode --format=cjs"
   },
   "dependencies": {
     "@types/lz-string": "^1.3.34",

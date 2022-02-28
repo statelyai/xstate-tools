@@ -13,10 +13,7 @@
 			"outFiles": [
 				"${workspaceRoot}/apps/extension/client/dist/**.js"
 			],
-			"preLaunchTask": {
-				"type": "npm",
-				"script": "compile"
-			}
+			"preLaunchTask": "npm: extension:compile"
 		},
 		{
 			"type": "node",

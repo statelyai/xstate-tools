@@ -38,7 +38,9 @@
     "shared": "yarn workspace @xstate/tools-shared",
     "prepare": "husky install",
     "postinstall": "preconstruct dev && manypkg check",
-    "release": "preconstruct build && (cd apps/extension/client && npx vsce package) && changeset publish && (cd apps/extension/client && npx vsce publish --packagePath $(find . -iname *.vsix))"
+    "release": "(cd apps/extension/client && npx vsce package) && changeset publish && (cd apps/extension/client && npx vsce publish --packagePath $(find . -iname *.vsix))",
+    "deps:build": "preconstruct build",
+    "extension:compile": "yarn turbo run build --no-cache && cp apps/extension/server/dist/index.js apps/extension/client/dist/server.js"
   },
   "preconstruct": {
     "packages": [
@@ -68,25 +70,16 @@
         ],
         "cache": false
       },
-      "build:dev": {
+      "build": {
         "dependsOn": [
           "viz:build",
-          "editor:build"
+          "editor:build",
+          "^build"
         ],
         "outputs": [
           "dist/**"
         ],
         "cache": false
-      },
-      "build:prod": {
-        "dependsOn": [
-          "viz:build",
-          "editor:build",
-          "^build:prod"
-        ],
-        "outputs": [
-          "dist/**"
-        ]
       }
     }
   },
@@ -103,7 +96,6 @@
     "@types/node": "^16.0.1",
     "@typescript-eslint/eslint-plugin": "^4.23.0",
     "@typescript-eslint/parser": "^4.23.0",
-    "@vercel/ncc": "0.28.4",
     "concurrently": "6.2.0",
     "esbuild": "^0.14.21",
     "eslint": "^7.26.0",

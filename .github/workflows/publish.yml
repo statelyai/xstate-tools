@@ -17,6 +17,7 @@ jobs:
           cache: "yarn"
 
       - run: yarn
+      - run: yarn deps:build && yarn extension:compile && (cd apps/extension/client && npx vsce package)
       - name: Create Release Pull Request or Publish to npm
         id: changesets
         uses: changesets/action@v1
