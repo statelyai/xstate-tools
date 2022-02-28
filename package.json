@@ -26,7 +26,7 @@
   },
   "scripts": {
     "cli": "yarn workspace @xstate/cli",
-    "parser": "yarn workspace @xstate/machine-extractor",
+    "extractor": "yarn workspace @xstate/machine-extractor",
     "server": "yarn workspace @xstate/vscode-server",
     "client": "yarn workspace stately-vscode",
     "shared": "yarn workspace @xstate/tools-shared",
