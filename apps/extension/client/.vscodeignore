@@ -6,7 +6,5 @@
 **/tsconfig.base.json
 contributing.md
 .travis.yml
-apps/extension/client/node_modules/**
-apps/extension/server/node_modules/**
 node_modules/**
 assets

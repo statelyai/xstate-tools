@@ -17,12 +17,11 @@ jobs:
           cache: "yarn"
 
       - run: yarn
-      - run: yarn deps:build && yarn extension:compile && (cd apps/extension/client && npx vsce package)
+      - run: yarn deps:build && yarn extension:compile
       - name: Create Release Pull Request or Publish to npm
         id: changesets
         uses: changesets/action@v1
         with:
-          # This expects you to have a script called release which does a build for your packages and calls changeset publish
           publish: yarn release
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
