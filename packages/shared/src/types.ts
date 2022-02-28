@@ -1,5 +1,5 @@
 import { MachineConfig, StateMachine } from "xstate";
-import { MachineParseResult } from "@xstate/machine-extractor/src/MachineParseResult";
+import { MachineParseResult } from "@xstate/machine-extractor";
 import { IntrospectMachineResult } from ".";
 
 export interface GlobalSettings {

@@ -1,8 +1,6 @@
 import * as t from "@babel/types";
 import { Position } from "vscode-languageserver-textdocument";
-import { StringLiteralNode } from "@xstate/machine-extractor";
-import { MachineParseResult } from "@xstate/machine-extractor/src/MachineParseResult";
-import { StateNodeReturn } from "@xstate/machine-extractor/src/stateNode";
+import { MachineParseResult, StateNodeReturn, StringLiteralNode } from "@xstate/machine-extractor";
 import {
   DocumentValidationsResult,
   isCursorInPosition,
