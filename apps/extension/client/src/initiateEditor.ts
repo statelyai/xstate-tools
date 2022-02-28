@@ -1,6 +1,6 @@
 import * as path from "path";
 import * as vscode from "vscode";
-import { LanguageClient } from "vscode-languageclient/node";
+import type { LanguageClient } from "vscode-languageclient/node";
 import { MachineConfig } from "xstate";
 import { parseMachinesFromFile } from "@xstate/machine-extractor";
 import {
