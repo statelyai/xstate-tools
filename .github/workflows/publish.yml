@@ -16,7 +16,7 @@ jobs:
 
       - run: yarn
       - run: yarn deps:build && yarn extension:compile
-      - name: Create Release Pull Request or Publish to npm
+      - name: Create Release Pull Request or Publish
         id: changesets
         uses: changesets/action@v1
         with:
