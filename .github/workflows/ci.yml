@@ -16,11 +16,11 @@ jobs:
 
       - run: yarn
       - run: yarn turbo run lint test
-      - run: npx vsce package
+      - run: (cd apps/extension/client && npx vsce package)
       - uses: actions/upload-artifact@v2
         with:
           name: xstate-vscode
-          path: "*.vsix"
+          path: "apps/extension/client/*.vsix"
 
   publish:
     runs-on: ubuntu-latest
@@ -28,6 +28,6 @@ jobs:
     if: success()
     steps:
       - uses: actions/download-artifact@v2
-      - run: npx vsce publish --packagePath $(find . -iname *.vsix)
+      - run: (cd apps/extension/client && npx vsce publish --packagePath $(find . -iname *.vsix))
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}

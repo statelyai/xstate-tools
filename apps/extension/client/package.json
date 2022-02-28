@@ -1,10 +1,78 @@
 {
-  "name": "@xstate/vscode-client",
-  "private": true,
+  "name": "stately-vscode",
+  "displayName": "XState VSCode",
+  "description": "Visual editing, autocomplete and typegen for XState",
   "license": "MIT",
-  "version": "0.0.1",
+  "author": "Stately Team",
+  "version": "1.6.1",
   "engines": {
     "vscode": "^1.52.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/statelyai/xstate-vscode"
+  },
+  "bugs": {
+    "url": "https://github.com/statelyai/xstate-vscode/issues"
+  },
+  "galleryBanner": {
+    "color": "#fff"
+  },
+  "icon": "media/icon.png",
+  "categories": [
+    "Linters",
+    "Visualization",
+    "Other"
+  ],
+  "keywords": [
+    "xstate",
+    "vscode",
+    "visualize",
+    "autocomplete",
+    "typescript",
+    "javascript"
+  ],
+  "activationEvents": [
+    "onLanguage:typescript",
+    "onLanguage:typescriptreact",
+    "onLanguage:javascript",
+    "onLanguage:javascriptreact"
+  ],
+  "main": "./dist/index.js",
+  "publisher": "statelyai",
+  "contributes": {
+    "commands": [
+      {
+        "command": "stately-xstate.visualize",
+        "title": "Open Inspector",
+        "category": "XState"
+      },
+      {
+        "command": "stately-xstate.edit",
+        "title": "Open Visual Editor",
+        "category": "XState"
+      },
+      {
+        "command": "stately-xstate.sign-out",
+        "title": "Sign out of Stately",
+        "category": "XState"
+      },
+      {
+        "command": "stately-xstate.sign-in",
+        "title": "Sign in to Stately",
+        "category": "XState"
+      }
+    ],
+    "configuration": {
+      "title": "XState",
+      "properties": {
+        "xstate.showVisualEditorWarnings": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show warnings that prevent you from using the visual editor."
+        }
+      }
+    }
   },
   "scripts": {
     "lint": "tsc",
@@ -12,7 +80,9 @@
     "viz:build": "esbuild src/vizWebviewScript.ts --bundle --outfile=scripts/vizWebview.js",
     "editor:build": "esbuild src/editorWebviewScript.ts --bundle --outfile=scripts/editorWebview.js",
     "build:dev": "esbuild --bundle --platform=\"node\" src/extension.ts --outfile=dist/index.js --external:vscode",
-    "build:prod": "ncc build src/extension.ts -t -o dist"
+    "build:prod": "ncc build src/extension.ts -t -o dist",
+    "vscode:prepublish": "yarn turbo run build:prod",
+    "compile": "(cd ../../../ && yarn turbo run build:dev --no-cache)"
   },
   "dependencies": {
     "@types/lz-string": "^1.3.34",

@@ -1,11 +1,8 @@
 {
-  "name": "stately-vscode",
-  "displayName": "XState VSCode",
-  "description": "Visual editing, autocomplete and typegen for XState",
-  "preview": true,
-  "author": "Matt Pocock",
+  "name": "stately-tools",
+  "author": "Stately Team",
   "license": "MIT",
-  "version": "1.6.1",
+  "version": "0.0.1",
   "private": true,
   "repository": {
     "type": "git",
@@ -14,14 +11,6 @@
   "bugs": {
     "url": "https://github.com/statelyai/xstate-vscode/issues"
   },
-  "keywords": [
-    "xstate",
-    "vscode",
-    "visualize",
-    "autocomplete",
-    "typescript",
-    "javascript"
-  ],
   "workspaces": {
     "packages": [
       "packages/*",
@@ -29,15 +18,6 @@
       "apps/*"
     ]
   },
-  "categories": [
-    "Linters",
-    "Visualization",
-    "Other"
-  ],
-  "galleryBanner": {
-    "color": "#fff"
-  },
-  "icon": "media/icon.png",
   "engines": {
     "vscode": "^1.52.0"
   },
@@ -47,42 +27,6 @@
     "onLanguage:javascript",
     "onLanguage:javascriptreact"
   ],
-  "main": "./apps/extension/client/dist/index.js",
-  "publisher": "statelyai",
-  "contributes": {
-    "commands": [
-      {
-        "command": "stately-xstate.visualize",
-        "title": "Open Inspector",
-        "category": "XState"
-      },
-      {
-        "command": "stately-xstate.edit",
-        "title": "Open Visual Editor",
-        "category": "XState"
-      },
-      {
-        "command": "stately-xstate.sign-out",
-        "title": "Sign out of Stately",
-        "category": "XState"
-      },
-      {
-        "command": "stately-xstate.sign-in",
-        "title": "Sign in to Stately",
-        "category": "XState"
-      }
-    ],
-    "configuration": {
-      "title": "XState",
-      "properties": {
-        "xstate.showVisualEditorWarnings": {
-          "type": "boolean",
-          "default": true,
-          "description": "Show warnings that prevent you from using the visual editor."
-        }
-      }
-    }
-  },
   "lint-staged": {
     "*.{ts,tsx,js,jsx,json}": "prettier --write"
   },
@@ -90,10 +34,8 @@
     "cli": "yarn workspace @xstate/cli",
     "parser": "yarn workspace @xstate/machine-extractor",
     "server": "yarn workspace @xstate/vscode-server",
-    "client": "yarn workspace @xstate/vscode-client",
+    "client": "yarn workspace stately-vscode",
     "shared": "yarn workspace @xstate/tools-shared",
-    "vscode:prepublish": "yarn turbo run build:prod",
-    "compile": "yarn turbo run build:dev --no-cache",
     "prepare": "husky install",
     "postinstall": "preconstruct dev && manypkg check"
   },
@@ -154,6 +96,7 @@
     "@babel/preset-typescript": "^7.15.0",
     "@babel/traverse": "^7.12.12",
     "@babel/types": "^7.12.12",
+    "@changesets/cli": "^2.21.0",
     "@manypkg/cli": "^0.19.1",
     "@preconstruct/cli": "^2.1.0",
     "@types/node": "^16.0.1",
