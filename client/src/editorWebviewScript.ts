@@ -89,11 +89,9 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
       layoutString: undefined,
       token: undefined,
       implementations: {
-        implementations: {
-          actions: {},
-          guards: {},
-          services: {},
-        },
+        actions: {},
+        guards: {},
+        services: {},
       },
     },
     invoke: {
@@ -101,7 +99,6 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
         const listener = (event) => {
           try {
             const ourEvent: EditorWebviewScriptEvent = JSON.parse(event.data);
-
 
             send(ourEvent);
           } catch (e) {

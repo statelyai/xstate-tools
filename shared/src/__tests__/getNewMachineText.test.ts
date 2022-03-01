@@ -4,11 +4,9 @@ import { MachineConfig } from "xstate";
 import { hashedId } from "xstate-parser-demo/src/utils";
 
 const defaultImplementations = {
-  implementations: {
-    actions: {},
-    guards: {},
-    services: {},
-  },
+  actions: {},
+  guards: {},
+  services: {},
 };
 
 const runTest = (
@@ -133,21 +131,19 @@ describe("getNewMachineText", () => {
           },
         },
         {
-          implementations: {
-            actions: {
-              action: {
-                jsImplementation: "() => {}",
-              },
+          actions: {
+            action: {
+              jsImplementation: "() => {}",
             },
-            guards: {
-              cond: {
-                jsImplementation: "() => {}",
-              },
+          },
+          guards: {
+            cond: {
+              jsImplementation: "() => {}",
             },
-            services: {
-              invoke: {
-                jsImplementation: "() => {}",
-              },
+          },
+          services: {
+            invoke: {
+              jsImplementation: "() => {}",
             },
           },
         },
@@ -181,19 +177,17 @@ describe("getNewMachineText", () => {
           entry: ["action"],
         },
         {
-          implementations: {
-            actions: {
-              action: {
-                jsImplementation: `
+          actions: {
+            action: {
+              jsImplementation: `
 									() => {
 										// Amazing stuff "wow", cool
 									}
 								`,
-              },
             },
-            guards: {},
-            services: {},
           },
+          guards: {},
+          services: {},
         },
       );
 
@@ -229,15 +223,13 @@ describe("getNewMachineText", () => {
           entry: [idWithWhitespace],
         },
         {
-          implementations: {
-            actions: {
-              [idWithoutWhitespace]: {
-                jsImplementation: `() => {}`,
-              },
+          actions: {
+            [idWithoutWhitespace]: {
+              jsImplementation: `() => {}`,
             },
-            services: {},
-            guards: {},
           },
+          services: {},
+          guards: {},
         },
       );
 

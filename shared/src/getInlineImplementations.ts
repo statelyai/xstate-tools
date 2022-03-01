@@ -15,29 +15,24 @@ export const getInlineImplementations = (
     parseResult?.getAllActions(["inline", "identifier", "unknown"]) || [];
 
   const inlineImplementations: ImplementationsMetadata = {
-    implementations: {
-      actions: {},
-      guards: {},
-      services: {},
-    },
+    actions: {},
+    guards: {},
+    services: {},
   };
 
   allGuards.forEach((guard) => {
-    inlineImplementations.implementations.guards[guard.inlineDeclarationId] = {
+    inlineImplementations.guards[guard.inlineDeclarationId] = {
       jsImplementation: getRawTextFromNode(fileText, guard.node),
     };
   });
   allActions.forEach((action) => {
-    inlineImplementations.implementations.actions[action.inlineDeclarationId] =
-      {
-        jsImplementation: getRawTextFromNode(fileText, action.node),
-      };
+    inlineImplementations.actions[action.inlineDeclarationId] = {
+      jsImplementation: getRawTextFromNode(fileText, action.node),
+    };
   });
   allServices.forEach((service) => {
     if (service.srcNode) {
-      inlineImplementations.implementations.services[
-        service.inlineDeclarationId
-      ] = {
+      inlineImplementations.services[service.inlineDeclarationId] = {
         jsImplementation: getRawTextFromNode(fileText, service.srcNode),
       };
     }
