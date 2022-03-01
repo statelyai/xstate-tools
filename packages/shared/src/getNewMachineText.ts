@@ -67,43 +67,35 @@ export const getNewMachineText = async ({
     (key, value) => {
       if (
         key === "cond" &&
-        implementations?.implementations?.guards?.[value]?.jsImplementation
+        implementations?.guards?.[value]?.jsImplementation
       ) {
         return markAsUnwrap(
-          implementations?.implementations?.guards?.[value]?.jsImplementation!,
+          implementations?.guards?.[value]?.jsImplementation!,
         );
       }
       if (
         key === "src" &&
-        implementations?.implementations?.services?.[value]?.jsImplementation
+        implementations?.services?.[value]?.jsImplementation
       ) {
         return markAsUnwrap(
-          implementations?.implementations?.services?.[value]
-            ?.jsImplementation!,
+          implementations?.services?.[value]?.jsImplementation!,
         );
       }
 
       if (["actions", "entry", "exit"].includes(key)) {
         if (Array.isArray(value)) {
           return value.map((action) => {
-            if (
-              implementations?.implementations?.actions?.[action]
-                ?.jsImplementation
-            ) {
+            if (implementations?.actions?.[action]?.jsImplementation) {
               return markAsUnwrap(
-                implementations?.implementations?.actions?.[action]
-                  ?.jsImplementation!,
+                implementations?.actions?.[action]?.jsImplementation!,
               );
             }
             return action;
           });
         }
-        if (
-          implementations?.implementations?.actions?.[value]?.jsImplementation
-        ) {
+        if (implementations?.actions?.[value]?.jsImplementation) {
           return markAsUnwrap(
-            implementations?.implementations?.actions?.[value]
-              ?.jsImplementation!,
+            implementations?.actions?.[value]?.jsImplementation!,
           );
         }
       }

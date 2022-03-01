@@ -89,11 +89,9 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
       layoutString: undefined,
       token: undefined,
       implementations: {
-        implementations: {
-          actions: {},
-          guards: {},
-          services: {},
-        },
+        actions: {},
+        guards: {},
+        services: {},
       },
     },
     invoke: {

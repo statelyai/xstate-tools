@@ -60,24 +60,22 @@ export type DocumentValidationsResult = {
 };
 
 export interface ImplementationsMetadata {
-  implementations: {
-    guards: Record<
-      string,
-      {
-        jsImplementation?: string;
-      }
-    >;
-    actions: Record<
-      string,
-      {
-        jsImplementation?: string;
-      }
-    >;
-    services: Record<
-      string,
-      {
-        jsImplementation?: string;
-      }
-    >;
-  };
+  guards: Record<
+    string,
+    {
+      jsImplementation?: string;
+    }
+  >;
+  actions: Record<
+    string,
+    {
+      jsImplementation?: string;
+    }
+  >;
+  services: Record<
+    string,
+    {
+      jsImplementation?: string;
+    }
+  >;
 }
