@@ -4,3 +4,4 @@ export * from "./stateNode";
 export * from "xstate/lib/types";
 export * from "./parseMachinesFromFile";
 export * from "./groupByUniqueName";
+export * from "./MachineParseResult";
