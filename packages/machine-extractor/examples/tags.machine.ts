@@ -1,7 +1,7 @@
 import { createMachine } from "xstate";
 
 export const tagMachine = createMachine({
-  tags: ["a"],
+  tags: "a",
   states: {
     foo: {
       tags: "a",
