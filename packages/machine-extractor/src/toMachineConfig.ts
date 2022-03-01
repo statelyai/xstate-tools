@@ -51,6 +51,16 @@ const parseStateNode = (
     config.onExit = getActionConfig(astResult.onExit, opts);
   }
 
+  if (astResult.tags) {
+    const tags = astResult.tags.map((tag) => tag.value);
+
+    if (tags.length === 1) {
+      config.tags = tags[0];
+    } else {
+      config.tags = tags;
+    }
+  }
+
   if (astResult.on) {
     config.on = {};
 
