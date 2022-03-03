@@ -8,14 +8,14 @@ const pkgJson = require(path.join(
   "apps",
   "extension",
   "client",
-  "package.json"
+  "package.json",
 ));
 
 const tag = `${pkgJson.name}@${pkgJson.version}`;
 
 const { status, stdout } = spawnSync("git", [
   "ls-remote",
-  "https://github.com/statelyai/xstate-vscode.git",
+  "https://github.com/statelyai/xstate-tools.git",
   tag,
 ]);
 

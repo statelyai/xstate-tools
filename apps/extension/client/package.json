@@ -11,10 +11,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/statelyai/xstate-vscode"
+    "url": "https://github.com/statelyai/xstate-tools"
   },
   "bugs": {
-    "url": "https://github.com/statelyai/xstate-vscode/issues"
+    "url": "https://github.com/statelyai/xstate-tools/issues"
   },
   "galleryBanner": {
     "color": "#fff"

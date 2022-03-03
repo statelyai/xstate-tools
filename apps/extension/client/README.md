@@ -10,25 +10,25 @@ XState VSCode enhances the XState development experience by providing VSCode use
 
 Edit any XState machine with drag-and-drop using the [Stately Visual editor](https://stately.ai/editor).
 
-<img src="https://raw.githubusercontent.com/statelyai/xstate-vscode/main/assets/editor.png" alt="" />
+<img src="https://raw.githubusercontent.com/statelyai/xstate-tools/main/assets/editor.png" alt="" />
 
 ### Autocomplete
 
 Intelligent suggestions for transition targets and initial states.
 
-<img src="https://raw.githubusercontent.com/statelyai/xstate-vscode/main/assets/autocomplete.png" alt="" />
+<img src="https://raw.githubusercontent.com/statelyai/xstate-tools/main/assets/autocomplete.png" alt="" />
 
 ### Linting
 
 Highlights errors and potential bugs in your XState machine definitions.
 
-<img src="https://raw.githubusercontent.com/statelyai/xstate-vscode/main/assets/linting.png" alt="" />
+<img src="https://raw.githubusercontent.com/statelyai/xstate-tools/main/assets/linting.png" alt="" />
 
 ### Jump to definition
 
 Navigate around machines easily with jump to definition on targets, actions, guards, services and more.
 
-<img src="https://raw.githubusercontent.com/statelyai/xstate-vscode/main/assets/jump-to-definition.png" alt="" />
+<img src="https://raw.githubusercontent.com/statelyai/xstate-tools/main/assets/jump-to-definition.png" alt="" />
 
 ## Hints and Tips
 
