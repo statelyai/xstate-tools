@@ -16,7 +16,9 @@ jobs:
 
       - run: yarn
       - run: yarn turbo run lint test
-      - run: yarn deps:build && yarn extension:compile && (cd apps/extension/client && npx vsce package --yarn)
+      - run: yarn deps:build
+      - run: yarn extension:compile
+      - run: (cd apps/extension/client && npx vsce package --yarn)
       - uses: actions/upload-artifact@v2
         with:
           name: xstate-vscode
