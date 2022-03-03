@@ -101,4 +101,30 @@ describe("MachineParseResult", () => {
 
     expect(Object.keys(services)).toHaveLength(1);
   });
+
+  it("should grab target defined with a template literal", () => {
+    const result = parseMachinesFromFile(`
+      createMachine({
+        initial: 'a',
+        states: {
+          a: {
+            on: {
+              NEXT: \`b\`
+            }
+          },
+          b: {}
+        }
+      })
+    `);
+
+    const [transition] = result.machines[0].getTransitionTargets();
+
+    expect({
+      from: transition.fromPath,
+      to: transition.target.map((t) => t.value),
+    }).toEqual({
+      from: ["a"],
+      to: ["b"],
+    });
+  });
 });
