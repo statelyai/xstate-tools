@@ -5,7 +5,7 @@ import { getCursorHoverType } from "./getCursorHoverType";
 import {
   DocumentValidationsResult,
   getRangeFromSourceLocation,
-} from "xstate-vscode-shared";
+} from "xstate-tools-shared";
 
 export const getReferences = (params: {
   textDocument: TextDocumentIdentifier;

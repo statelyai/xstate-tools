@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { parseMachinesFromFile } from "xstate-parser-demo";
-import { getRangeFromSourceLocation } from "xstate-vscode-shared";
+import { getRangeFromSourceLocation } from "xstate-tools-shared";
 import { VSCodeNodeSelectedEvent } from "./editorWebviewScript";
 
 export const handleNodeSelected = async (event: VSCodeNodeSelectedEvent) => {

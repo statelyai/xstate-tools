@@ -17,6 +17,22 @@ export interface SourceLocation {
   };
 }
 
+export interface XStateUpdateMachine {
+  definitionLoc?: SourceLocation | null;
+  config: MachineConfig<any, any, any>;
+  typeNodeLoc?: SourceLocation | null;
+  index: number;
+  namedGuards: string[];
+  namedActions: string[];
+  actionsInOptions: string[];
+  guardsInOptions: string[];
+  servicesInOptions: string[];
+  allServices: { src: string; id: string | undefined }[];
+  delaysInOptions: string[];
+  tags: string[];
+  hasTypesNode: boolean;
+}
+
 export interface XStateUpdateEvent {
   uri: string;
   machines: {

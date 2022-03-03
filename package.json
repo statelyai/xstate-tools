@@ -27,6 +27,7 @@
       "client",
       "server",
       "shared",
+      "cli",
       "parser"
     ]
   },
@@ -88,10 +89,11 @@
     "*.{ts,tsx,js,jsx,json}": "prettier --write"
   },
   "scripts": {
+    "cli": "yarn workspace xstate-cli",
     "parser": "yarn workspace xstate-parser-demo",
     "server": "yarn workspace xstate-vscode-server",
     "client": "yarn workspace xstate-vscode-client",
-    "shared": "yarn workspace xstate-vscode-shared",
+    "shared": "yarn workspace xstate-tools-shared",
     "vscode:prepublish": "yarn turbo run build:prod",
     "compile": "yarn turbo run build:dev --no-cache",
     "prepare": "husky install",
@@ -162,7 +164,7 @@
     "@typescript-eslint/parser": "^4.23.0",
     "@vercel/ncc": "0.28.4",
     "concurrently": "6.2.0",
-    "esbuild": "^0.12.22",
+    "esbuild": "^0.14.21",
     "eslint": "^7.26.0",
     "husky": ">=6",
     "lint-staged": ">=10",

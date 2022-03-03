@@ -5,7 +5,7 @@ import {
   getNewMachineText,
   getRangeFromSourceLocation,
   resolveUriToFilePrefix,
-} from "xstate-vscode-shared";
+} from "xstate-tools-shared";
 import { UpdateDefinitionEvent } from "./editorWebviewScript";
 
 export const handleDefinitionUpdate = async (event: UpdateDefinitionEvent) => {

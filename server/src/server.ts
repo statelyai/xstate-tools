@@ -28,7 +28,7 @@ import {
   getTransitionsFromNode,
   GlobalSettings,
   makeXStateUpdateEvent,
-} from "xstate-vscode-shared";
+} from "xstate-tools-shared";
 import { getCursorHoverType } from "./getCursorHoverType";
 import { getDiagnostics } from "./getDiagnostics";
 import { getReferences } from "./getReferences";
