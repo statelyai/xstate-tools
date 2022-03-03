@@ -8,7 +8,7 @@ import {
   getSetOfNames,
   isCursorInPosition,
   XStateUpdateEvent,
-} from "xstate-vscode-shared";
+} from "xstate-tools-shared";
 import { getWebviewContent } from "./getWebviewContent";
 import { VizWebviewMachineEvent } from "./vizWebviewScript";
 
@@ -142,7 +142,7 @@ export const initiateVisualizer = (
           config: machine.config,
           index,
           uri: event.uri,
-          guardsToMock: machine.guardsToMock,
+          guardsToMock: machine.namedGuards,
         });
       });
     }),

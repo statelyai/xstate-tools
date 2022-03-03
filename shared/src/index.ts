@@ -13,3 +13,7 @@ export * from "./getStateMatchesObjectSyntax";
 export * from "./makeXStateUpdateEvent";
 export * from "./getDocumentValidationsResults";
 export * from "./resolveUriToFilePrefix";
+export * from "./writeToTypegenFile";
+export * from "./doesTsTypesRequireUpdate";
+export * from "./processFileEdits";
+export * from "./getNewMachineText";

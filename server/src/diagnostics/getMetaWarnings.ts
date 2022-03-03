@@ -1,6 +1,6 @@
 import { DiagnosticSeverity } from "vscode-languageserver";
 import { DiagnosticGetter } from "../getDiagnostics";
-import { getRangeFromSourceLocation } from "xstate-vscode-shared";
+import { getRangeFromSourceLocation } from "xstate-tools-shared";
 
 export const getMetaWarnings: DiagnosticGetter = (machine, textDocument) => {
   const allMetaNodes =

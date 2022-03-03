@@ -1,5 +1,5 @@
 import { MachineConfig, StateMachine } from "xstate";
-import { MachineParseResult } from "xstate-parser-demo/lib/MachineParseResult";
+import { MachineParseResult } from "xstate-parser-demo/src/MachineParseResult";
 import { IntrospectMachineResult } from ".";
 
 export interface GlobalSettings {
@@ -17,6 +17,22 @@ export interface SourceLocation {
   };
 }
 
+export interface XStateUpdateMachine {
+  definitionLoc?: SourceLocation | null;
+  config: MachineConfig<any, any, any>;
+  typeNodeLoc?: SourceLocation | null;
+  index: number;
+  namedGuards: string[];
+  namedActions: string[];
+  actionsInOptions: string[];
+  guardsInOptions: string[];
+  servicesInOptions: string[];
+  allServices: { src: string; id: string | undefined }[];
+  delaysInOptions: string[];
+  tags: string[];
+  hasTypesNode: boolean;
+}
+
 export interface XStateUpdateEvent {
   uri: string;
   machines: {
@@ -24,7 +40,8 @@ export interface XStateUpdateEvent {
     config: MachineConfig<any, any, any>;
     typeNodeLoc?: SourceLocation | null;
     index: number;
-    guardsToMock: string[];
+    namedGuards: string[];
+    namedActions: string[];
     actionsInOptions: string[];
     guardsInOptions: string[];
     servicesInOptions: string[];
@@ -41,3 +58,24 @@ export type DocumentValidationsResult = {
   introspectionResult?: IntrospectMachineResult;
   documentText: string;
 };
+
+export interface ImplementationsMetadata {
+  guards: Record<
+    string,
+    {
+      jsImplementation?: string;
+    }
+  >;
+  actions: Record<
+    string,
+    {
+      jsImplementation?: string;
+    }
+  >;
+  services: Record<
+    string,
+    {
+      jsImplementation?: string;
+    }
+  >;
+}

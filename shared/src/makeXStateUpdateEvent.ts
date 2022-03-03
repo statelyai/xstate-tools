@@ -3,7 +3,7 @@ import { resolveUriToFilePrefix } from "./resolveUriToFilePrefix";
 
 export const makeXStateUpdateEvent = (
   uri: string,
-  machines: DocumentValidationsResult[],
+  machines: Pick<DocumentValidationsResult, "parseResult">[],
 ): XStateUpdateEvent => {
   return {
     uri: resolveUriToFilePrefix(uri),
@@ -14,9 +14,13 @@ export const makeXStateUpdateEvent = (
         index,
         typeNodeLoc: machine.parseResult?.ast?.definition?.tsTypes?.node.loc,
         definitionLoc: machine.parseResult?.ast?.definition?.node.loc,
-        guardsToMock:
+        namedGuards:
           machine.parseResult
             ?.getAllConds(["named"])
+            .map((elem) => elem.name) || [],
+        namedActions:
+          machine.parseResult
+            ?.getAllActions(["named"])
             .map((elem) => elem.name) || [],
         allServices:
           machine.parseResult

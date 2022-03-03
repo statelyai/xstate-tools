@@ -18,7 +18,7 @@ import {
   TextDocumentSyncKind,
 } from "vscode-languageserver/node";
 import { assign, createMachine, interpret } from "xstate";
-import { MachineParseResult } from "xstate-parser-demo/lib/MachineParseResult";
+import { MachineParseResult } from "xstate-parser-demo/src/MachineParseResult";
 import {
   DocumentValidationsResult,
   getDocumentValidationsResults,
@@ -28,7 +28,7 @@ import {
   getTransitionsFromNode,
   GlobalSettings,
   makeXStateUpdateEvent,
-} from "xstate-vscode-shared";
+} from "xstate-tools-shared";
 import { getCursorHoverType } from "./getCursorHoverType";
 import { getDiagnostics } from "./getDiagnostics";
 import { getReferences } from "./getReferences";
@@ -162,7 +162,7 @@ connection.onCodeLens((params): CodeLens[] => {
           title: "Open Visual Editor",
           command: "stately-xstate.edit-code-lens",
           arguments: [
-            machine.parseResult?.toConfig(),
+            machine.parseResult?.toConfig({ hashInlineImplementations: true }),
             index,
             params.textDocument.uri,
             machine.parseResult?.getLayoutComment()?.value,

@@ -1,10 +1,8 @@
 import { createMachine } from "xstate";
 import { parseMachinesFromFile } from "xstate-parser-demo";
-import {
-  DocumentValidationsResult,
-  filterOutIgnoredMachines,
-  introspectMachine,
-} from ".";
+import { DocumentValidationsResult } from "./types";
+import { filterOutIgnoredMachines } from "./filterOutIgnoredMachines";
+import { introspectMachine } from "./introspectMachine";
 
 export const getDocumentValidationsResults = (
   text: string,
