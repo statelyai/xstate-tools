@@ -1,5 +1,12 @@
 # @xstate/tools-shared
 
+## 1.1.1
+
+### Patch Changes
+
+- Updated dependencies [[`a73fce8`](https://github.com/statelyai/xstate-tools/commit/a73fce843ee04b0701d9d72046da422ff3a65eed)]:
+  - @xstate/machine-extractor@0.6.1
+
 ## 1.1.0
 
 ### Minor Changes
