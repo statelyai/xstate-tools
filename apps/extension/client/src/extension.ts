@@ -15,6 +15,7 @@ import { XStateUpdateEvent } from "@xstate/tools-shared";
 import { uniqueId } from "xstate/lib/utils";
 import { getAuth, SignInResult } from "./auth";
 import { initiateEditor } from "./initiateEditor";
+import { initiateLayoutStringDecoration } from "./initiateLayoutStringDecoration";
 import { initiateTypegen } from "./initiateTypegen";
 import { initiateVisualizer } from "./initiateVisualizer";
 import { uriHandler } from "./UriHandler";
@@ -98,6 +99,7 @@ export async function activate(context: vscode.ExtensionContext) {
   initiateVisualizer(context, client, addXStateUpdateListener);
   initiateEditor(context, client);
   initiateTypegen(context, client, addXStateUpdateListener);
+  initiateLayoutStringDecoration(context);
 
   context.subscriptions.push(
     vscode.window.registerUriHandler(uriHandler),

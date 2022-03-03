@@ -7802,10 +7802,10 @@ xmlchars@^2.2.0:
   resolved "https://registry.yarnpkg.com/xmlchars/-/xmlchars-2.2.0.tgz#060fe1bcb7f9c76fe2a17db86a9bc3ab894210cb"
   integrity sha512-JZnDKK8B0RCDw84FNdDAIpZK+JuJw+s7Lz8nksI7SIuU3UXJJslUthsi+uWBUYOwPFwW7W7PRLRfUKpxjtjFCw==
 
-xstate@^4.29.0:
-  version "4.29.0"
-  resolved "https://registry.yarnpkg.com/xstate/-/xstate-4.29.0.tgz#74161f1e4b7fadb073593085f4fbb58068ee0b86"
-  integrity sha512-F6WF5s6xG/bm8Oxi2ETuzwGQW8yleL5I4JPxZl49m7Uw7D4LAXu+4dvUK78Uo4D863sM8auqw6+1Xmj9mFlmDQ==
+xstate@^4.30.0:
+  version "4.30.1"
+  resolved "https://registry.yarnpkg.com/xstate/-/xstate-4.30.1.tgz#e1317a5fa1e3ace6fabc5938e8f20f97e2e2f81b"
+  integrity sha512-vNOk8iRfhtbl9/RVF6HJWbL+YfsfGLiee1tGm6cuDcPrSStsRvfAhLVxSPoePx5XBlCSYOXaweLStmrpk2rvhA==
 
 y18n@^4.0.0:
   version "4.0.3"
