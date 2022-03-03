@@ -10,17 +10,15 @@
   },
   "devDependencies": {
     "@types/node": "^16.0.1",
-    "esbuild": "^0.14.21",
-    "xstate": "^4.29.0"
-  },
-  "peerDependencies": {
-    "xstate": "^4.29.0"
+    "esbuild": "^0.14.21"
   },
   "dependencies": {
+    "@babel/core": "^7.12.10",
     "@xstate/machine-extractor": "0.6.0",
     "@xstate/tools-shared": "1.1.0",
     "chokidar": "^3.5.3",
-    "commander": "^8.0.0"
+    "commander": "^8.0.0",
+    "xstate": "^4.29.0"
   },
   "author": "Stately Team",
   "license": "MIT"
