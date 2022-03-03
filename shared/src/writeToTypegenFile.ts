@@ -23,8 +23,12 @@ export const writeToTypegenFile = async (opts: {
           parser: "typescript",
         }),
       );
-    } else if (await promisify(fs.exists)(pathToSave)) {
-      await promisify(fs.unlink)(pathToSave);
+    } else {
+      try {
+        await promisify(fs.unlink)(pathToSave);
+      } catch (e) {
+        // TODO - throw the error if it's not an ENOENT
+      }
     }
   } catch (e) {
     console.log(e);
