@@ -1,5 +1,4 @@
-import traverse from "@babel/traverse";
-import * as t from "@babel/types";
+import { types as t, traverse } from "@babel/core";
 import { createParser } from "./createParser";
 import { AnyParser } from "./types";
 import { unionType } from "./unionType";

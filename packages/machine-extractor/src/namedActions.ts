@@ -15,7 +15,7 @@ import {
 import type { ActionNode } from "./actions";
 import { AnyNode, NumericLiteral, StringLiteral } from "./scalars";
 import { namedFunctionCall } from "./utils";
-import * as t from "@babel/types";
+import { types as t } from "@babel/core";
 import { unionType } from "./unionType";
 import { wrapParserResult } from "./wrapParserResult";
 

@@ -1,4 +1,4 @@
-import * as t from "@babel/types";
+import { types as t } from "@babel/core";
 import { StateNode } from "./stateNode";
 import { GetParserResult } from "./utils";
 import { MachineOptions } from "./options";

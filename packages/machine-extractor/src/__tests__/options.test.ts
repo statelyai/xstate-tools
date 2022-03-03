@@ -1,5 +1,5 @@
 import { parseMachinesFromFile } from "..";
-import * as t from "@babel/types";
+import { types as t } from "@babel/core";
 
 describe("Options", () => {
   it("Should handle functions declared as ObjectMethod", () => {
