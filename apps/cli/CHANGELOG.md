@@ -1,5 +1,11 @@
 # @xstate/cli
 
+## 0.1.1
+
+### Patch Changes
+
+- [#79](https://github.com/statelyai/xstate-tools/pull/79) [`db1f2c0`](https://github.com/statelyai/xstate-tools/commit/db1f2c0005ce21adbfce82406754a98a3bcb3680) Thanks [@mattpocock](https://github.com/mattpocock)! - Fixed an error where `@babel/core` needed to be installed as a peer dependency in order for the CLI to be usable.
+
 ## 0.1.0
 
 ### Minor Changes
