@@ -12,10 +12,11 @@ import {
   processFileEdits,
   writeToTypegenFile,
 } from "xstate-tools-shared";
+import { version } from "../package.json";
 
 const program = new Command();
 
-program.version("0.0.1");
+program.version(version);
 
 const handleError = (uri: string, e: any) => {
   if (e?.code === "BABEL_PARSER_SYNTAX_ERROR") {
@@ -36,7 +37,7 @@ const writeToFiles = async (uriArray: string[]) => {
           uri,
           parseResult.machines.map((machine) => ({
             parseResult: machine,
-          }))
+          })),
         );
 
         const fileEdits: FileEdit[] = [];
@@ -77,7 +78,7 @@ const writeToFiles = async (uriArray: string[]) => {
       } catch (e) {
         handleError(uri, e);
       }
-    })
+    }),
   );
 };
 
