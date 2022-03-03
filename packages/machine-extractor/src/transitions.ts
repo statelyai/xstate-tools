@@ -1,4 +1,4 @@
-import * as t from "@babel/types";
+import { types as t } from "@babel/core";
 import { MaybeArrayOfActions } from "./actions";
 import { Cond } from "./conds";
 import { createParser } from "./createParser";

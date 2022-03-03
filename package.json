@@ -79,11 +79,8 @@
   },
   "dependencies": {
     "@babel/core": "^7.12.10",
-    "@babel/parser": "^7.12.11",
     "@babel/plugin-transform-modules-commonjs": "^7.16.8",
     "@babel/preset-typescript": "^7.15.0",
-    "@babel/traverse": "^7.12.12",
-    "@babel/types": "^7.12.12",
     "@changesets/changelog-github": "^0.4.3",
     "@changesets/cli": "^2.21.0",
     "@manypkg/cli": "^0.19.1",

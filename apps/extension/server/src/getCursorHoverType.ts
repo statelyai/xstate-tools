@@ -1,4 +1,4 @@
-import * as t from "@babel/types";
+import { types as t } from "@babel/core";
 import { Position } from "vscode-languageserver-textdocument";
 import { MachineParseResult, StateNodeReturn, StringLiteralNode } from "@xstate/machine-extractor";
 import {

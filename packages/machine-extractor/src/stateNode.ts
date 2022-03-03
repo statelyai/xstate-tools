@@ -1,4 +1,4 @@
-import * as t from "@babel/types";
+import { types as t } from "@babel/core";
 import { MaybeArrayOfActions } from "./actions";
 import { Context } from "./context";
 import { History } from "./history";

@@ -1,4 +1,4 @@
-import * as t from "@babel/types";
+import { types as t } from "@babel/core";
 import { Action, ChooseCondition } from "xstate";
 import { assign, choose, forwardTo, send } from "xstate/lib/actions";
 import { Cond, CondNode } from "./conds";

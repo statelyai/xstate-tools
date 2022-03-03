@@ -1,4 +1,4 @@
-import * as t from "@babel/types";
+import { types as t } from "@babel/core";
 import { MachineConfig } from "xstate";
 import { MachineParseResult } from "./MachineParseResult";
 
