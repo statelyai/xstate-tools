@@ -67,8 +67,7 @@
       "build": {
         "dependsOn": [
           "viz:build",
-          "editor:build",
-          "^build"
+          "editor:build"
         ],
         "outputs": [
           "dist/**"
