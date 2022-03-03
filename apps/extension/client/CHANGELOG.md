@@ -1,5 +1,14 @@
 # stately-vscode
 
+## 1.7.2
+
+### Patch Changes
+
+- [#84](https://github.com/statelyai/xstate-tools/pull/84) [`a73fce8`](https://github.com/statelyai/xstate-tools/commit/a73fce843ee04b0701d9d72046da422ff3a65eed) Thanks [@Andarist](https://github.com/Andarist)! - Fixed a bug where transition targets would not be parsed correctly if they were declared using a template literal.
+
+- Updated dependencies []:
+  - @xstate/tools-shared@1.1.1
+
 ## 1.7.1
 
 ### Patch Changes
