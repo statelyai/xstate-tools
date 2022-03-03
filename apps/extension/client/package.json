@@ -1,0 +1,97 @@
+{
+  "name": "stately-vscode",
+  "displayName": "XState VSCode",
+  "description": "Visual editing, autocomplete and typegen for XState",
+  "license": "MIT",
+  "author": "Stately Team",
+  "version": "1.7.0",
+  "private": true,
+  "engines": {
+    "vscode": "^1.52.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/statelyai/xstate-tools"
+  },
+  "bugs": {
+    "url": "https://github.com/statelyai/xstate-tools/issues"
+  },
+  "galleryBanner": {
+    "color": "#fff"
+  },
+  "icon": "media/icon.png",
+  "categories": [
+    "Linters",
+    "Visualization",
+    "Other"
+  ],
+  "keywords": [
+    "xstate",
+    "vscode",
+    "visualize",
+    "autocomplete",
+    "typescript",
+    "javascript"
+  ],
+  "activationEvents": [
+    "onLanguage:typescript",
+    "onLanguage:typescriptreact",
+    "onLanguage:javascript",
+    "onLanguage:javascriptreact"
+  ],
+  "main": "./dist/index.js",
+  "publisher": "statelyai",
+  "contributes": {
+    "commands": [
+      {
+        "command": "stately-xstate.visualize",
+        "title": "Open Inspector",
+        "category": "XState"
+      },
+      {
+        "command": "stately-xstate.edit",
+        "title": "Open Visual Editor",
+        "category": "XState"
+      },
+      {
+        "command": "stately-xstate.sign-out",
+        "title": "Sign out of Stately",
+        "category": "XState"
+      },
+      {
+        "command": "stately-xstate.sign-in",
+        "title": "Sign in to Stately",
+        "category": "XState"
+      }
+    ],
+    "configuration": {
+      "title": "XState",
+      "properties": {
+        "xstate.showVisualEditorWarnings": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show warnings that prevent you from using the visual editor."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "lint": "tsc",
+    "test": "jest",
+    "viz:build": "esbuild src/vizWebviewScript.ts --bundle --outfile=scripts/vizWebview.js",
+    "editor:build": "esbuild src/editorWebviewScript.ts --bundle --outfile=scripts/editorWebview.js",
+    "build": "esbuild --bundle --platform=\"node\" src/extension.ts --outfile=dist/index.js --external:vscode --format=cjs"
+  },
+  "dependencies": {
+    "@types/lz-string": "^1.3.34",
+    "@xstate/inspect": "^0.4.1",
+    "@xstate/tools-shared": "1.1.0",
+    "lz-string": "^1.4.4",
+    "vscode-languageclient": "^7.0.0",
+    "xstate": "^4.30.0"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.52.0",
+    "vscode-test": "^1.3.0"
+  }
+}

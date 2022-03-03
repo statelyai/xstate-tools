@@ -8,15 +8,12 @@
 			"name": "Launch Client",
 			"runtimeExecutable": "${execPath}",
 			"args": [
-				"--extensionDevelopmentPath=${workspaceRoot}"
+				"--extensionDevelopmentPath=${workspaceRoot}/apps/extension/client"
 			],
 			"outFiles": [
-				"${workspaceRoot}/client/dist/**.js"
+				"${workspaceRoot}/apps/extension/client/dist/**.js"
 			],
-			"preLaunchTask": {
-				"type": "npm",
-				"script": "compile"
-			}
+			"preLaunchTask": "npm: extension:compile"
 		},
 		{
 			"type": "node",
@@ -25,7 +22,7 @@
 			"port": 6009,
 			"restart": true,
 			"outFiles": [
-				"${workspaceRoot}/server/dist/**.js"
+				"${workspaceRoot}/apps/extension/server/dist/**.js"
 			]
 		},
 		{
@@ -34,12 +31,12 @@
 			"request": "launch",
 			"runtimeExecutable": "${execPath}",
 			"args": [
-				"--extensionDevelopmentPath=${workspaceRoot}",
-				"--extensionTestsPath=${workspaceRoot}/client/out/test/index",
-				"${workspaceRoot}/client/testFixture"
+				"--extensionDevelopmentPath=${workspaceRoot}/apps/extension/client",
+				"--extensionTestsPath=${workspaceRoot}/apps/extension/client/out/test/index",
+				"${workspaceRoot}apps/extension/client/testFixture"
 			],
 			"outFiles": [
-				"${workspaceRoot}/client/dist/**.js"
+				"${workspaceRoot}/apps/extension/client/dist/**.js"
 			]
 		}
 	],
