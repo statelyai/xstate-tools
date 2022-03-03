@@ -68,6 +68,9 @@ export type StateNodeReturn = {
   version?: GetParserResult<typeof AnyNode>;
   activities?: GetParserResult<typeof AnyNode>;
   strict?: GetParserResult<typeof BooleanLiteral>;
+  // TODO
+  parent?: GetParserResult<typeof AnyNode>;
+  order?: GetParserResult<typeof NumericLiteral>;
 };
 
 type WithObjectPropertyInfo<T extends Record<any, any>> = {
