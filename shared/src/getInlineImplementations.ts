@@ -1,11 +1,22 @@
 import type { MachineParseResult } from "xstate-parser-demo/src/MachineParseResult";
 import { getRawTextFromNode, ImplementationsMetadata } from ".";
 
+/**
+ * This function takes the AST of a parsed machine (the MachineParseResult)
+ * and returns a map of all of its inline implementations (ImplementationsMetadata).
+ *
+ * Each inline implementation is stored by a hash (its inlineImplemenationId)
+ * and stores the raw text of its node.
+ */
 export const getInlineImplementations = (
   parseResult: MachineParseResult | undefined,
   fileText: string,
 ): ImplementationsMetadata => {
   const allGuards =
+    /**
+     * We don't ask for 'named' implementations here,
+     * since they're not declared inline
+     */
     parseResult?.getAllConds(["inline", "identifier", "unknown"]) || [];
 
   const allServices =
@@ -21,7 +32,13 @@ export const getInlineImplementations = (
   };
 
   allGuards.forEach((guard) => {
-    inlineImplementations.guards[guard.inlineDeclarationId] = {
+    inlineImplementations.guards[
+      /**
+       * The inlineDeclarationId comes from @xstate/machine-extractor,
+       * and is a hash of the inline declaration's text.
+       */
+      guard.inlineDeclarationId
+    ] = {
       jsImplementation: getRawTextFromNode(fileText, guard.node),
     };
   });
