@@ -1490,6 +1490,15 @@
   dependencies:
     "@changesets/types" "^4.1.0"
 
+"@changesets/changelog-github@^0.4.3":
+  version "0.4.3"
+  resolved "https://registry.yarnpkg.com/@changesets/changelog-github/-/changelog-github-0.4.3.tgz#a6f48e75931fbb0625484111d986a15b4e74cb3a"
+  integrity sha512-93X4arork7DV4+tVYeNlOTrw7HOXIvvd41yRPY9atJ+nS32W0uS+ewkZdc6WThuqmwGx9xaU+pxHtVLeYJTF0A==
+  dependencies:
+    "@changesets/get-github-info" "^0.5.0"
+    "@changesets/types" "^4.1.0"
+    dotenv "^8.1.0"
+
 "@changesets/cli@^2.21.0":
   version "2.21.0"
   resolved "https://registry.yarnpkg.com/@changesets/cli/-/cli-2.21.0.tgz#b689f91ed908150efc06e0985e6b4cfbd9aea3a3"
@@ -1557,6 +1566,14 @@
     chalk "^2.1.0"
     fs-extra "^7.0.1"
     semver "^5.4.1"
+
+"@changesets/get-github-info@^0.5.0":
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/@changesets/get-github-info/-/get-github-info-0.5.0.tgz#b91ceb2d82edef78ae1598ea9fc335a012250295"
+  integrity sha512-vm5VgHwrxkMkUjFyn3UVNKLbDp9YMHd3vMf1IyJoa/7B+6VpqmtAaXyDS0zBLfN5bhzVCHrRnj4GcZXXcqrFTw==
+  dependencies:
+    dataloader "^1.4.0"
+    node-fetch "^2.5.0"
 
 "@changesets/get-release-plan@^3.0.6":
   version "3.0.6"
@@ -3293,6 +3310,11 @@ data-urls@^2.0.0:
     whatwg-mimetype "^2.3.0"
     whatwg-url "^8.0.0"
 
+dataloader@^1.4.0:
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/dataloader/-/dataloader-1.4.0.tgz#bca11d867f5d3f1b9ed9f737bd15970c65dff5c8"
+  integrity sha512-68s5jYdlvasItOJnCuI2Q9s4q98g0pCyL3HrcKJu8KNugUl8ahgmZYg38ysLTgQjjXX3H8CJLkAvWrclWfcalw==
+
 dataloader@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/dataloader/-/dataloader-2.0.0.tgz#41eaf123db115987e21ca93c005cd7753c55fe6f"
@@ -3467,6 +3489,11 @@ domexception@^2.0.1:
   integrity sha512-yxJ2mFy/sibVQlu5qHjOkf9J3K6zgmCxgJ94u2EdvDOV09H+32LtRswEcUsmUWN72pVLOEnTSRaIVVzVQgS0dg==
   dependencies:
     webidl-conversions "^5.0.0"
+
+dotenv@^8.1.0:
+  version "8.6.0"
+  resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-8.6.0.tgz#061af664d19f7f4d8fc6e4ff9b584ce237adcb8b"
+  integrity sha512-IrPdXQsk2BbzvCBGBOTmmSH5SodmqZNt4ERAZDmW4CT+tL8VtvinqywuANaFu4bOMWki16nqf0e4oC0QIaDr/g==
 
 duplexer2@~0.1.4:
   version "0.1.4"
@@ -5842,6 +5869,13 @@ nice-try@^1.0.4:
   resolved "https://registry.yarnpkg.com/nice-try/-/nice-try-1.0.5.tgz#a3378a7696ce7d223e88fc9b764bd7ef1089e366"
   integrity sha512-1nh45deeb5olNY7eX82BkPO7SSxR5SSYJiPTrTdFUVYwAl8CKMA5N9PjTYkHiRjisVcxcQ1HXdLhx2qxxJzLNQ==
 
+node-fetch@^2.5.0:
+  version "2.6.7"
+  resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.6.7.tgz#24de9fba827e3b4ae44dc8b20256a379160052ad"
+  integrity sha512-ZjMPFEfVx5j+y2yF35Kzx5sF7kDzxuDj6ziH4FFbOp87zKDZNx8yExJIb05OGF4Nlt9IHFIMBkRl41VdvcNdbQ==
+  dependencies:
+    whatwg-url "^5.0.0"
+
 node-int64@^0.4.0:
   version "0.4.0"
   resolved "https://registry.yarnpkg.com/node-int64/-/node-int64-0.4.0.tgz#87a9065cdb355d3182d8f94ce11188b825c68a3b"
@@ -7259,6 +7293,11 @@ tr46@^2.1.0:
   dependencies:
     punycode "^2.1.1"
 
+tr46@~0.0.3:
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/tr46/-/tr46-0.0.3.tgz#8184fd347dac9cdc185992f3a6622e14b9d9ab6a"
+  integrity sha1-gYT9NH2snNwYWZLzpmIuFLnZq2o=
+
 "traverse@>=0.3.0 <0.4":
   version "0.3.9"
   resolved "https://registry.yarnpkg.com/traverse/-/traverse-0.3.9.tgz#717b8f220cc0bb7b44e40514c22b2e8bbc70d8b9"
@@ -7639,6 +7678,11 @@ wcwidth@^1.0.1:
   dependencies:
     defaults "^1.0.3"
 
+webidl-conversions@^3.0.0:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/webidl-conversions/-/webidl-conversions-3.0.1.tgz#24534275e2a7bc6be7bc86611cc16ae0a5654871"
+  integrity sha1-JFNCdeKnvGvnvIZhHMFq4KVlSHE=
+
 webidl-conversions@^5.0.0:
   version "5.0.0"
   resolved "https://registry.yarnpkg.com/webidl-conversions/-/webidl-conversions-5.0.0.tgz#ae59c8a00b121543a2acc65c0434f57b0fc11aff"
@@ -7660,6 +7704,14 @@ whatwg-mimetype@^2.3.0:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/whatwg-mimetype/-/whatwg-mimetype-2.3.0.tgz#3d4b1e0312d2079879f826aff18dbeeca5960fbf"
   integrity sha512-M4yMwr6mAnQz76TbJm914+gPpB/nCwvZbJU28cUD6dR004SAxDLOOSUaB1JDRqLtaOV/vi0IC5lEAGFgrjGv/g==
+
+whatwg-url@^5.0.0:
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/whatwg-url/-/whatwg-url-5.0.0.tgz#966454e8765462e37644d3626f6742ce8b70965d"
+  integrity sha1-lmRU6HZUYuN2RNNib2dCzotwll0=
+  dependencies:
+    tr46 "~0.0.3"
+    webidl-conversions "^3.0.0"
 
 whatwg-url@^8.0.0, whatwg-url@^8.5.0:
   version "8.7.0"
