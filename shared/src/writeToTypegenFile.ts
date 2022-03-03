@@ -1,6 +1,5 @@
-import * as fs from "fs";
+import * as fs from "fs/promises";
 import * as prettier from "prettier";
-import { promisify } from "util";
 import { getTypegenOutput } from ".";
 
 export const writeToTypegenFile = async (opts: {
@@ -16,7 +15,7 @@ export const writeToTypegenFile = async (opts: {
   try {
     if (opts.event.machines.some((machine) => machine.hasTypesNode)) {
       const typegenOutput = getTypegenOutput(opts.event);
-      await promisify(fs.writeFile)(
+      await fs.writeFile(
         pathToSave,
         prettier.format(typegenOutput, {
           ...prettierConfig,
@@ -25,7 +24,7 @@ export const writeToTypegenFile = async (opts: {
       );
     } else {
       try {
-        await promisify(fs.unlink)(pathToSave);
+        await fs.unlink(pathToSave);
       } catch (e) {
         // TODO - throw the error if it's not an ENOENT
       }
