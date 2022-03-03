@@ -1,5 +1,11 @@
 # stately-vscode
 
+## 1.7.1
+
+### Patch Changes
+
+- [#82](https://github.com/statelyai/xstate-tools/pull/82) [`e49beb2`](https://github.com/statelyai/xstate-tools/commit/e49beb28551ef11b66a158ad2fcac4a5242edb44) Thanks [@mattpocock](https://github.com/mattpocock)! - Fixed a bug where prettier was not found in the server bundle, causing an irrecoverable error on startup.
+
 ## 1.7.0
 
 ### Minor Changes
