@@ -76,6 +76,7 @@ export const TemplateLiteral = maybeTsAsExpression(
       parseNode: (node) => {
         let value = "";
 
+        // TODO - this might lead to weird issues if there is actually more than a single quasi there
         node.quasis.forEach((quasi) => {
           value = `${value}${quasi.value.raw}`;
         });
