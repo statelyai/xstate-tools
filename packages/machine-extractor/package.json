@@ -6,8 +6,7 @@
   "license": "MIT",
   "scripts": {
     "test": "jest src",
-    "lint": "tsc",
-    "prepare": "patch-package && yarn build"
+    "lint": "tsc"
   },
   "dependencies": {},
   "peerDependencies": {
