@@ -1,11 +1,8 @@
 {
-  "name": "stately-vscode",
-  "displayName": "XState VSCode",
-  "description": "Visual editing, autocomplete and typegen for XState",
-  "preview": true,
-  "author": "Matt Pocock",
+  "name": "stately-tools",
+  "author": "Stately Team",
   "license": "MIT",
-  "version": "1.6.1",
+  "version": "0.0.1",
   "private": true,
   "repository": {
     "type": "git",
@@ -14,95 +11,34 @@
   "bugs": {
     "url": "https://github.com/statelyai/xstate-vscode/issues"
   },
-  "keywords": [
-    "xstate",
-    "vscode",
-    "visualize",
-    "autocomplete",
-    "typescript",
-    "javascript"
-  ],
   "workspaces": {
     "packages": [
-      "client",
-      "server",
-      "shared",
-      "cli",
-      "parser"
+      "packages/*",
+      "apps/extension/*",
+      "apps/*"
     ]
   },
-  "categories": [
-    "Linters",
-    "Visualization",
-    "Other"
-  ],
-  "galleryBanner": {
-    "color": "#fff"
-  },
-  "icon": "media/icon.png",
   "engines": {
     "vscode": "^1.52.0"
-  },
-  "activationEvents": [
-    "onLanguage:typescript",
-    "onLanguage:typescriptreact",
-    "onLanguage:javascript",
-    "onLanguage:javascriptreact"
-  ],
-  "main": "./client/dist/index.js",
-  "publisher": "statelyai",
-  "contributes": {
-    "commands": [
-      {
-        "command": "stately-xstate.visualize",
-        "title": "Open Inspector",
-        "category": "XState"
-      },
-      {
-        "command": "stately-xstate.edit",
-        "title": "Open Visual Editor",
-        "category": "XState"
-      },
-      {
-        "command": "stately-xstate.sign-out",
-        "title": "Sign out of Stately",
-        "category": "XState"
-      },
-      {
-        "command": "stately-xstate.sign-in",
-        "title": "Sign in to Stately",
-        "category": "XState"
-      }
-    ],
-    "configuration": {
-      "title": "XState",
-      "properties": {
-        "xstate.showVisualEditorWarnings": {
-          "type": "boolean",
-          "default": true,
-          "description": "Show warnings that prevent you from using the visual editor."
-        }
-      }
-    }
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx,json}": "prettier --write"
   },
   "scripts": {
-    "cli": "yarn workspace xstate-cli",
-    "parser": "yarn workspace xstate-parser-demo",
-    "server": "yarn workspace xstate-vscode-server",
-    "client": "yarn workspace xstate-vscode-client",
-    "shared": "yarn workspace xstate-tools-shared",
-    "vscode:prepublish": "yarn turbo run build:prod",
-    "compile": "yarn turbo run build:dev --no-cache",
+    "cli": "yarn workspace @xstate/cli",
+    "extractor": "yarn workspace @xstate/machine-extractor",
+    "server": "yarn workspace @xstate/vscode-server",
+    "client": "yarn workspace stately-vscode",
+    "shared": "yarn workspace @xstate/tools-shared",
     "prepare": "husky install",
-    "postinstall": "preconstruct dev && manypkg check"
+    "postinstall": "preconstruct dev && manypkg check",
+    "release": "(cd apps/extension/client && npx vsce package --yarn) && changeset publish && (cd apps/extension/client && npx vsce publish --packagePath $(find . -iname *.vsix))",
+    "deps:build": "preconstruct build",
+    "extension:compile": "yarn turbo run build --no-cache && cp apps/extension/server/dist/index.js apps/extension/client/dist/server.js"
   },
   "preconstruct": {
     "packages": [
-      "shared",
-      "parser"
+      "packages/*"
     ]
   },
   "turbo": {
@@ -128,7 +64,7 @@
         ],
         "cache": false
       },
-      "build:dev": {
+      "build": {
         "dependsOn": [
           "viz:build",
           "editor:build"
@@ -137,32 +73,20 @@
           "dist/**"
         ],
         "cache": false
-      },
-      "build:prod": {
-        "dependsOn": [
-          "viz:build",
-          "editor:build",
-          "^build:prod"
-        ],
-        "outputs": [
-          "dist/**"
-        ]
       }
     }
   },
   "dependencies": {
     "@babel/core": "^7.12.10",
-    "@babel/parser": "^7.12.11",
     "@babel/plugin-transform-modules-commonjs": "^7.16.8",
     "@babel/preset-typescript": "^7.15.0",
-    "@babel/traverse": "^7.12.12",
-    "@babel/types": "^7.12.12",
+    "@changesets/changelog-github": "^0.4.3",
+    "@changesets/cli": "^2.21.0",
     "@manypkg/cli": "^0.19.1",
     "@preconstruct/cli": "^2.1.0",
     "@types/node": "^16.0.1",
     "@typescript-eslint/eslint-plugin": "^4.23.0",
     "@typescript-eslint/parser": "^4.23.0",
-    "@vercel/ncc": "0.28.4",
     "concurrently": "6.2.0",
     "esbuild": "^0.14.21",
     "eslint": "^7.26.0",

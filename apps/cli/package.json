@@ -1,0 +1,27 @@
+{
+  "name": "@xstate/cli",
+  "version": "0.0.1",
+  "bin": {
+    "xstate": "./bin/bin.js"
+  },
+  "scripts": {
+    "prepare": "yarn build",
+    "build": "esbuild src/bin.ts --outdir=bin --platform=node --format=cjs"
+  },
+  "devDependencies": {
+    "@types/node": "^16.0.1",
+    "esbuild": "^0.14.21",
+    "xstate": "^4.29.0"
+  },
+  "peerDependencies": {
+    "xstate": "^4.29.0"
+  },
+  "dependencies": {
+    "@xstate/machine-extractor": "0.5.8",
+    "@xstate/tools-shared": "1.0.0",
+    "chokidar": "^3.5.3",
+    "commander": "^8.0.0"
+  },
+  "author": "Stately Team",
+  "license": "MIT"
+}
