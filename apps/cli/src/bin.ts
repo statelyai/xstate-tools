@@ -12,10 +12,11 @@ import {
   processFileEdits,
   writeToTypegenFile,
 } from "@xstate/tools-shared";
+import { version } from "../package.json";
 
 const program = new Command();
 
-program.version("0.0.1");
+program.version(version);
 
 const handleError = (uri: string, e: any) => {
   if (e?.code === "BABEL_PARSER_SYNTAX_ERROR") {

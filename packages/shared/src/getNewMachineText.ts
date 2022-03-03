@@ -7,12 +7,20 @@ import { ImplementationsMetadata } from "./types";
 const prettierStartRegex = /^([^{]){1,}/;
 const prettierEndRegex = /([^}]){1,}$/;
 
+/**
+ * We use these crazy @UNWRAP_START@ and @UNWRAP_END@ markers to
+ * delineate the start and end of the text that we want to unwrap.
+ *
+ * We then use the regex to unwrap them later
+ *
+ * This is pretty quick and dirty - it works fairly robustly
+ * but I'm open to offers to improve it.
+ */
 const UNWRAP_START = `@UNWRAP_START@`;
 const UNWRAP_END = `@UNWRAP_END@`;
 const markAsUnwrap = (str: string) => {
   return `${UNWRAP_START}${str}${UNWRAP_END}`;
 };
-
 const UNWRAPPER_REGEX = /"@UNWRAP_START@(.{1,})@UNWRAP_END@"/g;
 
 const STATE_KEYS_TO_PRESERVE = [
@@ -107,16 +115,19 @@ export const getNewMachineText = async ({
 
   const prettierConfig = await prettier.resolveConfig(fileName);
 
-  let finalTextToInput = `${json.slice(0, 1)}${nodesToPreserve.join(
-    "",
-  )}${json.slice(1)}`.replace(UNWRAPPER_REGEX, (str) => {
-    // +1 and -1 for the quotes
-    return str
-      .slice(UNWRAP_START.length + 1, -UNWRAP_END.length - 1)
-      .replace(/\\n/g, "\n")
-      .replace(/\\"/g, '"')
-      .replace(/\\t/g, "\t");
-  });
+  let finalTextToInput = `{${nodesToPreserve.join("")}${json.slice(1)}`.replace(
+    UNWRAPPER_REGEX,
+    (str) => {
+      return (
+        str
+          // +1 and -1 for the quotes
+          .slice(UNWRAP_START.length + 1, -UNWRAP_END.length - 1)
+          .replace(/\\n/g, "\n")
+          .replace(/\\"/g, '"')
+          .replace(/\\t/g, "\t")
+      );
+    },
+  );
 
   try {
     const result = await prettier.format(`(${finalTextToInput})`, {
