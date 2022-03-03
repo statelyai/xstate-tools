@@ -19,6 +19,6 @@
   "devDependencies": {},
   "scripts": {
     "lint": "tsc",
-    "build": "esbuild --bundle src/server.ts --outfile=dist/index.js --external:vscode --external:prettier --platform=\"node\" --format=cjs"
+    "build": "esbuild --bundle src/server.ts --outfile=dist/index.js --external:vscode --platform=\"node\" --format=cjs"
   }
 }
