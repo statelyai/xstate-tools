@@ -32,7 +32,7 @@
     "shared": "yarn workspace @xstate/tools-shared",
     "prepare": "husky install",
     "postinstall": "preconstruct dev && manypkg check",
-    "release": "(cd apps/extension/client && npx vsce package --yarn) && changeset publish && (cd apps/extension/client && npx vsce publish --packagePath $(find . -iname *.vsix))",
+    "release": "(cd apps/extension/client && npx vsce package --yarn) && changeset publish && (cd apps/extension/client && npx vsce publish --packagePath $(find . -iname *.vsix)) && node ./scripts/tag-extension.js",
     "deps:build": "preconstruct build",
     "extension:compile": "yarn turbo run build --no-cache && cp apps/extension/server/dist/index.js apps/extension/client/dist/server.js"
   },
