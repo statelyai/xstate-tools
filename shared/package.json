@@ -4,7 +4,6 @@
   "main": "dist/xstate-tools-shared.cjs.js",
   "license": "MIT",
   "dependencies": {
-    "prettier": "^2.3.1",
     "xstate-parser-demo": "0.5.8"
   },
   "scripts": {
@@ -21,6 +20,7 @@
     "esbuild-jest": "^0.5.0",
     "jest": "^27.4.7",
     "jest-watch-typeahead": "^1.0.0",
+    "prettier": "^2.3.1",
     "xstate": "^4.29.0"
   }
 }
