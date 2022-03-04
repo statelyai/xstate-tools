@@ -33,6 +33,11 @@ const writeToFiles = async (uriArray: string[]) => {
       try {
         const fileContents = await fs.readFile(uri, "utf8");
         const parseResult = parseMachinesFromFile(fileContents);
+
+        if (!parseResult.machines.length) {
+          return
+        }
+
         const event = makeXStateUpdateEvent(
           uri,
           parseResult.machines.map((machine) => ({
