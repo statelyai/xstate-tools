@@ -1,5 +1,11 @@
 # @xstate/cli
 
+## 0.1.3
+
+### Patch Changes
+
+- [#94](https://github.com/statelyai/xstate-tools/pull/94) [`b648b8e`](https://github.com/statelyai/xstate-tools/commit/b648b8ea0db03c27cbbdd93193f8c482a5a8ad02) Thanks [@Andarist](https://github.com/Andarist)! - Reduced success logs to only be printed for files that actually contain machines.
+
 ## 0.1.2
 
 ### Patch Changes
