@@ -1,5 +1,5 @@
 import { createParser } from "./createParser";
-import { types as t } from "@babel/core";
+import * as t from "@babel/types";
 import { AnyParser } from ".";
 import { arrayOf } from "./utils";
 

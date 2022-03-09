@@ -1,4 +1,4 @@
-import { Node } from "@babel/core";
+import { Node } from "@babel/types";
 import { getRawTextFromNode } from ".";
 
 export const doesTsTypesRequireUpdate = (opts: {

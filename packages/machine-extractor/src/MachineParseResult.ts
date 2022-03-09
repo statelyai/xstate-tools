@@ -1,5 +1,5 @@
 import { Action, Condition } from "xstate";
-import { types as t, NodePath } from "@babel/core";
+import * as t from "@babel/types";
 import { TMachineCallExpression } from "./machineCallExpression";
 import { StateNodeReturn } from "./stateNode";
 import {
@@ -9,6 +9,7 @@ import {
 import { StringLiteralNode, Comment } from "./types";
 import { TransitionConfigNode } from "./transitions";
 import { ActionNode, ParsedChooseCondition } from "./actions";
+import type { Scope } from "@babel/traverse";
 import { DeclarationType } from ".";
 import { RecordOfArrays } from "./RecordOfArrays";
 
@@ -35,12 +36,12 @@ export class MachineParseResult {
   ast: TMachineCallExpression;
   public fileComments: Comment[];
   private stateNodes: MachineParseResultStateNode[];
-  public scope: NodePath["scope"];
+  public scope: Scope;
 
   constructor(props: {
     ast: TMachineCallExpression;
     fileComments: Comment[];
-    scope: NodePath["scope"];
+    scope: Scope;
   }) {
     this.ast = props.ast;
     this.fileComments = props.fileComments;

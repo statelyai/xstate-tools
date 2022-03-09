@@ -1,4 +1,6 @@
-import { parse, Node, types as t, traverse } from "@babel/core";
+import * as parser from "@babel/parser";
+import traverse from "@babel/traverse";
+import { Node } from "@babel/types";
 import { MachineConfig } from "xstate";
 import { MachineCallExpression } from "./machineCallExpression";
 import { MachineParseResult } from "./MachineParseResult";
@@ -18,18 +20,14 @@ export const parseMachinesFromFile = (fileContents: string): ParseResult => {
     };
   }
 
-  const parseResult = parse(fileContents, {
+  const parseResult = parser.parse(fileContents, {
     sourceType: "module",
-    configFile: false,
-    babelrc: false,
-    parserOpts: {
-      plugins: [
-        "typescript",
-        "jsx",
-        ["decorators", { decoratorsBeforeExport: false }],
-      ],
-    }
-  }) as t.File;
+    plugins: [
+      "typescript",
+      "jsx",
+      ["decorators", { decoratorsBeforeExport: false }],
+    ],
+  });
 
   let result: ParseResult = {
     machines: [],
