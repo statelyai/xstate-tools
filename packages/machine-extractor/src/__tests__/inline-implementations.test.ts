@@ -1,7 +1,7 @@
 import { parseMachinesFromFile } from "../parseMachinesFromFile";
 
 describe("Inline implementations", () => {
-  it("Should pick up guards expressed inline", () => {
+  it("Should pick up guards declared inline deeper than the root level", () => {
     const input = `
 			createMachine({
 				states: {
