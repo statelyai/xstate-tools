@@ -289,7 +289,9 @@ export const objectTypeWithKnownKeys = <
               result = parser.parse(property.node, context);
             } else if (t.isObjectProperty(property.node)) {
               result = parser.parse(property.node.value, context);
-              result._valueNode = property.node.value;
+              if (result) {
+                result._valueNode = property.node.value;
+              }
             }
 
             (toReturn as any)[key] = result;
