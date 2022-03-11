@@ -22,7 +22,7 @@ export interface ToMachineConfigParseOptions {
 
 const parseStateNode = (
   astResult: StateNodeReturn,
-  opts?: ToMachineConfigParseOptions,
+  opts: ToMachineConfigParseOptions | undefined,
 ): StateNodeConfig<any, any, any> => {
   const config: MachineConfig<any, any, any> = {};
 
@@ -91,7 +91,7 @@ const parseStateNode = (
     const states: typeof config.states = {};
 
     astResult.states.properties.forEach((state) => {
-      states[state.key] = parseStateNode(state.result);
+      states[state.key] = parseStateNode(state.result, opts);
     });
 
     config.states = states;
@@ -108,8 +108,7 @@ const parseStateNode = (
   }
 
   if (astResult.onDone) {
-    // @ts-ignore
-    config.onDone = getTransitions(astResult.onDone);
+    config.onDone = getTransitions(astResult.onDone, opts) as any[];
   }
 
   if (astResult.description) {
@@ -147,13 +146,11 @@ const parseStateNode = (
       }
 
       if (invoke.onDone) {
-        // @ts-ignore
-        toPush.onDone = getTransitions(invoke.onDone);
+        toPush.onDone = getTransitions(invoke.onDone, opts) as any[];
       }
 
       if (invoke.onError) {
-        // @ts-ignore
-        toPush.onError = getTransitions(invoke.onError);
+        toPush.onError = getTransitions(invoke.onError, opts) as any[];
       }
 
       invokes.push(toPush);
