@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { BASE_URL, EXTENSION_ID, TOKEN_KEY } from "./constants";
+import { EXTENSION_ID, getBaseUrl, getTokenKey } from "./constants";
 import { uriHandler } from "./UriHandler";
 
 export interface TokenInfo {
@@ -21,7 +21,7 @@ export const getAuth = (context: vscode.ExtensionContext) => {
    * Grabs the login token from localStorage
    */
   const getLoginToken = async (): Promise<TokenInfo | undefined> => {
-    const str = await context.secrets.get(TOKEN_KEY);
+    const str = await context.secrets.get(getTokenKey());
 
     try {
       if (str) {
@@ -36,14 +36,14 @@ export const getAuth = (context: vscode.ExtensionContext) => {
    * Sets the login token to secret storage
    */
   const setLoginToken = async (token: TokenInfo): Promise<void> => {
-    await context.secrets.store(TOKEN_KEY, JSON.stringify(token));
+    await context.secrets.store(getTokenKey(), JSON.stringify(token));
   };
 
   /**
    * Deletes the login token
    */
   const deleteLoginToken = async (): Promise<void> => {
-    await context.secrets.delete(TOKEN_KEY);
+    await context.secrets.delete(getTokenKey());
   };
 
   /**
@@ -59,7 +59,7 @@ export const getAuth = (context: vscode.ExtensionContext) => {
    */
   const getLoginUrl = (redirectUrl: vscode.Uri): vscode.Uri => {
     return vscode.Uri.parse(
-      `${BASE_URL}/registry/external-sign-in?redirectUrl=${encodeURIComponent(
+      `${getBaseUrl()}/registry/external-sign-in?redirectUrl=${encodeURIComponent(
         redirectUrl.toString(),
       )}`,
     );

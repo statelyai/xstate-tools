@@ -4,7 +4,6 @@ import { interpret } from "xstate";
 import { createMachine } from "xstate";
 import { compressToEncodedURIComponent } from "lz-string";
 import { TokenInfo } from "./auth";
-import { BASE_URL } from "./constants";
 import { ImplementationsMetadata } from "@xstate/tools-shared";
 
 declare global {
@@ -20,6 +19,7 @@ export interface WebViewMachineContext {
   layoutString: string | undefined;
   token: TokenInfo | undefined;
   implementations: ImplementationsMetadata;
+  baseUrl: string;
 }
 
 export type EditorWebviewScriptEvent =
@@ -31,6 +31,7 @@ export type EditorWebviewScriptEvent =
       index: number;
       token: TokenInfo;
       implementations: ImplementationsMetadata;
+      baseUrl: string;
     }
   | {
       type: "NODE_SELECTED";
@@ -93,6 +94,7 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
         guards: {},
         services: {},
       },
+      baseUrl: "",
     },
     invoke: {
       src: () => (send) => {
@@ -136,6 +138,7 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
                 layoutString: event.layoutString,
                 token: event.token,
                 implementations: event.implementations,
+                baseUrl: event.baseUrl,
               };
             }),
             internal: false,
@@ -151,7 +154,9 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
 
             if (!iframe || iframe.src) return;
 
-            iframe.src = `${BASE_URL}/registry/editor/from-url?config=${compressToEncodedURIComponent(
+            iframe.src = `${
+              context.baseUrl
+            }/registry/editor/from-url?config=${compressToEncodedURIComponent(
               JSON.stringify(context.config),
             )}${
               context.layoutString ? `&layout=${context.layoutString}` : ""
@@ -171,6 +176,7 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
                   layoutString: event.layoutString,
                   token: event.token,
                   implementations: event.implementations,
+                  baseUrl: event.baseUrl,
                 };
               }),
               "updateIframe",

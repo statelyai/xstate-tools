@@ -71,6 +71,11 @@
           "type": "boolean",
           "default": true,
           "description": "Show warnings that prevent you from using the visual editor."
+        },
+        "xstate.targetEditorBaseUrl": {
+          "type": "string",
+          "default": "https://stately.ai",
+          "description": "The base URL to open the visual editor in."
         }
       }
     }
