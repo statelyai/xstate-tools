@@ -5,7 +5,7 @@ const exitActionsMachine = createMachine(
     initial: "a",
     tsTypes: {} as import("./exitActions.typegen").Typegen0,
     schema: {
-      events: {} as { type: "FOO"; foo: string },
+      events: {} as { type: "FOO"; foo: string } | { type: "BAR" },
     },
     states: {
       a: {
