@@ -5,7 +5,6 @@ import { parseMachinesFromFile } from "@xstate/machine-extractor";
 import {
   doesTsTypesRequireUpdate,
   getRangeFromSourceLocation,
-  getRawTextFromNode,
   XStateUpdateEvent,
 } from "@xstate/tools-shared";
 import { startTypegenService } from "./typegenService";
