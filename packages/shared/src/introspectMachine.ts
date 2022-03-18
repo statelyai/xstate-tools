@@ -188,9 +188,11 @@ export const introspectMachine = (machine: XState.StateNode) => {
     });
 
     node.transitions?.forEach((transition) => {
-      node.onExit.forEach((action) => {
-        actions.addEventToItem(action.type, transition.eventType, node.path);
-      });
+      if (!transition.internal) {
+        node.onExit.forEach((action) => {
+          actions.addEventToItem(action.type, transition.eventType, node.path);
+        });
+      }
 
       (transition.target as unknown as XState.StateNode[])?.forEach(
         (targetNode) => {

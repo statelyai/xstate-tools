@@ -32,3 +32,35 @@ const exitActionsMachine = createMachine(
     },
   },
 );
+
+const exitAction2Machine = createMachine(
+  {
+    initial: "a",
+    tsTypes: {} as import("./exitActions.typegen").Typegen1,
+    schema: {
+      events: {} as { type: "FOO"; foo: string } | { type: "BAR" },
+    },
+    states: {
+      a: {
+        exit: "exitA",
+        initial: "c",
+        on: {
+          FOO: {
+            target: ".d",
+          },
+        },
+        states: {
+          c: {},
+          d: {},
+        },
+      },
+    },
+  },
+  {
+    actions: {
+      exitA: (context, event) => {
+        ((_expect: "xstate.stop") => {})(event.type);
+      },
+    },
+  },
+);
