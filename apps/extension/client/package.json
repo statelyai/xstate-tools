@@ -82,7 +82,7 @@
   },
   "scripts": {
     "lint": "tsc",
-    "test": "jest",
+    "test": "jest --passWithNoTests",
     "viz:build": "esbuild src/vizWebviewScript.ts --bundle --outfile=scripts/vizWebview.js",
     "editor:build": "esbuild src/editorWebviewScript.ts --bundle --outfile=scripts/editorWebview.js",
     "build": "esbuild --bundle --platform=\"node\" src/extension.ts --outfile=dist/index.js --external:vscode --format=cjs"
