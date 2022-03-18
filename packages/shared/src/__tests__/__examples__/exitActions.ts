@@ -64,3 +64,37 @@ const exitAction2Machine = createMachine(
     },
   },
 );
+
+createMachine(
+  {
+    tsTypes: {} as import("./exitActions.typegen").Typegen2,
+    schema: {
+      events: {} as { type: "FOO"; foo: string } | { type: "BAR" },
+    },
+    states: {
+      a: {
+        on: {
+          FOO: "c",
+        },
+        states: {
+          b: {
+            exit: "myAction", // this should receive FOO | 'xstate.stop'
+          },
+        },
+      },
+      c: {},
+    },
+  },
+  {
+    actions: {
+      myAction: (context, event) => {
+        if (event.type === "FOO") {
+          console.log(event.foo);
+        }
+        if (event.type === "xstate.stop") {
+          console.log(event.type);
+        }
+      },
+    },
+  },
+);
