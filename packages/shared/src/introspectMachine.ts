@@ -188,6 +188,10 @@ export const introspectMachine = (machine: XState.StateNode) => {
     });
 
     node.transitions?.forEach((transition) => {
+      node.onExit.forEach((action) => {
+        actions.addEventToItem(action.type, transition.eventType, node.path);
+      });
+
       (transition.target as unknown as XState.StateNode[])?.forEach(
         (targetNode) => {
           nodeMaps[targetNode.id].sources.add(transition.eventType);
@@ -271,6 +275,10 @@ export const introspectMachine = (machine: XState.StateNode) => {
       sources?.forEach((source) => {
         actions.addEventToItem(action.type, source, node.path);
       });
+    });
+
+    node.onExit.forEach((action) => {
+      actions.addEventToItem(action.type, "xstate.stop", node.path);
     });
   });
 
