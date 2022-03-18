@@ -1,8 +1,9 @@
 XState VSCode enhances the XState development experience by providing VSCode users with features like visual editing, autocomplete, typegen and linting.
 
-## Installation
+## Quickstart
 
-**[Install via the Visual Studio Code Marketplace →](https://marketplace.visualstudio.com/items?itemName=statelyai.stately-vscode)**
+1. [Install via the Visual Studio Code Marketplace →](https://marketplace.visualstudio.com/items?itemName=statelyai.stately-vscode)
+2. Once installed, you can run `XState: Open Visual Editor` from the command palette to open any machine at your cursor's location.
 
 ## Features
 
