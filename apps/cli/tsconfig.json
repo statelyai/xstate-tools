@@ -8,5 +8,8 @@
   },
   "include": [
     "src"
+  ],
+  "exclude": [
+    "src/__tests__/__examples__"
   ]
 }
