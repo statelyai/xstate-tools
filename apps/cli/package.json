@@ -7,7 +7,7 @@
   "scripts": {
     "prepare": "yarn build",
     "lint": "tsc",
-    "test": "jest src",
+    "test": "jest",
     "build": "esbuild src/bin.ts --outdir=bin --platform=node --format=cjs"
   },
   "devDependencies": {
