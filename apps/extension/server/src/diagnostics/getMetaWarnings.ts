@@ -2,7 +2,17 @@ import { DiagnosticSeverity } from "vscode-languageserver";
 import { DiagnosticGetter } from "../getDiagnostics";
 import { getRangeFromSourceLocation } from "@xstate/tools-shared";
 
-export const getMetaWarnings: DiagnosticGetter = (machine, textDocument) => {
+export const getMetaWarnings: DiagnosticGetter = (
+  machine,
+  textDocument,
+  settings
+) => {
+  /**
+   * If the user has said don't show warnings,
+   * don't show warnings for meta
+   */
+  if (!settings.showVisualEditorWarnings) return [];
+
   const allMetaNodes =
     machine.parseResult?.getAllStateNodes().flatMap((node) => {
       if (!node.ast.meta) {
