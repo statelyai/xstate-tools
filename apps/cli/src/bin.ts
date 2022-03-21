@@ -35,7 +35,7 @@ const writeToFiles = async (uriArray: string[]) => {
         const parseResult = parseMachinesFromFile(fileContents);
 
         if (!parseResult.machines.length) {
-          return
+          return;
         }
 
         const event = makeXStateUpdateEvent(
@@ -46,9 +46,9 @@ const writeToFiles = async (uriArray: string[]) => {
         );
 
         const fileEdits: FileEdit[] = [];
+        let machineIndex = 0;
 
         for (const machine of parseResult.machines) {
-          let machineIndex = 0;
           if (machine.ast.definition?.tsTypes?.node) {
             const { name } = path.parse(uri);
             const requiresUpdate = doesTsTypesRequireUpdate({

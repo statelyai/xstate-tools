@@ -6,11 +6,15 @@
   },
   "scripts": {
     "prepare": "yarn build",
+    "lint": "tsc",
+    "test": "jest",
     "build": "esbuild src/bin.ts --outdir=bin --platform=node --format=cjs"
   },
   "devDependencies": {
+    "@types/jest": "^27.4.0",
     "@types/node": "^16.0.1",
-    "esbuild": "^0.14.21"
+    "esbuild": "^0.14.21",
+    "jest": "^27.4.7"
   },
   "dependencies": {
     "@babel/core": "^7.12.10",
