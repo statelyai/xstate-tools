@@ -1,5 +1,14 @@
 # stately-vscode
 
+## 1.7.4
+
+### Patch Changes
+
+- [#109](https://github.com/statelyai/xstate-tools/pull/109) [`a4f96cb`](https://github.com/statelyai/xstate-tools/commit/a4f96cb763ca6ef39912d80008d5d84378bbc9be) Thanks [@Andarist](https://github.com/Andarist)! - Fixed support for experimental `.cts` and `.mts` extensions.
+
+- Updated dependencies [[`a4f96cb`](https://github.com/statelyai/xstate-tools/commit/a4f96cb763ca6ef39912d80008d5d84378bbc9be)]:
+  - @xstate/tools-shared@1.1.3
+
 ## 1.7.3
 
 ### Patch Changes

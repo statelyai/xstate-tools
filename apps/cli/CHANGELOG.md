@@ -1,5 +1,16 @@
 # @xstate/cli
 
+## 0.1.5
+
+### Patch Changes
+
+- [#109](https://github.com/statelyai/xstate-tools/pull/109) [`a4f96cb`](https://github.com/statelyai/xstate-tools/commit/a4f96cb763ca6ef39912d80008d5d84378bbc9be) Thanks [@Andarist](https://github.com/Andarist)! - Fixed support for experimental `.cts` and `.mts` extensions.
+
+* [#112](https://github.com/statelyai/xstate-tools/pull/112) [`c9a52c0`](https://github.com/statelyai/xstate-tools/commit/c9a52c0f0e97a4b58da7168a1ad55e460a72ba48) Thanks [@mattpocock](https://github.com/mattpocock)! - Fixed a bug where multiple machines in the same file would always be labelled with `Typegen0`, causing incorrect type information to be sent through the system.
+
+* Updated dependencies [[`a4f96cb`](https://github.com/statelyai/xstate-tools/commit/a4f96cb763ca6ef39912d80008d5d84378bbc9be)]:
+  - @xstate/tools-shared@1.1.3
+
 ## 0.1.4
 
 ### Patch Changes
