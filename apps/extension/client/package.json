@@ -71,13 +71,18 @@
           "type": "boolean",
           "default": true,
           "description": "Show warnings that prevent you from using the visual editor."
+        },
+        "xstate.targetEditorBaseUrl": {
+          "type": "string",
+          "default": "https://stately.ai",
+          "description": "The base URL to open the visual editor in."
         }
       }
     }
   },
   "scripts": {
     "lint": "tsc",
-    "test": "jest",
+    "test": "jest --passWithNoTests",
     "viz:build": "esbuild src/vizWebviewScript.ts --bundle --outfile=scripts/vizWebview.js",
     "editor:build": "esbuild src/editorWebviewScript.ts --bundle --outfile=scripts/editorWebview.js",
     "build": "esbuild --bundle --platform=\"node\" src/extension.ts --outfile=dist/index.js --external:vscode --format=cjs"

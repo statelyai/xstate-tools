@@ -15,11 +15,14 @@ import { EditorWebviewScriptEvent } from "./editorWebviewScript";
 import { getWebviewContent } from "./getWebviewContent";
 import { handleDefinitionUpdate } from "./handleDefinitionUpdate";
 import { handleNodeSelected } from "./handleNodeSelected";
+import { getBaseUrl } from "./constants";
 
 export const initiateEditor = (
   context: vscode.ExtensionContext,
   client: LanguageClient,
 ) => {
+  const baseUrl = getBaseUrl();
+
   let currentPanel: vscode.WebviewPanel | undefined = undefined;
 
   const sendMessage = (event: EditorWebviewScriptEvent) => {
@@ -72,6 +75,7 @@ export const initiateEditor = (
         layoutString,
         token: result,
         implementations,
+        baseUrl,
       });
     } else {
       currentPanel = vscode.window.createWebviewPanel(
@@ -97,6 +101,7 @@ export const initiateEditor = (
         layoutString,
         token: result,
         implementations,
+        baseUrl,
       });
 
       currentPanel.webview.onDidReceiveMessage(

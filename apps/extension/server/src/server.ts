@@ -43,7 +43,10 @@ const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
 let hasConfigurationCapability = false;
 let hasWorkspaceFolderCapability = false;
 
-const defaultSettings: GlobalSettings = { showVisualEditorWarnings: true };
+const defaultSettings: GlobalSettings = {
+  showVisualEditorWarnings: true,
+  targetEditorBaseUrl: "https://stately.ai",
+};
 let globalSettings: GlobalSettings = defaultSettings;
 
 connection.onInitialize((params: InitializeParams) => {
