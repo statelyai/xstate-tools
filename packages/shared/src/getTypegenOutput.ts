@@ -50,11 +50,11 @@ export const getTypegenOutput = (event: {
         const services = introspectResult.services.lines
           .filter((line) => !line.name.startsWith("xstate."))
           .filter((invoke) =>
-            machine.allServices.some((service) => service.src === invoke.name),
+            machine.allServices.some((service) => service.src === invoke.name)
           );
 
         const delays = introspectResult.delays.lines.filter(
-          (line) => !line.name.startsWith("xstate."),
+          (line) => !line.name.startsWith("xstate.")
         );
 
         const requiredActions = actions
@@ -64,7 +64,7 @@ export const getTypegenOutput = (event: {
 
         const requiredServices = services
           .filter(
-            (service) => !machine.servicesInOptions.includes(service.name),
+            (service) => !machine.servicesInOptions.includes(service.name)
           )
           .map((service) => `'${service.name}'`)
           .join(" | ");
@@ -79,10 +79,10 @@ export const getTypegenOutput = (event: {
           .map((delay) => `'${delay.name}'`)
           .join(" | ");
 
-        const tags = machine.tags.map((tag) => `'${tag}'`).join(" | ");
+        const tags = machine.tags.map((tag) => JSON.stringify(tag)).join(" | ");
 
-        const matchesStates = introspectResult.stateMatches.map(
-          (elem) => `'${elem}'`,
+        const matchesStates = introspectResult.stateMatches.map((candidate) =>
+          JSON.stringify(candidate)
         );
 
         const objectSyntax = getStateMatchesObjectSyntax(introspectResult);
@@ -125,7 +125,7 @@ export const getTypegenOutput = (event: {
             ${Object.keys(introspectResult.serviceSrcToIdMap)
               .filter((src) => {
                 return machine.allServices.some(
-                  (service) => service.src === src,
+                  (service) => service.src === src
                 );
               })
               .map((src) => {
@@ -198,7 +198,7 @@ const displayEventsCausing = (lines: { name: string; events: string[] }[]) => {
         unique(
           line.events.map((event) => {
             return event;
-          }),
+          })
         )
           .map((event) => {
             return `'${event}'`;
