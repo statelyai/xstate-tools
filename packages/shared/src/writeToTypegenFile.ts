@@ -11,24 +11,23 @@ export const writeToTypegenFile = async (opts: {
   const pathToSave =
     opts.filePath.slice(0, -path.extname(opts.filePath).length) + ".typegen.ts";
 
-  try {
-    if (opts.event.machines.some((machine) => machine.hasTypesNode)) {
-      const typegenOutput = getTypegenOutput(opts.event);
-      await fs.writeFile(
-        pathToSave,
-        prettier.format(typegenOutput, {
-          ...prettierConfig,
-          parser: "typescript",
-        }),
-      );
-    } else {
-      try {
-        await fs.unlink(pathToSave);
-      } catch (e) {
-        // TODO - throw the error if it's not an ENOENT
+  if (opts.event.machines.some((machine) => machine.hasTypesNode)) {
+    const typegenOutput = getTypegenOutput(opts.event);
+    await fs.writeFile(
+      pathToSave,
+      prettier.format(typegenOutput, {
+        ...prettierConfig,
+        parser: "typescript",
+      })
+    );
+  } else {
+    try {
+      await fs.unlink(pathToSave);
+    } catch (e: any) {
+      if (e?.code === "ENOENT") {
+        return;
       }
+      throw e;
     }
-  } catch (e) {
-    console.log(e);
   }
 };
