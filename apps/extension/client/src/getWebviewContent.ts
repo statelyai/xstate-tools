@@ -9,6 +9,11 @@ export const getWebviewContent = (scriptsSrc: vscode.Uri, title: string) => {
                   <meta name="viewport" content="width=device-width, initial-scale=1.0">
                   <title>${title}</title>
                   <style>
+                    @font-face {
+                        font-family: 'TTCommons';
+                        src: url('https://stately.ai/registry/ttcommons.woff2') format('woff2');
+                    }
+
                   
                   * {
                       
@@ -37,9 +42,7 @@ export const getWebviewContent = (scriptsSrc: vscode.Uri, title: string) => {
               </head>
               
               <body>
-                  <div class="iframe-wrapper">
-                      <iframe id="iframe" title="${title} Iframe"></iframe>
-                  </div>
+                  <div id="root"></div>
                   <script src="${scriptsSrc}">
               </body>
           </html>
