@@ -22,7 +22,7 @@ const TransitionObject = objectTypeWithKnownKeys({
   target: TransitionTarget,
   actions: MaybeArrayOfActions,
   cond: Cond,
-  description: StringLiteral,
+  description: unionType([StringLiteral, TemplateLiteral]),
 });
 
 const TransitionConfigOrTargetLiteral = unionType([
