@@ -8,7 +8,7 @@
   },
   "scripts": {
     "lint": "tsc",
-    "test": "jest --passWithNoTests"
+    "test": "jest"
   },
   "peerDependencies": {
     "prettier": "^2.3.1",
