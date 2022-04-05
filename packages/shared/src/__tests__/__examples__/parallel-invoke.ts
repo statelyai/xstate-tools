@@ -6,6 +6,11 @@ const machine = createMachine(
     initial: "a",
     schema: {
       events: {} as { type: "GO_STRING"; answer: string },
+      services: {} as {
+        jump: {
+          data: number;
+        };
+      },
     },
     states: {
       a: {
@@ -29,6 +34,7 @@ const machine = createMachine(
     services: {
       jump: async (context, event) => {
         ((_accept: string) => {})(event.answer);
+        return 42;
       },
     },
   }
