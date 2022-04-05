@@ -21,7 +21,7 @@ const makeSubStateFromNode = (
       sources: Set<string>;
       children: Set<string>;
     };
-  },
+  }
 ): SubState => {
   const nodeFromMap = nodeMaps[node.id];
 
@@ -143,7 +143,7 @@ export const introspectMachine = (machine: XState.StateNode) => {
   } = {};
 
   const allStateNodes = machine.stateIds.map((id) =>
-    machine.getStateNodeById(id),
+    machine.getStateNodeById(id)
   );
 
   allStateNodes?.forEach((node) => {
@@ -191,31 +191,40 @@ export const introspectMachine = (machine: XState.StateNode) => {
       (transition.target as unknown as XState.StateNode[])?.forEach(
         (targetNode) => {
           nodeMaps[targetNode.id].sources.add(transition.eventType);
-        },
+        }
       );
       if (transition.cond && transition.cond.name) {
         if (transition.cond.name !== "cond") {
           guards.addEventToItem(
             transition.cond.name,
             transition.eventType,
-            node.path,
+            node.path
           );
         }
       }
 
       (transition.target as unknown as XState.StateNode[])?.forEach(
         (targetNode) => {
-          /** Pick up invokes */
-          targetNode.invoke?.forEach((service) => {
-            const serviceSrc = getServiceSrc(service);
-            if (typeof serviceSrc !== "string") return;
-            services.addEventToItem(
-              serviceSrc,
-              transition.eventType,
-              node.path,
-            );
+          /**
+           * We gather info on all the invocations that begin on
+           * all the nodes that are initial state nodes of the children
+           * of this node (see recursive-invoke)
+           */
+
+          const nodesToGather = [targetNode, ...targetNode.initialStateNodes];
+          nodesToGather.forEach((node) => {
+            /** Pick up invokes */
+            node.invoke?.forEach((service) => {
+              const serviceSrc = getServiceSrc(service);
+              if (typeof serviceSrc !== "string") return;
+              services.addEventToItem(
+                serviceSrc,
+                transition.eventType,
+                node.path
+              );
+            });
           });
-        },
+        }
       );
 
       if (transition.actions) {
@@ -231,7 +240,7 @@ export const introspectMachine = (machine: XState.StateNode) => {
                     actions.addEventToItem(
                       condAction,
                       transition.eventType,
-                      node.path,
+                      node.path
                     );
                   }
                 });
@@ -239,7 +248,7 @@ export const introspectMachine = (machine: XState.StateNode) => {
                 actions.addEventToItem(
                   condActions,
                   transition.eventType,
-                  node.path,
+                  node.path
                 );
               }
             });
@@ -247,7 +256,7 @@ export const introspectMachine = (machine: XState.StateNode) => {
             actions.addEventToItem(
               action.type,
               transition.eventType,
-              node.path,
+              node.path
             );
           }
         });
@@ -266,10 +275,20 @@ export const introspectMachine = (machine: XState.StateNode) => {
       }
     });
 
-    node.onEntry?.forEach((action) => {
-      const sources = nodeMaps[node.id].sources;
-      sources?.forEach((source) => {
-        actions.addEventToItem(action.type, source, node.path);
+    const sources = nodeMaps[node.id].sources;
+
+    /**
+     * We gather info on all the entry actions that fire on
+     * all the nodes that are initial state nodes of the children
+     * of this node (see recursive-entry)
+     */
+    const nodesToGatherEntry = [node, ...node.initialStateNodes];
+
+    nodesToGatherEntry.forEach((nodeOrInitialNode) => {
+      nodeOrInitialNode.onEntry?.forEach((action) => {
+        sources?.forEach((source) => {
+          actions.addEventToItem(action.type, source, nodeOrInitialNode.path);
+        });
       });
     });
   });
