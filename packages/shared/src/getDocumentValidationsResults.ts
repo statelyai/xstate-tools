@@ -5,7 +5,7 @@ import { filterOutIgnoredMachines } from "./filterOutIgnoredMachines";
 import { introspectMachine } from "./introspectMachine";
 
 export const getDocumentValidationsResults = (
-  text: string,
+  text: string
 ): DocumentValidationsResult[] => {
   return filterOutIgnoredMachines(parseMachinesFromFile(text)).machines.map(
     (parseResult) => {
@@ -16,8 +16,12 @@ export const getDocumentValidationsResults = (
       }
 
       const config = parseResult.toConfig();
+      const chooseActionsForOptions =
+        parseResult.getChooseActionsToAddToOptions();
       try {
-        const machine: any = createMachine(config as any);
+        const machine: any = createMachine(config as any, {
+          actions: chooseActionsForOptions,
+        });
         const introspectionResult = introspectMachine(machine as any);
         return {
           parseResult,
@@ -31,6 +35,6 @@ export const getDocumentValidationsResults = (
           documentText: text,
         };
       }
-    },
+    }
   );
 };

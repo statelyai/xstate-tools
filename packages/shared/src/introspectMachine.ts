@@ -1,5 +1,5 @@
 import * as XState from "xstate";
-import { InvokeDefinition } from "xstate";
+import { Action, InvokeDefinition } from "xstate";
 import { pathToStateValue } from "xstate/lib/utils";
 import { INLINE_IMPLEMENTATION_TYPE } from "@xstate/machine-extractor";
 import {
@@ -21,7 +21,7 @@ const makeSubStateFromNode = (
       sources: Set<string>;
       children: Set<string>;
     };
-  },
+  }
 ): SubState => {
   const nodeFromMap = nodeMaps[node.id];
 
@@ -142,8 +142,33 @@ export const introspectMachine = (machine: XState.StateNode) => {
     };
   } = {};
 
+  const addActionAndHandleChoose = (
+    action: XState.ActionObject<any, any>,
+    eventType: string,
+    path: string[]
+  ) => {
+    if (action.type === "xstate.choose" && Array.isArray(action.conds)) {
+      action.conds.forEach(({ cond, actions: condActions }) => {
+        if (typeof cond === "string") {
+          guards.addEventToItem(cond, eventType, path);
+        }
+        if (Array.isArray(condActions)) {
+          condActions.forEach((condAction) => {
+            if (typeof condAction === "string") {
+              actions.addEventToItem(condAction, eventType, path);
+            }
+          });
+        } else if (typeof condActions === "string") {
+          actions.addEventToItem(condActions, eventType, path);
+        }
+      });
+    } else {
+      actions.addEventToItem(action.type, eventType, path);
+    }
+  };
+
   const allStateNodes = machine.stateIds.map((id) =>
-    machine.getStateNodeById(id),
+    machine.getStateNodeById(id)
   );
 
   allStateNodes?.forEach((node) => {
@@ -191,14 +216,14 @@ export const introspectMachine = (machine: XState.StateNode) => {
       (transition.target as unknown as XState.StateNode[])?.forEach(
         (targetNode) => {
           nodeMaps[targetNode.id].sources.add(transition.eventType);
-        },
+        }
       );
       if (transition.cond && transition.cond.name) {
         if (transition.cond.name !== "cond") {
           guards.addEventToItem(
             transition.cond.name,
             transition.eventType,
-            node.path,
+            node.path
           );
         }
       }
@@ -212,42 +237,21 @@ export const introspectMachine = (machine: XState.StateNode) => {
             services.addEventToItem(
               serviceSrc,
               transition.eventType,
-              node.path,
+              node.path
             );
           });
-        },
+        }
       );
 
       if (transition.actions) {
         transition.actions?.forEach((action) => {
-          if (action.type === "xstate.choose" && Array.isArray(action.conds)) {
-            action.conds.forEach(({ cond, actions: condActions }) => {
-              if (typeof cond === "string") {
-                guards.addEventToItem(cond, transition.eventType, node.path);
-              }
-              if (Array.isArray(condActions)) {
-                condActions.forEach((condAction) => {
-                  if (typeof condAction === "string") {
-                    actions.addEventToItem(
-                      condAction,
-                      transition.eventType,
-                      node.path,
-                    );
-                  }
-                });
-              } else if (typeof condActions === "string") {
-                actions.addEventToItem(
-                  condActions,
-                  transition.eventType,
-                  node.path,
-                );
-              }
-            });
-          } else {
-            actions.addEventToItem(
-              action.type,
+          addActionAndHandleChoose(action, transition.eventType, node.path);
+          const actionInOptions = machine.options.actions?.[action.type];
+          if (actionInOptions && typeof actionInOptions === "object") {
+            addActionAndHandleChoose(
+              actionInOptions,
               transition.eventType,
-              node.path,
+              node.path
             );
           }
         });
@@ -268,8 +272,14 @@ export const introspectMachine = (machine: XState.StateNode) => {
 
     node.onEntry?.forEach((action) => {
       const sources = nodeMaps[node.id].sources;
+
       sources?.forEach((source) => {
-        actions.addEventToItem(action.type, source, node.path);
+        addActionAndHandleChoose(action, source, node.path);
+        const actionInOptions = machine.options.actions?.[action.type];
+
+        if (actionInOptions && typeof actionInOptions === "object") {
+          addActionAndHandleChoose(actionInOptions, source, node.path);
+        }
       });
     });
   });
