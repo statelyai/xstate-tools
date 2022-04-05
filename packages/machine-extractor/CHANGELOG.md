@@ -1,5 +1,11 @@
 # @xstate/machine-extractor
 
+## 0.6.3
+
+### Patch Changes
+
+- [#126](https://github.com/statelyai/xstate-tools/pull/126) [`c705a64`](https://github.com/statelyai/xstate-tools/commit/c705a64d95fa99046a7acd77f16b9b0dddd2e7ba) Thanks [@ericjonathan6](https://github.com/ericjonathan6)! - Fixed a bug where descriptions on transitions were not being visualised in VSCode.
+
 ## 0.6.2
 
 ### Patch Changes
