@@ -2,6 +2,7 @@ import { createMachine } from "xstate";
 import { introspectMachine } from "./introspectMachine";
 import { getStateMatchesObjectSyntax } from "./getStateMatchesObjectSyntax";
 import { XStateUpdateMachine } from "./types";
+import { choose } from "xstate/lib/actions";
 
 export const getTypegenOutput = (event: {
   machines: Pick<
@@ -33,9 +34,26 @@ export const getTypegenOutput = (event: {
 
         machine.config.context = {};
 
+        console.log(
+          choose([
+            {
+              actions: ["a", "b", "c"],
+              cond: "cond1",
+            },
+          ])
+        );
+
         // xstate-ignore-next-line
         const createdMachine = createMachine(machine.config || {}, {
           guards: guardsToMock,
+          actions: {
+            wow: choose([
+              {
+                actions: ["a", "b", "c"],
+                cond: "cond1",
+              },
+            ]),
+          },
         });
 
         const introspectResult = introspectMachine(createdMachine as any);

@@ -21,7 +21,7 @@ const makeSubStateFromNode = (
       sources: Set<string>;
       children: Set<string>;
     };
-  },
+  }
 ): SubState => {
   const nodeFromMap = nodeMaps[node.id];
 
@@ -143,7 +143,7 @@ export const introspectMachine = (machine: XState.StateNode) => {
   } = {};
 
   const allStateNodes = machine.stateIds.map((id) =>
-    machine.getStateNodeById(id),
+    machine.getStateNodeById(id)
   );
 
   allStateNodes?.forEach((node) => {
@@ -191,14 +191,14 @@ export const introspectMachine = (machine: XState.StateNode) => {
       (transition.target as unknown as XState.StateNode[])?.forEach(
         (targetNode) => {
           nodeMaps[targetNode.id].sources.add(transition.eventType);
-        },
+        }
       );
       if (transition.cond && transition.cond.name) {
         if (transition.cond.name !== "cond") {
           guards.addEventToItem(
             transition.cond.name,
             transition.eventType,
-            node.path,
+            node.path
           );
         }
       }
@@ -212,10 +212,10 @@ export const introspectMachine = (machine: XState.StateNode) => {
             services.addEventToItem(
               serviceSrc,
               transition.eventType,
-              node.path,
+              node.path
             );
           });
-        },
+        }
       );
 
       if (transition.actions) {
@@ -231,7 +231,7 @@ export const introspectMachine = (machine: XState.StateNode) => {
                     actions.addEventToItem(
                       condAction,
                       transition.eventType,
-                      node.path,
+                      node.path
                     );
                   }
                 });
@@ -239,7 +239,7 @@ export const introspectMachine = (machine: XState.StateNode) => {
                 actions.addEventToItem(
                   condActions,
                   transition.eventType,
-                  node.path,
+                  node.path
                 );
               }
             });
@@ -247,7 +247,7 @@ export const introspectMachine = (machine: XState.StateNode) => {
             actions.addEventToItem(
               action.type,
               transition.eventType,
-              node.path,
+              node.path
             );
           }
         });
@@ -268,8 +268,29 @@ export const introspectMachine = (machine: XState.StateNode) => {
 
     node.onEntry?.forEach((action) => {
       const sources = nodeMaps[node.id].sources;
+      if (action.conds) {
+        console.log(action.conds);
+      }
+
       sources?.forEach((source) => {
-        actions.addEventToItem(action.type, source, node.path);
+        if (action.type === "xstate.choose" && Array.isArray(action.conds)) {
+          action.conds.forEach(({ cond, actions: condActions }) => {
+            if (typeof cond === "string") {
+              guards.addEventToItem(cond, source, node.path);
+            }
+            if (Array.isArray(condActions)) {
+              condActions.forEach((condAction) => {
+                if (typeof condAction === "string") {
+                  actions.addEventToItem(condAction, source, node.path);
+                }
+              });
+            } else if (typeof condActions === "string") {
+              actions.addEventToItem(condActions, source, node.path);
+            }
+          });
+        } else {
+          actions.addEventToItem(action.type, source, node.path);
+        }
       });
     });
   });
