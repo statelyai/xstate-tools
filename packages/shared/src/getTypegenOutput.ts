@@ -59,24 +59,24 @@ export const getTypegenOutput = (event: {
 
         const requiredActions = actions
           .filter((action) => !machine.actionsInOptions.includes(action.name))
-          .map((action) => `'${action.name}'`)
+          .map((action) => JSON.stringify(action.name))
           .join(" | ");
 
         const requiredServices = services
           .filter(
             (service) => !machine.servicesInOptions.includes(service.name)
           )
-          .map((service) => `'${service.name}'`)
+          .map((service) => JSON.stringify(service.name))
           .join(" | ");
 
         const requiredGuards = guards
           .filter((guard) => !machine.guardsInOptions.includes(guard.name))
-          .map((guard) => `'${guard.name}'`)
+          .map((guard) => JSON.stringify(guard.name))
           .join(" | ");
 
         const requiredDelays = delays
           .filter((delay) => !machine.delaysInOptions.includes(delay.name))
-          .map((delay) => `'${delay.name}'`)
+          .map((delay) => JSON.stringify(delay.name))
           .join(" | ");
 
         const tags = machine.tags.map((tag) => JSON.stringify(tag)).join(" | ");
@@ -104,12 +104,16 @@ export const getTypegenOutput = (event: {
 
         machine.allServices.forEach((service) => {
           if (service.id) {
-            internalEvents[
+            internalEvents[`done.invoke.${service.id}`] = `${JSON.stringify(
               `done.invoke.${service.id}`
-            ] = `'done.invoke.${service.id}': { type: 'done.invoke.${service.id}'; data: unknown; __tip: "See the XState TS docs to learn how to strongly type this."; };`;
-            internalEvents[
+            )}: { type: ${JSON.stringify(
+              `done.invoke.${service.id}`
+            )}; data: unknown; __tip: "See the XState TS docs to learn how to strongly type this."; };`;
+            internalEvents[`error.platform.${service.id}`] = `${JSON.stringify(
               `error.platform.${service.id}`
-            ] = `'error.platform.${service.id}': { type: 'error.platform.${service.id}'; data: unknown; };`;
+            )}: { type: ${JSON.stringify(
+              `error.platform.${service.id}`
+            )}; data: unknown; };`;
           }
         });
 
@@ -131,8 +135,8 @@ export const getTypegenOutput = (event: {
               .map((src) => {
                 const set = Array.from(introspectResult.serviceSrcToIdMap[src]);
 
-                return `'${src}': ${set
-                  .map((item) => `'done.invoke.${item}'`)
+                return `${JSON.stringify(src)}: ${set
+                  .map((item) => JSON.stringify(`done.invoke.${item}`))
                   .join(" | ")};`;
               })
               .join("\n")}
@@ -174,15 +178,17 @@ const collectInternalEvents = (lineArrays: { events: string[] }[][]) => {
     lines.forEach((line) => {
       line.events.forEach((event) => {
         if (event.startsWith("done.invoke")) {
-          internalEvents[
+          internalEvents[event] = `${JSON.stringify(
             event
-          ] = `'${event}': { type: '${event}'; data: unknown; __tip: "See the XState TS docs to learn how to strongly type this."; };`;
+          )}: { type: ${JSON.stringify(
+            event
+          )}; data: unknown; __tip: "See the XState TS docs to learn how to strongly type this."; };`;
         } else if (event.startsWith("xstate.") || event === "") {
           internalEvents[event] = `'${event}': { type: '${event}' };`;
         } else if (event.startsWith("error.platform")) {
-          internalEvents[
+          internalEvents[event] = `${JSON.stringify(
             event
-          ] = `'${event}': { type: '${event}'; data: unknown; };`;
+          )}: { type: ${JSON.stringify(event)}; data: unknown; };`;
         }
       });
     });
@@ -194,15 +200,13 @@ const collectInternalEvents = (lineArrays: { events: string[] }[][]) => {
 const displayEventsCausing = (lines: { name: string; events: string[] }[]) => {
   return lines
     .map((line) => {
-      return `'${line.name}': ${
+      return `${JSON.stringify(line.name)}: ${
         unique(
           line.events.map((event) => {
             return event;
           })
         )
-          .map((event) => {
-            return `'${event}'`;
-          })
+          .map((event) => JSON.stringify(event))
           .join(" | ") ||
         /**
          * If no transitions go to this guard/service/action, it's guaranteed
