@@ -17,6 +17,7 @@ export const getTypegenOutput = (event: {
     | "delaysInOptions"
     | "tags"
     | "allServices"
+    | "chooseActionsInOptions"
   >[];
 }) => {
   return `
@@ -34,25 +35,11 @@ export const getTypegenOutput = (event: {
 
         machine.config.context = {};
 
-        console.log(
-          choose([
-            {
-              actions: ["a", "b", "c"],
-              cond: "cond1",
-            },
-          ])
-        );
-
         // xstate-ignore-next-line
         const createdMachine = createMachine(machine.config || {}, {
           guards: guardsToMock,
           actions: {
-            wow: choose([
-              {
-                actions: ["a", "b", "c"],
-                cond: "cond1",
-              },
-            ]),
+            ...machine.chooseActionsInOptions,
           },
         });
 

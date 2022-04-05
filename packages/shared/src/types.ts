@@ -1,4 +1,4 @@
-import { MachineConfig, StateMachine } from "xstate";
+import { MachineConfig, MachineOptions, StateMachine } from "xstate";
 import { MachineParseResult } from "@xstate/machine-extractor";
 import { IntrospectMachineResult } from ".";
 
@@ -32,25 +32,12 @@ export interface XStateUpdateMachine {
   delaysInOptions: string[];
   tags: string[];
   hasTypesNode: boolean;
+  chooseActionsInOptions: MachineOptions<any, any, any>["actions"];
 }
 
 export interface XStateUpdateEvent {
   uri: string;
-  machines: {
-    definitionLoc?: SourceLocation | null;
-    config: MachineConfig<any, any, any>;
-    typeNodeLoc?: SourceLocation | null;
-    index: number;
-    namedGuards: string[];
-    namedActions: string[];
-    actionsInOptions: string[];
-    guardsInOptions: string[];
-    servicesInOptions: string[];
-    allServices: { src: string; id: string | undefined }[];
-    delaysInOptions: string[];
-    tags: string[];
-    hasTypesNode: boolean;
-  }[];
+  machines: XStateUpdateMachine[];
 }
 
 export type DocumentValidationsResult = {

@@ -1,4 +1,4 @@
-import { Action, Condition } from "xstate";
+import { Action, Condition, MachineOptions } from "xstate";
 import { types as t, NodePath } from "@babel/core";
 import { TMachineCallExpression } from "./machineCallExpression";
 import { StateNodeReturn } from "./stateNode";
@@ -11,6 +11,7 @@ import { TransitionConfigNode } from "./transitions";
 import { ActionNode, ParsedChooseCondition } from "./actions";
 import { DeclarationType } from ".";
 import { RecordOfArrays } from "./RecordOfArrays";
+import { choose } from "xstate/lib/actions";
 
 export interface MachineParseResultStateNode {
   path: string[];
@@ -85,6 +86,25 @@ export class MachineParseResult {
     return isIgnored;
   };
 
+  public getChooseActionsToAddToOptions = () => {
+    const actions: MachineOptions<any, any, any>["actions"] = {};
+
+    const chooseActions = this.getChooseActionsInOptions();
+
+    chooseActions.forEach((action) => {
+      if (action.node.chooseConditions) {
+        actions[action.node.name] = choose(
+          action.node.chooseConditions.map((chooseCondition) => ({
+            actions: chooseCondition.actionNodes.map((action) => action.name),
+            cond: chooseCondition.condition.cond,
+          }))
+        );
+      }
+    });
+
+    return actions;
+  };
+
   private getChooseActionsInOptions = (): {
     node: ActionNode;
     statePath: string[];
@@ -98,14 +118,19 @@ export class MachineParseResult {
         "action" in actionProperty.result &&
         actionProperty.result.chooseConditions
       ) {
-        const actionPath = allActionsInConfig.find(
+        const actionInConfig = allActionsInConfig.find(
           (a) => a.node.name === actionProperty.key
-        )?.statePath;
+        );
 
-        if (actionPath) {
+        if (actionInConfig) {
           chooseActions.push({
-            node: actionProperty.result,
-            statePath: actionPath,
+            node: Object.assign(actionProperty.result, {
+              /**
+               * Give it the name of the action in the config
+               */
+              name: actionInConfig.node.name,
+            }),
+            statePath: actionInConfig.statePath,
           });
         }
       }
