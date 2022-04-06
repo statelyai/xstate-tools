@@ -2,12 +2,10 @@ import { createMachine } from "xstate";
 
 const machine = createMachine(
   {
-    tsTypes: {} as import("./parallel.typegen").Typegen0,
+    tsTypes: {} as import("./parallel-entry.typegen").Typegen0,
     initial: "a",
     schema: {
-      events: {} as
-        | { type: "GO_STRING"; answer: string }
-        | { type: "GO_NUMBER"; count: number },
+      events: {} as { type: "GO_STRING"; answer: string },
     },
     states: {
       a: {
