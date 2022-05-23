@@ -1,12 +1,15 @@
 import { execSync } from "child_process";
 import * as path from "path";
+import * as fs from "fs";
+import * as minimatch from "minimatch";
 
 describe("typegen", () => {
-  execSync("rm -rf ./__examples__/*.typegen.ts", {
-    cwd: __dirname,
-  });
-
   const examplesPath = path.resolve(__dirname, "__examples__");
+  const examplesFiles = fs.readdirSync(examplesPath);
+
+  minimatch
+    .match(examplesFiles, "*.typegen.ts")
+    .map((file) => fs.unlinkSync(path.join(examplesPath, file)));
 
   execSync("yarn build", {
     cwd: __dirname,
