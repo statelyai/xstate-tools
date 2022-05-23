@@ -64,6 +64,11 @@
         "category": "XState"
       }
     ],
+    "configurationDefaults": {
+      "explorer.fileNesting.patterns": {
+        "*.ts": "${capture}.typegen.ts"
+      }
+    },
     "configuration": {
       "title": "XState",
       "properties": {
