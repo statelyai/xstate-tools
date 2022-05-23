@@ -23,6 +23,7 @@
   "categories": [
     "Linters",
     "Visualization",
+    "Snippets",
     "Other"
   ],
   "keywords": [
@@ -78,7 +79,12 @@
           "description": "The base URL to open the visual editor in."
         }
       }
-    }
+    },
+    "snippets": [
+      {
+        "path": "snippets/xstate.code-snippets"
+      }
+    ]
   },
   "scripts": {
     "lint": "tsc",
