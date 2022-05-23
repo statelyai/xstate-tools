@@ -37,7 +37,8 @@
     "onLanguage:typescript",
     "onLanguage:typescriptreact",
     "onLanguage:javascript",
-    "onLanguage:javascriptreact"
+    "onLanguage:javascriptreact",
+    "onLanguage:vue"
   ],
   "main": "./dist/index.js",
   "publisher": "statelyai",
