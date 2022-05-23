@@ -3,6 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
+import { XStateUpdateEvent } from "@xstate/tools-shared";
 import * as path from "path";
 import * as vscode from "vscode";
 import {
@@ -11,9 +12,9 @@ import {
   ServerOptions,
   TransportKind,
 } from "vscode-languageclient/node";
-import { XStateUpdateEvent } from "@xstate/tools-shared";
 import { uniqueId } from "xstate/lib/utils";
 import { getAuth, SignInResult } from "./auth";
+import { checkTypegenNestingConfiguration } from "./checkTypegenNesting";
 import { initiateEditor } from "./initiateEditor";
 import { initiateTypegen } from "./initiateTypegen";
 import { initiateVisualizer } from "./initiateVisualizer";
@@ -63,12 +64,14 @@ export async function activate(context: vscode.ExtensionContext) {
     "xstateLanguageServer",
     "XState",
     serverOptions,
-    clientOptions,
+    clientOptions
   );
 
   client.start();
 
   await client.onReady();
+
+  checkTypegenNestingConfiguration();
 
   const xstateUpdateListeners: Record<
     string,
@@ -76,7 +79,7 @@ export async function activate(context: vscode.ExtensionContext) {
   > = {};
 
   const addXStateUpdateListener = (
-    listener: (event: XStateUpdateEvent) => void,
+    listener: (event: XStateUpdateEvent) => void
   ): vscode.Disposable => {
     const id = uniqueId();
     xstateUpdateListeners[id] = listener;
@@ -92,7 +95,7 @@ export async function activate(context: vscode.ExtensionContext) {
       Object.values(xstateUpdateListeners).forEach((listener) => {
         listener(event);
       });
-    }),
+    })
   );
 
   initiateVisualizer(context, client, addXStateUpdateListener);
@@ -105,7 +108,7 @@ export async function activate(context: vscode.ExtensionContext) {
       await getAuth(context).signOut();
 
       vscode.window.showInformationMessage("Signed out successfully.");
-    }),
+    })
   );
   context.subscriptions.push(
     vscode.commands.registerCommand("stately-xstate.sign-in", async () => {
@@ -117,7 +120,7 @@ export async function activate(context: vscode.ExtensionContext) {
         },
         (_, token) => {
           return getAuth(context).signIn(token.onCancellationRequested);
-        },
+        }
       );
 
       if (result === "could-not-open-external-url") {
@@ -125,12 +128,12 @@ export async function activate(context: vscode.ExtensionContext) {
         return;
       } else if (result === "timed-out") {
         vscode.window.showErrorMessage(
-          "The authentication request timed out. Please try again.",
+          "The authentication request timed out. Please try again."
         );
         return;
       } else if (result === "unknown-error") {
         vscode.window.showErrorMessage(
-          "An unknown error occurred. Please try again.",
+          "An unknown error occurred. Please try again."
         );
         return;
       } else if (result === "cancelled") {
@@ -138,7 +141,7 @@ export async function activate(context: vscode.ExtensionContext) {
       } else {
         vscode.window.showInformationMessage("Signed in successfully.");
       }
-    }),
+    })
   );
 }
 
