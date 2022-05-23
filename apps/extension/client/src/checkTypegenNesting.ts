@@ -1,5 +1,19 @@
 import * as vscode from "vscode";
 
+const typeGenPatternKey = "*.ts";
+const typeGenPattern = "${capture}.typegen.ts";
+const hasTypeGenPattern = (fileNestingPatterns: object) =>
+  Object.values(fileNestingPatterns).some((pattern: string) => {
+    if (pattern.includes(",")) {
+      const patterns = pattern.split(",");
+      return patterns.some(
+        (innerPattern) => innerPattern.trim() === typeGenPattern
+      );
+    } else {
+      return pattern === typeGenPattern;
+    }
+  });
+
 export const checkTypegenNestingConfiguration = () => {
   const fileNestingConfig = vscode.workspace.getConfiguration(
     "explorer.fileNesting"
@@ -8,12 +22,7 @@ export const checkTypegenNestingConfiguration = () => {
 
   const xstateConfig = vscode.workspace.getConfiguration("xstate");
   const nestTypegenFiles = xstateConfig.get<boolean>("nestTypegenFiles");
-
-  const hasTypeGenPattern = Object.values(fileNestingPatterns).includes(
-    "${capture}.typegen.ts"
-  );
-
-  if (nestTypegenFiles && !hasTypeGenPattern) {
+  if (nestTypegenFiles && !hasTypeGenPattern(fileNestingPatterns)) {
     const enableOption = "Enable";
     const disableOption = "No, don't ask again";
     vscode.window
@@ -26,15 +35,15 @@ export const checkTypegenNestingConfiguration = () => {
         switch (choice) {
           case enableOption:
             fileNestingConfig.update("enabled", true, true);
-            const existingTsPattern = fileNestingPatterns["*.ts"];
+            const existingTsPattern = fileNestingPatterns[typeGenPatternKey];
             const updatedPattern = existingTsPattern
-              ? `${existingTsPattern}, \${capture}.typegen.ts`
-              : "${capture}.typegen.ts";
+              ? `${existingTsPattern}, ${typeGenPattern}`
+              : typeGenPattern;
             fileNestingConfig.update(
               "patterns",
               {
                 ...fileNestingPatterns,
-                "*.ts": updatedPattern,
+                [typeGenPatternKey]: updatedPattern,
               },
               true
             );
