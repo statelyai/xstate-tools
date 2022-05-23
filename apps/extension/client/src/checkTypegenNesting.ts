@@ -14,6 +14,10 @@ export const checkTypegenNestingConfiguration = () => {
   const fileNestingConfig = vscode.workspace.getConfiguration(
     "explorer.fileNesting"
   );
+
+  // If there's no fileNestingConfig with patterns then we can't check the nesting, maybe the user is on a version of VSCode before 1.67
+  if (!fileNestingConfig || !fileNestingConfig.has("patterns")) return;
+
   const fileNestingPatterns = fileNestingConfig.get<object>("patterns");
 
   const xstateConfig = vscode.workspace.getConfiguration("xstate");
