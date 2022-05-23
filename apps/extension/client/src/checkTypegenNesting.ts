@@ -4,14 +4,10 @@ const typeGenPatternKey = "*.ts";
 const typeGenPattern = "${capture}.typegen.ts";
 const hasTypeGenPattern = (fileNestingPatterns: object) =>
   Object.values(fileNestingPatterns).some((pattern: string) => {
-    if (pattern.includes(",")) {
-      const patterns = pattern.split(",");
-      return patterns.some(
-        (innerPattern) => innerPattern.trim() === typeGenPattern
-      );
-    } else {
-      return pattern === typeGenPattern;
-    }
+    const patterns = pattern.split(",");
+    return patterns.some(
+      (innerPattern) => innerPattern.trim() === typeGenPattern
+    );
   });
 
 export const checkTypegenNestingConfiguration = () => {
