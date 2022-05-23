@@ -22,6 +22,23 @@ export const checkTypegenNestingConfiguration = () => {
 
   const xstateConfig = vscode.workspace.getConfiguration("xstate");
   const nestTypegenFiles = xstateConfig.get<boolean>("nestTypegenFiles");
+
+  // TODO: move this to a helper function
+  // TODO: check during startup if the config is ok
+  // TODO: remove our file pattern when disabling instead of disabling all file nesting
+  vscode.workspace.onDidChangeConfiguration((event) => {
+    let affected = event.affectsConfiguration("xstate.nestTypegenFiles");
+    if (affected) {
+      const xstateConfig = vscode.workspace.getConfiguration("xstate");
+      const updatedNestTypegenFiles =
+        xstateConfig.get<boolean>("nestTypegenFiles");
+      vscode.window.showInformationMessage(
+        updatedNestTypegenFiles ? "Enabled" : "Disabled"
+      );
+      fileNestingConfig.update("enabled", updatedNestTypegenFiles, true);
+    }
+  });
+
   if (nestTypegenFiles && !hasTypeGenPattern(fileNestingPatterns)) {
     const enableOption = "Enable";
     const disableOption = "No, don't ask again";
