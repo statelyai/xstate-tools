@@ -2,4 +2,4 @@
 "stately-vscode": patch
 ---
 
-Typegen files will now be nested if you have file nesting enabled
+Added a setting and a helper prompt to enable file nesting of typegen files.
