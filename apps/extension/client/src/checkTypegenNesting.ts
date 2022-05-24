@@ -64,7 +64,6 @@ const removeEmptyPatterns = (obj: object) =>
   );
 
 const disableTypeGenNesting = () => {
-  getXStateConfig().update("nestTypegenFiles", false, true);
   const fileNestingConfig = getFileNestingConfig();
   const fileNestingPatterns = fileNestingConfig.get<object>("patterns");
 
@@ -149,6 +148,7 @@ export const handleTypegenNestingConfig = () => {
             enableTypeGenNesting();
             break;
           case disableOption:
+            getXStateConfig().update("nestTypegenFiles", false, true);
             disableTypeGenNesting();
             break;
         }
