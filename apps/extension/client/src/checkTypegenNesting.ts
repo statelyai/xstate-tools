@@ -62,7 +62,7 @@ const enableTypegenNesting = () => {
 
 const removeEmptyPatterns = (obj: object) =>
   Object.fromEntries(
-    Object.entries(obj).filter(([_, pattern]) => pattern != "")
+    Object.entries(obj).filter(([_, pattern]) => pattern !== "")
   );
 
 const disableTypegenNesting = () => {
