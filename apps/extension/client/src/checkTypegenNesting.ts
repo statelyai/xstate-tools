@@ -125,7 +125,7 @@ export const handleTypegenNestingConfig = () => {
     const disableOption = "No, don't ask again";
     vscode.window
       .showInformationMessage(
-        "Do you want to enable file nesting for typegen files?",
+        "Do you want to enable file nesting for XState typegen files?",
         enableOption,
         disableOption
       )
