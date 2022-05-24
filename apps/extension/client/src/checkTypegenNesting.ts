@@ -22,8 +22,8 @@ const createTypeGenPatterns = (transformer: (patternKey: string) => string) => {
   }));
   // Return an object with all the transformed keys
   return transformedArray.reduce(function (result, item) {
-    var key = Object.keys(item)[0]; //first property: a, b, c
-    result[key] = item[key];
+    const firstKey = Object.keys(item)[0];
+    result[firstKey] = item[firstKey];
     return result;
   }, {});
 };
