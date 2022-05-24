@@ -14,7 +14,7 @@ import {
 } from "vscode-languageclient/node";
 import { uniqueId } from "xstate/lib/utils";
 import { getAuth, SignInResult } from "./auth";
-import { checkTypegenNestingConfiguration } from "./checkTypegenNesting";
+import { handleTypegenNestingConfig } from "./checkTypegenNesting";
 import { initiateEditor } from "./initiateEditor";
 import { initiateTypegen } from "./initiateTypegen";
 import { initiateVisualizer } from "./initiateVisualizer";
@@ -71,7 +71,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   await client.onReady();
 
-  checkTypegenNestingConfiguration();
+  handleTypegenNestingConfig();
 
   const xstateUpdateListeners: Record<
     string,
