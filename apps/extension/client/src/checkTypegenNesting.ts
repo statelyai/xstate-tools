@@ -8,7 +8,7 @@ const getFileNestingConfig = () =>
   vscode.workspace.getConfiguration("explorer.fileNesting");
 
 // Checks if the user has our typegen pattern set in their workspace config
-const hasTypeGenPattern = (fileNestingPatterns: object) =>
+const hasTypegenPattern = (fileNestingPatterns: object) =>
   Object.values(fileNestingPatterns).some((pattern: string) =>
     pattern
       .split(",")
