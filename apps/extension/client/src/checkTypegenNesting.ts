@@ -77,7 +77,7 @@ const disableTypegenNesting = () => {
       fileNestingPatterns[typegenPatternKey];
 
     // If there's no patterns defined for ts files we don't need to do anything
-    if (!existingTsPattern || existingTsPattern === "") return undefined;
+    if (!existingTsPattern || existingTsPattern === "") return "";
     else {
       // Remove our typegen pattern from the existing patterns
       return existingTsPattern
@@ -136,9 +136,9 @@ export const handleTypegenNestingConfig = () => {
   const nestTypegenFiles = xstateConfig.get<boolean>("nestTypegenFiles");
 
   // If the user has disabled file nesting but still has our pattern defined for ts files we remove it
-  if (!nestTypegenFiles && hasTypeGenPattern(fileNestingPatterns)) {
+  if (!nestTypegenFiles && hasTypegenPattern(fileNestingPatterns)) {
     disableTypegenNesting();
-  } else if (nestTypegenFiles && !hasTypeGenPattern(fileNestingPatterns)) {
+  } else if (nestTypegenFiles && !hasTypegenPattern(fileNestingPatterns)) {
     // Show prompt if the user wants to nest typegen files but hasn't defined our pattern yet
     const enableOption = "Enable";
     const disableOption = "No, don't ask again";
