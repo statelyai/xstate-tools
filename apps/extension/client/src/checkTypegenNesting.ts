@@ -30,7 +30,9 @@ const createTypeGenPatterns = (transformer: (patternKey: string) => string) => {
 
 const enableTypeGenNesting = () => {
   const fileNestingConfig = getFileNestingConfig();
-  const fileNestingPatterns = fileNestingConfig.get<object>("patterns");
+
+  const fileNestingPatterns = fileNestingConfig.get("patterns");
+  if (typeof fileNestingPatterns !== "object") return;
 
   // If the user chooses to enable file nesting for typegen files we need to make sure that VSCode's file nesting is also enabled
   fileNestingConfig.update("enabled", true, true);
@@ -65,7 +67,9 @@ const removeEmptyPatterns = (obj: object) =>
 
 const disableTypeGenNesting = () => {
   const fileNestingConfig = getFileNestingConfig();
-  const fileNestingPatterns = fileNestingConfig.get<object>("patterns");
+
+  const fileNestingPatterns = fileNestingConfig.get("patterns");
+  if (typeof fileNestingPatterns !== "object") return;
 
   const getUpdatedPattern = (typeGenPatternKey: string) => {
     // Check if the user has a pattern defined for ts files
@@ -122,10 +126,12 @@ export const handleTypegenNestingConfig = () => {
   const fileNestingConfig = getFileNestingConfig();
 
   // If there's no fileNestingConfig with patterns then we can't check the nesting, maybe the user is on a version of VSCode before 1.67
-  if (!fileNestingConfig || !fileNestingConfig.has("patterns")) return;
+  if (!fileNestingConfig.has("patterns")) return;
 
   // VSCode's configuration for xstate
-  const fileNestingPatterns = fileNestingConfig.get<object>("patterns");
+  const fileNestingPatterns = fileNestingConfig.get("patterns");
+  if (typeof fileNestingPatterns !== "object") return;
+
   const xstateConfig = getXStateConfig();
   const nestTypegenFiles = xstateConfig.get<boolean>("nestTypegenFiles");
 
