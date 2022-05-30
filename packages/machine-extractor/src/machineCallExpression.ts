@@ -9,13 +9,19 @@ export type TMachineCallExpression = GetParserResult<
   typeof MachineCallExpression
 >;
 
+export const ALLOWED_CALL_EXPRESSION_NAMES = [
+  "createMachine",
+  "Machine",
+  "createTestMachine",
+];
+
 export const MachineCallExpression = createParser({
   babelMatcher: t.isCallExpression,
   parseNode: (node, context) => {
     if (
       t.isMemberExpression(node.callee) &&
       t.isIdentifier(node.callee.property) &&
-      ["createMachine", "Machine"].includes(node.callee.property.name)
+      ALLOWED_CALL_EXPRESSION_NAMES.includes(node.callee.property.name)
     ) {
       return {
         callee: node.callee,
@@ -30,7 +36,7 @@ export const MachineCallExpression = createParser({
 
     if (
       t.isIdentifier(node.callee) &&
-      ["createMachine", "Machine"].includes(node.callee.name)
+      ALLOWED_CALL_EXPRESSION_NAMES.includes(node.callee.name)
     ) {
       return {
         callee: node.callee,
