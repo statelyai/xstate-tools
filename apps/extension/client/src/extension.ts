@@ -99,7 +99,7 @@ export async function activate(context: vscode.ExtensionContext) {
   initiateVisualizer(context, client, addXStateUpdateListener);
   initiateEditor(context, client);
   initiateTypegen(context, client, addXStateUpdateListener);
-  initiateDocsHelper(context, client);
+  initiateDocsHelper(context);
 
   context.subscriptions.push(
     vscode.window.registerUriHandler(uriHandler),
