@@ -9,7 +9,7 @@ import { hashedId } from "./utils";
 
 export const parseMachinesFromFile = (fileContents: string): ParseResult => {
   if (
-    ALLOWED_CALL_EXPRESSION_NAMES.some((name) => fileContents.includes(name))
+    !ALLOWED_CALL_EXPRESSION_NAMES.some((name) => fileContents.includes(name))
   ) {
     return {
       machines: [],
