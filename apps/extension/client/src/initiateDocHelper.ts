@@ -60,7 +60,7 @@ const getDocsLink = (word: string): vscode.MarkdownString[] => {
   if (link) {
     markdownStrings.push(
       new vscode.MarkdownString(
-        `You can read about ${link.description} in XState here: ${link.link}`
+        `[Read about ${link.description}](${link.link}) in the XState beta docs`
       )
     );
   }

@@ -1,4 +1,4 @@
-const baseUrl = "https://xstate.js.org/docs/guides";
+const baseUrl = "https://graph-docs.vercel.app";
 
 interface DocumentationLink {
   keyWords: string[];
@@ -6,41 +6,67 @@ interface DocumentationLink {
   link: string;
 }
 
+// TODO: Can we create these links using the frontmatter from our docs in a build step?
 const documentationLinks: DocumentationLink[] = [
   {
     keyWords: ["actions"],
     description: "Actions",
-    link: `${baseUrl}/actions.html`,
+    link: `${baseUrl}/actions/actions`,
   },
   {
-    keyWords: ["context"],
+    keyWords: ["context", "initial"],
     description: "Context",
-    link: `${baseUrl}/context.html`,
+    link: `${baseUrl}/actions/context`,
   },
   {
-    keyWords: ["initial"],
-    description: "Initial Context",
-    link: `${baseUrl}/context.html#initial-context`,
+    keyWords: ["invoke", "services"],
+    description: "Services",
+    link: `${baseUrl}/services/intro`,
   },
   {
-    keyWords: ["events"],
+    keyWords: ["event", "events"],
     description: "Events",
-    link: `${baseUrl}/events.html`,
+    link: `${baseUrl}/basics/what-is-a-statechart#events`,
   },
   {
     keyWords: ["states"],
     description: "States",
-    link: `${baseUrl}/states.html`,
+    link: `${baseUrl}/basics/what-is-a-statechart#states`,
+  },
+  {
+    keyWords: ["on"],
+    description: "Transitions and events",
+    link: `${baseUrl}/what-is-a-statechart#transitions-and-events`,
+  },
+  {
+    keyWords: ["assign"],
+    description: "Updating context",
+    link: `${baseUrl}/actions/context#updating-context`,
   },
   {
     keyWords: ["tsTypes", "typegen"],
     description: "Typegen",
-    link: `${baseUrl}/typescript.html#typegen`,
+    link: `${baseUrl}/typescript/typegen`,
   },
   {
     keyWords: ["schema"],
-    description: "Using TypeScript",
-    link: `${baseUrl}/typescript.html#using-typescript`,
+    description: "TypeScript",
+    link: `${baseUrl}/actions/context#type-script`,
+  },
+  {
+    keyWords: ["guards"],
+    description: "Guards",
+    link: `${baseUrl}/transitions-and-choices/guards`,
+  },
+  {
+    keyWords: ["createMachine"],
+    description: "Running machines",
+    link: `${baseUrl}/running-machines/intro`,
+  },
+  {
+    keyWords: ["createTestMachine"],
+    description: "Model-based testing",
+    link: `${baseUrl}/model-based-testing/intro`,
   },
 ];
 
