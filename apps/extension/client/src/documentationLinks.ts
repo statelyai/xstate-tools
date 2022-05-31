@@ -7,14 +7,14 @@ interface DocumentationLink {
 }
 
 // TODO: Can we create these links using the frontmatter from our docs in a build step?
-const documentationLinks: DocumentationLink[] = [
+export const documentationLinks: DocumentationLink[] = [
   {
     keyWords: ["actions"],
     description: "Actions",
     link: `${baseUrl}/actions/actions`,
   },
   {
-    keyWords: ["context", "initial"],
+    keyWords: ["context"],
     description: "Context",
     link: `${baseUrl}/actions/context`,
   },
@@ -29,7 +29,7 @@ const documentationLinks: DocumentationLink[] = [
     link: `${baseUrl}/basics/what-is-a-statechart#events`,
   },
   {
-    keyWords: ["states"],
+    keyWords: ["states", "initial"],
     description: "States",
     link: `${baseUrl}/basics/what-is-a-statechart#states`,
   },
@@ -49,8 +49,18 @@ const documentationLinks: DocumentationLink[] = [
     link: `${baseUrl}/typescript/typegen`,
   },
   {
-    keyWords: ["schema"],
-    description: "TypeScript",
+    keyWords: ["schema.context"],
+    description: "Schema Context",
+    link: `${baseUrl}/actions/context#type-script`,
+  },
+  {
+    keyWords: ["schema.events"],
+    description: "Schema Events",
+    link: `${baseUrl}/actions/context#type-script`,
+  },
+  {
+    keyWords: ["schema.services"],
+    description: "Schema Services",
     link: `${baseUrl}/actions/context#type-script`,
   },
   {
@@ -64,7 +74,7 @@ const documentationLinks: DocumentationLink[] = [
     link: `${baseUrl}/running-machines/intro`,
   },
   {
-    keyWords: ["createTestMachine"],
+    keyWords: ["createTestMachine", "createTestModel"],
     description: "Model-based testing",
     link: `${baseUrl}/model-based-testing/intro`,
   },
