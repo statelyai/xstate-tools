@@ -1,5 +1,11 @@
 # @xstate/machine-extractor
 
+## 0.7.0
+
+### Minor Changes
+
+- [#151](https://github.com/statelyai/xstate-tools/pull/151) [`795a057`](https://github.com/statelyai/xstate-tools/commit/795a057f73f0a38784548a1fcf055757f44d0647) Thanks [@mattpocock](https://github.com/mattpocock)! - Added parsing for the `@xstate/test` `createTestMachine` function
+
 ## 0.6.4
 
 ### Patch Changes
