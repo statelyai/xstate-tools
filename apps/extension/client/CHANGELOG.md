@@ -1,5 +1,11 @@
 # stately-vscode
 
+## 1.8.1
+
+### Patch Changes
+
+- [`2241137`](https://github.com/statelyai/xstate-tools/commit/22411372fd36490c21ff1ab63cbcc779448074f4) Thanks [@mattpocock](https://github.com/mattpocock)! - Fixed a failed deploy
+
 ## 1.8.0
 
 ### Minor Changes
