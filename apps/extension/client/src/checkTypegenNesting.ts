@@ -16,7 +16,7 @@ const hasTypegenPattern = (fileNestingPatterns: object) =>
       .some((part) => part === typegenPattern)
   );
 
-const createTypeGenPatterns = (transformer: (patternKey: string) => string) => {
+const createTypegenPatterns = (transformer: (patternKey: string) => string) => {
   const transformedArray = typegenPatternKeys.map((patternKey) => ({
     [patternKey]: transformer(patternKey),
   }));
