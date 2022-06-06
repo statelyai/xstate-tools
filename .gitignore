@@ -8,3 +8,4 @@ apps/extension/client/scripts
 *.zip
 .DS_Store
 .turbo
+.idea

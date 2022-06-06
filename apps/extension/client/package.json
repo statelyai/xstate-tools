@@ -76,6 +76,11 @@
           "type": "string",
           "default": "https://stately.ai",
           "description": "The base URL to open the visual editor in."
+        },
+        "xstate.nestTypegenFiles": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable nesting the generated typegen files."
         }
       }
     }

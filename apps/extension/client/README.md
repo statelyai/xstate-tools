@@ -43,6 +43,18 @@ If you'd like to ignore linting/autocomplete on a machine, add a `// xstate-igno
 createMachine({});
 ```
 
+### Nesting typegen files
+
+If you're using [typegen](https://xstate.js.org/docs/guides/typescript.html#typegen), you can nest the files in VSCode.
+
+We try to detect if you want to have your typegen files nested. This is set to `true` by default but can be disabled using the prompt we show in VSCode or by setting `xstate.nestTypegenFiles` to false.
+
+<img src="https://raw.githubusercontent.com/statelyai/xstate-tools/main/assets/typegenPrompt.png" alt="" />
+
+If you choose to enable file nesting using the prompt, we will set the file nesting feature in VSCode to `true` and add a pattern to nest the generated files.
+
+If you choose not to enable it, we will set `xstate.nestTypegenFiles` to false and won't ask again.
+
 ### Refactors
 
 Click the lightbulb when hovering an named action, guard or service in a machine to see available refactors.
