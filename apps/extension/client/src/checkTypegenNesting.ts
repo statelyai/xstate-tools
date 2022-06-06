@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 
+// More info on the patterns in this comment: https://github.com/statelyai/xstate-tools/pull/146#discussion_r889904447
 const typegenPatternKeys = ["*.ts", "*.tsx", "*.mts", "*.cts"];
 const typegenPattern = "${capture}.typegen.ts";
 
@@ -47,7 +48,7 @@ const enableTypegenNesting = () => {
       : typegenPattern;
   };
 
-  const updatedPatterns = createTypeGenPatterns(getUpdatedPattern);
+  const updatedPatterns = createTypegenPatterns(getUpdatedPattern);
 
   // Update file nesting patterns with all existing patterns and our updated pattern
   fileNestingConfig.update(
@@ -88,7 +89,7 @@ const disableTypegenNesting = () => {
     }
   };
 
-  const updatedPatterns = createTypeGenPatterns(getUpdatedPattern);
+  const updatedPatterns = createTypegenPatterns(getUpdatedPattern);
 
   // Update file nesting patterns with all existing patterns and our updated pattern
   fileNestingConfig.update(
