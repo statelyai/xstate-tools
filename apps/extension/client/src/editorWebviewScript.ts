@@ -152,6 +152,7 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
 
             if (!iframe || iframe.src) return;
 
+            // Here we add the receiver for messages posted by the editor web app
             window.addEventListener(
               "message",
               (e) => {
