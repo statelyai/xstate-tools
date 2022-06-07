@@ -1,7 +1,3 @@
-import * as path from "path";
-import * as vscode from "vscode";
-import type { LanguageClient } from "vscode-languageclient/node";
-import { MachineConfig } from "xstate";
 import { parseMachinesFromFile } from "@xstate/machine-extractor";
 import {
   filterOutIgnoredMachines,
@@ -10,16 +6,20 @@ import {
   isCursorInPosition,
   resolveUriToFilePrefix,
 } from "@xstate/tools-shared";
+import * as path from "path";
+import * as vscode from "vscode";
+import type { LanguageClient } from "vscode-languageclient/node";
+import { MachineConfig } from "xstate";
 import { getAuth, SignInResult } from "./auth";
+import { getBaseUrl } from "./constants";
 import { EditorWebviewScriptEvent } from "./editorWebviewScript";
 import { getWebviewContent } from "./getWebviewContent";
 import { handleDefinitionUpdate } from "./handleDefinitionUpdate";
 import { handleNodeSelected } from "./handleNodeSelected";
-import { getBaseUrl } from "./constants";
 
 export const initiateEditor = (
   context: vscode.ExtensionContext,
-  client: LanguageClient,
+  client: LanguageClient
 ) => {
   const baseUrl = getBaseUrl();
 
@@ -34,7 +34,7 @@ export const initiateEditor = (
     machineIndex: number,
     uri: string,
     layoutString: string | undefined,
-    implementations: ImplementationsMetadata,
+    implementations: ImplementationsMetadata
   ) => {
     const result = await vscode.window.withProgress<SignInResult>(
       {
@@ -44,7 +44,7 @@ export const initiateEditor = (
       },
       (_, token) => {
         return getAuth(context).signIn(token.onCancellationRequested);
-      },
+      }
     );
 
     if (result === "could-not-open-external-url") {
@@ -52,12 +52,12 @@ export const initiateEditor = (
       return;
     } else if (result === "timed-out") {
       vscode.window.showErrorMessage(
-        "The authentication request timed out. Please try again.",
+        "The authentication request timed out. Please try again."
       );
       return;
     } else if (result === "unknown-error") {
       vscode.window.showErrorMessage(
-        "An unknown error occurred. Please try again.",
+        "An unknown error occurred. Please try again."
       );
       return;
     } else if (result === "cancelled") {
@@ -82,11 +82,11 @@ export const initiateEditor = (
         "editor",
         "XState Editor",
         vscode.ViewColumn.Beside,
-        { enableScripts: true, retainContextWhenHidden: true },
+        { enableScripts: true, retainContextWhenHidden: true }
       );
 
       const onDiskPath = vscode.Uri.file(
-        path.join(context.extensionPath, "scripts", "editorWebview.js"),
+        path.join(context.extensionPath, "scripts", "editorWebview.js")
       );
 
       const src = currentPanel.webview.asWebviewUri(onDiskPath);
@@ -110,11 +110,27 @@ export const initiateEditor = (
             await handleDefinitionUpdate(event);
           } else if (event.type === "vscode.selectNode") {
             await handleNodeSelected(event);
+          } else if (event.type === "open.link") {
+            vscode.env.openExternal(vscode.Uri.parse(event.url));
           }
         },
         undefined,
-        context.subscriptions,
+        context.subscriptions
       );
+
+      // Handle messages from our editor web app
+      // currentPanel.webview.onDidReceiveMessage(
+      //   async (message) => {
+      //     console.log(message);
+      //     switch (message.command) {
+      //       case "open-link":
+      //         vscode.env.openExternal(vscode.Uri.parse(message.text));
+      //         return;
+      //     }
+      //   },
+      //   undefined,
+      //   context.subscriptions
+      // );
 
       // Handle disposing the current XState Editor
       currentPanel.onDidDispose(
@@ -122,7 +138,7 @@ export const initiateEditor = (
           currentPanel = undefined;
         },
         undefined,
-        context.subscriptions,
+        context.subscriptions
       );
     }
   };
@@ -144,7 +160,7 @@ export const initiateEditor = (
           });
         });
       }
-    }),
+    })
   );
 
   context.subscriptions.push(
@@ -154,12 +170,12 @@ export const initiateEditor = (
         config: MachineConfig<any, any, any>,
         machineIndex: number,
         uri: string,
-        layoutString?: string,
+        layoutString?: string
       ) => {
         const currentText = vscode.window.activeTextEditor.document.getText();
 
         const result = filterOutIgnoredMachines(
-          parseMachinesFromFile(currentText),
+          parseMachinesFromFile(currentText)
         );
 
         const machine = result.machines[machineIndex];
@@ -170,13 +186,13 @@ export const initiateEditor = (
           config,
           machineIndex,
           resolveUriToFilePrefix(
-            vscode.window.activeTextEditor.document.uri.path,
+            vscode.window.activeTextEditor.document.uri.path
           ),
           layoutString,
-          implementations,
+          implementations
         );
-      },
-    ),
+      }
+    )
   );
 
   context.subscriptions.push(
@@ -187,7 +203,7 @@ export const initiateEditor = (
         const currentText = vscode.window.activeTextEditor.document.getText();
 
         const result = filterOutIgnoredMachines(
-          parseMachinesFromFile(currentText),
+          parseMachinesFromFile(currentText)
         );
 
         let foundIndex: number | null = null;
@@ -200,11 +216,11 @@ export const initiateEditor = (
             const isInPosition =
               isCursorInPosition(
                 machine?.ast?.definition?.node?.loc,
-                currentSelection.start,
+                currentSelection.start
               ) ||
               isCursorInPosition(
                 machine?.ast?.options?.node?.loc,
-                currentSelection.start,
+                currentSelection.start
               );
 
             if (isInPosition) {
@@ -216,7 +232,7 @@ export const initiateEditor = (
         });
         if (!machine) {
           vscode.window.showErrorMessage(
-            "Could not find a machine at the current cursor.",
+            "Could not find a machine at the current cursor."
           );
           return;
         }
@@ -227,16 +243,16 @@ export const initiateEditor = (
           machine.toConfig({ hashInlineImplementations: true }),
           foundIndex!,
           resolveUriToFilePrefix(
-            vscode.window.activeTextEditor.document.uri.path,
+            vscode.window.activeTextEditor.document.uri.path
           ),
           machine.getLayoutComment()?.value,
-          implementations,
+          implementations
         );
       } catch (e) {
         vscode.window.showErrorMessage(
-          "Could not find a machine at the current cursor.",
+          "Could not find a machine at the current cursor."
         );
       }
-    }),
+    })
   );
 };
