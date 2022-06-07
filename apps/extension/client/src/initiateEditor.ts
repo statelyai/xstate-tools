@@ -118,20 +118,6 @@ export const initiateEditor = (
         context.subscriptions
       );
 
-      // Handle messages from our editor web app
-      // currentPanel.webview.onDidReceiveMessage(
-      //   async (message) => {
-      //     console.log(message);
-      //     switch (message.command) {
-      //       case "open-link":
-      //         vscode.env.openExternal(vscode.Uri.parse(message.text));
-      //         return;
-      //     }
-      //   },
-      //   undefined,
-      //   context.subscriptions
-      // );
-
       // Handle disposing the current XState Editor
       currentPanel.onDidDispose(
         () => {
