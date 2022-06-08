@@ -1,8 +1,7 @@
 import { createMachine } from "xstate";
-import { introspectMachine } from "./introspectMachine";
 import { getStateMatchesObjectSyntax } from "./getStateMatchesObjectSyntax";
+import { introspectMachine } from "./introspectMachine";
 import { XStateUpdateMachine } from "./types";
-import { choose } from "xstate/lib/actions";
 
 export const getTypegenOutput = (event: {
   machines: Pick<
@@ -124,9 +123,6 @@ export const getTypegenOutput = (event: {
 
         return `export interface Typegen${index} {
           '@@xstate/typegen': true;
-          eventsCausingActions: {
-            ${displayEventsCausing(actions)}
-          };
           internalEvents: {
             ${Object.values(internalEvents).join("\n")}
           };
@@ -145,13 +141,16 @@ export const getTypegenOutput = (event: {
                   .join(" | ")};`;
               })
               .join("\n")}
-          }
+          };
           missingImplementations: {
             ${`actions: ${requiredActions || "never"};`}
             ${`services: ${requiredServices || "never"};`}
             ${`guards: ${requiredGuards || "never"};`}
             ${`delays: ${requiredDelays || "never"};`}
-          }
+          };
+          eventsCausingActions: {
+            ${displayEventsCausing(actions)}
+          };
           eventsCausingServices: {
             ${displayEventsCausing(services)}
           };

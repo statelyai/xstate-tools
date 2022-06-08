@@ -1,7 +1,6 @@
 import { INLINE_IMPLEMENTATION_TYPE } from "@xstate/machine-extractor";
 import * as XState from "xstate";
 import { InvokeDefinition } from "xstate";
-import { pathToStateValue } from "xstate/lib/utils";
 import {
   getMatchesStates,
   getTransitionsFromNode,
@@ -47,7 +46,7 @@ class ItemMap {
    * of all of the items
    */
   private map: {
-    [name: string]: { events: Set<string>; states: Set<XState.StateValue> };
+    [name: string]: { events: Set<string> };
   };
 
   /**
@@ -65,22 +64,20 @@ class ItemMap {
    * Add an item to the cache, along with the path of the node
    * it occurs on
    */
-  addItem(itemName: string, nodePath: string[]) {
+  addItem(itemName: string) {
     if (!this.map[itemName]) {
       this.map[itemName] = {
         events: new Set(),
-        states: new Set(),
       };
     }
-    this.map[itemName].states.add(pathToStateValue(nodePath));
   }
 
   /**
    * Add a triggering event to an item in the cache, for
    * instance the event type which triggers a guard/action/service
    */
-  addEventToItem(itemName: string, eventType: string, nodePath: string[]) {
-    this.addItem(itemName, nodePath);
+  addEventToItem(itemName: string, eventType: string) {
+    this.addItem(itemName);
     this.map[itemName].events.add(eventType);
   }
 
@@ -102,9 +99,6 @@ class ItemMap {
           name,
           required: !optional,
           events: Array.from(data.events),
-          states: Array.from(data.states)
-            .map((state) => JSON.stringify(state))
-            .filter(Boolean),
         };
       });
     return {
@@ -126,9 +120,6 @@ export const introspectMachine = (machine: XState.StateNode) => {
   const services = new ItemMap({
     checkIfOptional: (name) => Boolean(machine.options?.services?.[name]),
   });
-  const activities = new ItemMap({
-    checkIfOptional: (name) => Boolean(machine.options?.activities?.[name]),
-  });
   const delays = new ItemMap({
     checkIfOptional: (name) => Boolean(machine.options?.delays?.[name]),
   });
@@ -144,26 +135,25 @@ export const introspectMachine = (machine: XState.StateNode) => {
 
   const addActionAndHandleChoose = (
     action: XState.ActionObject<any, any>,
-    eventType: string,
-    path: string[]
+    eventType: string
   ) => {
     if (action.type === "xstate.choose" && Array.isArray(action.conds)) {
       action.conds.forEach(({ cond, actions: condActions }) => {
         if (typeof cond === "string") {
-          guards.addEventToItem(cond, eventType, path);
+          guards.addEventToItem(cond, eventType);
         }
         if (Array.isArray(condActions)) {
           condActions.forEach((condAction) => {
             if (typeof condAction === "string") {
-              actions.addEventToItem(condAction, eventType, path);
+              actions.addEventToItem(condAction, eventType);
             }
           });
         } else if (typeof condActions === "string") {
-          actions.addEventToItem(condActions, eventType, path);
+          actions.addEventToItem(condActions, eventType);
         }
       });
     } else {
-      actions.addEventToItem(action.type, eventType, path);
+      actions.addEventToItem(action.type, eventType);
     }
   };
 
@@ -171,40 +161,27 @@ export const introspectMachine = (machine: XState.StateNode) => {
     machine.getStateNodeById(id)
   );
 
-  allStateNodes?.forEach((node) => {
+  allStateNodes.forEach((node) => {
     nodeMaps[node.id] = {
       sources: new Set(),
       children: new Set(),
     };
   });
 
-  allStateNodes?.forEach((node) => {
-    Object.values(node.states)?.forEach((childNode) => {
+  allStateNodes.forEach((node) => {
+    Object.values(node.states).forEach((childNode) => {
       nodeMaps[node.id].children.add(childNode.id);
     });
 
-    // TODO - make activities pick up the events
-    // that led to them
-    node.activities?.forEach((activity) => {
-      if (activity.type && activity.type !== "xstate.invoke") {
-        activities.addItem(activity.type, node.path);
-      }
-    });
-
-    node.after?.forEach(({ delay }) => {
-      if (typeof delay === "string") {
-        delays.addItem(delay, node.path);
-      }
-    });
-
-    node.invoke?.forEach((service) => {
+    node.invoke.forEach((service) => {
       const serviceSrc = getServiceSrc(service);
       if (
         typeof serviceSrc !== "string" ||
         serviceSrc === INLINE_IMPLEMENTATION_TYPE
-      )
+      ) {
         return;
-      services.addItem(serviceSrc, node.path);
+      }
+      services.addItem(serviceSrc);
 
       if (!serviceSrcToIdMap[serviceSrc]) {
         serviceSrcToIdMap[serviceSrc] = new Set();
@@ -212,23 +189,19 @@ export const introspectMachine = (machine: XState.StateNode) => {
       serviceSrcToIdMap[serviceSrc].add(service.id);
     });
 
-    node.transitions?.forEach((transition) => {
-      (transition.target as unknown as XState.StateNode[])?.forEach(
+    node.transitions.forEach((transition) => {
+      (transition.target as unknown as XState.StateNode[] | undefined)?.forEach(
         (targetNode) => {
           nodeMaps[targetNode.id].sources.add(transition.eventType);
         }
       );
       if (transition.cond && transition.cond.name) {
         if (transition.cond.name !== "cond") {
-          guards.addEventToItem(
-            transition.cond.name,
-            transition.eventType,
-            node.path
-          );
+          guards.addEventToItem(transition.cond.name, transition.eventType);
         }
       }
 
-      (transition.target as unknown as XState.StateNode[])?.forEach(
+      (transition.target as unknown as XState.StateNode[] | undefined)?.forEach(
         (targetNode) => {
           /**
            * We gather info on all the invocations that begin on
@@ -240,46 +213,28 @@ export const introspectMachine = (machine: XState.StateNode) => {
 
           nodesToGather.forEach((node) => {
             /** Pick up invokes */
-            node.invoke?.forEach((service) => {
+            node.invoke.forEach((service) => {
               const serviceSrc = getServiceSrc(service);
               if (typeof serviceSrc !== "string") return;
-              services.addEventToItem(
-                serviceSrc,
-                transition.eventType,
-                node.path
-              );
+              services.addEventToItem(serviceSrc, transition.eventType);
             });
           });
         }
       );
 
       if (transition.actions) {
-        transition.actions?.forEach((action) => {
-          addActionAndHandleChoose(action, transition.eventType, node.path);
+        transition.actions.forEach((action) => {
+          addActionAndHandleChoose(action, transition.eventType);
           const actionInOptions = machine.options.actions?.[action.type];
           if (actionInOptions && typeof actionInOptions === "object") {
-            addActionAndHandleChoose(
-              actionInOptions,
-              transition.eventType,
-              node.path
-            );
+            addActionAndHandleChoose(actionInOptions, transition.eventType);
           }
         });
       }
     });
   });
 
-  allStateNodes?.forEach((node) => {
-    const allActions: XState.ActionObject<any, any>[] = [];
-    allActions.push(...node.onExit);
-    allActions.push(...node.onEntry);
-
-    allActions?.forEach((action) => {
-      if (!action.type.startsWith("xstate.")) {
-        actions.addItem(action.type, node.path);
-      }
-    });
-
+  allStateNodes.forEach((node) => {
     const sources = nodeMaps[node.id].sources;
 
     /**
@@ -290,19 +245,23 @@ export const introspectMachine = (machine: XState.StateNode) => {
     const nodesToGatherEntry = [node, ...node.initialStateNodes];
 
     nodesToGatherEntry.forEach((nodeOrInitialNode) => {
-      nodeOrInitialNode.onEntry?.forEach((action) => {
-        sources?.forEach((source) => {
-          addActionAndHandleChoose(action, source, nodeOrInitialNode.path);
+      nodeOrInitialNode.onEntry.forEach((action) => {
+        sources.forEach((source) => {
+          addActionAndHandleChoose(action, source);
           const actionInOptions = machine.options.actions?.[action.type];
 
           if (actionInOptions && typeof actionInOptions === "object") {
-            addActionAndHandleChoose(
-              actionInOptions,
-              source,
-              nodeOrInitialNode.path
-            );
+            addActionAndHandleChoose(actionInOptions, source);
           }
         });
+      });
+
+      nodeOrInitialNode.after.forEach(({ delay }) => {
+        if (typeof delay === "string") {
+          sources.forEach((source) => {
+            delays.addEventToItem(delay, source);
+          });
+        }
       });
     });
   });
@@ -321,7 +280,6 @@ export const introspectMachine = (machine: XState.StateNode) => {
     guards: guards.toDataShape(),
     actions: actions.toDataShape(),
     services: services.toDataShape(),
-    activities: activities.toDataShape(),
     delays: delays.toDataShape(),
     serviceSrcToIdMap,
   };
