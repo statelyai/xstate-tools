@@ -1,7 +1,7 @@
-import * as XState from "xstate";
-import { Action, InvokeDefinition } from "xstate";
-import { pathToStateValue } from "xstate/lib/utils";
 import { INLINE_IMPLEMENTATION_TYPE } from "@xstate/machine-extractor";
+import * as XState from "xstate";
+import { InvokeDefinition } from "xstate";
+import { pathToStateValue } from "xstate/lib/utils";
 import {
   getMatchesStates,
   getTransitionsFromNode,
@@ -230,15 +230,25 @@ export const introspectMachine = (machine: XState.StateNode) => {
 
       (transition.target as unknown as XState.StateNode[])?.forEach(
         (targetNode) => {
-          /** Pick up invokes */
-          targetNode.invoke?.forEach((service) => {
-            const serviceSrc = getServiceSrc(service);
-            if (typeof serviceSrc !== "string") return;
-            services.addEventToItem(
-              serviceSrc,
-              transition.eventType,
-              node.path
-            );
+          /**
+           * We gather info on all the invocations that begin on
+           * all the nodes that are initial state nodes of the children
+           * of this node (see recursive-invoke)
+           */
+
+          const nodesToGather = [targetNode, ...targetNode.initialStateNodes];
+
+          nodesToGather.forEach((node) => {
+            /** Pick up invokes */
+            node.invoke?.forEach((service) => {
+              const serviceSrc = getServiceSrc(service);
+              if (typeof serviceSrc !== "string") return;
+              services.addEventToItem(
+                serviceSrc,
+                transition.eventType,
+                node.path
+              );
+            });
           });
         }
       );
@@ -270,16 +280,29 @@ export const introspectMachine = (machine: XState.StateNode) => {
       }
     });
 
-    node.onEntry?.forEach((action) => {
-      const sources = nodeMaps[node.id].sources;
+    const sources = nodeMaps[node.id].sources;
 
-      sources?.forEach((source) => {
-        addActionAndHandleChoose(action, source, node.path);
-        const actionInOptions = machine.options.actions?.[action.type];
+    /**
+     * We gather info on all the entry actions that fire on
+     * all the nodes that are initial state nodes of the children
+     * of this node (see recursive-entry)
+     */
+    const nodesToGatherEntry = [node, ...node.initialStateNodes];
 
-        if (actionInOptions && typeof actionInOptions === "object") {
-          addActionAndHandleChoose(actionInOptions, source, node.path);
-        }
+    nodesToGatherEntry.forEach((nodeOrInitialNode) => {
+      nodeOrInitialNode.onEntry?.forEach((action) => {
+        sources?.forEach((source) => {
+          addActionAndHandleChoose(action, source, nodeOrInitialNode.path);
+          const actionInOptions = machine.options.actions?.[action.type];
+
+          if (actionInOptions && typeof actionInOptions === "object") {
+            addActionAndHandleChoose(
+              actionInOptions,
+              source,
+              nodeOrInitialNode.path
+            );
+          }
+        });
       });
     });
   });
