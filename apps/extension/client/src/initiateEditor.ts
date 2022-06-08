@@ -106,7 +106,6 @@ export const initiateEditor = (
 
       currentPanel.webview.onDidReceiveMessage(
         async (event: EditorWebviewScriptEvent) => {
-          console.log(event);
 
           if (event.type === "vscode.updateDefinition") {
             await handleDefinitionUpdate(event);
