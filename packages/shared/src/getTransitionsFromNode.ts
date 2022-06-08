@@ -1,5 +1,5 @@
 import { StateNode } from 'xstate';
-import { toStatePaths, pathToStateValue } from 'xstate/lib/utils';
+import { toStatePaths, pathToStateValue } from "xstate/lib/utils";
 
 export const getTransitionsFromNode = (node: StateNode): string[] => {
 	const transitions = new Set<string>();
@@ -8,15 +8,15 @@ export const getTransitionsFromNode = (node: StateNode): string[] => {
 		Object.keys(node.parent.states).forEach((key) => transitions.add(key));
 		Object.values(node.parent.states).forEach((siblingNode) => {
 			getMatchesStates(siblingNode).forEach((key) => {
-				if (key === siblingNode.path.join('.')) {
+        if (key === siblingNode.path.join(".")) {
 					return;
 				}
 				let relativeKey = key;
 
 				if ((node.parent?.path.length || 0) > 0) {
 					relativeKey = relativeKey.replace(
-						new RegExp(`^${(node.parent as StateNode).path.join('.')}\.`),
-						''
+            new RegExp(`^${(node.parent as StateNode).path.join(".")}\.`),
+            ""
 					);
 				}
 
@@ -30,8 +30,8 @@ export const getTransitionsFromNode = (node: StateNode): string[] => {
 
 			if ((childNode.parent?.path.length || 0) > 0) {
 				relativeKey = relativeKey.replace(
-					new RegExp(`^${(childNode.parent as StateNode).path.join('.')}\.`),
-					''
+          new RegExp(`^${(childNode.parent as StateNode).path.join(".")}\.`),
+          ""
 				);
 			}
 
@@ -54,14 +54,14 @@ export const getTransitionsFromNode = (node: StateNode): string[] => {
 			}
 
 			transitions.add(
-				match.replace(new RegExp(`^${idNode.path.join('.')}`), `#${idNode.id}`)
+        match.replace(new RegExp(`^${idNode.path.join(".")}`), `#${idNode.id}`)
 			);
 		});
 	});
 
 	toStatePaths(pathToStateValue(node.path)).forEach((path) => {
 		if (path.length > 1) {
-			transitions.delete(path.join('.'));
+      transitions.delete(path.join("."));
 		}
 	});
 
@@ -69,12 +69,16 @@ export const getTransitionsFromNode = (node: StateNode): string[] => {
 };
 
 export const getMatchesStates = (machine: StateNode) => {
-	const allStateNodes = machine.stateIds.map((id) => machine.getStateNodeById(id));
+  const allStateNodes = machine.stateIds.map((id) =>
+    machine.getStateNodeById(id)
+  );
 
 	const states = allStateNodes.reduce((arr: string[], node) => {
 		return [
 			...arr,
-			...toStatePaths(pathToStateValue(node.path)).map((path) => path.join('.')),
+      ...toStatePaths(pathToStateValue(node.path)).map((path) =>
+        path.join(".")
+      ),
 		];
 	}, [] as string[]);
 
