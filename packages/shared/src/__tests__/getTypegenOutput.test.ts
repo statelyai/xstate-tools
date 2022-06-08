@@ -21,22 +21,22 @@ describe("getTypegenOutput", () => {
   tsExtensionFiles.forEach((file) => {
     const fileText = fs.readFileSync(
       path.resolve(__dirname, "__examples__", file),
-      "utf8",
+      "utf8"
     );
 
     const event = makeXStateUpdateEvent(
       // URI doesn't matter here
       "",
-      getDocumentValidationsResults(fileText),
+      getDocumentValidationsResults(fileText)
     );
 
     fs.writeFileSync(
       path.resolve(
         __dirname,
         "__examples__",
-        file.slice(0, -3) + ".typegen.ts",
+        file.slice(0, -3) + ".typegen.ts"
       ),
-      getTypegenOutput(event),
+      getTypegenOutput(event)
     );
   });
 
