@@ -106,11 +106,13 @@ export const initiateEditor = (
 
       currentPanel.webview.onDidReceiveMessage(
         async (event: EditorWebviewScriptEvent) => {
+          console.log(event);
+
           if (event.type === "vscode.updateDefinition") {
             await handleDefinitionUpdate(event);
           } else if (event.type === "vscode.selectNode") {
             await handleNodeSelected(event);
-          } else if (event.type === "open.link") {
+          } else if (event.type === "vscode.openLink") {
             vscode.env.openExternal(vscode.Uri.parse(event.url));
           }
         },
