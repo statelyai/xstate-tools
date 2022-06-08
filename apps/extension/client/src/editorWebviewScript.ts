@@ -34,6 +34,10 @@ export type EditorWebviewScriptEvent =
       type: "NODE_SELECTED";
       path: string[];
     }
+  | {
+      type: "OPEN_LINK";
+      url: string;
+    }
   | VSCodeNodeSelectedEvent
   | {
       type: "RECEIVE_CONFIG_UPDATE_FROM_VSCODE";
@@ -50,13 +54,18 @@ export type EditorWebviewScriptEvent =
       implementations: ImplementationsMetadata;
     }
   | UpdateDefinitionEvent
-  | { type: "open.link"; url: string };
+  | VSCodeOpenLinkEvent;
 
 export type VSCodeNodeSelectedEvent = {
   type: "vscode.selectNode";
   path: string[];
   uri: string;
   index: number;
+};
+
+export type VSCodeOpenLinkEvent = {
+  type: "vscode.openLink";
+  url: string;
 };
 
 export type UpdateDefinitionEvent = {
@@ -121,6 +130,15 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
           });
         },
       },
+
+      OPEN_LINK: {
+        actions: (_, event) => {
+          getVsCodeApi().postMessage({
+            type: "vscode.openLink",
+            url: event.url,
+          });
+        },
+      },
     },
 
     states: {
@@ -151,25 +169,6 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
             ) as HTMLIFrameElement;
 
             if (!iframe || iframe.src) return;
-
-            /**
-             * Listener for messages posted by the editor web app.
-             * The messages are sent using `useVsCode` in the editor.
-             */
-            window.addEventListener(
-              "message",
-              (e) => {
-                switch (e.data.type) {
-                  case "vscode-open-link":
-                    getVsCodeApi().postMessage({
-                      type: "open.link",
-                      url: e.data.url,
-                    });
-                    break;
-                }
-              },
-              false
-            );
 
             /**
              * We add runningInStatelyExtension to the iframe's src.
