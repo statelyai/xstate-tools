@@ -1,9 +1,28 @@
 {
-	// See https://go.microsoft.com/fwlink/?LinkId=827846 to learn about workspace recommendations.
-	// Extension identifier format: ${publisher}.${name}. Example: vscode.csharp
+  // See https://go.microsoft.com/fwlink/?LinkId=827846 to learn about workspace recommendations.
+  // Extension identifier format: ${publisher}.${name}. Example: vscode.csharp
 
-	// List of extensions which should be recommended for users of this workspace.
-	"recommendations": [
-		"dbaeumer.vscode-eslint"
-	]
+  // List of extensions which should be recommended for users of this workspace.
+  "recommendations": [
+    // The ESLint extension will help highlight errors in your code
+    "dbaeumer.vscode-eslint",
+
+    // We all love prettier for code formatting
+    "esbenp.prettier-vscode",
+
+    // This extension highlights TODO's
+    "wayou.vscode-todo-highlight",
+
+    // This extension highlights colors in your code
+    "naumovs.color-highlight",
+
+    // This makes it very easy to find updates to package.json
+    "pflannery.vscode-versionlens",
+
+    // Handy inline git details and much more
+    "eamodio.gitlens",
+
+    // Get some better TypeScript errors by Matt 👏
+    "mattpocock.ts-error-translator"
+  ]
 }
