@@ -6,17 +6,19 @@ import {
   getTypegenOutput,
   makeXStateUpdateEvent,
 } from "..";
-import * as minimatch from "minimatch";
 
 describe("getTypegenOutput", () => {
   const examplesPath = path.resolve(__dirname, "__examples__");
-  const examplesFiles = fs.readdirSync(examplesPath);
 
-  minimatch
-    .match(examplesFiles, "*.typegen.ts")
-    .map((file) => fs.unlinkSync(path.join(examplesPath, file)));
+  fs.readdirSync(examplesPath).forEach((file) => {
+    if (file.endsWith(".typegen.ts")) {
+      fs.unlinkSync(path.resolve(__dirname, "__examples__", file));
+    }
+  });
 
-  const tsExtensionFiles = examplesFiles.filter((file) => file.endsWith(".ts"));
+  const tsExtensionFiles = fs
+    .readdirSync(examplesPath)
+    .filter((file) => file.endsWith(".ts"));
 
   tsExtensionFiles.forEach((file) => {
     const fileText = fs.readFileSync(
