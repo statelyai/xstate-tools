@@ -1,5 +1,18 @@
 # stately-vscode
 
+## 1.8.2
+
+### Patch Changes
+
+- [#156](https://github.com/statelyai/xstate-tools/pull/156) [`6a9a761`](https://github.com/statelyai/xstate-tools/commit/6a9a7610c412ff0ce420be4c08c108c95648a2cf) Thanks [@mellson](https://github.com/mellson)! - Added functionality to allow the editor to communicate with the VS Code extension.
+
+* [#146](https://github.com/statelyai/xstate-tools/pull/146) [`97df9bb`](https://github.com/statelyai/xstate-tools/commit/97df9bbd2942d7414f5a3dfdfbd5e57792d61279) Thanks [@mellson](https://github.com/mellson)! - Added a setting and a helper prompt to enable file nesting of typegen files.
+
+- [#129](https://github.com/statelyai/xstate-tools/pull/129) [`117c89a`](https://github.com/statelyai/xstate-tools/commit/117c89a340d794b5c679b41b51b13619f49c8fd6) Thanks [@mattpocock](https://github.com/mattpocock)! - Fixed a bug where children of states entered from transitions would not have their entry actions or invocations typed properly.
+
+- Updated dependencies [[`117c89a`](https://github.com/statelyai/xstate-tools/commit/117c89a340d794b5c679b41b51b13619f49c8fd6)]:
+  - @xstate/tools-shared@1.1.7
+
 ## 1.8.1
 
 ### Patch Changes
