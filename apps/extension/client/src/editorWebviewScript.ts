@@ -152,7 +152,10 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
 
             if (!iframe || iframe.src) return;
 
-            // Here we add the receiver for messages posted by the editor web app
+            /**
+             * Listener for messages posted by the editor web app.
+             * The messages are sent using `useVsCode` in the editor.
+             */
             window.addEventListener(
               "message",
               (e) => {
@@ -168,9 +171,13 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
               false
             );
 
+            /**
+             * We add runningInStatelyExtension to the iframe's src.
+             * This is used by `useVsCode` in the editor to check that the extension is running the web app.
+             * */
             iframe.src = `${
               context.baseUrl
-            }/registry/editor/from-url?config=${compressToEncodedURIComponent(
+            }/registry/editor/from-url?runningInStatelyExtension=true&config=${compressToEncodedURIComponent(
               JSON.stringify(context.config)
             )}${
               context.layoutString ? `&layout=${context.layoutString}` : ""
