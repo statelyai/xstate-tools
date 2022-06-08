@@ -1,4 +1,4 @@
-import { Action, Condition } from "xstate";
+import { Action, Condition, MachineOptions } from "xstate";
 import { types as t, NodePath } from "@babel/core";
 import { TMachineCallExpression } from "./machineCallExpression";
 import { StateNodeReturn } from "./stateNode";
@@ -11,6 +11,7 @@ import { TransitionConfigNode } from "./transitions";
 import { ActionNode, ParsedChooseCondition } from "./actions";
 import { DeclarationType } from ".";
 import { RecordOfArrays } from "./RecordOfArrays";
+import { choose } from "xstate/lib/actions";
 
 export interface MachineParseResultStateNode {
   path: string[];
@@ -55,7 +56,7 @@ export class MachineParseResult {
 
     const getSubNodes = (
       definition: StateNodeReturn | undefined,
-      path: string[],
+      path: string[]
     ) => {
       if (definition) {
         nodes.push({
@@ -83,6 +84,59 @@ export class MachineParseResult {
     });
 
     return isIgnored;
+  };
+
+  public getChooseActionsToAddToOptions = () => {
+    const actions: MachineOptions<any, any, any>["actions"] = {};
+
+    const chooseActions = this.getChooseActionsInOptions();
+
+    chooseActions.forEach((action) => {
+      if (action.node.chooseConditions) {
+        actions[action.node.name] = choose(
+          action.node.chooseConditions.map((chooseCondition) => ({
+            actions: chooseCondition.actionNodes.map((action) => action.name),
+            cond: chooseCondition.condition.cond,
+          }))
+        );
+      }
+    });
+
+    return actions;
+  };
+
+  private getChooseActionsInOptions = (): {
+    node: ActionNode;
+    statePath: string[];
+  }[] => {
+    const chooseActions: { node: ActionNode; statePath: string[] }[] = [];
+    const allActionsInConfig = this.getAllActionsInConfig();
+
+    this.ast.options?.actions?.properties.forEach((actionProperty) => {
+      if (
+        actionProperty.result &&
+        "action" in actionProperty.result &&
+        actionProperty.result.chooseConditions
+      ) {
+        const actionInConfig = allActionsInConfig.find(
+          (a) => a.node.name === actionProperty.key
+        );
+
+        if (actionInConfig) {
+          chooseActions.push({
+            node: Object.assign(actionProperty.result, {
+              /**
+               * Give it the name of the action in the config
+               */
+              name: actionInConfig.node.name,
+            }),
+            statePath: actionInConfig.statePath,
+          });
+        }
+      }
+    });
+
+    return chooseActions;
   };
 
   /**
@@ -190,7 +244,7 @@ export class MachineParseResult {
       "inline",
       "unknown",
       "named",
-    ],
+    ]
   ) => {
     const conds: {
       node: t.Node;
@@ -215,30 +269,32 @@ export class MachineParseResult {
       }
     });
 
-    this._getAllActions().forEach((action) => {
-      action.node.chooseConditions?.forEach((chooseCondition) => {
-        if (
-          chooseCondition.conditionNode?.declarationType &&
-          declarationTypes.includes(
-            chooseCondition.conditionNode?.declarationType,
-          )
-        ) {
-          conds.push({
-            name: chooseCondition.conditionNode.name,
-            node: chooseCondition.conditionNode.node,
-            cond: chooseCondition.conditionNode.cond,
-            statePath: action.statePath,
-            inlineDeclarationId:
-              chooseCondition.conditionNode.inlineDeclarationId,
-          });
-        }
+    this.getChooseActionsInOptions()
+      .concat(this.getAllActionsInConfig())
+      .forEach((action) => {
+        action.node.chooseConditions?.forEach((chooseCondition) => {
+          if (
+            chooseCondition.conditionNode?.declarationType &&
+            declarationTypes.includes(
+              chooseCondition.conditionNode?.declarationType
+            )
+          ) {
+            conds.push({
+              name: chooseCondition.conditionNode.name,
+              node: chooseCondition.conditionNode.node,
+              cond: chooseCondition.conditionNode.cond,
+              statePath: action.statePath,
+              inlineDeclarationId:
+                chooseCondition.conditionNode.inlineDeclarationId,
+            });
+          }
+        });
       });
-    });
 
     return conds;
   };
 
-  private _getAllActions = () => {
+  private getAllActionsInConfig = () => {
     const actions: {
       node: ActionNode;
       statePath: string[];
@@ -259,7 +315,7 @@ export class MachineParseResult {
 
     this.getTransitions().forEach((transition) => {
       transition.config?.actions?.forEach((action) =>
-        addAction(action, transition.fromPath),
+        addAction(action, transition.fromPath)
       );
     });
 
@@ -287,7 +343,7 @@ export class MachineParseResult {
       "inline",
       "unknown",
       "named",
-    ],
+    ]
   ) => {
     const actions: {
       node: t.Node;
@@ -311,8 +367,16 @@ export class MachineParseResult {
       }
     };
 
-    this._getAllActions().forEach((action) => {
+    this.getAllActionsInConfig().forEach((action) => {
       addActionIfHasName(action.node, action.statePath);
+    });
+
+    this.getChooseActionsInOptions().forEach((action) => {
+      action.node.chooseConditions?.forEach((chooseCondition) => {
+        chooseCondition.actionNodes.forEach((chooseAction) => {
+          addActionIfHasName(chooseAction, action.statePath);
+        });
+      });
     });
 
     return actions;
@@ -324,7 +388,7 @@ export class MachineParseResult {
       "inline",
       "unknown",
       "named",
-    ],
+    ]
   ) => {
     const services: {
       node: t.Node;

@@ -1,10 +1,7 @@
-import { assign } from "xstate";
-import { MachineConfig } from "xstate";
-import { interpret } from "xstate";
-import { createMachine } from "xstate";
-import { compressToEncodedURIComponent } from "lz-string";
-import { TokenInfo } from "./auth";
 import { ImplementationsMetadata } from "@xstate/tools-shared";
+import { compressToEncodedURIComponent } from "lz-string";
+import { assign, createMachine, interpret, MachineConfig } from "xstate";
+import { TokenInfo } from "./auth";
 
 declare global {
   function acquireVsCodeApi(): {
@@ -52,7 +49,8 @@ export type EditorWebviewScriptEvent =
       config: MachineConfig<any, any, any>;
       implementations: ImplementationsMetadata;
     }
-  | UpdateDefinitionEvent;
+  | UpdateDefinitionEvent
+  | { type: "open.link"; url: string };
 
 export type VSCodeNodeSelectedEvent = {
   type: "vscode.selectNode";
@@ -149,19 +147,42 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
         invoke: {
           src: (context) => () => {
             const iframe = document.getElementById(
-              "iframe",
+              "iframe"
             ) as HTMLIFrameElement;
 
             if (!iframe || iframe.src) return;
 
+            /**
+             * Listener for messages posted by the editor web app.
+             * The messages are sent using `useVsCode` in the editor.
+             */
+            window.addEventListener(
+              "message",
+              (e) => {
+                switch (e.data.type) {
+                  case "vscode-open-link":
+                    getVsCodeApi().postMessage({
+                      type: "open.link",
+                      url: e.data.url,
+                    });
+                    break;
+                }
+              },
+              false
+            );
+
+            /**
+             * We add runningInStatelyExtension to the iframe's src.
+             * This is used by `useVsCode` in the editor to check that the extension is running the web app.
+             * */
             iframe.src = `${
               context.baseUrl
-            }/registry/editor/from-url?config=${compressToEncodedURIComponent(
-              JSON.stringify(context.config),
+            }/registry/editor/from-url?runningInStatelyExtension=true&config=${compressToEncodedURIComponent(
+              JSON.stringify(context.config)
             )}${
               context.layoutString ? `&layout=${context.layoutString}` : ""
             }&implementations=${compressToEncodedURIComponent(
-              JSON.stringify(context.implementations),
+              JSON.stringify(context.implementations)
             )}${getTokenHash(context.token)}`;
           },
         },
@@ -237,11 +258,11 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
             type: "UPDATE_CONFIG",
             implementations: context.implementations,
           },
-          "*",
+          "*"
         );
       },
     },
-  },
+  }
 );
 
 interpret(machine).start();

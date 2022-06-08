@@ -1,52 +1,43 @@
 // A launch configuration that compiles the extension and then opens it inside a new window
 {
-	"version": "0.2.0",
-	"configurations": [
-		{
-			"type": "extensionHost",
-			"request": "launch",
-			"name": "Launch Client",
-			"runtimeExecutable": "${execPath}",
-			"args": [
-				"--extensionDevelopmentPath=${workspaceRoot}/apps/extension/client"
-			],
-			"outFiles": [
-				"${workspaceRoot}/apps/extension/client/dist/**.js"
-			],
-			"preLaunchTask": "npm: extension:compile"
-		},
-		{
-			"type": "node",
-			"request": "attach",
-			"name": "Attach to Server",
-			"port": 6009,
-			"restart": true,
-			"outFiles": [
-				"${workspaceRoot}/apps/extension/server/dist/**.js"
-			]
-		},
-		{
-			"name": "Language Server E2E Test",
-			"type": "extensionHost",
-			"request": "launch",
-			"runtimeExecutable": "${execPath}",
-			"args": [
-				"--extensionDevelopmentPath=${workspaceRoot}/apps/extension/client",
-				"--extensionTestsPath=${workspaceRoot}/apps/extension/client/out/test/index",
-				"${workspaceRoot}apps/extension/client/testFixture"
-			],
-			"outFiles": [
-				"${workspaceRoot}/apps/extension/client/dist/**.js"
-			]
-		}
-	],
-	"compounds": [
-		{
-			"name": "Client + Server",
-			"configurations": [
-				"Launch Client",
-				"Attach to Server"
-			]
-		}
-	]
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "extensionHost",
+      "request": "launch",
+      "name": "Launch Client",
+      "runtimeExecutable": "${execPath}",
+      "args": [
+        "--extensionDevelopmentPath=${workspaceRoot}/apps/extension/client"
+      ],
+      "outFiles": ["${workspaceRoot}/apps/extension/client/dist/**.js"],
+      "preLaunchTask": "npm: extension:compile"
+    },
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "Attach to Server",
+      "port": 6009,
+      "restart": true,
+      "outFiles": ["${workspaceRoot}/apps/extension/server/dist/**.js"]
+    },
+    {
+      "name": "Language Server E2E Test",
+      "type": "extensionHost",
+      "request": "launch",
+      "runtimeExecutable": "${execPath}",
+      "args": [
+        "--extensionDevelopmentPath=${workspaceRoot}/apps/extension/client",
+        "--extensionTestsPath=${workspaceRoot}/apps/extension/client/out/test/index",
+        "${workspaceRoot}apps/extension/client/testFixture"
+      ],
+      "outFiles": ["${workspaceRoot}/apps/extension/client/dist/**.js"]
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Client + Server",
+      "configurations": ["Launch Client", "Attach to Server"]
+    }
+  ]
 }

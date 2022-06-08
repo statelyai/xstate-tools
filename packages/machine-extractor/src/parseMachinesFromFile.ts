@@ -1,15 +1,15 @@
-import { parse, Node, types as t, traverse } from "@babel/core";
-import { MachineConfig } from "xstate";
-import { MachineCallExpression } from "./machineCallExpression";
+import { Node, parse, traverse, types as t } from "@babel/core";
+import {
+  ALLOWED_CALL_EXPRESSION_NAMES,
+  MachineCallExpression,
+} from "./machineCallExpression";
 import { MachineParseResult } from "./MachineParseResult";
-import { toMachineConfig } from "./toMachineConfig";
 import { ParseResult } from "./types";
 import { hashedId } from "./utils";
 
 export const parseMachinesFromFile = (fileContents: string): ParseResult => {
   if (
-    !fileContents.includes("createMachine") &&
-    !fileContents.includes("Machine")
+    !ALLOWED_CALL_EXPRESSION_NAMES.some((name) => fileContents.includes(name))
   ) {
     return {
       machines: [],
@@ -28,7 +28,7 @@ export const parseMachinesFromFile = (fileContents: string): ParseResult => {
         "jsx",
         ["decorators", { decoratorsBeforeExport: false }],
       ],
-    }
+    },
   }) as t.File;
 
   let result: ParseResult = {
@@ -68,7 +68,7 @@ export const parseMachinesFromFile = (fileContents: string): ParseResult => {
             ast,
             fileComments: result.comments,
             scope: path.scope,
-          }),
+          })
         );
       }
     },

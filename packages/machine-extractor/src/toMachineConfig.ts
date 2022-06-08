@@ -225,6 +225,9 @@ export const getTransitions = (
     if (transition?.actions) {
       toPush.actions = getActionConfig(transition.actions, opts);
     }
+    if (transition?.description) {
+      toPush.description = transition?.description.value;
+    }
 
     transitions.push(toPush);
   });

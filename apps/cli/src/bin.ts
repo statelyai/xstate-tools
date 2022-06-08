@@ -14,15 +14,20 @@ import {
 } from "@xstate/tools-shared";
 import { version } from "../package.json";
 
+// TODO: just use the native one when support for node 12 gets dropped
+const allSettled: typeof Promise.allSettled = (promises: Promise<any>[]) =>
+  Promise.all(
+    promises.map((promise) =>
+      promise.then(
+        (value) => ({ status: "fulfilled" as const, value }),
+        (reason) => ({ status: "rejected" as const, reason })
+      )
+    )
+  );
+
 const program = new Command();
 
 program.version(version);
-
-const handleError = (uri: string, e: any) => {
-  if (e?.code === "BABEL_PARSER_SYNTAX_ERROR") {
-    console.log(`${uri} - syntax error, skipping`);
-  }
-};
 
 const writeToFiles = async (uriArray: string[]) => {
   /**
@@ -42,7 +47,7 @@ const writeToFiles = async (uriArray: string[]) => {
           uri,
           parseResult.machines.map((machine) => ({
             parseResult: machine,
-          })),
+          }))
         );
 
         const fileEdits: FileEdit[] = [];
@@ -80,10 +85,15 @@ const writeToFiles = async (uriArray: string[]) => {
           event,
         });
         console.log(`${uri} - success`);
-      } catch (e) {
-        handleError(uri, e);
+      } catch (e: any) {
+        if (e?.code === "BABEL_PARSER_SYNTAX_ERROR") {
+          console.error(`${uri} - syntax error, skipping`);
+        } else {
+          console.error(`${uri} - error, `, e);
+        }
+        throw e;
       }
-    }),
+    })
   );
 };
 
@@ -99,7 +109,7 @@ program
         if (path.endsWith(".typegen.ts")) {
           return;
         }
-        writeToFiles([path]);
+        writeToFiles([path]).catch(() => {});
       };
       // TODO: handle removals
       watch(filesPattern, { awaitWriteFinish: true })
@@ -116,7 +126,10 @@ program
           tasks.push(writeToFiles([path]));
         })
         .on("ready", async () => {
-          await Promise.all(tasks);
+          const settled = await allSettled(tasks);
+          if (settled.some((result) => result.status === "rejected")) {
+            process.exit(1);
+          }
           process.exit(0);
         });
     }

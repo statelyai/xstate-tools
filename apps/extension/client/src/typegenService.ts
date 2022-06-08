@@ -54,6 +54,8 @@ const throttledTypegenCreationMachine = createMachine<
             await writeToTypegenFile({
               filePath: pathFromUri,
               event,
+            }).catch(() => {
+              // TODO: implement some error logic
             });
           }),
         ]);
@@ -64,7 +66,7 @@ const throttledTypegenCreationMachine = createMachine<
         };
       }),
     },
-  },
+  }
 );
 
 export const startTypegenService = () =>

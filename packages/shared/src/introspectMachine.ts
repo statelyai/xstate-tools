@@ -1,7 +1,7 @@
+import { INLINE_IMPLEMENTATION_TYPE } from "@xstate/machine-extractor";
 import * as XState from "xstate";
 import { InvokeDefinition } from "xstate";
 import { pathToStateValue } from "xstate/lib/utils";
-import { INLINE_IMPLEMENTATION_TYPE } from "@xstate/machine-extractor";
 import {
   getMatchesStates,
   getTransitionsFromNode,
@@ -142,6 +142,31 @@ export const introspectMachine = (machine: XState.StateNode) => {
     };
   } = {};
 
+  const addActionAndHandleChoose = (
+    action: XState.ActionObject<any, any>,
+    eventType: string,
+    path: string[]
+  ) => {
+    if (action.type === "xstate.choose" && Array.isArray(action.conds)) {
+      action.conds.forEach(({ cond, actions: condActions }) => {
+        if (typeof cond === "string") {
+          guards.addEventToItem(cond, eventType, path);
+        }
+        if (Array.isArray(condActions)) {
+          condActions.forEach((condAction) => {
+            if (typeof condAction === "string") {
+              actions.addEventToItem(condAction, eventType, path);
+            }
+          });
+        } else if (typeof condActions === "string") {
+          actions.addEventToItem(condActions, eventType, path);
+        }
+      });
+    } else {
+      actions.addEventToItem(action.type, eventType, path);
+    }
+  };
+
   const allStateNodes = machine.stateIds.map((id) =>
     machine.getStateNodeById(id)
   );
@@ -212,6 +237,7 @@ export const introspectMachine = (machine: XState.StateNode) => {
            */
 
           const nodesToGather = [targetNode, ...targetNode.initialStateNodes];
+
           nodesToGather.forEach((node) => {
             /** Pick up invokes */
             node.invoke?.forEach((service) => {
@@ -229,32 +255,11 @@ export const introspectMachine = (machine: XState.StateNode) => {
 
       if (transition.actions) {
         transition.actions?.forEach((action) => {
-          if (action.type === "xstate.choose" && Array.isArray(action.conds)) {
-            action.conds.forEach(({ cond, actions: condActions }) => {
-              if (typeof cond === "string") {
-                guards.addEventToItem(cond, transition.eventType, node.path);
-              }
-              if (Array.isArray(condActions)) {
-                condActions.forEach((condAction) => {
-                  if (typeof condAction === "string") {
-                    actions.addEventToItem(
-                      condAction,
-                      transition.eventType,
-                      node.path
-                    );
-                  }
-                });
-              } else if (typeof condActions === "string") {
-                actions.addEventToItem(
-                  condActions,
-                  transition.eventType,
-                  node.path
-                );
-              }
-            });
-          } else {
-            actions.addEventToItem(
-              action.type,
+          addActionAndHandleChoose(action, transition.eventType, node.path);
+          const actionInOptions = machine.options.actions?.[action.type];
+          if (actionInOptions && typeof actionInOptions === "object") {
+            addActionAndHandleChoose(
+              actionInOptions,
               transition.eventType,
               node.path
             );
@@ -287,7 +292,16 @@ export const introspectMachine = (machine: XState.StateNode) => {
     nodesToGatherEntry.forEach((nodeOrInitialNode) => {
       nodeOrInitialNode.onEntry?.forEach((action) => {
         sources?.forEach((source) => {
-          actions.addEventToItem(action.type, source, nodeOrInitialNode.path);
+          addActionAndHandleChoose(action, source, nodeOrInitialNode.path);
+          const actionInOptions = machine.options.actions?.[action.type];
+
+          if (actionInOptions && typeof actionInOptions === "object") {
+            addActionAndHandleChoose(
+              actionInOptions,
+              source,
+              nodeOrInitialNode.path
+            );
+          }
         });
       });
     });
