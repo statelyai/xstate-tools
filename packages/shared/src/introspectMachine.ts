@@ -1,14 +1,9 @@
 import { INLINE_IMPLEMENTATION_TYPE } from "@xstate/machine-extractor";
 import * as XState from "xstate";
 import { InvokeDefinition } from "xstate";
-import {
-  getMatchesStates,
-  getTransitionsFromNode,
-} from "./getTransitionsFromNode";
+import { getMatchesStates } from "./getTransitionsFromNode";
 
 export interface SubState {
-  targets: string[];
-  sources: string[];
   states: Record<string, SubState>;
 }
 
@@ -24,12 +19,7 @@ const makeSubStateFromNode = (
 ): SubState => {
   const nodeFromMap = nodeMaps[node.id];
 
-  const stateNode = rootNode.getStateNodeById(node.id);
-
-  const targets = getTransitionsFromNode(stateNode);
   return {
-    sources: Array.from(nodeFromMap.sources).filter(Boolean),
-    targets: targets.filter(Boolean),
     states: Array.from(nodeFromMap.children).reduce((obj, child) => {
       const childNode = rootNode.getStateNodeById(child);
       return {
