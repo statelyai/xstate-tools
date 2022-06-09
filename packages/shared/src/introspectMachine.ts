@@ -180,6 +180,16 @@ export const introspectMachine = (machine: XState.StateNode) => {
     });
 
     node.transitions.forEach((transition) => {
+      if (!transition.internal) {
+        const addExitActionsFromNodeAndChildren = (node: XState.StateNode) => {
+          node.onExit.forEach((action) => {
+            actions.addEventToItem(action.type, transition.eventType);
+          });
+          Object.values(node.states).forEach(addExitActionsFromNodeAndChildren);
+        };
+
+        addExitActionsFromNodeAndChildren(node);
+      }
       (transition.target as unknown as XState.StateNode[] | undefined)?.forEach(
         (targetNode) => {
           nodeMaps[targetNode.id].sources.add(transition.eventType);
@@ -253,6 +263,10 @@ export const introspectMachine = (machine: XState.StateNode) => {
           });
         }
       });
+    });
+
+    node.onExit.forEach((action) => {
+      actions.addEventToItem(action.type, "xstate.stop");
     });
   });
 

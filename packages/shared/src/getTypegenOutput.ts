@@ -181,18 +181,18 @@ const collectInternalEvents = (lineArrays: { events: string[] }[][]) => {
   lineArrays.forEach((lines) => {
     lines.forEach((line) => {
       line.events.forEach((event) => {
+        const safelyQuoted = JSON.stringify(event);
         if (event.startsWith("done.invoke")) {
-          internalEvents[event] = `${JSON.stringify(
+          internalEvents[
             event
-          )}: { type: ${JSON.stringify(
-            event
-          )}; data: unknown; __tip: "See the XState TS docs to learn how to strongly type this."; };`;
+          ] = `${safelyQuoted}: { type: ${safelyQuoted}; data: unknown; __tip: "See the XState TS docs to learn how to strongly type this."; };`;
         } else if (event.startsWith("xstate.") || event === "") {
-          internalEvents[event] = `'${event}': { type: '${event}' };`;
+          const safelyQuoted = JSON.stringify(event);
+          internalEvents[event] = `${safelyQuoted}: { type: ${safelyQuoted} };`;
         } else if (event.startsWith("error.platform")) {
-          internalEvents[event] = `${JSON.stringify(
+          internalEvents[
             event
-          )}: { type: ${JSON.stringify(event)}; data: unknown; };`;
+          ] = `${safelyQuoted}: { type: ${safelyQuoted}; data: unknown; };`;
         }
       });
     });
