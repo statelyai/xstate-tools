@@ -1,5 +1,14 @@
 # @xstate/cli
 
+## 0.2.1
+
+### Patch Changes
+
+- [#129](https://github.com/statelyai/xstate-tools/pull/129) [`117c89a`](https://github.com/statelyai/xstate-tools/commit/117c89a340d794b5c679b41b51b13619f49c8fd6) Thanks [@mattpocock](https://github.com/mattpocock)! - Fixed a bug where children of states entered from transitions would not have their entry actions or invocations typed properly.
+
+- Updated dependencies [[`117c89a`](https://github.com/statelyai/xstate-tools/commit/117c89a340d794b5c679b41b51b13619f49c8fd6)]:
+  - @xstate/tools-shared@1.1.7
+
 ## 0.2.0
 
 ### Minor Changes
