@@ -1,5 +1,11 @@
 # stately-vscode
 
+## 1.8.3
+
+### Patch Changes
+
+- [#164](https://github.com/statelyai/xstate-tools/pull/164) [`74b013b`](https://github.com/statelyai/xstate-tools/commit/74b013b74632e1ac87543dedfc54da8c3e3764dc) Thanks [@mellson](https://github.com/mellson)! - Added learn more link to file nesting prompt.
+
 ## 1.8.2
 
 ### Patch Changes
