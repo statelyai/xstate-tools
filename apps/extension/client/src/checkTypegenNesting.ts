@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { Uri } from "vscode";
 
 // More info on the patterns in this comment: https://github.com/statelyai/xstate-tools/pull/146#discussion_r889904447
 const typegenPatternKeys = ["*.ts", "*.tsx", "*.mts", "*.cts"];
@@ -143,11 +144,13 @@ export const handleTypegenNestingConfig = () => {
     // Show prompt if the user wants to nest typegen files but hasn't defined our pattern yet
     const enableOption = "Enable";
     const disableOption = "No, don't ask again";
+    const learnMoreOption = "Learn more";
     vscode.window
       .showInformationMessage(
         "Do you want to enable file nesting for XState typegen files?",
         enableOption,
-        disableOption
+        disableOption,
+        learnMoreOption
       )
       .then((choice) => {
         switch (choice) {
@@ -157,6 +160,11 @@ export const handleTypegenNestingConfig = () => {
           case disableOption:
             getXStateConfig().update("nestTypegenFiles", false, true);
             disableTypegenNesting();
+            break;
+          case learnMoreOption:
+            vscode.env.openExternal(
+              Uri.parse("https://stately.ai/blog/nesting-xstate-typegen-files")
+            );
             break;
         }
       });
