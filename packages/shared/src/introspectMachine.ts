@@ -4,6 +4,7 @@ import { InvokeDefinition } from "xstate";
 import { pathToStateValue } from "xstate/lib/utils";
 import {
   getMatchesStates,
+  getStateValues,
   getTransitionsFromNode,
 } from "./getTransitionsFromNode";
 
@@ -317,6 +318,7 @@ export const introspectMachine = (machine: XState.StateNode) => {
       };
     }),
     stateMatches: getMatchesStates(machine),
+    stateValues: getStateValues(machine),
     subState,
     guards: guards.toDataShape(),
     actions: actions.toDataShape(),

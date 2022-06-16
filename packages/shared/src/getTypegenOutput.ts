@@ -2,7 +2,6 @@ import { createMachine } from "xstate";
 import { introspectMachine } from "./introspectMachine";
 import { getStateMatchesObjectSyntax } from "./getStateMatchesObjectSyntax";
 import { XStateUpdateMachine } from "./types";
-import { choose } from "xstate/lib/actions";
 
 export const getTypegenOutput = (event: {
   machines: Pick<
@@ -92,6 +91,10 @@ export const getTypegenOutput = (event: {
 
         const objectSyntax = getStateMatchesObjectSyntax(introspectResult);
 
+        const stateValues = introspectResult.stateValues.map((candidate) =>
+          JSON.stringify(candidate)
+        );
+        
         if (objectSyntax) {
           matchesStates.push(objectSyntax);
         }
@@ -162,6 +165,7 @@ export const getTypegenOutput = (event: {
             ${displayEventsCausing(delays)}
           };
           matchesStates: ${matchesStates.join(" | ") || "undefined"};
+          stateValues: ${stateValues.join(" | ") || "undefined"};
           tags: ${tags || "never"};
         }`;
       } catch (e) {
