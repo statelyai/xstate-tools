@@ -1,17 +1,17 @@
+import { NodePath, types as t } from "@babel/core";
 import { Action, Condition, MachineOptions } from "xstate";
-import { types as t, NodePath } from "@babel/core";
+import { choose } from "xstate/lib/actions";
+import { DeclarationType } from ".";
+import { ActionNode, ParsedChooseCondition } from "./actions";
 import { TMachineCallExpression } from "./machineCallExpression";
+import { RecordOfArrays } from "./RecordOfArrays";
 import { StateNodeReturn } from "./stateNode";
 import {
   toMachineConfig,
   ToMachineConfigParseOptions,
 } from "./toMachineConfig";
-import { StringLiteralNode, Comment } from "./types";
 import { TransitionConfigNode } from "./transitions";
-import { ActionNode, ParsedChooseCondition } from "./actions";
-import { DeclarationType } from ".";
-import { RecordOfArrays } from "./RecordOfArrays";
-import { choose } from "xstate/lib/actions";
+import { Comment, StringLiteralNode } from "./types";
 
 export interface MachineParseResultStateNode {
   path: string[];
@@ -469,4 +469,6 @@ export class MachineParseResult {
 
     return node;
   };
+
+  getMachineId = () => this.ast?.machineId;
 }
