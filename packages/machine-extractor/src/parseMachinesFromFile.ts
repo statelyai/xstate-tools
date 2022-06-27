@@ -6,6 +6,7 @@ import {
 import { MachineParseResult } from "./MachineParseResult";
 import { ParseResult } from "./types";
 import { hashedId } from "./utils";
+const fetch = require("isomorphic-unfetch");
 
 export const parseMachinesFromFile = (fileContents: string): ParseResult => {
   if (

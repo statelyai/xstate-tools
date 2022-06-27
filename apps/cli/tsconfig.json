@@ -7,10 +7,6 @@
     "resolveJsonModule": true,
     "skipLibCheck": true
   },
-  "include": [
-    "src"
-  ],
-  "exclude": [
-    "src/__tests__/__examples__"
-  ]
+  "include": ["src"],
+  "exclude": ["src/__tests__/__examples__", "src/__tests__/__machineIds__"]
 }
