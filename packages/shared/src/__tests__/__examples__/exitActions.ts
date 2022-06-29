@@ -74,7 +74,7 @@ createMachine(
     },
     states: {
       a: {
-        initial: 'b',
+        initial: "b",
         on: {
           FOO: "c",
         },

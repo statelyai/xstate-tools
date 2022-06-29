@@ -127,16 +127,14 @@ export const getTypegenOutput = (event: {
             ${Object.values(internalEvents).join("\n")}
           };
           invokeSrcNameMap: {
-            ${Object.keys(introspectResult.serviceSrcToIdMap)
-              .filter((src) => {
+            ${Array.from(introspectResult.serviceSrcToIdMap)
+              .filter(([src]) => {
                 return machine.allServices.some(
                   (service) => service.src === src
                 );
               })
-              .map((src) => {
-                const set = Array.from(introspectResult.serviceSrcToIdMap[src]);
-
-                return `${JSON.stringify(src)}: ${set
+              .map(([src, ids]) => {
+                return `${JSON.stringify(src)}: ${Array.from(ids)
                   .map((item) => JSON.stringify(`done.invoke.${item}`))
                   .join(" | ")};`;
               })
