@@ -22,7 +22,7 @@ export interface ToMachineConfigParseOptions {
 
 const parseStateNode = (
   astResult: StateNodeReturn,
-  opts: ToMachineConfigParseOptions | undefined,
+  opts: ToMachineConfigParseOptions | undefined
 ): StateNodeConfig<any, any, any> => {
   const config: MachineConfig<any, any, any> = {};
 
@@ -67,7 +67,7 @@ const parseStateNode = (
     astResult.on.properties.forEach((onProperty) => {
       (config.on as any)[onProperty.key] = getTransitions(
         onProperty.result,
-        opts,
+        opts
       );
     });
   }
@@ -78,7 +78,7 @@ const parseStateNode = (
     astResult.after.properties.forEach((afterProperty) => {
       (config.after as any)[afterProperty.key] = getTransitions(
         afterProperty.result,
-        opts,
+        opts
       );
     });
   }
@@ -168,7 +168,7 @@ const parseStateNode = (
 
 export const toMachineConfig = (
   result: TMachineCallExpression,
-  opts?: ToMachineConfigParseOptions,
+  opts?: ToMachineConfigParseOptions
 ): MachineConfig<any, any, any> | undefined => {
   if (!result?.definition) return undefined;
   return parseStateNode(result?.definition, opts);
@@ -176,7 +176,7 @@ export const toMachineConfig = (
 
 export const getActionConfig = (
   astActions: GetParserResult<typeof MaybeArrayOfActions>,
-  opts: ToMachineConfigParseOptions | undefined,
+  opts: ToMachineConfigParseOptions | undefined
 ): Actions<any, any> => {
   const actions: Actions<any, any> = [];
 
@@ -199,7 +199,7 @@ export const getActionConfig = (
 
 export const getTransitions = (
   astTransitions: GetParserResult<typeof MaybeTransitionArray>,
-  opts: ToMachineConfigParseOptions | undefined,
+  opts: ToMachineConfigParseOptions | undefined
 ): TransitionConfigOrTarget<any, any> => {
   const transitions: TransitionConfigOrTarget<any, any> = [];
 

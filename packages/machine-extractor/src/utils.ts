@@ -241,7 +241,11 @@ export const getPropertiesOfObjectExpression = (
 export type GetObjectKeysResult<
   T extends { [index: string]: AnyParser<unknown> }
 > = {
-  [K in keyof T]?: ReturnType<T[K]["parse"]> & ObjectPropertyInfo;
+  [K in keyof T]?: ReturnType<T[K]["parse"]> & {
+    // in reality this is always available, but some types are reused in places where it isn't
+    // potentially it's a problem in how those types are used and not in the lack of this runtime property
+    _valueNode?: t.Node;
+  };
 } & {
   node: t.Node;
 };
@@ -253,8 +257,7 @@ export interface ObjectPropertyInfo {
 
 export type GetParserResult<TParser extends AnyParser<any>> = NonNullable<
   ReturnType<TParser["parse"]>
-> &
-  ObjectPropertyInfo;
+>;
 
 /**
  * Used for declaring an object expression where the known keys

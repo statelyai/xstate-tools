@@ -1,3 +1,4 @@
+import { types as t } from "@babel/core";
 import { MaybeArrayOfActions } from "./actions";
 import { Context } from "./context";
 import { History } from "./history";
@@ -22,6 +23,10 @@ const On = objectOf(MaybeTransitionArray);
 const After = objectOf(MaybeTransitionArray);
 const Tags = maybeArrayOf(StringLiteral);
 
+type WithValueNodes<T> = {
+  [K in keyof T]: T[K] & { _valueNode?: t.Node };
+};
+
 /**
  * This is frustrating, but we need to keep this
  * up to date with the StateNode definition below.
@@ -31,7 +36,7 @@ const Tags = maybeArrayOf(StringLiteral);
  * falls out the window when StateNode tries to
  * reference itself
  */
-export type StateNodeReturn = {
+export type StateNodeReturn = WithValueNodes<{
   id?: GetParserResult<typeof StringLiteral>;
   initial?: GetParserResult<typeof StringLiteral>;
   type?: GetParserResult<typeof StringLiteral>;
@@ -63,10 +68,11 @@ export type StateNodeReturn = {
   version?: GetParserResult<typeof AnyNode>;
   delimiter?: GetParserResult<typeof StringLiteral>;
   key?: GetParserResult<typeof StringLiteral>;
-} & ObjectPropertyInfo;
+}> &
+  Pick<ObjectPropertyInfo, "node">;
 
-const StateNodeObject: AnyParser<StateNodeReturn> =
-  objectTypeWithKnownKeys(() => ({
+const StateNodeObject: AnyParser<StateNodeReturn> = objectTypeWithKnownKeys(
+  () => ({
     id: StringLiteral,
     initial: StringLiteral,
     type: StringLiteral,
@@ -98,6 +104,7 @@ const StateNodeObject: AnyParser<StateNodeReturn> =
     version: AnyNode,
     delimiter: StringLiteral,
     key: StringLiteral,
-  }));
+  })
+);
 
 export const StateNode = StateNodeObject;
