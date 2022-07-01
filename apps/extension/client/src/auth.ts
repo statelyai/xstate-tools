@@ -60,8 +60,8 @@ export const getAuth = (context: vscode.ExtensionContext) => {
   const getLoginUrl = (redirectUrl: vscode.Uri): vscode.Uri => {
     return vscode.Uri.parse(
       `${getBaseUrl()}/registry/external-sign-in?redirectUrl=${encodeURIComponent(
-        redirectUrl.toString(),
-      )}`,
+        redirectUrl.toString()
+      )}`
     );
   };
 
@@ -71,8 +71,8 @@ export const getAuth = (context: vscode.ExtensionContext) => {
   const getVSCodeRedirectUrl = async (): Promise<vscode.Uri> => {
     return await vscode.env.asExternalUri(
       vscode.Uri.parse(
-        `${vscode.env.uriScheme}://${EXTENSION_ID}/authenticate?response_mode=query`,
-      ),
+        `${vscode.env.uriScheme}://${EXTENSION_ID}/authenticate?response_mode=query`
+      )
     );
   };
 
@@ -80,14 +80,14 @@ export const getAuth = (context: vscode.ExtensionContext) => {
    * Waits for a result on the URI
    */
   const handleAuthCallback = async (
-    onCancel: (func: () => void) => void,
+    onCancel: (func: () => void) => void
   ): Promise<TokenInfo | "timed-out" | "unknown-error" | "cancelled"> => {
     let uriEventListener: vscode.Disposable;
 
     return Promise.race<
       TokenInfo | "timed-out" | "unknown-error" | "cancelled"
     >([
-      delay(30000, "timed-out") as any,
+      delay(30000).then(() => "timed-out"),
       new Promise((resolve) => {
         onCancel(() => {
           resolve("cancelled");
@@ -121,7 +121,7 @@ export const getAuth = (context: vscode.ExtensionContext) => {
   };
 
   const signIn = async (
-    onCancel: (func: () => void) => void,
+    onCancel: (func: () => void) => void
   ): Promise<SignInResult> => {
     let token = await getLoginToken();
 
@@ -160,16 +160,8 @@ export const getAuth = (context: vscode.ExtensionContext) => {
   };
 };
 
-async function delay<T = void>(ms: number, result?: T): Promise<T> {
-  return new Promise<T>((resolve, reject) =>
-    setTimeout(() => {
-      if (result instanceof Error) {
-        reject(result);
-      } else {
-        resolve(result);
-      }
-    }, ms),
-  );
+async function delay(ms: number): Promise<void> {
+  return new Promise<void>((resolve) => setTimeout(resolve, ms));
 }
 
 function parseQuery(uri: vscode.Uri): any {

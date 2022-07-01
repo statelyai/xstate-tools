@@ -1,6 +1,6 @@
-import * as vscode from "vscode";
 import { parseMachinesFromFile } from "@xstate/machine-extractor";
 import { getRangeFromSourceLocation } from "@xstate/tools-shared";
+import * as vscode from "vscode";
 import { VSCodeNodeSelectedEvent } from "./editorWebviewScript";
 
 export const handleNodeSelected = async (event: VSCodeNodeSelectedEvent) => {
@@ -22,13 +22,13 @@ export const handleNodeSelected = async (event: VSCodeNodeSelectedEvent) => {
 
   if (!node) return;
 
-  const range = getRangeFromSourceLocation(node.ast.node.loc);
+  const range = getRangeFromSourceLocation(node.ast.node.loc!);
 
   activeEditor.revealRange(
     new vscode.Range(
       new vscode.Position(range.start.line, range.start.character),
-      new vscode.Position(range.end.line, range.end.character),
+      new vscode.Position(range.end.line, range.end.character)
     ),
-    vscode.TextEditorRevealType.InCenter,
+    vscode.TextEditorRevealType.InCenter
   );
 };

@@ -106,7 +106,6 @@ export const initiateEditor = (
 
       currentPanel.webview.onDidReceiveMessage(
         async (event: EditorWebviewScriptEvent) => {
-
           if (event.type === "vscode.updateDefinition") {
             await handleDefinitionUpdate(event);
           } else if (event.type === "vscode.selectNode") {
@@ -139,10 +138,10 @@ export const initiateEditor = (
         result.machines.forEach((machine, index) => {
           sendMessage({
             type: "RECEIVE_CONFIG_UPDATE_FROM_VSCODE",
-            config: machine.toConfig({ hashInlineImplementations: true }),
+            config: machine.toConfig({ hashInlineImplementations: true })!,
             index: index,
             uri: resolveUriToFilePrefix(document.uri.path),
-            layoutString: machine.getLayoutComment()?.value,
+            layoutString: machine.getLayoutComment()?.value || "",
             implementations: getInlineImplementations(machine, text),
           });
         });
@@ -159,7 +158,8 @@ export const initiateEditor = (
         uri: string,
         layoutString?: string
       ) => {
-        const currentText = vscode.window.activeTextEditor.document.getText();
+        const activeTextEditor = vscode.window.activeTextEditor!;
+        const currentText = activeTextEditor.document.getText();
 
         const result = filterOutIgnoredMachines(
           parseMachinesFromFile(currentText)
@@ -172,9 +172,7 @@ export const initiateEditor = (
         startService(
           config,
           machineIndex,
-          resolveUriToFilePrefix(
-            vscode.window.activeTextEditor.document.uri.path
-          ),
+          resolveUriToFilePrefix(activeTextEditor.document.uri.path),
           layoutString,
           implementations
         );
@@ -185,9 +183,9 @@ export const initiateEditor = (
   context.subscriptions.push(
     vscode.commands.registerCommand("stately-xstate.edit", () => {
       try {
-        const currentSelection = vscode.window.activeTextEditor.selection;
-
-        const currentText = vscode.window.activeTextEditor.document.getText();
+        const activeTextEditor = vscode.window.activeTextEditor!;
+        const currentSelection = activeTextEditor.selection;
+        const currentText = activeTextEditor.document.getText();
 
         const result = filterOutIgnoredMachines(
           parseMachinesFromFile(currentText)
@@ -202,11 +200,11 @@ export const initiateEditor = (
           ) {
             const isInPosition =
               isCursorInPosition(
-                machine?.ast?.definition?.node?.loc,
+                machine?.ast?.definition?.node?.loc!,
                 currentSelection.start
               ) ||
               isCursorInPosition(
-                machine?.ast?.options?.node?.loc,
+                machine?.ast?.options?.node?.loc!,
                 currentSelection.start
               );
 
@@ -227,10 +225,10 @@ export const initiateEditor = (
         const implementations = getInlineImplementations(machine, currentText);
 
         startService(
-          machine.toConfig({ hashInlineImplementations: true }),
+          machine.toConfig({ hashInlineImplementations: true })!,
           foundIndex!,
           resolveUriToFilePrefix(
-            vscode.window.activeTextEditor.document.uri.path
+            vscode.window.activeTextEditor!.document.uri.path
           ),
           machine.getLayoutComment()?.value,
           implementations

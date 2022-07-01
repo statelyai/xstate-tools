@@ -105,7 +105,7 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
     },
     invoke: {
       src: () => (send) => {
-        const listener = (event) => {
+        const listener = (event: MessageEvent) => {
           try {
             const ourEvent: EditorWebviewScriptEvent = JSON.parse(event.data);
 
@@ -182,7 +182,7 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
               context.layoutString ? `&layout=${context.layoutString}` : ""
             }&implementations=${compressToEncodedURIComponent(
               JSON.stringify(context.implementations)
-            )}${getTokenHash(context.token)}`;
+            )}${getTokenHash(context.token!)}`;
           },
         },
         on: {
@@ -250,7 +250,7 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
 
         if (!iframe) return;
 
-        iframe.contentWindow.postMessage(
+        iframe.contentWindow!.postMessage(
           {
             config: context.config,
             layoutString: context.layoutString,
