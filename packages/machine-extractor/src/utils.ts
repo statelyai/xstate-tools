@@ -16,7 +16,7 @@ import { unionType } from "./unionType";
 import { wrapParserResult } from "./wrapParserResult";
 
 export const parserFromBabelMatcher = <T extends t.Node>(
-  babelMatcher: (node: any) => node is T,
+  babelMatcher: (node: any) => node is T
 ) => createParser({ babelMatcher, parseNode: (node) => node });
 
 /**
@@ -24,7 +24,7 @@ export const parserFromBabelMatcher = <T extends t.Node>(
  * be declared as an array
  */
 export const maybeArrayOf = <Result>(
-  parser: AnyParser<Result> | AnyParser<Result[]>,
+  parser: AnyParser<Result> | AnyParser<Result[]>
 ): AnyParser<Result[]> => {
   const arrayParser = createParser({
     babelMatcher: t.isArrayExpression,
@@ -51,7 +51,7 @@ export const maybeArrayOf = <Result>(
         return res;
       }
       return [res];
-    },
+    }
   );
 
   return unionType([arrayParser, otherParser]);
@@ -62,7 +62,7 @@ export const maybeArrayOf = <Result>(
  * an array of something
  */
 export const arrayOf = <Result>(
-  parser: AnyParser<Result>,
+  parser: AnyParser<Result>
 ): AnyParser<Result[]> => {
   return createParser({
     babelMatcher: t.isArrayExpression,
@@ -95,7 +95,7 @@ export const objectMethod = createParser({
 });
 
 export const staticObjectProperty = <KeyResult>(
-  keyParser: AnyParser<KeyResult>,
+  keyParser: AnyParser<KeyResult>
 ) =>
   createParser<
     t.ObjectProperty,
@@ -130,13 +130,13 @@ export const spreadElement = <Result>(parser: AnyParser<Result>) => {
 };
 
 export const spreadElementReferencingIdentifier = <Result>(
-  parser: AnyParser<Result>,
+  parser: AnyParser<Result>
 ) => {
   return spreadElement(identifierReferencingVariableDeclaration(parser));
 };
 
 export const dynamicObjectProperty = <KeyResult>(
-  keyParser: AnyParser<KeyResult>,
+  keyParser: AnyParser<KeyResult>
 ) =>
   createParser<
     t.ObjectProperty,
@@ -169,7 +169,7 @@ const staticPropertyWithKey = staticObjectProperty(
     }),
     StringLiteral,
     NumericLiteral,
-  ]),
+  ])
 );
 
 const dynamicPropertyWithKey = dynamicObjectProperty(
@@ -177,8 +177,8 @@ const dynamicPropertyWithKey = dynamicObjectProperty(
     unionType<{
       node: t.Node;
       value: string | number | undefined;
-    }>([StringLiteral, NumericLiteral, TemplateLiteral]),
-  ),
+    }>([StringLiteral, NumericLiteral, TemplateLiteral])
+  )
 );
 
 const propertyKey = unionType<{
@@ -195,7 +195,7 @@ const propertyKey = unionType<{
  */
 export const getPropertiesOfObjectExpression = (
   node: t.ObjectExpression | undefined,
-  context: ParserContext,
+  context: ParserContext
 ) => {
   const propertiesToReturn: {
     node: t.ObjectProperty | t.ObjectMethod;
@@ -215,11 +215,11 @@ export const getPropertiesOfObjectExpression = (
       createParser({
         babelMatcher: t.isObjectExpression,
         parseNode: (node) => node,
-      }),
+      })
     ).parse(property, context);
 
     propertiesToParse.push(
-      ...(spreadElementResult?.argumentResult?.properties || []),
+      ...(spreadElementResult?.argumentResult?.properties || [])
     );
 
     propertiesToParse.forEach((property) => {
@@ -239,15 +239,19 @@ export const getPropertiesOfObjectExpression = (
 };
 
 export type GetObjectKeysResult<
-  T extends { [index: string]: AnyParser<unknown> },
+  T extends { [index: string]: AnyParser<unknown> }
 > = {
-  [K in keyof T]?: ReturnType<T[K]["parse"]> & ObjectPropertyInfo;
+  [K in keyof T]?: ReturnType<T[K]["parse"]> & {
+    // in reality this is always available, but some types are reused in places where it isn't
+    // potentially it's a problem in how those types are used and not in the lack of this runtime property
+    _valueNode?: t.Node;
+  };
 } & {
   node: t.Node;
 };
 
 export interface ObjectPropertyInfo {
-  node?: t.Node;
+  node: t.Node;
   _valueNode?: t.Node;
 }
 
@@ -260,9 +264,9 @@ export type GetParserResult<TParser extends AnyParser<any>> = NonNullable<
  * can be different things
  */
 export const objectTypeWithKnownKeys = <
-  T extends { [index: string]: AnyParser<any> },
+  T extends { [index: string]: AnyParser<any> }
 >(
-  parserObject: T | (() => T),
+  parserObject: T | (() => T)
 ): AnyParser<GetObjectKeysResult<T>> =>
   maybeTsAsExpression(
     maybeIdentifierTo(
@@ -299,8 +303,8 @@ export const objectTypeWithKnownKeys = <
 
           return toReturn as GetObjectKeysResult<T>;
         },
-      }),
-    ),
+      })
+    )
   );
 
 export interface ObjectOfReturn<Result> {
@@ -319,7 +323,7 @@ export interface ObjectOfReturn<Result> {
  * `on`
  */
 export const objectOf = <Result>(
-  parser: AnyParser<Result>,
+  parser: AnyParser<Result>
 ): AnyParser<ObjectOfReturn<Result>> => {
   return maybeIdentifierTo(
     createParser({
@@ -353,7 +357,7 @@ export const objectOf = <Result>(
 
         return toReturn;
       },
-    }),
+    })
   );
 };
 
@@ -364,7 +368,7 @@ export const objectOf = <Result>(
 export const namedFunctionCall = <Argument1Result, Argument2Result>(
   name: string,
   argument1Parser: AnyParser<Argument1Result>,
-  argument2Parser?: AnyParser<Argument2Result>,
+  argument2Parser?: AnyParser<Argument2Result>
 ): AnyParser<{
   node: t.CallExpression;
   argument1Result: Argument1Result | undefined;
@@ -377,8 +381,8 @@ export const namedFunctionCall = <Argument1Result, Argument2Result>(
         parseNode: (node) => {
           return node;
         },
-      }),
-    ),
+      })
+    )
   );
 
   return {
@@ -404,7 +408,7 @@ export const namedFunctionCall = <Argument1Result, Argument2Result>(
 };
 
 export const isFunctionOrArrowFunctionExpression = (
-  node: any,
+  node: any
 ): node is t.ArrowFunctionExpression | t.FunctionExpression => {
   return t.isArrowFunctionExpression(node) || t.isFunctionExpression(node);
 };
@@ -422,7 +426,7 @@ function hash(str: string): string {
     .reduce(
       (prevHash, currVal) =>
         ((prevHash << 5) - prevHash + currVal.charCodeAt(0)) | 0,
-      0,
+      0
     )
     .toString(32)
     .substring(1, 10);

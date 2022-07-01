@@ -86,7 +86,7 @@ const machine = createMachine(
           data: event.data,
         }),
     },
-  },
+  }
 ).withConfig({
   actions: {},
 });

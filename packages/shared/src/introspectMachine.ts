@@ -1,41 +1,61 @@
 import { INLINE_IMPLEMENTATION_TYPE } from "@xstate/machine-extractor";
 import * as XState from "xstate";
 import { InvokeDefinition } from "xstate";
-import { pathToStateValue } from "xstate/lib/utils";
-import {
-  getMatchesStates,
-  getTransitionsFromNode,
-} from "./getTransitionsFromNode";
+import { getMatchesStates } from "./getTransitionsFromNode";
 
 export interface SubState {
-  targets: string[];
-  sources: string[];
   states: Record<string, SubState>;
 }
 
-const makeSubStateFromNode = (
-  node: XState.StateNode,
-  rootNode: XState.StateNode,
-  nodeMaps: {
-    [id: string]: {
-      sources: Set<string>;
-      children: Set<string>;
-    };
+function getChildren(node: XState.StateNode) {
+  return Object.keys(node.states)
+    .map((key) => node.states[key])
+    .filter((state) => state.type !== "history");
+}
+
+function isWithin(nodeA: XState.StateNode, nodeB: XState.StateNode) {
+  let marker: typeof nodeB | undefined = nodeB;
+  while (marker) {
+    if (nodeA === marker) {
+      return true;
+    }
+    marker = marker.parent;
   }
-): SubState => {
-  const nodeFromMap = nodeMaps[node.id];
+  return false;
+}
 
-  const stateNode = rootNode.getStateNodeById(node.id);
+function findLeastCommonAncestor(
+  machine: XState.StateNode,
+  nodeA: XState.StateNode,
+  nodeB: XState.StateNode
+): XState.StateNode {
+  if (!nodeA.path.length || !nodeB.path.length) {
+    return machine;
+  }
 
-  const targets = getTransitionsFromNode(stateNode);
+  let i = 0;
+  while (true) {
+    if (nodeA.path[i] === nodeB.path[i]) {
+      i++;
+      continue;
+    }
+    const leastCommonAncestorPath = nodeA.path.slice(0, i);
+
+    let leastCommonAncestor = machine;
+    let segment: string | undefined;
+    while ((segment = leastCommonAncestorPath.shift())) {
+      leastCommonAncestor = leastCommonAncestor.states[segment];
+    }
+    return leastCommonAncestor;
+  }
+}
+
+const makeSubStateFromNode = (node: XState.StateNode): SubState => {
   return {
-    sources: Array.from(nodeFromMap.sources).filter(Boolean),
-    targets: targets.filter(Boolean),
-    states: Array.from(nodeFromMap.children).reduce((obj, child) => {
-      const childNode = rootNode.getStateNodeById(child);
+    states: getChildren(node).reduce((subState, child) => {
       return {
-        ...obj,
-        [childNode.key]: makeSubStateFromNode(childNode, rootNode, nodeMaps),
+        ...subState,
+        [child.key]: makeSubStateFromNode(child),
       };
     }, {}),
   };
@@ -47,7 +67,7 @@ class ItemMap {
    * of all of the items
    */
   private map: {
-    [name: string]: { events: Set<string>; states: Set<XState.StateValue> };
+    [name: string]: { events: Set<string> };
   };
 
   /**
@@ -65,22 +85,20 @@ class ItemMap {
    * Add an item to the cache, along with the path of the node
    * it occurs on
    */
-  addItem(itemName: string, nodePath: string[]) {
+  addItem(itemName: string) {
     if (!this.map[itemName]) {
       this.map[itemName] = {
         events: new Set(),
-        states: new Set(),
       };
     }
-    this.map[itemName].states.add(pathToStateValue(nodePath));
   }
 
   /**
    * Add a triggering event to an item in the cache, for
    * instance the event type which triggers a guard/action/service
    */
-  addEventToItem(itemName: string, eventType: string, nodePath: string[]) {
-    this.addItem(itemName, nodePath);
+  addEventToItem(itemName: string, eventType: string) {
+    this.addItem(itemName);
     this.map[itemName].events.add(eventType);
   }
 
@@ -102,9 +120,6 @@ class ItemMap {
           name,
           required: !optional,
           events: Array.from(data.events),
-          states: Array.from(data.states)
-            .map((state) => JSON.stringify(state))
-            .filter(Boolean),
         };
       });
     return {
@@ -114,235 +129,278 @@ class ItemMap {
   }
 }
 
+function collectInvokes(ctx: TraversalContext, node: XState.StateNode) {
+  node.invoke.forEach((service) => {
+    const serviceSrc = getServiceSrc(service);
+    if (
+      typeof serviceSrc !== "string" ||
+      serviceSrc === INLINE_IMPLEMENTATION_TYPE
+    ) {
+      return;
+    }
+    ctx.services.addItem(serviceSrc);
+
+    const serviceSrcToIdItem = ctx.serviceSrcToIdMap.get(serviceSrc);
+    if (serviceSrcToIdItem) {
+      serviceSrcToIdItem.add(service.id);
+      return;
+    }
+    ctx.serviceSrcToIdMap.set(serviceSrc, new Set([service.id]));
+  });
+}
+
+function collectAction(
+  ctx: TraversalContext,
+  eventType: string,
+  actionObject: XState.ActionObject<any, XState.EventObject>
+) {
+  if (
+    actionObject.type === "xstate.choose" &&
+    Array.isArray(actionObject.conds)
+  ) {
+    actionObject.conds.forEach(({ cond, actions: condActions }) => {
+      if (typeof cond === "string") {
+        ctx.guards.addEventToItem(cond, eventType);
+      }
+      if (Array.isArray(condActions)) {
+        condActions.forEach((condAction) => {
+          if (typeof condAction === "string") {
+            ctx.actions.addEventToItem(condAction, eventType);
+          }
+        });
+      } else if (typeof condActions === "string") {
+        ctx.actions.addEventToItem(condActions, eventType);
+      }
+    });
+  } else {
+    ctx.actions.addEventToItem(actionObject.type, eventType);
+  }
+}
+
+// TODO: this doesn't handle
+// createMachine(
+//   { on: { FOO: { actions: "foo" } } },
+//   {
+//     actions: {
+//       foo: choose([{ cond: "test", actions: "bar" }]),
+//       bar: choose([{ cond: "test2", actions: "baz" }]),
+//       baz: () => {},
+//     },
+//   }
+// );
+// when implementing this consider how it should handle cycles
+function collectActions(
+  ctx: TraversalContext,
+  eventType: string,
+  actionObjects: XState.ActionObject<any, XState.EventObject>[]
+) {
+  actionObjects.forEach((actionObject) => {
+    collectAction(ctx, eventType, actionObject);
+    const actionInOptions = ctx.machine.options.actions?.[actionObject.type];
+    if (actionInOptions && typeof actionInOptions === "object") {
+      collectAction(ctx, eventType, actionInOptions);
+    }
+  });
+}
+
+function enterState(
+  ctx: TraversalContext,
+  node: XState.StateNode,
+  eventType: string
+) {
+  let nodeIdToSourceEventItem = ctx.nodeIdToSourceEventMap.get(node.id);
+  if (nodeIdToSourceEventItem) {
+    nodeIdToSourceEventItem.add(eventType);
+    return;
+  }
+  ctx.nodeIdToSourceEventMap.set(node.id, new Set([eventType]));
+}
+
+function exitChildren(
+  ctx: TraversalContext,
+  node: XState.StateNode,
+  eventType: string,
+  entered: Set<XState.StateNode> = new Set()
+) {
+  getChildren(node).forEach((child) => {
+    if (entered.has(child)) {
+      return;
+    }
+    collectActions(ctx, eventType, child.onExit);
+    exitChildren(ctx, child, eventType, entered);
+  });
+}
+
+function collectTransitions(ctx: TraversalContext, node: XState.StateNode) {
+  node.transitions.forEach((transition) => {
+    if (transition.cond && transition.cond.name) {
+      if (transition.cond.name !== "cond") {
+        ctx.guards.addEventToItem(transition.cond.name, transition.eventType);
+      }
+    }
+
+    collectActions(ctx, transition.eventType, transition.actions);
+
+    if (!transition.target || !transition.target.length) {
+      return;
+    }
+
+    transition.target.forEach((target) => {
+      if (isWithin(node, target)) {
+        const enteredSet = new Set<XState.StateNode>();
+        let marker: typeof target = target;
+
+        while (marker) {
+          if (marker === node) {
+            break;
+          }
+          enteredSet.add(marker);
+          marker = marker.parent!;
+        }
+        if (!transition.internal) {
+          enteredSet.add(marker);
+        }
+
+        enteredSet.forEach((entered) => {
+          enterState(ctx, entered, transition.eventType);
+        });
+
+        exitChildren(ctx, node, transition.eventType, enteredSet);
+
+        if (!transition.internal) {
+          collectActions(ctx, transition.eventType, node.onExit);
+        }
+      } else {
+        exitChildren(ctx, node, transition.eventType);
+        collectActions(ctx, transition.eventType, node.onExit);
+
+        const leastCommonAncestor = findLeastCommonAncestor(
+          ctx.machine,
+          node,
+          target
+        );
+
+        let marker = node;
+        while (true) {
+          if (marker === leastCommonAncestor) {
+            break;
+          }
+          collectActions(ctx, transition.eventType, marker.onExit);
+          marker = marker.parent!;
+        }
+
+        const enteringPath = target.path.slice(leastCommonAncestor.path.length);
+
+        let segment: string | undefined;
+        marker = leastCommonAncestor;
+        while ((segment = enteringPath.shift())) {
+          marker = marker.states[segment];
+          enterState(ctx, marker, transition.eventType);
+        }
+      }
+    });
+  });
+}
+
 export type IntrospectMachineResult = ReturnType<typeof introspectMachine>;
 
-export const introspectMachine = (machine: XState.StateNode) => {
-  const guards = new ItemMap({
-    checkIfOptional: (name) => Boolean(machine.options?.guards?.[name]),
-  });
-  const actions = new ItemMap({
-    checkIfOptional: (name) => Boolean(machine.options?.actions?.[name]),
-  });
-  const services = new ItemMap({
-    checkIfOptional: (name) => Boolean(machine.options?.services?.[name]),
-  });
-  const activities = new ItemMap({
-    checkIfOptional: (name) => Boolean(machine.options?.activities?.[name]),
-  });
-  const delays = new ItemMap({
-    checkIfOptional: (name) => Boolean(machine.options?.delays?.[name]),
-  });
+function createTraversalContext(machine: XState.StateNode) {
+  return {
+    machine,
 
-  const serviceSrcToIdMap: Record<string, Set<string>> = {};
+    serviceSrcToIdMap: new Map<string, Set<string>>(),
+    nodeIdToSourceEventMap: new Map<string, Set<string>>(),
 
-  const nodeMaps: {
-    [id: string]: {
-      sources: Set<string>;
-      children: Set<string>;
-    };
-  } = {};
-
-  const addActionAndHandleChoose = (
-    action: XState.ActionObject<any, any>,
-    eventType: string,
-    path: string[]
-  ) => {
-    if (action.type === "xstate.choose" && Array.isArray(action.conds)) {
-      action.conds.forEach(({ cond, actions: condActions }) => {
-        if (typeof cond === "string") {
-          guards.addEventToItem(cond, eventType, path);
-        }
-        if (Array.isArray(condActions)) {
-          condActions.forEach((condAction) => {
-            if (typeof condAction === "string") {
-              actions.addEventToItem(condAction, eventType, path);
-            }
-          });
-        } else if (typeof condActions === "string") {
-          actions.addEventToItem(condActions, eventType, path);
-        }
-      });
-    } else {
-      actions.addEventToItem(action.type, eventType, path);
-    }
+    actions: new ItemMap({
+      checkIfOptional: (name) => Boolean(machine.options?.actions?.[name]),
+    }),
+    delays: new ItemMap({
+      checkIfOptional: (name) => Boolean(machine.options?.delays?.[name]),
+    }),
+    guards: new ItemMap({
+      checkIfOptional: (name) => Boolean(machine.options?.guards?.[name]),
+    }),
+    services: new ItemMap({
+      checkIfOptional: (name) => Boolean(machine.options?.services?.[name]),
+    }),
   };
+}
 
-  const allStateNodes = machine.stateIds.map((id) =>
-    machine.getStateNodeById(id)
+type TraversalContext = ReturnType<typeof createTraversalContext>;
+
+// simple information is an information that doesn't need dereferencing target states
+function collectSimpleInformation(
+  ctx: TraversalContext,
+  node: XState.StateNode
+) {
+  // TODO: history states are not handled yet
+  collectInvokes(ctx, node);
+  collectActions(ctx, "xstate.stop", node.onExit);
+  collectTransitions(ctx, node);
+
+  getChildren(node).forEach((childNode) =>
+    collectSimpleInformation(ctx, childNode)
   );
+}
 
-  allStateNodes?.forEach((node) => {
-    nodeMaps[node.id] = {
-      sources: new Set(),
-      children: new Set(),
-    };
-  });
+function collectEnterables(ctx: TraversalContext, node: XState.StateNode) {
+  const sourceEvents = ctx.nodeIdToSourceEventMap.get(node.id);
 
-  allStateNodes?.forEach((node) => {
-    Object.values(node.states)?.forEach((childNode) => {
-      nodeMaps[node.id].children.add(childNode.id);
-    });
+  if (!sourceEvents) {
+    getChildren(node).forEach((child) => collectEnterables(ctx, child));
+    return;
+  }
 
-    // TODO - make activities pick up the events
-    // that led to them
-    node.activities?.forEach((activity) => {
-      if (activity.type && activity.type !== "xstate.invoke") {
-        activities.addItem(activity.type, node.path);
-      }
-    });
+  const enterableNodes = [node, ...node.initialStateNodes];
 
-    node.after?.forEach(({ delay }) => {
-      if (typeof delay === "string") {
-        delays.addItem(delay, node.path);
-      }
-    });
-
-    node.invoke?.forEach((service) => {
+  enterableNodes.forEach((enterableNode) => {
+    enterableNode.invoke.forEach((service) => {
       const serviceSrc = getServiceSrc(service);
-      if (
-        typeof serviceSrc !== "string" ||
-        serviceSrc === INLINE_IMPLEMENTATION_TYPE
-      )
+      if (typeof serviceSrc !== "string") {
         return;
-      services.addItem(serviceSrc, node.path);
-
-      if (!serviceSrcToIdMap[serviceSrc]) {
-        serviceSrcToIdMap[serviceSrc] = new Set();
       }
-      serviceSrcToIdMap[serviceSrc].add(service.id);
-    });
-
-    node.transitions?.forEach((transition) => {
-      if (!transition.internal) {
-        const addExitActionsFromNodeAndChildren = (node: XState.StateNode) => {
-          node.onExit.forEach((action) => {
-            actions.addEventToItem(
-              action.type,
-              transition.eventType,
-              node.path,
-            );
-          });
-          Object.values(node.states).forEach(addExitActionsFromNodeAndChildren);
-        };
-
-        addExitActionsFromNodeAndChildren(node);
-      }
-
-      (transition.target as unknown as XState.StateNode[])?.forEach(
-        (targetNode) => {
-          nodeMaps[targetNode.id].sources.add(transition.eventType);
-        }
-      );
-      if (transition.cond && transition.cond.name) {
-        if (transition.cond.name !== "cond") {
-          guards.addEventToItem(
-            transition.cond.name,
-            transition.eventType,
-            node.path
-          );
-        }
-      }
-
-      (transition.target as unknown as XState.StateNode[])?.forEach(
-        (targetNode) => {
-          /**
-           * We gather info on all the invocations that begin on
-           * all the nodes that are initial state nodes of the children
-           * of this node (see recursive-invoke)
-           */
-
-          const nodesToGather = [targetNode, ...targetNode.initialStateNodes];
-
-          nodesToGather.forEach((node) => {
-            /** Pick up invokes */
-            node.invoke?.forEach((service) => {
-              const serviceSrc = getServiceSrc(service);
-              if (typeof serviceSrc !== "string") return;
-              services.addEventToItem(
-                serviceSrc,
-                transition.eventType,
-                node.path
-              );
-            });
-          });
-        }
-      );
-
-      if (transition.actions) {
-        transition.actions?.forEach((action) => {
-          addActionAndHandleChoose(action, transition.eventType, node.path);
-          const actionInOptions = machine.options.actions?.[action.type];
-          if (actionInOptions && typeof actionInOptions === "object") {
-            addActionAndHandleChoose(
-              actionInOptions,
-              transition.eventType,
-              node.path
-            );
-          }
-        });
-      }
-    });
-  });
-
-  allStateNodes?.forEach((node) => {
-    const allActions: XState.ActionObject<any, any>[] = [];
-    allActions.push(...node.onExit);
-    allActions.push(...node.onEntry);
-
-    allActions?.forEach((action) => {
-      if (!action.type.startsWith("xstate.")) {
-        actions.addItem(action.type, node.path);
-      }
-    });
-
-    const sources = nodeMaps[node.id].sources;
-
-    /**
-     * We gather info on all the entry actions that fire on
-     * all the nodes that are initial state nodes of the children
-     * of this node (see recursive-entry)
-     */
-    const nodesToGatherEntry = [node, ...node.initialStateNodes];
-
-    nodesToGatherEntry.forEach((nodeOrInitialNode) => {
-      nodeOrInitialNode.onEntry?.forEach((action) => {
-        sources?.forEach((source) => {
-          addActionAndHandleChoose(action, source, nodeOrInitialNode.path);
-          const actionInOptions = machine.options.actions?.[action.type];
-
-          if (actionInOptions && typeof actionInOptions === "object") {
-            addActionAndHandleChoose(
-              actionInOptions,
-              source,
-              nodeOrInitialNode.path
-            );
-          }
-        });
+      sourceEvents.forEach((eventType) => {
+        ctx.services.addEventToItem(serviceSrc, eventType);
       });
     });
 
-    node.onExit.forEach((action) => {
-      actions.addEventToItem(action.type, "xstate.stop", node.path);
+    enterableNode.after.forEach(({ delay }) => {
+      if (typeof delay === "string") {
+        sourceEvents.forEach((source) => {
+          ctx.delays.addEventToItem(delay, source);
+        });
+      }
+    });
+
+    sourceEvents.forEach((eventType) => {
+      collectActions(ctx, eventType, enterableNode.onEntry);
     });
   });
 
-  const subState: SubState = makeSubStateFromNode(machine, machine, nodeMaps);
+  getChildren(node).forEach((child) => collectEnterables(ctx, child));
+}
+
+export const introspectMachine = (machine: XState.StateNode) => {
+  const ctx = createTraversalContext(machine);
+
+  collectSimpleInformation(ctx, machine);
+
+  // TODO: ensure that root exit action gets called for external root transitions
+  enterState(ctx, machine, "xstate.init");
+  collectEnterables(ctx, machine);
 
   return {
-    states: Object.entries(nodeMaps).map(([stateId, state]) => {
-      return {
-        id: stateId,
-        sources: state.sources,
-      };
-    }),
+    states: machine.stateIds.map((id) => ({
+      id,
+      sources: ctx.nodeIdToSourceEventMap.get(id) || new Set(),
+    })),
     stateMatches: getMatchesStates(machine),
-    subState,
-    guards: guards.toDataShape(),
-    actions: actions.toDataShape(),
-    services: services.toDataShape(),
-    activities: activities.toDataShape(),
-    delays: delays.toDataShape(),
-    serviceSrcToIdMap,
+    subState: makeSubStateFromNode(machine),
+    guards: ctx.guards.toDataShape(),
+    actions: ctx.actions.toDataShape(),
+    services: ctx.services.toDataShape(),
+    delays: ctx.delays.toDataShape(),
+    serviceSrcToIdMap: ctx.serviceSrcToIdMap,
   };
 };
 

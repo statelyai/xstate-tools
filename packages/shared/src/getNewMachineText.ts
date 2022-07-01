@@ -1,6 +1,6 @@
+import type { MachineParseResult } from "@xstate/machine-extractor";
 import * as prettier from "prettier";
 import { MachineConfig } from "xstate";
-import type { MachineParseResult } from "@xstate/machine-extractor";
 import { getRawTextFromNode } from "./getRawTextFromNode";
 import { ImplementationsMetadata } from "./types";
 
@@ -33,6 +33,12 @@ const STATE_KEYS_TO_PRESERVE = [
   "preserveActionOrder",
 ] as const;
 
+// those keys shouldn't be part of the `MachineConfig` type
+type PublicMachineConfig = Omit<
+  MachineConfig<any, any, any>,
+  "parent" | "order"
+>;
+
 export const getNewMachineText = async ({
   text,
   fileName,
@@ -41,7 +47,7 @@ export const getNewMachineText = async ({
   implementations,
 }: {
   text: string;
-  newConfig: MachineConfig<any, any, any>;
+  newConfig: PublicMachineConfig;
   fileName: string;
   machine: MachineParseResult;
   implementations: ImplementationsMetadata;
@@ -55,19 +61,23 @@ export const getNewMachineText = async ({
       : "";
   });
 
-  const config: MachineConfig<any, any, any> = {};
+  const config: PublicMachineConfig = {};
 
-  const getKeyStart = (key: keyof MachineConfig<any, any, any>): number => {
-    const start = machine.ast.definition?.[key]?.node?.start;
-    return start ?? 0;
+  const getKeyStart = (key: keyof typeof config): number => {
+    const value = machine.ast.definition?.[key];
+
+    if (value && "node" in value) {
+      return value.node.start!;
+    }
+    return 0;
   };
 
-  Object.keys(newConfig)
+  (Object.keys(newConfig) as Array<keyof typeof config>)
     .sort((a, b) => {
-      return getKeyStart(a as any) - getKeyStart(b as any);
+      return getKeyStart(a) - getKeyStart(b);
     })
     .forEach((key) => {
-      (config as any)[key] = (newConfig as any)[key];
+      config[key] = newConfig[key];
     });
 
   const json = JSON.stringify(
@@ -78,7 +88,7 @@ export const getNewMachineText = async ({
         implementations?.guards?.[value]?.jsImplementation
       ) {
         return markAsUnwrap(
-          implementations?.guards?.[value]?.jsImplementation!,
+          implementations?.guards?.[value]?.jsImplementation!
         );
       }
       if (
@@ -86,7 +96,7 @@ export const getNewMachineText = async ({
         implementations?.services?.[value]?.jsImplementation
       ) {
         return markAsUnwrap(
-          implementations?.services?.[value]?.jsImplementation!,
+          implementations?.services?.[value]?.jsImplementation!
         );
       }
 
@@ -95,7 +105,7 @@ export const getNewMachineText = async ({
           return value.map((action) => {
             if (implementations?.actions?.[action]?.jsImplementation) {
               return markAsUnwrap(
-                implementations?.actions?.[action]?.jsImplementation!,
+                implementations?.actions?.[action]?.jsImplementation!
               );
             }
             return action;
@@ -103,14 +113,14 @@ export const getNewMachineText = async ({
         }
         if (implementations?.actions?.[value]?.jsImplementation) {
           return markAsUnwrap(
-            implementations?.actions?.[value]?.jsImplementation!,
+            implementations?.actions?.[value]?.jsImplementation!
           );
         }
       }
 
       return value;
     },
-    2,
+    2
   );
 
   const prettierConfig = await prettier.resolveConfig(fileName);
@@ -126,7 +136,7 @@ export const getNewMachineText = async ({
           .replace(/\\"/g, '"')
           .replace(/\\t/g, "\t")
       );
-    },
+    }
   );
 
   try {
