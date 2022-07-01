@@ -1,4 +1,4 @@
-import { types as t } from "@babel/core";
+import { NodePath, types as t } from "@babel/core";
 import { Condition } from "xstate";
 import { DeclarationType } from ".";
 import { createParser } from "./createParser";
@@ -7,6 +7,7 @@ import { isFunctionOrArrowFunctionExpression } from "./utils";
 
 export interface CondNode {
   node: t.Node;
+  path: NodePath<t.Node>;
   name: string;
   cond: Condition<any, any>;
   declarationType: DeclarationType;
@@ -15,38 +16,41 @@ export interface CondNode {
 
 const CondAsFunctionExpression = createParser({
   babelMatcher: isFunctionOrArrowFunctionExpression,
-  parseNode: (node, context): CondNode => {
+  parseNode: (path, context): CondNode => {
     return {
-      node,
+      path,
+      node: path.node,
       name: "",
       cond: () => {
         return false;
       },
       declarationType: "inline",
-      inlineDeclarationId: context.getNodeHash(node),
+      inlineDeclarationId: context.getNodeHash(path.node),
     };
   },
 });
 
 const CondAsStringLiteral = createParser({
   babelMatcher: t.isStringLiteral,
-  parseNode: (node, context): CondNode => {
+  parseNode: (path, context): CondNode => {
     return {
-      node,
-      name: node.value,
-      cond: node.value,
+      path,
+      node: path.node,
+      name: path.node.value,
+      cond: path.node.value,
       declarationType: "named",
-      inlineDeclarationId: context.getNodeHash(node),
+      inlineDeclarationId: context.getNodeHash(path.node),
     };
   },
 });
 
 const CondAsNode = createParser({
   babelMatcher: t.isNode,
-  parseNode: (node, context): CondNode => {
-    const id = context.getNodeHash(node);
+  parseNode: (path, context): CondNode => {
+    const id = context.getNodeHash(path.node);
     return {
-      node,
+      path,
+      node: path.node,
       name: "",
       cond: id,
       declarationType: "unknown",
@@ -57,10 +61,11 @@ const CondAsNode = createParser({
 
 const CondAsIdentifier = createParser({
   babelMatcher: t.isIdentifier,
-  parseNode: (node, context): CondNode => {
-    const id = context.getNodeHash(node);
+  parseNode: (path, context): CondNode => {
+    const id = context.getNodeHash(path.node);
     return {
-      node,
+      path,
+      node: path.node,
       name: "",
       cond: id,
       declarationType: "identifier",

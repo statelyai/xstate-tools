@@ -1,4 +1,4 @@
-import { types as t } from "@babel/core";
+import { NodePath, types as t } from "@babel/core";
 import { DeclarationType } from ".";
 import { createParser } from "./createParser";
 import { maybeIdentifierTo } from "./identifiers";
@@ -13,6 +13,7 @@ import {
 } from "./utils";
 
 interface InvokeNode {
+  path: NodePath<t.Node>;
   node: t.Node;
   value: string;
   declarationType: DeclarationType;
@@ -23,27 +24,29 @@ const InvokeSrcFunctionExpression = maybeTsAsExpression(
   maybeIdentifierTo(
     createParser({
       babelMatcher: isFunctionOrArrowFunctionExpression,
-      parseNode: (node, context): InvokeNode => {
-        const id = context.getNodeHash(node);
+      parseNode: (path, context): InvokeNode => {
+        const id = context.getNodeHash(path.node);
 
         return {
           value: id,
-          node,
+          path,
+          node: path.node,
           declarationType: "inline",
           inlineDeclarationId: id,
         };
       },
-    }),
-  ),
+    })
+  )
 );
 
 const InvokeSrcNode = createParser({
   babelMatcher: t.isNode,
-  parseNode: (node, context): InvokeNode => {
-    const id = context.getNodeHash(node);
+  parseNode: (path, context): InvokeNode => {
+    const id = context.getNodeHash(path.node);
     return {
       value: id,
-      node,
+      path,
+      node: path.node,
       declarationType: "unknown",
       inlineDeclarationId: id,
     };
@@ -52,23 +55,25 @@ const InvokeSrcNode = createParser({
 
 const InvokeSrcStringLiteral = createParser({
   babelMatcher: t.isStringLiteral,
-  parseNode: (node, context): InvokeNode => ({
-    value: node.value,
-    node,
+  parseNode: (path, context): InvokeNode => ({
+    value: path.node.value,
+    path,
+    node: path.node,
     declarationType: "named",
-    inlineDeclarationId: context.getNodeHash(node),
+    inlineDeclarationId: context.getNodeHash(path.node),
   }),
 });
 
 const InvokeSrcIdentifier = createParser({
   babelMatcher: t.isIdentifier,
-  parseNode: (node, context): InvokeNode => {
-    const id = context.getNodeHash(node);
+  parseNode: (path, context): InvokeNode => {
+    const id = context.getNodeHash(path.node);
     return {
       value: id,
-      node,
+      path,
+      node: path.node,
       declarationType: "identifier",
-      inlineDeclarationId: context.getNodeHash(node),
+      inlineDeclarationId: context.getNodeHash(path.node),
     };
   },
 });

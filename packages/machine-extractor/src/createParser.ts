@@ -1,4 +1,4 @@
-import { types as t } from "@babel/core";
+import { NodePath, types as t } from "@babel/core";
 import { Parser, ParserContext } from "./types";
 
 /**
@@ -7,14 +7,14 @@ import { Parser, ParserContext } from "./types";
  */
 export const createParser = <T extends t.Node, Result>(params: {
   babelMatcher: (node: any) => node is T;
-  parseNode: (node: T, context: ParserContext) => Result;
+  parseNode: (path: NodePath<T>, context: ParserContext) => Result;
 }): Parser<T, Result> => {
-  const matches = (node: T) => {
+  const matches = (node: t.Node) => {
     return params.babelMatcher(node);
   };
-  const parse = (node: any, context: ParserContext): Result | undefined => {
-    if (!matches(node)) return undefined;
-    return params.parseNode(node, context);
+  const parse = (path: any, context: ParserContext): Result | undefined => {
+    if (!matches(path?.node)) return undefined;
+    return params.parseNode(path, context);
   };
   return {
     parse,

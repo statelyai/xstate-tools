@@ -1,6 +1,6 @@
-import { types as t, traverse } from "@babel/core";
+import { NodePath, traverse, types as t } from "@babel/core";
 import { createParser } from "./createParser";
-import { AnyParser } from "./types";
+import { AnyParser, Parser } from "./types";
 import { unionType } from "./unionType";
 import {
   getPropertiesOfObjectExpression,
@@ -14,14 +14,14 @@ import { wrapParserResult } from "./wrapParserResult";
  */
 export const findVariableDeclaratorWithName = (
   file: any,
-  name: string,
-): t.VariableDeclarator | null | undefined => {
-  let declarator: t.VariableDeclarator | null | undefined = null;
+  name: string
+): NodePath<t.VariableDeclarator> | null | undefined => {
+  let declarator: NodePath<t.VariableDeclarator> | null | undefined = null;
 
   traverse(file, {
     VariableDeclarator(path) {
       if (t.isIdentifier(path.node.id) && path.node.id.name === name) {
-        declarator = path.node as any;
+        declarator = path as any;
       }
     },
   });
@@ -34,17 +34,17 @@ export const findVariableDeclaratorWithName = (
  * which references a variable declaration of a certain type
  */
 export const identifierReferencingVariableDeclaration = <Result>(
-  parser: AnyParser<Result>,
+  parser: AnyParser<Result>
 ) => {
   return createParser({
     babelMatcher: t.isIdentifier,
-    parseNode: (node, context) => {
+    parseNode: (path, context) => {
       const variableDeclarator = findVariableDeclaratorWithName(
         context.file,
-        node.name,
+        path.node.name
       );
 
-      return parser.parse(variableDeclarator?.init, context);
+      return parser.parse(variableDeclarator?.get("init"), context);
     },
   });
 };
@@ -55,14 +55,14 @@ export const identifierReferencingVariableDeclaration = <Result>(
  */
 export const findTSEnumDeclarationWithName = (
   file: any,
-  name: string,
-): t.TSEnumDeclaration | null | undefined => {
-  let declarator: t.TSEnumDeclaration | null | undefined = null;
+  name: string
+): NodePath<t.TSEnumDeclaration> | null | undefined => {
+  let declarator: NodePath<t.TSEnumDeclaration> | null | undefined = null;
 
   traverse(file, {
     TSEnumDeclaration(path) {
       if (t.isIdentifier(path.node.id) && path.node.id.name === name) {
-        declarator = path.node as any;
+        declarator = path as any;
       }
     },
   });
@@ -73,10 +73,11 @@ export const findTSEnumDeclarationWithName = (
 interface DeepMemberExpression {
   child?: DeepMemberExpression;
   node: t.MemberExpression | t.Identifier;
+  path: NodePath<t.MemberExpression | t.Identifier>;
 }
 
 const deepMemberExpressionToPath = (
-  memberExpression: DeepMemberExpression,
+  memberExpression: DeepMemberExpression
 ): string[] => {
   let currentLevel: DeepMemberExpression | undefined = memberExpression;
   const path: string[] = [];
@@ -96,145 +97,148 @@ const deepMemberExpressionToPath = (
   return path.reverse();
 };
 
-const deepMemberExpression = createParser({
+const deepMemberExpression: Parser<
+  t.MemberExpression | t.Identifier,
+  DeepMemberExpression
+> = createParser({
   babelMatcher(node): node is t.MemberExpression | t.Identifier {
     return t.isIdentifier(node) || t.isMemberExpression(node);
   },
-  parseNode: (
-    node: t.MemberExpression | t.Identifier,
-    context,
-  ): DeepMemberExpression => {
+  parseNode: (path, context) => {
+    const child = path.get("object") as unknown as NodePath<
+      t.MemberExpression | t.Identifier
+    >;
     return {
-      node,
-      child:
-        "object" in node
-          ? deepMemberExpression.parse(node.object, context)
-          : undefined,
+      path,
+      node: path.node,
+      child: child ? deepMemberExpression.parse(child, context) : undefined,
     };
   },
 });
 
 export const objectExpressionWithDeepPath = <Result>(
-  path: string[],
-  parser: AnyParser<Result>,
+  objPath: string[],
+  parser: AnyParser<Result>
 ) =>
   createParser({
     babelMatcher: t.isObjectExpression,
-    parseNode: (node, context) => {
+    parseNode: (path, context) => {
       let currentIndex = 0;
-      let currentNode: t.Node | undefined = node;
+      let currentPath: NodePath<t.ObjectExpression> | undefined | null = path;
 
-      while (path[currentIndex]) {
-        const pathSection = path[currentIndex];
+      while (objPath[currentIndex]) {
+        const pathSection = objPath[currentIndex];
 
         const objectProperties = getPropertiesOfObjectExpression(
-          currentNode as any,
-          context,
+          currentPath,
+          context
         );
 
-        currentNode = (
+        currentPath = (
           objectProperties.find(
             (property) =>
-              property.key === pathSection && t.isObjectProperty(property.node),
-          )?.node as t.ObjectProperty
-        )?.value;
+              property.key === pathSection && t.isObjectProperty(property.node)
+          )?.path as NodePath<t.ObjectProperty>
+        ).get("value") as any;
 
         currentIndex++;
       }
 
-      return parser.parse(currentNode, context);
+      return parser.parse(currentPath, context);
     },
   });
 
 const getRootIdentifierOfDeepMemberExpression = (
-  deepMemberExpression: DeepMemberExpression | undefined,
-): t.Identifier | undefined => {
+  deepMemberExpression: DeepMemberExpression | undefined
+): NodePath<t.Identifier> | undefined => {
   if (!deepMemberExpressionToPath) return undefined;
-  if (t.isIdentifier(deepMemberExpression?.node)) {
-    return deepMemberExpression?.node;
+  if (t.isIdentifier(deepMemberExpression?.path.node)) {
+    return deepMemberExpression?.path as NodePath<t.Identifier>;
   }
   return getRootIdentifierOfDeepMemberExpression(deepMemberExpression?.child);
 };
 
 export const memberExpressionReferencingObjectExpression = <Result>(
-  parser: AnyParser<Result>,
+  parser: AnyParser<Result>
 ) =>
   createParser({
     babelMatcher: t.isMemberExpression,
-    parseNode: (node, context) => {
-      const result = deepMemberExpression.parse(node, context);
+    parseNode: (path, context) => {
+      const result = deepMemberExpression.parse(path, context);
 
       const rootIdentifier = getRootIdentifierOfDeepMemberExpression(result);
 
       if (!result) return undefined;
 
-      const path = deepMemberExpressionToPath(result);
+      const memberPath = deepMemberExpressionToPath(result);
 
       return identifierReferencingVariableDeclaration(
-        objectExpressionWithDeepPath(path.slice(1), parser),
+        objectExpressionWithDeepPath(memberPath.slice(1), parser)
       ).parse(rootIdentifier, context);
     },
   });
 
 export const memberExpressionReferencingEnumMember = createParser({
   babelMatcher: t.isMemberExpression,
-  parseNode: (node, context) => {
-    const result = deepMemberExpression.parse(node, context);
+  parseNode: (path, context) => {
+    const result = deepMemberExpression.parse(path, context);
 
     const rootIdentifier = getRootIdentifierOfDeepMemberExpression(result);
 
     if (!result) return undefined;
 
-    const path = deepMemberExpressionToPath(result);
+    const stringPath = deepMemberExpressionToPath(result);
 
     const foundEnum = findTSEnumDeclarationWithName(
       context.file,
-      rootIdentifier?.name!,
+      rootIdentifier?.node.name!
     );
 
     if (!foundEnum) return undefined;
 
-    const targetEnumMember = path[1];
+    const targetEnumMember = stringPath[1];
 
     const valueParser = unionType([
       wrapParserResult(
         parserFromBabelMatcher(t.isStringLiteral),
-        (node) => node.value,
+        (path) => path.node.value
       ),
       wrapParserResult(
         parserFromBabelMatcher(t.isIdentifier),
-        (node) => node.name,
+        (path) => path.node.name
       ),
     ]);
 
-    const memberIndex = foundEnum.members.findIndex((member) => {
-      const value = valueParser.parse(member.id, context);
+    const memberIndex = foundEnum.get("members").findIndex((member) => {
+      const value = valueParser.parse(member.get("id"), context);
 
       return value === targetEnumMember;
     });
 
-    const member = foundEnum.members[memberIndex];
+    const memberPath = foundEnum.get("members")[memberIndex];
 
-    if (!member) {
+    if (!memberPath) {
       return undefined;
     }
 
-    if (member?.initializer) {
+    if (memberPath.get("initializer")?.node) {
       return {
-        node: member,
+        path: memberPath,
+        node: memberPath.node,
         value: unionType<string>([
           wrapParserResult(
             parserFromBabelMatcher(t.isStringLiteral),
-            (node) => node.value,
+            (path) => path.node.value
           ),
-          wrapParserResult(parserFromBabelMatcher(t.isNumericLiteral), (node) =>
-            String(node.value),
+          wrapParserResult(parserFromBabelMatcher(t.isNumericLiteral), (path) =>
+            String(path.node.value)
           ),
-        ]).parse(member.initializer, context) as string,
+        ]).parse(memberPath.get("initializer"), context) as string,
       };
     } else {
       return {
-        node: member,
+        path: memberPath,
+        node: memberPath.node,
         value: String(memberIndex),
       };
     }
