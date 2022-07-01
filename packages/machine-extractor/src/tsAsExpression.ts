@@ -6,7 +6,7 @@ import { unionType } from "./unionType";
 export const tsAsExpression = <Result>(parser: AnyParser<Result>) => {
   return createParser({
     babelMatcher: t.isTSAsExpression,
-    parseNode: (path, context) => {
+    parsePath: (path, context) => {
       if (parser.matches(path.get("expression")?.node)) {
         return parser.parse(path.get("expression"), context);
       }

@@ -7,14 +7,14 @@ import { Parser, ParserContext } from "./types";
  */
 export const createParser = <T extends t.Node, Result>(params: {
   babelMatcher: (node: any) => node is T;
-  parseNode: (path: NodePath<T>, context: ParserContext) => Result;
+  parsePath: (path: NodePath<T>, context: ParserContext) => Result;
 }): Parser<T, Result> => {
   const matches = (node: t.Node) => {
     return params.babelMatcher(node);
   };
   const parse = (path: any, context: ParserContext): Result | undefined => {
     if (!matches(path?.node)) return undefined;
-    return params.parseNode(path, context);
+    return params.parsePath(path, context);
   };
   return {
     parse,

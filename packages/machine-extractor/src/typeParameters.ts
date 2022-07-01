@@ -7,7 +7,7 @@ export const TSTypeParameterInstantiation = <Result>(
 ) =>
   createParser({
     babelMatcher: t.isTSTypeParameterInstantiation,
-    parseNode: (path, context) => {
+    parsePath: (path, context) => {
       return {
         path,
         node: path.node,
@@ -18,9 +18,10 @@ export const TSTypeParameterInstantiation = <Result>(
 
 export const TSType = createParser({
   babelMatcher: t.isTSType,
-  parseNode: (node) => {
+  parsePath: (path) => {
     return {
-      node,
+      node: path.node,
+      path,
     };
   },
 });

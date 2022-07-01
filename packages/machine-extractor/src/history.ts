@@ -10,7 +10,7 @@ interface HistoryNode {
 
 const HistoryAsString = createParser({
   babelMatcher: t.isStringLiteral,
-  parseNode: (path): HistoryNode => {
+  parsePath: (path): HistoryNode => {
     return {
       node: path.node,
       path,
@@ -21,7 +21,7 @@ const HistoryAsString = createParser({
 
 const HistoryAsBoolean = createParser({
   babelMatcher: t.isBooleanLiteral,
-  parseNode: (path): HistoryNode => {
+  parsePath: (path): HistoryNode => {
     return {
       node: path.node,
       path,
