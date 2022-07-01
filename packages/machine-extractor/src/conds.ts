@@ -1,4 +1,4 @@
-import { types as t } from "@babel/core";
+import { NodePath, types as t } from "@babel/core";
 import { Condition } from "xstate";
 import { DeclarationType } from ".";
 import { createParser } from "./createParser";
@@ -7,6 +7,7 @@ import { isFunctionOrArrowFunctionExpression } from "./utils";
 
 export interface CondNode {
   node: t.Node;
+  path: NodePath<t.Node>;
   name: string;
   cond: Condition<any, any>;
   declarationType: DeclarationType;
@@ -15,38 +16,40 @@ export interface CondNode {
 
 const CondAsFunctionExpression = createParser({
   babelMatcher: isFunctionOrArrowFunctionExpression,
-  parseNode: (node, context): CondNode => {
+  parseNode: (path, context): CondNode => {
     return {
-      node,
+      path,
+      node: path.node,
       name: "",
       cond: () => {
         return false;
       },
       declarationType: "inline",
-      inlineDeclarationId: context.getNodeHash(node),
+      inlineDeclarationId: context.getNodeHash(path.node),
     };
   },
 });
 
 const CondAsStringLiteral = createParser({
   babelMatcher: t.isStringLiteral,
-  parseNode: (node, context): CondNode => {
+  parseNode: (path, context): CondNode => {
     return {
-      node,
-      name: node.value,
-      cond: node.value,
+      path,
+      node: path.node,
+      name: path.node.value,
+      cond: path.node.value,
       declarationType: "named",
-      inlineDeclarationId: context.getNodeHash(node),
+      inlineDeclarationId: context.getNodeHash(path.node),
     };
   },
 });
 
 const CondAsParametrizedGuard = createParser({
   babelMatcher: t.isObjectExpression,
-  parseNode: (node, context): CondNode | null => {
+  parseNode: (path, context): CondNode | null => {
     let propValue: t.Node | null = null;
 
-    for (const prop of node.properties) {
+    for (const prop of path.node.properties) {
       if (!t.isObjectProperty(prop) || prop.computed) {
         continue;
       }
@@ -63,9 +66,10 @@ const CondAsParametrizedGuard = createParser({
       return null;
     }
 
-    const id = context.getNodeHash(node);
+    const id = context.getNodeHash(path.node);
     return {
-      node,
+      path,
+      node: path.node,
       name: propValue.value,
       cond: propValue.value,
       declarationType: "named",
@@ -76,10 +80,11 @@ const CondAsParametrizedGuard = createParser({
 
 const CondAsNode = createParser({
   babelMatcher: t.isNode,
-  parseNode: (node, context): CondNode => {
-    const id = context.getNodeHash(node);
+  parseNode: (path, context): CondNode => {
+    const id = context.getNodeHash(path.node);
     return {
-      node,
+      path,
+      node: path.node,
       name: "",
       cond: id,
       declarationType: "unknown",

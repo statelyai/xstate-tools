@@ -1,4 +1,4 @@
-import { types as t } from "@babel/core";
+import { NodePath, types as t } from "@babel/core";
 import { createParser } from "./createParser";
 import {
   identifierReferencingVariableDeclaration,
@@ -28,10 +28,10 @@ export const maybeArrayOf = <Result>(
 ): AnyParser<Result[]> => {
   const arrayParser = createParser({
     babelMatcher: t.isArrayExpression,
-    parseNode: (node, context) => {
+    parseNode: (path, context) => {
       const toReturn: Result[] = [];
 
-      node.elements.map((elem) => {
+      path.get("elements").map((elem) => {
         const result = parser.parse(elem, context);
         if (result && Array.isArray(result)) {
           toReturn.push(...result);
@@ -66,10 +66,10 @@ export const arrayOf = <Result>(
 ): AnyParser<Result[]> => {
   return createParser({
     babelMatcher: t.isArrayExpression,
-    parseNode: (node, context) => {
+    parseNode: (path, context) => {
       const toReturn: Result[] = [];
 
-      node.elements.map((elem) => {
+      path.get("elements").map((elem) => {
         const result = parser.parse(elem, context);
         if (result) {
           toReturn.push(result);
@@ -83,13 +83,15 @@ export const arrayOf = <Result>(
 
 export const objectMethod = createParser({
   babelMatcher: t.isObjectMethod,
-  parseNode: (node, context) => {
+  parseNode: (path, context) => {
     return {
-      node,
-      key: wrapParserResult(Identifier, ({ node }) => ({
+      node: path.node,
+      path,
+      key: wrapParserResult(Identifier, ({ node, path }) => ({
         node: node,
+        path,
         value: node.name,
-      })).parse(node.key, context),
+      })).parse(path.get("key"), context),
     };
   },
 });
@@ -100,6 +102,7 @@ export const staticObjectProperty = <KeyResult>(
   createParser<
     t.ObjectProperty,
     {
+      path: NodePath<t.ObjectProperty>;
       node: t.ObjectProperty;
       key?: KeyResult;
     }
@@ -107,10 +110,11 @@ export const staticObjectProperty = <KeyResult>(
     babelMatcher: (node): node is t.ObjectProperty => {
       return t.isObjectProperty(node) && !node.computed;
     },
-    parseNode: (node, context) => {
+    parseNode: (path, context) => {
       return {
-        node,
-        key: keyParser.parse(node.key, context),
+        node: path.node,
+        path,
+        key: keyParser.parse(path.get("key"), context),
       };
     },
   });
@@ -118,10 +122,11 @@ export const staticObjectProperty = <KeyResult>(
 export const spreadElement = <Result>(parser: AnyParser<Result>) => {
   return createParser({
     babelMatcher: t.isSpreadElement,
-    parseNode: (node, context) => {
+    parseNode: (path, context) => {
       const result = {
-        node,
-        argumentResult: parser.parse(node.argument, context),
+        node: path.node,
+        path,
+        argumentResult: parser.parse(path.get("argument"), context),
       };
 
       return result;
@@ -141,6 +146,7 @@ export const dynamicObjectProperty = <KeyResult>(
   createParser<
     t.ObjectProperty,
     {
+      path: NodePath<t.ObjectProperty>;
       node: t.ObjectProperty;
       key?: KeyResult;
     }
@@ -148,22 +154,24 @@ export const dynamicObjectProperty = <KeyResult>(
     babelMatcher: (node): node is t.ObjectProperty => {
       return t.isObjectProperty(node) && node.computed;
     },
-    parseNode: (node, context) => {
+    parseNode: (path, context) => {
       return {
-        node,
-        key: keyParser.parse(node.key, context),
+        node: path.node,
+        path,
+        key: keyParser.parse(path.get("key"), context),
       };
     },
   });
 
 const staticPropertyWithKey = staticObjectProperty(
-  unionType<{ node: t.Node; value: string | number }>([
+  unionType<{ node: t.Node; path: NodePath<t.Node>; value: string | number }>([
     createParser({
       babelMatcher: t.isIdentifier,
-      parseNode: (node) => {
+      parseNode: (path) => {
         return {
-          node,
-          value: node.name,
+          node: path.node,
+          path,
+          value: path.node.name,
         };
       },
     }),
@@ -176,6 +184,7 @@ const dynamicPropertyWithKey = dynamicObjectProperty(
   maybeIdentifierTo(
     unionType<{
       node: t.Node;
+      path: NodePath<t.Node>;
       value: string | number | undefined;
     }>([StringLiteral, NumericLiteral, TemplateLiteral])
   )
@@ -183,7 +192,9 @@ const dynamicPropertyWithKey = dynamicObjectProperty(
 
 const propertyKey = unionType<{
   node: t.ObjectMethod | t.ObjectProperty;
+  path: NodePath<t.ObjectMethod | t.ObjectProperty>;
   key?: {
+    path: NodePath<t.Node>;
     node: t.Node;
     value: string | number | undefined;
   };
@@ -194,32 +205,33 @@ const propertyKey = unionType<{
  * an object expression
  */
 export const getPropertiesOfObjectExpression = (
-  node: t.ObjectExpression | undefined,
+  path: NodePath<t.ObjectExpression> | null | undefined,
   context: ParserContext
 ) => {
   const propertiesToReturn: {
+    path: NodePath<t.ObjectProperty | t.ObjectMethod>;
     node: t.ObjectProperty | t.ObjectMethod;
     key: string;
     keyNode: t.Node;
+    keyPath: NodePath<t.Node>;
     property: t.ObjectMethod | t.ObjectProperty | t.SpreadElement;
+    propertyPath: NodePath<t.ObjectMethod | t.ObjectProperty | t.SpreadElement>;
   }[] = [];
 
-  node?.properties.forEach((property) => {
-    const propertiesToParse: (
-      | t.ObjectMethod
-      | t.ObjectProperty
-      | t.SpreadElement
-    )[] = [property];
+  path?.get("properties").forEach((property) => {
+    const propertiesToParse: NodePath<
+      t.ObjectMethod | t.ObjectProperty | t.SpreadElement
+    >[] = [property];
 
     const spreadElementResult = spreadElementReferencingIdentifier(
       createParser({
         babelMatcher: t.isObjectExpression,
-        parseNode: (node) => node,
+        parseNode: (path) => path,
       })
-    ).parse(property, context);
+    ).parse(property as any, context);
 
     propertiesToParse.push(
-      ...(spreadElementResult?.argumentResult?.properties || [])
+      ...(spreadElementResult?.argumentResult?.get("properties") || [])
     );
 
     propertiesToParse.forEach((property) => {
@@ -228,8 +240,11 @@ export const getPropertiesOfObjectExpression = (
         propertiesToReturn.push({
           key: `${result.key?.value}`,
           node: result.node,
-          keyNode: result.key.node,
-          property,
+          path: result.path,
+          keyNode: result.key?.node,
+          keyPath: result.key?.path,
+          property: property.node,
+          propertyPath: property,
         });
       }
     });
@@ -252,6 +267,7 @@ export type GetObjectKeysResult<
 
 export interface ObjectPropertyInfo {
   node: t.Node;
+  path: NodePath<t.Node>;
   _valueNode?: t.Node;
 }
 
@@ -272,13 +288,15 @@ export const objectTypeWithKnownKeys = <
     maybeIdentifierTo(
       createParser<t.ObjectExpression, GetObjectKeysResult<T>>({
         babelMatcher: t.isObjectExpression,
-        parseNode: (node, context) => {
-          const properties = getPropertiesOfObjectExpression(node, context);
+        parseNode: (path, context) => {
+          const properties = getPropertiesOfObjectExpression(path, context);
+
           const parseObject =
             typeof parserObject === "function" ? parserObject() : parserObject;
 
           const toReturn: ObjectPropertyInfo = {
-            node,
+            node: path.node,
+            path,
           };
 
           properties?.forEach((property) => {
@@ -290,9 +308,12 @@ export const objectTypeWithKnownKeys = <
             let result: any | undefined;
 
             if (t.isObjectMethod(property.node)) {
-              result = parser.parse(property.node, context);
+              result = parser.parse(property.path, context);
             } else if (t.isObjectProperty(property.node)) {
-              result = parser.parse(property.node.value, context);
+              result = parser.parse(
+                (property.path as NodePath<t.ObjectProperty>).get("value"),
+                context
+              );
               if (result) {
                 result._valueNode = property.node.value;
               }
@@ -328,11 +349,12 @@ export const objectOf = <Result>(
   return maybeIdentifierTo(
     createParser({
       babelMatcher: t.isObjectExpression,
-      parseNode: (node, context) => {
-        const properties = getPropertiesOfObjectExpression(node, context);
+      parseNode: (path, context) => {
+        const properties = getPropertiesOfObjectExpression(path, context);
 
         const toReturn = {
-          node,
+          node: path.node,
+          path,
           properties: [],
         } as ObjectOfReturn<Result>;
 
@@ -340,9 +362,12 @@ export const objectOf = <Result>(
           let result: Result | undefined;
 
           if (t.isObjectMethod(property.node)) {
-            result = parser.parse(property.node, context);
+            result = parser.parse(property.path, context);
           } else if (t.isObjectProperty(property.node)) {
-            result = parser.parse(property.node.value, context);
+            result = parser.parse(
+              (property.path as NodePath<t.ObjectProperty>).get("value"),
+              context
+            );
           }
 
           if (result) {
@@ -369,11 +394,7 @@ export const namedFunctionCall = <Argument1Result, Argument2Result>(
   name: string,
   argument1Parser: AnyParser<Argument1Result>,
   argument2Parser?: AnyParser<Argument2Result>
-): AnyParser<{
-  node: t.CallExpression;
-  argument1Result: Argument1Result | undefined;
-  argument2Result: Argument2Result | undefined;
-}> => {
+) => {
   const namedFunctionParser = maybeTsAsExpression(
     maybeIdentifierTo(
       createParser({
@@ -385,9 +406,21 @@ export const namedFunctionCall = <Argument1Result, Argument2Result>(
     )
   );
 
-  return {
-    matches: (node: t.CallExpression) => {
+  return createParser<
+    t.CallExpression,
+    {
+      node: t.CallExpression;
+      path: NodePath<t.CallExpression>;
+      argument1Result: Argument1Result | undefined;
+      argument2Result: Argument2Result | undefined;
+    }
+  >({
+    babelMatcher: (node): node is t.CallExpression => {
       if (!namedFunctionParser.matches(node)) {
+        return false;
+      }
+
+      if (!("callee" in node)) {
         return false;
       }
 
@@ -397,14 +430,21 @@ export const namedFunctionCall = <Argument1Result, Argument2Result>(
 
       return node.callee.name === name;
     },
-    parse: (node: t.CallExpression, context) => {
+    parseNode: (path, context) => {
       return {
-        node,
-        argument1Result: argument1Parser.parse(node.arguments[0], context),
-        argument2Result: argument2Parser?.parse(node.arguments[1], context),
+        node: path.node,
+        path: path,
+        argument1Result: argument1Parser.parse(
+          path.get("arguments")[0],
+          context
+        ),
+        argument2Result: argument2Parser?.parse(
+          path.get("arguments")[1],
+          context
+        ),
       };
     },
-  };
+  });
 };
 
 export const isFunctionOrArrowFunctionExpression = (

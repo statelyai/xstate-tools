@@ -4,30 +4,32 @@ import {
   maybeIdentifierTo,
   memberExpressionReferencingEnumMember,
 } from "./identifiers";
-import { StringLiteralNode } from "./types";
 import { maybeTsAsExpression } from "./tsAsExpression";
+import { StringLiteralNode } from "./types";
 import { unionType } from "./unionType";
 import { wrapParserResult } from "./wrapParserResult";
 
 export const StringLiteral = unionType([
-  wrapParserResult(memberExpressionReferencingEnumMember, (node) => {
+  wrapParserResult(memberExpressionReferencingEnumMember, ({ path, value }) => {
     return {
-      node: node.node as t.Node,
-      value: node.value,
+      path,
+      node: path.node as t.Node,
+      value: value,
     };
   }),
   maybeTsAsExpression(
     maybeIdentifierTo(
       createParser({
         babelMatcher: t.isStringLiteral,
-        parseNode: (node): StringLiteralNode => {
+        parseNode: (path): StringLiteralNode => {
           return {
-            value: node.value,
-            node,
+            value: path.node.value,
+            node: path.node,
+            path,
           };
         },
-      }),
-    ),
+      })
+    )
   ),
 ]);
 
@@ -35,56 +37,59 @@ export const NumericLiteral = maybeTsAsExpression(
   maybeIdentifierTo(
     createParser({
       babelMatcher: t.isNumericLiteral,
-      parseNode: (node) => {
+      parseNode: (path) => {
         return {
-          value: node.value,
-          node,
+          value: path.node.value,
+          node: path.node,
+          path,
         };
       },
-    }),
-  ),
+    })
+  )
 );
 
 export const BooleanLiteral = maybeTsAsExpression(
   maybeIdentifierTo(
     createParser({
       babelMatcher: t.isBooleanLiteral,
-      parseNode: (node) => {
+      parseNode: (path) => {
         return {
-          value: node.value,
-          node,
+          value: path.node.value,
+          node: path.node,
+          path,
         };
       },
-    }),
-  ),
+    })
+  )
 );
 
 export const AnyNode = createParser({
   babelMatcher: t.isNode,
-  parseNode: (node) => ({ node }),
+  parseNode: (path) => ({ path, node: path.node }),
 });
 
 export const Identifier = createParser({
   babelMatcher: t.isIdentifier,
-  parseNode: (node) => ({ node }),
+  parseNode: (path) => ({ path, node: path.node }),
 });
 
 export const TemplateLiteral = maybeTsAsExpression(
   maybeIdentifierTo(
     createParser({
       babelMatcher: t.isTemplateLiteral,
-      parseNode: (node) => {
+      parseNode: (path) => {
         let value = "";
 
         // TODO - this might lead to weird issues if there is actually more than a single quasi there
-        node.quasis.forEach((quasi) => {
+        path.node.quasis.forEach((quasi) => {
           value = `${value}${quasi.value.raw}`;
         });
         return {
-          node,
+          node: path.node,
+          path,
           value,
         };
       },
-    }),
-  ),
+    })
+  )
 );

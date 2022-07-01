@@ -1,4 +1,4 @@
-import { types as t } from "@babel/core";
+import { NodePath, types as t } from "@babel/core";
 import { ParserContext } from ".";
 import { AnyParser } from "./types";
 
@@ -10,16 +10,16 @@ export const wrapParserResult = <T extends t.Node, Result, NewResult>(
   parser: AnyParser<Result>,
   changeResult: (
     result: Result,
-    node: T,
-    context: ParserContext,
-  ) => NewResult | undefined,
+    path: NodePath<T>,
+    context: ParserContext
+  ) => NewResult | undefined
 ): AnyParser<NewResult> => {
   return {
     matches: parser.matches,
-    parse: (node: any, context) => {
-      const result = parser.parse(node, context);
+    parse: (path: NodePath<any> | null | undefined, context) => {
+      const result = parser.parse(path, context);
       if (!result) return undefined;
-      return changeResult(result, node, context);
+      return changeResult(result, path!, context);
     },
   };
 };
