@@ -10,8 +10,9 @@ module.exports = {
   ],
   snapshotFormat: {
     printBasicPrototype: false,
+    escapeString: false,
   },
   transform: {
-    "^.+\\.tsx?$": "esbuild-jest",
+    "^.+\\.tsx?$": ["esbuild-jest", { sourcemap: true }],
   },
 };
