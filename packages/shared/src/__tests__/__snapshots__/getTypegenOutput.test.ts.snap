@@ -149,6 +149,33 @@ export interface Typegen0 {
 "
 `;
 
+exports[`getTypegenOutput entry-action-on-ancestor-of-targeted-descendant 1`] = `
+"// This file was automatically generated. Edits will be overwritten
+
+export interface Typegen0 {
+  "@@xstate/typegen": true;
+  internalEvents: {
+    "xstate.init": { type: "xstate.init" };
+  };
+  invokeSrcNameMap: {};
+  missingImplementations: {
+    actions: "sayHello";
+    services: never;
+    guards: never;
+    delays: never;
+  };
+  eventsCausingActions: {
+    sayHello: "GO_STRING";
+  };
+  eventsCausingServices: {};
+  eventsCausingGuards: {};
+  eventsCausingDelays: {};
+  matchesStates: "a" | "b" | "b.c" | { b?: "c" };
+  tags: never;
+}
+"
+`;
+
 exports[`getTypegenOutput entry-action-on-initial-state-of-targeted-ancestor 1`] = `
 "// This file was automatically generated. Edits will be overwritten
 
@@ -171,6 +198,61 @@ export interface Typegen0 {
   eventsCausingGuards: {};
   eventsCausingDelays: {};
   matchesStates: "a" | "b" | "b.c" | { b?: "c" };
+  tags: never;
+}
+"
+`;
+
+exports[`getTypegenOutput entry-action-on-state-between-lca-and-target 1`] = `
+"// This file was automatically generated. Edits will be overwritten
+
+export interface Typegen0 {
+  "@@xstate/typegen": true;
+  internalEvents: {
+    "xstate.init": { type: "xstate.init" };
+  };
+  invokeSrcNameMap: {};
+  missingImplementations: {
+    actions: "rootEntry" | "sayHello";
+    services: never;
+    guards: never;
+    delays: never;
+  };
+  eventsCausingActions: {
+    rootEntry: "xstate.init";
+    sayHello: "FOO";
+  };
+  eventsCausingServices: {};
+  eventsCausingGuards: {};
+  eventsCausingDelays: {};
+  matchesStates: "a" | "b" | "b.b1" | { b?: "b1" };
+  tags: never;
+}
+"
+`;
+
+exports[`getTypegenOutput entry-action-root-external-transition 1`] = `
+"// This file was automatically generated. Edits will be overwritten
+
+export interface Typegen0 {
+  "@@xstate/typegen": true;
+  internalEvents: {
+    "xstate.init": { type: "xstate.init" };
+  };
+  invokeSrcNameMap: {};
+  missingImplementations: {
+    actions: "rootEntry";
+    services: never;
+    guards: never;
+    delays: never;
+  };
+  eventsCausingActions: {
+    rootEntry: "FOO" | "xstate.init";
+  };
+  eventsCausingServices: {};
+  eventsCausingGuards: {};
+  eventsCausingDelays: {};
+  matchesStates: "a" | "b";
   tags: never;
 }
 "
@@ -344,6 +426,63 @@ export interface Typegen0 {
 "
 `;
 
+exports[`getTypegenOutput exit-action-on-state-between-lca-and-source-state 1`] = `
+"// This file was automatically generated. Edits will be overwritten
+
+export interface Typegen0 {
+  "@@xstate/typegen": true;
+  internalEvents: {
+    "xstate.stop": { type: "xstate.stop" };
+    "xstate.init": { type: "xstate.init" };
+  };
+  invokeSrcNameMap: {};
+  missingImplementations: {
+    actions: "rootExit" | "sayHello";
+    services: never;
+    guards: never;
+    delays: never;
+  };
+  eventsCausingActions: {
+    rootExit: "xstate.stop";
+    sayHello: "xstate.stop" | "FOO";
+  };
+  eventsCausingServices: {};
+  eventsCausingGuards: {};
+  eventsCausingDelays: {};
+  matchesStates: "a" | "a.a1" | "b" | { a?: "a1" };
+  tags: never;
+}
+"
+`;
+
+exports[`getTypegenOutput exit-action-root-external-transition 1`] = `
+"// This file was automatically generated. Edits will be overwritten
+
+export interface Typegen0 {
+  "@@xstate/typegen": true;
+  internalEvents: {
+    "xstate.stop": { type: "xstate.stop" };
+    "xstate.init": { type: "xstate.init" };
+  };
+  invokeSrcNameMap: {};
+  missingImplementations: {
+    actions: "rootExit";
+    services: never;
+    guards: never;
+    delays: never;
+  };
+  eventsCausingActions: {
+    rootExit: "xstate.stop" | "FOO";
+  };
+  eventsCausingServices: {};
+  eventsCausingGuards: {};
+  eventsCausingDelays: {};
+  matchesStates: "a" | "b";
+  tags: never;
+}
+"
+`;
+
 exports[`getTypegenOutput exit-action-within-ancestor-with-external-transition-outside-of-source 1`] = `
 "// This file was automatically generated. Edits will be overwritten
 
@@ -367,6 +506,35 @@ export interface Typegen0 {
   eventsCausingGuards: {};
   eventsCausingDelays: {};
   matchesStates: "a" | "a.b" | "c" | { a?: "b" };
+  tags: never;
+}
+"
+`;
+
+exports[`getTypegenOutput exit-action-within-ancestor-with-internal-transition 1`] = `
+"// This file was automatically generated. Edits will be overwritten
+
+export interface Typegen0 {
+  "@@xstate/typegen": true;
+  internalEvents: {
+    "xstate.stop": { type: "xstate.stop" };
+    "xstate.init": { type: "xstate.init" };
+  };
+  invokeSrcNameMap: {};
+  missingImplementations: {
+    actions: "exitA1" | "exitA2";
+    services: never;
+    guards: never;
+    delays: never;
+  };
+  eventsCausingActions: {
+    exitA1: "FOO" | "xstate.stop";
+    exitA2: "xstate.stop";
+  };
+  eventsCausingServices: {};
+  eventsCausingGuards: {};
+  eventsCausingDelays: {};
+  matchesStates: "a" | "a.a1" | "a.a2" | { a?: "a1" | "a2" };
   tags: never;
 }
 "

@@ -2,19 +2,20 @@ import { createMachine } from "xstate";
 
 createMachine({
   tsTypes:
-    {} as import("./entry-action-on-initial-state-of-targeted-ancestor.typegen").Typegen0,
+    {} as import("./entry-action-on-ancestor-of-targeted-descendant.typegen").Typegen0,
   initial: "a",
   states: {
     a: {
       on: {
-        GO_STRING: "b",
+        GO_STRING: "#c",
       },
     },
     b: {
+      entry: ["sayHello"],
       initial: "c",
       states: {
         c: {
-          entry: ["sayHello"],
+          id: "c",
         },
       },
     },
