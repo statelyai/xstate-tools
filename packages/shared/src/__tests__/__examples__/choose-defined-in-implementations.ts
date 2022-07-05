@@ -1,12 +1,10 @@
 import { createMachine } from "xstate";
 import { choose } from "xstate/lib/actions";
 
-const machine = createMachine(
+createMachine(
   {
-    tsTypes: {} as import("./chooseInMachineOptions.typegen").Typegen0,
-    schema: {
-      events: {} as { type: "FOO"; val: number } | { type: "BAR"; val: string },
-    },
+    tsTypes:
+      {} as import("./choose-defined-in-implementations.typegen").Typegen0,
     initial: "a",
     states: {
       a: {
@@ -21,15 +19,10 @@ const machine = createMachine(
   },
   {
     guards: {
-      cond1: (context, event) => {
-        ((_accept: "FOO") => {})(event.type);
-        return true;
-      },
+      cond1: () => true,
     },
     actions: {
-      a: (context, event) => {
-        ((_accept: "FOO") => {})(event.type);
-      },
+      a: () => {},
       b: () => {},
       c: () => {},
       wow: choose([
