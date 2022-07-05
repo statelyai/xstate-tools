@@ -12,6 +12,9 @@ const examplesPath = path.resolve(__dirname, "__examples__");
 
 describe("getTypegenOutput", () => {
   fs.readdirSync(examplesPath).forEach((file) => {
+    if (file.includes(".typegen.")) {
+      return;
+    }
     (file.includes(".only.") ? it.only : it)(
       file.slice(0, -path.extname(file).length),
       async () => {
