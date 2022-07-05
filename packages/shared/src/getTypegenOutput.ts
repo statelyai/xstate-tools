@@ -202,13 +202,17 @@ const collectInternalEvents = (lineArrays: { events: string[] }[][]) => {
 const displayEventsCausing = (lines: { name: string; events: string[] }[]) => {
   return lines
     .map((line) => {
-      return `${JSON.stringify(line.name)}: ${unique(
-        line.events.map((event) => {
-          return event;
-        })
-      )
-        .map((event) => JSON.stringify(event))
-        .join(" | ")};`;
+      return `${JSON.stringify(line.name)}: ${
+        line.events.length
+          ? unique(
+              line.events.map((event) => {
+                return event;
+              })
+            )
+              .map((event) => JSON.stringify(event))
+              .join(" | ")
+          : "never"
+      };`;
     })
     .join("\n");
 };
