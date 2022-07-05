@@ -202,20 +202,13 @@ const collectInternalEvents = (lineArrays: { events: string[] }[][]) => {
 const displayEventsCausing = (lines: { name: string; events: string[] }[]) => {
   return lines
     .map((line) => {
-      return `${JSON.stringify(line.name)}: ${
-        unique(
-          line.events.map((event) => {
-            return event;
-          })
-        )
-          .map((event) => JSON.stringify(event))
-          .join(" | ") ||
-        /**
-         * If no transitions go to this guard/service/action, it's guaranteed
-         * to be caused by xstate.init.
-         */
-        "'xstate.init'"
-      };`;
+      return `${JSON.stringify(line.name)}: ${unique(
+        line.events.map((event) => {
+          return event;
+        })
+      )
+        .map((event) => JSON.stringify(event))
+        .join(" | ")};`;
     })
     .join("\n");
 };
