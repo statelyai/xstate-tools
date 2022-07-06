@@ -263,11 +263,12 @@ export type GetObjectKeysResult<
   };
 } & {
   node: t.Node;
+  _path: NodePath<t.ObjectExpression>;
 };
 
 export interface ObjectPropertyInfo {
   node: t.Node;
-  path: NodePath<t.Node>;
+  _path: NodePath<t.ObjectExpression>;
   _valueNode?: t.Node;
 }
 
@@ -296,7 +297,7 @@ export const objectTypeWithKnownKeys = <
 
           const toReturn: ObjectPropertyInfo = {
             node: path.node,
-            path,
+            _path: path,
           };
 
           properties?.forEach((property) => {
@@ -316,6 +317,9 @@ export const objectTypeWithKnownKeys = <
               );
               if (result) {
                 result._valueNode = property.node.value;
+                result._valueNodePath = (
+                  property.path as NodePath<t.ObjectProperty>
+                ).get("value");
               }
             }
 
@@ -330,11 +334,13 @@ export const objectTypeWithKnownKeys = <
 
 export interface ObjectOfReturn<Result> {
   node: t.Node;
+  path: NodePath<t.ObjectExpression>;
   properties: {
     keyNode: t.Node;
     key: string;
     result: Result;
     property: t.ObjectMethod | t.ObjectProperty | t.SpreadElement;
+    propertyPath: NodePath<t.ObjectMethod | t.ObjectProperty | t.SpreadElement>;
   }[];
 }
 
@@ -376,6 +382,7 @@ export const objectOf = <Result>(
               keyNode: property.keyNode,
               result,
               property: property.property,
+              propertyPath: property.propertyPath,
             });
           }
         });

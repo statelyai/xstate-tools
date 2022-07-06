@@ -1,5 +1,5 @@
 import { NodePath, types as t } from "@babel/core";
-import { DeclarationType } from ".";
+import { DeclarationType, GetParserResult } from ".";
 import { createParser } from "./createParser";
 import { maybeIdentifierTo } from "./identifiers";
 import { BooleanLiteral, StringLiteral } from "./scalars";
@@ -12,7 +12,7 @@ import {
   objectTypeWithKnownKeys,
 } from "./utils";
 
-interface InvokeNode {
+export interface InvokeNode {
   path: NodePath<t.Node>;
   node: t.Node;
   value: string;
@@ -93,5 +93,7 @@ const InvokeConfigObject = objectTypeWithKnownKeys({
   autoForward: BooleanLiteral,
   forward: BooleanLiteral,
 });
+
+export type InvokeConfigObjectType = GetParserResult<typeof InvokeConfigObject>;
 
 export const Invoke = maybeArrayOf(InvokeConfigObject);

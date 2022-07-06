@@ -1,0 +1,25 @@
+{
+  "name": "@xstate/recast-experiment",
+  "version": "0.7.0",
+  "main": "dist/xstate-recast-experiment.cjs.js",
+  "author": "Matt Pocock",
+  "license": "MIT",
+  "scripts": {
+    "test": "jest src",
+    "lint": "tsc"
+  },
+  "dependencies": {
+    "@xstate/machine-extractor": "0.7.0",
+    "recast": "^0.21.1"
+  },
+  "peerDependencies": {
+    "xstate": "^4"
+  },
+  "devDependencies": {
+    "@types/jest": "^27.4.0",
+    "@types/node": "^16.0.1",
+    "jest": "^27.4.7",
+    "typescript": "^4.3.5",
+    "xstate": "^4.29.0"
+  }
+}
