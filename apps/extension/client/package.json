@@ -82,15 +82,19 @@
           "default": true,
           "description": "Enable nesting the generated typegen files."
         },
-        "xstate.sendAllChangesToVisualEditor": {
-          "type": "boolean",
-          "default": false,
-          "description": "Send changes as they're created. The default is to send changes when a document is saved in VS Code."
+        "xstate.sendChanges": {
+          "type": "string",
+          "enum": [
+            "onSave",
+            "onCreation"
+          ],
+          "default": "onSave",
+          "markdownDescription": "Choose when you want changes sent to the visual editor. The default is to send changes when you save, `onCreation` will send them as they're created."
         },
-        "xstate.sendAllChangesToVisualEditorDelay": {
+        "xstate.sendChangesDelay": {
           "type": "number",
           "default": 1000,
-          "description": "Delay before sending changes to the visual editor. This only has an effect if you have enabled Send All Changes To Visual Editor."
+          "markdownDescription": "Controls the delay in ms after which changes are sent to the visual editor. Only applies when `#xstate.sendChanges#` is set to `onCreation`."
         }
       }
     }
