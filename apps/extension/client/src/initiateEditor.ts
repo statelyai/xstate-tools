@@ -17,8 +17,6 @@ import { handleDefinitionUpdate } from "./handleDefinitionUpdate";
 import { handleNodeSelected } from "./handleNodeSelected";
 import { debounce } from "./utils";
 
-let sendChangesSubscription: vscode.Disposable | undefined = undefined;
-
 export const initiateEditor = (context: vscode.ExtensionContext) => {
   const baseUrl = getBaseUrl();
 
@@ -166,13 +164,16 @@ export const initiateEditor = (context: vscode.ExtensionContext) => {
       return vscode.workspace.onDidSaveTextDocument(sendChangesToVisualEditor);
     }
   };
-  sendChangesSubscription = getSendChangesSubscription();
+  let sendChangesSubscription = getSendChangesSubscription();
   context.subscriptions.push(sendChangesSubscription);
 
   // Handle the case where the user updates the xstate settings
   vscode.workspace.onDidChangeConfiguration((event) => {
-    if (event.affectsConfiguration("xstate.sendChanges")) {
-      sendChangesSubscription?.dispose();
+    if (
+      event.affectsConfiguration("xstate.sendChanges") ||
+      event.affectsConfiguration("xstate.sendChangesDelay")
+    ) {
+      sendChangesSubscription.dispose();
       sendChangesSubscription = getSendChangesSubscription();
     }
   });
