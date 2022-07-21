@@ -148,16 +148,16 @@ export const initiateEditor = (context: vscode.ExtensionContext) => {
 
   const getSendChangesSubscription = () => {
     const xstateConfig = vscode.workspace.getConfiguration("xstate");
-    const sendUnsavedChangesVisualEditor = xstateConfig.get<boolean>(
-      "sendUnsavedChangesVisualEditor"
+    const sendAllChangesVisualEditor = xstateConfig.get<boolean>(
+      "sendAllChangesVisualEditor"
     );
-    const sendUnsavedChangesVisualEditorDelay =
-      xstateConfig.get<number>("sendUnsavedChangesVisualEditorDelay") ?? 1000;
+    const sendAllChangesVisualEditorDelay =
+      xstateConfig.get<number>("sendAllChangesVisualEditorDelay") ?? 1000;
 
-    if (sendUnsavedChangesVisualEditor) {
+    if (sendAllChangesVisualEditor) {
       const debouncedSendChangesToVisualEditor = debounce(
         sendChangesToVisualEditor,
-        sendUnsavedChangesVisualEditorDelay
+        sendAllChangesVisualEditorDelay
       );
 
       return vscode.workspace.onDidChangeTextDocument(({ document }) =>
@@ -172,7 +172,7 @@ export const initiateEditor = (context: vscode.ExtensionContext) => {
 
   // Handle the case where the user updates the xstate settings
   vscode.workspace.onDidChangeConfiguration((event) => {
-    if (event.affectsConfiguration("xstate.sendUnsavedChangesVisualEditor")) {
+    if (event.affectsConfiguration("xstate.sendAllChangesVisualEditor")) {
       sendChangesSubscription?.dispose();
       sendChangesSubscription = getSendChangesSubscription();
       context.subscriptions.push(sendChangesSubscription);
