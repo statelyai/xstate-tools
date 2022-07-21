@@ -90,7 +90,7 @@
         "xstate.sendAllChangesToVisualEditorDelay": {
           "type": "number",
           "default": 1000,
-          "description": "Delay before sending changes to the visual editor after a change. This only has an effect if you have enabled xstate.sendAllChangesVisualEditor."
+          "description": "Delay before sending changes to the visual editor after a change. This only has an effect if you have enabled xstate.sendAllChangesToVisualEditor."
         }
       }
     }
