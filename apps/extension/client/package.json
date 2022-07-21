@@ -85,12 +85,12 @@
         "xstate.sendAllChangesToVisualEditor": {
           "type": "boolean",
           "default": false,
-          "description": "Send changes after all changes to the file. The default is to send on save in VS Code."
+          "description": "Send changes as they're created. The default is to send changes when a document is saved in VS Code."
         },
         "xstate.sendAllChangesToVisualEditorDelay": {
           "type": "number",
           "default": 1000,
-          "description": "Delay before sending changes to the visual editor after a change. This only has an effect if you have enabled xstate.sendAllChangesToVisualEditor."
+          "description": "Delay before sending changes to the visual editor. This only has an effect if you have enabled xstate.sendAllChangesToVisualEditor."
         }
       }
     }
