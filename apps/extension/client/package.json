@@ -81,6 +81,16 @@
           "type": "boolean",
           "default": true,
           "description": "Enable nesting the generated typegen files."
+        },
+        "xstate.sendUnsavedChangesVisualEditor": {
+          "type": "boolean",
+          "default": false,
+          "description": "Send changes after each keypress to the visual editor. The default is to send on save."
+        },
+        "xstate.sendUnsavedChangesVisualEditorDelay": {
+          "type": "number",
+          "default": 1000,
+          "description": "Delay before sending changes to the visual editor after a keypress. This only has an effect if you have enabled xstate.sendUnsavedChangesVisualEditor."
         }
       }
     }

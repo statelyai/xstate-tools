@@ -8,7 +8,6 @@ import {
 } from "@xstate/tools-shared";
 import * as path from "path";
 import * as vscode from "vscode";
-import type { LanguageClient } from "vscode-languageclient/node";
 import { MachineConfig } from "xstate";
 import { getAuth, SignInResult } from "./auth";
 import { getBaseUrl } from "./constants";
@@ -16,11 +15,11 @@ import { EditorWebviewScriptEvent } from "./editorWebviewScript";
 import { getWebviewContent } from "./getWebviewContent";
 import { handleDefinitionUpdate } from "./handleDefinitionUpdate";
 import { handleNodeSelected } from "./handleNodeSelected";
+import { debounce } from "./utils";
 
-export const initiateEditor = (
-  context: vscode.ExtensionContext,
-  client: LanguageClient
-) => {
+let sendChangesSubscription: vscode.Disposable | undefined = undefined;
+
+export const initiateEditor = (context: vscode.ExtensionContext) => {
   const baseUrl = getBaseUrl();
 
   let currentPanel: vscode.WebviewPanel | undefined = undefined;
@@ -129,25 +128,56 @@ export const initiateEditor = (
     }
   };
 
-  context.subscriptions.push(
-    vscode.workspace.onDidSaveTextDocument(async (document) => {
-      const text = document.getText();
-      const result = parseMachinesFromFile(text);
+  const sendChangesToVisualEditor = (document: vscode.TextDocument) => {
+    const text = document.getText();
+    const result = parseMachinesFromFile(text);
 
-      if (result.machines.length > 0) {
-        result.machines.forEach((machine, index) => {
-          sendMessage({
-            type: "RECEIVE_CONFIG_UPDATE_FROM_VSCODE",
-            config: machine.toConfig({ hashInlineImplementations: true })!,
-            index: index,
-            uri: resolveUriToFilePrefix(document.uri.path),
-            layoutString: machine.getLayoutComment()?.value || "",
-            implementations: getInlineImplementations(machine, text),
-          });
+    if (result.machines.length > 0) {
+      result.machines.forEach((machine, index) => {
+        sendMessage({
+          type: "RECEIVE_CONFIG_UPDATE_FROM_VSCODE",
+          config: machine.toConfig({ hashInlineImplementations: true })!,
+          index: index,
+          uri: resolveUriToFilePrefix(document.uri.path),
+          layoutString: machine.getLayoutComment()?.value || "",
+          implementations: getInlineImplementations(machine, text),
         });
-      }
-    })
-  );
+      });
+    }
+  };
+
+  const getSendChangesSubscription = () => {
+    const xstateConfig = vscode.workspace.getConfiguration("xstate");
+    const sendUnsavedChangesVisualEditor = xstateConfig.get<boolean>(
+      "sendUnsavedChangesVisualEditor"
+    );
+    const sendUnsavedChangesVisualEditorDelay =
+      xstateConfig.get<number>("sendUnsavedChangesVisualEditorDelay") ?? 1000;
+
+    if (sendUnsavedChangesVisualEditor) {
+      const debouncedSendChangesToVisualEditor = debounce(
+        sendChangesToVisualEditor,
+        sendUnsavedChangesVisualEditorDelay
+      );
+
+      return vscode.workspace.onDidChangeTextDocument(({ document }) =>
+        debouncedSendChangesToVisualEditor(document)
+      );
+    } else {
+      return vscode.workspace.onDidSaveTextDocument(sendChangesToVisualEditor);
+    }
+  };
+  sendChangesSubscription = getSendChangesSubscription();
+  context.subscriptions.push(sendChangesSubscription);
+
+  // Handle the case where the user updates the xstate settings
+  vscode.workspace.onDidChangeConfiguration((event) => {
+    if (event.affectsConfiguration("xstate.sendUnsavedChangesVisualEditor")) {
+      sendChangesSubscription?.dispose();
+      sendChangesSubscription = getSendChangesSubscription();
+      context.subscriptions.push(sendChangesSubscription);
+    }
+  });
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
