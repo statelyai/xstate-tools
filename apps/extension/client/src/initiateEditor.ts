@@ -174,7 +174,6 @@ export const initiateEditor = (context: vscode.ExtensionContext) => {
     if (event.affectsConfiguration("xstate.sendChanges")) {
       sendChangesSubscription?.dispose();
       sendChangesSubscription = getSendChangesSubscription();
-      context.subscriptions.push(sendChangesSubscription);
     }
   });
 
