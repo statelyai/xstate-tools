@@ -15,7 +15,6 @@ import { EditorWebviewScriptEvent } from "./editorWebviewScript";
 import { getWebviewContent } from "./getWebviewContent";
 import { handleDefinitionUpdate } from "./handleDefinitionUpdate";
 import { handleNodeSelected } from "./handleNodeSelected";
-import { debounce } from "./utils";
 
 export const initiateEditor = (context: vscode.ExtensionContext) => {
   const baseUrl = getBaseUrl();
@@ -126,57 +125,34 @@ export const initiateEditor = (context: vscode.ExtensionContext) => {
     }
   };
 
-  const sendChangesToVisualEditor = (document: vscode.TextDocument) => {
-    const text = document.getText();
-    const result = parseMachinesFromFile(text);
+  let lastSentText: string | undefined;
+  context.subscriptions.push(
+    vscode.workspace.onDidChangeTextDocument(({ document }) => {
+      // Only send the text if it isn't dirty, which should be the case after a save
+      if (document.isDirty) return;
 
-    if (result.machines.length > 0) {
-      result.machines.forEach((machine, index) => {
-        sendMessage({
-          type: "RECEIVE_CONFIG_UPDATE_FROM_VSCODE",
-          config: machine.toConfig({ hashInlineImplementations: true })!,
-          index: index,
-          uri: resolveUriToFilePrefix(document.uri.path),
-          layoutString: machine.getLayoutComment()?.value || "",
-          implementations: getInlineImplementations(machine, text),
+      const text = document.getText();
+
+      // If we already sent the text, don't send it again
+      if (document.uri.path + text === lastSentText) return;
+
+      const parsed = parseMachinesFromFile(text);
+      if (parsed.machines.length > 0) {
+        lastSentText = document.uri.path + text;
+
+        parsed.machines.forEach((machine, index) => {
+          sendMessage({
+            type: "RECEIVE_CONFIG_UPDATE_FROM_VSCODE",
+            config: machine.toConfig({ hashInlineImplementations: true })!,
+            index: index,
+            uri: resolveUriToFilePrefix(document.uri.path),
+            layoutString: machine.getLayoutComment()?.value || "",
+            implementations: getInlineImplementations(machine, text),
+          });
         });
-      });
-    }
-  };
-
-  const getSendChangesSubscription = () => {
-    const xstateConfig = vscode.workspace.getConfiguration("xstate");
-    const sendChangesOnCreation =
-      xstateConfig.get<string>("sendChanges") === "onCreation";
-    const sendChangesDelay =
-      xstateConfig.get<number>("sendChangesDelay") ?? 1000;
-
-    if (sendChangesOnCreation) {
-      const debouncedSendChangesToVisualEditor = debounce(
-        sendChangesToVisualEditor,
-        sendChangesDelay
-      );
-
-      return vscode.workspace.onDidChangeTextDocument(({ document }) =>
-        debouncedSendChangesToVisualEditor(document)
-      );
-    } else {
-      return vscode.workspace.onDidSaveTextDocument(sendChangesToVisualEditor);
-    }
-  };
-  let sendChangesSubscription = getSendChangesSubscription();
-  context.subscriptions.push(sendChangesSubscription);
-
-  // Handle the case where the user updates the xstate settings
-  vscode.workspace.onDidChangeConfiguration((event) => {
-    if (
-      event.affectsConfiguration("xstate.sendChanges") ||
-      event.affectsConfiguration("xstate.sendChangesDelay")
-    ) {
-      sendChangesSubscription.dispose();
-      sendChangesSubscription = getSendChangesSubscription();
-    }
-  });
+      }
+    })
+  );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(

@@ -81,20 +81,6 @@
           "type": "boolean",
           "default": true,
           "description": "Enable nesting the generated typegen files."
-        },
-        "xstate.sendChanges": {
-          "type": "string",
-          "enum": [
-            "onSave",
-            "onCreation"
-          ],
-          "default": "onSave",
-          "markdownDescription": "Choose when you want changes sent to the visual editor. The default is to send changes when you save, `onCreation` will send them as they're created."
-        },
-        "xstate.sendChangesDelay": {
-          "type": "number",
-          "default": 1000,
-          "markdownDescription": "Controls the delay in ms after which changes are sent to the visual editor. Only applies when `#xstate.sendChanges#` is set to `onCreation`."
         }
       }
     }
