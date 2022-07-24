@@ -127,7 +127,7 @@ export const initiateEditor = (context: vscode.ExtensionContext) => {
 
   let lastSentPathAndText: string | undefined;
   context.subscriptions.push(
-    // We use onDidChange over onDidSave to catch changes made to the file outside of VS Code
+    // We use onDidChange over onDidSave to catch changes made to the document outside of VS Code
     vscode.workspace.onDidChangeTextDocument(({ document }) => {
       // Only send the text if it isn't dirty, which should be the case after a save
       if (document.isDirty) return;
