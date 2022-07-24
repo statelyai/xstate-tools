@@ -125,8 +125,9 @@ export const initiateEditor = (context: vscode.ExtensionContext) => {
     }
   };
 
-  let lastSentText: string | undefined;
+  let lastSentPathAndText: string | undefined;
   context.subscriptions.push(
+    // We use onDidChange over onDidSave to catch changes made to the file outside of VS Code
     vscode.workspace.onDidChangeTextDocument(({ document }) => {
       // Only send the text if it isn't dirty, which should be the case after a save
       if (document.isDirty) return;
@@ -134,11 +135,11 @@ export const initiateEditor = (context: vscode.ExtensionContext) => {
       const text = document.getText();
 
       // If we already sent the text, don't send it again
-      if (document.uri.path + text === lastSentText) return;
+      if (document.uri.path + text === lastSentPathAndText) return;
 
       const parsed = parseMachinesFromFile(text);
       if (parsed.machines.length > 0) {
-        lastSentText = document.uri.path + text;
+        lastSentPathAndText = document.uri.path + text;
 
         parsed.machines.forEach((machine, index) => {
           sendMessage({
