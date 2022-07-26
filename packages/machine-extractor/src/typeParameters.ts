@@ -1,10 +1,9 @@
-import { createParser } from "./createParser";
 import { types as t } from "@babel/core";
 import { AnyParser } from ".";
-import { arrayOf } from "./utils";
+import { createParser } from "./createParser";
 
 export const TSTypeParameterInstantiation = <Result>(
-  parser: AnyParser<Result>,
+  parser: AnyParser<Result>
 ) =>
   createParser({
     babelMatcher: t.isTSTypeParameterInstantiation,

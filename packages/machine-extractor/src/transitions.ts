@@ -1,9 +1,6 @@
-import { types as t } from "@babel/core";
 import { MaybeArrayOfActions } from "./actions";
 import { Cond } from "./conds";
-import { createParser } from "./createParser";
 import { StringLiteral, TemplateLiteral } from "./scalars";
-import { StringLiteralNode } from "./types";
 import { unionType } from "./unionType";
 import {
   GetParserResult,
@@ -15,7 +12,7 @@ import { wrapParserResult } from "./wrapParserResult";
 export type TransitionConfigNode = GetParserResult<typeof TransitionObject>;
 
 const TransitionTarget = maybeArrayOf(
-  unionType([StringLiteral, TemplateLiteral]),
+  unionType([StringLiteral, TemplateLiteral])
 );
 
 const TransitionObject = objectTypeWithKnownKeys({
@@ -36,5 +33,5 @@ const TransitionConfigOrTargetLiteral = unionType([
 ]);
 
 export const MaybeTransitionArray = maybeArrayOf(
-  TransitionConfigOrTargetLiteral,
+  TransitionConfigOrTargetLiteral
 );

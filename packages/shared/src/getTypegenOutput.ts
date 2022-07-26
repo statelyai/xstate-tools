@@ -1,8 +1,7 @@
 import { createMachine } from "xstate";
-import { introspectMachine } from "./introspectMachine";
 import { getStateMatchesObjectSyntax } from "./getStateMatchesObjectSyntax";
+import { introspectMachine } from "./introspectMachine";
 import { XStateUpdateMachine } from "./types";
-import { choose } from "xstate/lib/actions";
 
 export const getTypegenOutput = (event: {
   machines: Pick<
@@ -124,34 +123,32 @@ export const getTypegenOutput = (event: {
 
         return `export interface Typegen${index} {
           '@@xstate/typegen': true;
-          eventsCausingActions: {
-            ${displayEventsCausing(actions)}
-          };
           internalEvents: {
             ${Object.values(internalEvents).join("\n")}
           };
           invokeSrcNameMap: {
-            ${Object.keys(introspectResult.serviceSrcToIdMap)
-              .filter((src) => {
+            ${Array.from(introspectResult.serviceSrcToIdMap)
+              .filter(([src]) => {
                 return machine.allServices.some(
                   (service) => service.src === src
                 );
               })
-              .map((src) => {
-                const set = Array.from(introspectResult.serviceSrcToIdMap[src]);
-
-                return `${JSON.stringify(src)}: ${set
+              .map(([src, ids]) => {
+                return `${JSON.stringify(src)}: ${Array.from(ids)
                   .map((item) => JSON.stringify(`done.invoke.${item}`))
                   .join(" | ")};`;
               })
               .join("\n")}
-          }
+          };
           missingImplementations: {
             ${`actions: ${requiredActions || "never"};`}
             ${`services: ${requiredServices || "never"};`}
             ${`guards: ${requiredGuards || "never"};`}
             ${`delays: ${requiredDelays || "never"};`}
-          }
+          };
+          eventsCausingActions: {
+            ${displayEventsCausing(actions)}
+          };
           eventsCausingServices: {
             ${displayEventsCausing(services)}
           };
@@ -182,18 +179,18 @@ const collectInternalEvents = (lineArrays: { events: string[] }[][]) => {
   lineArrays.forEach((lines) => {
     lines.forEach((line) => {
       line.events.forEach((event) => {
+        const safelyQuoted = JSON.stringify(event);
         if (event.startsWith("done.invoke")) {
-          internalEvents[event] = `${JSON.stringify(
+          internalEvents[
             event
-          )}: { type: ${JSON.stringify(
-            event
-          )}; data: unknown; __tip: "See the XState TS docs to learn how to strongly type this."; };`;
+          ] = `${safelyQuoted}: { type: ${safelyQuoted}; data: unknown; __tip: "See the XState TS docs to learn how to strongly type this."; };`;
         } else if (event.startsWith("xstate.") || event === "") {
-          internalEvents[event] = `'${event}': { type: '${event}' };`;
+          const safelyQuoted = JSON.stringify(event);
+          internalEvents[event] = `${safelyQuoted}: { type: ${safelyQuoted} };`;
         } else if (event.startsWith("error.platform")) {
-          internalEvents[event] = `${JSON.stringify(
+          internalEvents[
             event
-          )}: { type: ${JSON.stringify(event)}; data: unknown; };`;
+          ] = `${safelyQuoted}: { type: ${safelyQuoted}; data: unknown; };`;
         }
       });
     });

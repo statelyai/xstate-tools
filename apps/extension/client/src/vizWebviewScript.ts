@@ -1,8 +1,5 @@
 import { inspect } from "@xstate/inspect";
-import { assign } from "xstate";
-import { MachineConfig } from "xstate";
-import { interpret } from "xstate";
-import { createMachine } from "xstate";
+import { assign, createMachine, interpret, MachineConfig } from "xstate";
 
 export interface WebViewMachineContext {
   config: MachineConfig<any, any, any>;
@@ -90,7 +87,7 @@ const machine = createMachine<WebViewMachineContext, VizWebviewMachineEvent>({
           });
 
           return () => {
-            inspector.disconnect();
+            inspector!.disconnect();
           };
         },
       },

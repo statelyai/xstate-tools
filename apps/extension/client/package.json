@@ -4,7 +4,7 @@
   "description": "Visual editing, autocomplete and typegen for XState",
   "license": "MIT",
   "author": "Stately Team",
-  "version": "1.7.6",
+  "version": "1.8.3",
   "private": true,
   "engines": {
     "vscode": "^1.52.0"
@@ -77,6 +77,21 @@
           "type": "string",
           "default": "https://stately.ai",
           "description": "The base URL to open the visual editor in."
+        },
+        "xstate.nestTypegenFiles": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable nesting the generated typegen files."
+        },
+        "xstate.theme": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "dark",
+            "light"
+          ],
+          "default": "auto",
+          "description": "Color theme for the visual editor. Auto syncs the VS Code theme with the editor theme."
         }
       }
     },
@@ -91,12 +106,12 @@
     "test": "jest --passWithNoTests",
     "viz:build": "esbuild src/vizWebviewScript.ts --bundle --outfile=scripts/vizWebview.js",
     "editor:build": "esbuild src/editorWebviewScript.ts --bundle --outfile=scripts/editorWebview.js",
-    "build": "esbuild --bundle --platform=\"node\" src/extension.ts --outfile=dist/index.js --external:vscode --format=cjs"
+    "build": "esbuild --bundle --platform=\"node\" src/extension.ts --outfile=dist/index.js --external:vscode --format=cjs --sourcemap"
   },
   "dependencies": {
     "@types/lz-string": "^1.3.34",
     "@xstate/inspect": "^0.4.1",
-    "@xstate/tools-shared": "1.1.5",
+    "@xstate/tools-shared": "1.1.7",
     "lz-string": "^1.4.4",
     "vscode-languageclient": "^7.0.0",
     "xstate": "^4.29.0"

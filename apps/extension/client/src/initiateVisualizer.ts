@@ -1,14 +1,14 @@
-import * as path from "path";
-import * as vscode from "vscode";
-import { LanguageClient } from "vscode-languageclient/node";
-import { MachineConfig } from "xstate";
-import { Location, parseMachinesFromFile } from "@xstate/machine-extractor";
+import { parseMachinesFromFile } from "@xstate/machine-extractor";
 import {
   filterOutIgnoredMachines,
   getSetOfNames,
   isCursorInPosition,
   XStateUpdateEvent,
 } from "@xstate/tools-shared";
+import * as path from "path";
+import * as vscode from "vscode";
+import { LanguageClient } from "vscode-languageclient/node";
+import { MachineConfig } from "xstate";
 import { getWebviewContent } from "./getWebviewContent";
 import { VizWebviewMachineEvent } from "./vizWebviewScript";
 
@@ -16,8 +16,8 @@ export const initiateVisualizer = (
   context: vscode.ExtensionContext,
   client: LanguageClient,
   registerXStateUpdateListener: (
-    listener: (event: XStateUpdateEvent) => void,
-  ) => vscode.Disposable,
+    listener: (event: XStateUpdateEvent) => void
+  ) => vscode.Disposable
 ) => {
   let currentPanel: vscode.WebviewPanel | undefined = undefined;
 
@@ -29,7 +29,7 @@ export const initiateVisualizer = (
     config: MachineConfig<any, any, any>,
     machineIndex: number,
     uri: string,
-    guardsToMock: string[],
+    guardsToMock: string[]
   ) => {
     if (currentPanel) {
       currentPanel.reveal(vscode.ViewColumn.Beside);
@@ -46,11 +46,11 @@ export const initiateVisualizer = (
         "visualizer",
         "XState Visualizer",
         vscode.ViewColumn.Beside,
-        { enableScripts: true, retainContextWhenHidden: true },
+        { enableScripts: true, retainContextWhenHidden: true }
       );
 
       const onDiskPath = vscode.Uri.file(
-        path.join(context.extensionPath, "scripts", "vizWebview.js"),
+        path.join(context.extensionPath, "scripts", "vizWebview.js")
       );
 
       const src = currentPanel.webview.asWebviewUri(onDiskPath);
@@ -71,7 +71,7 @@ export const initiateVisualizer = (
           currentPanel = undefined;
         },
         undefined,
-        context.subscriptions,
+        context.subscriptions
       );
     }
   };
@@ -79,12 +79,12 @@ export const initiateVisualizer = (
   context.subscriptions.push(
     vscode.commands.registerCommand("stately-xstate.visualize", () => {
       try {
-        const currentSelection = vscode.window.activeTextEditor.selection;
-
-        const currentText = vscode.window.activeTextEditor.document.getText();
+        const activeTextEditor = vscode.window.activeTextEditor!;
+        const currentSelection = activeTextEditor.selection;
+        const currentText = activeTextEditor.document.getText();
 
         const result = filterOutIgnoredMachines(
-          parseMachinesFromFile(currentText),
+          parseMachinesFromFile(currentText)
         );
 
         let foundIndex: number | null = null;
@@ -96,12 +96,12 @@ export const initiateVisualizer = (
           ) {
             const isInPosition =
               isCursorInPosition(
-                machine?.ast?.definition?.node?.loc,
-                currentSelection.start,
+                machine?.ast?.definition?.node?.loc!,
+                currentSelection.start
               ) ||
               isCursorInPosition(
-                machine?.ast?.options?.node?.loc,
-                currentSelection.start,
+                machine?.ast?.options?.node?.loc!,
+                currentSelection.start
               );
 
             if (isInPosition) {
@@ -117,21 +117,21 @@ export const initiateVisualizer = (
             machine.toConfig() as any,
             foundIndex!,
             resolveUriToFilePrefix(
-              vscode.window.activeTextEditor.document.uri.path,
+              vscode.window.activeTextEditor!.document.uri.path
             ),
-            Array.from(getSetOfNames(machine.getAllConds(["named"]))),
+            Array.from(getSetOfNames(machine.getAllConds(["named"])))
           );
         } else {
           vscode.window.showErrorMessage(
-            "Could not find a machine at the current cursor.",
+            "Could not find a machine at the current cursor."
           );
         }
       } catch (e) {
         vscode.window.showErrorMessage(
-          "Could not find a machine at the current cursor.",
+          "Could not find a machine at the current cursor."
         );
       }
-    }),
+    })
   );
 
   context.subscriptions.push(
@@ -145,7 +145,7 @@ export const initiateVisualizer = (
           guardsToMock: machine.namedGuards,
         });
       });
-    }),
+    })
   );
   context.subscriptions.push(
     vscode.commands.registerCommand(
@@ -154,11 +154,11 @@ export const initiateVisualizer = (
         config: MachineConfig<any, any, any>,
         machineIndex: number,
         uri: string,
-        guardsToMock: string[],
+        guardsToMock: string[]
       ) => {
         startService(config, machineIndex, uri, guardsToMock);
-      },
-    ),
+      }
+    )
   );
 
   return {
