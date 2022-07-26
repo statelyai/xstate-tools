@@ -1,6 +1,63 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`getTypegenOutput after 1`] = `
+exports[`getTypegenOutput action-missing 1`] = `
+"// This file was automatically generated. Edits will be overwritten
+
+export interface Typegen0 {
+  "@@xstate/typegen": true;
+  internalEvents: {
+    "xstate.init": { type: "xstate.init" };
+  };
+  invokeSrcNameMap: {};
+  missingImplementations: {
+    actions: "notImplementedYet" | "anotherNotImplementedYet";
+    services: never;
+    guards: never;
+    delays: never;
+  };
+  eventsCausingActions: {
+    someAction: "xstate.init";
+    otherAction: "xstate.init";
+    notImplementedYet: "xstate.init";
+    anotherNotImplementedYet: "xstate.init";
+  };
+  eventsCausingServices: {};
+  eventsCausingGuards: {};
+  eventsCausingDelays: {};
+  matchesStates: undefined;
+  tags: never;
+}
+"
+`;
+
+exports[`getTypegenOutput action-provided-function 1`] = `
+"// This file was automatically generated. Edits will be overwritten
+
+export interface Typegen0 {
+  "@@xstate/typegen": true;
+  internalEvents: {
+    "xstate.init": { type: "xstate.init" };
+  };
+  invokeSrcNameMap: {};
+  missingImplementations: {
+    actions: never;
+    services: never;
+    guards: never;
+    delays: never;
+  };
+  eventsCausingActions: {
+    someAction: "xstate.init";
+  };
+  eventsCausingServices: {};
+  eventsCausingGuards: {};
+  eventsCausingDelays: {};
+  matchesStates: undefined;
+  tags: never;
+}
+"
+`;
+
+exports[`getTypegenOutput after-numeric-like-delay 1`] = `
 "// This file was automatically generated. Edits will be overwritten
 
 export interface Typegen0 {
@@ -28,95 +85,39 @@ export interface Typegen0 {
 "
 `;
 
-exports[`getTypegenOutput basic 1`] = `
+exports[`getTypegenOutput after-string-delay 1`] = `
 "// This file was automatically generated. Edits will be overwritten
 
 export interface Typegen0 {
   "@@xstate/typegen": true;
   internalEvents: {
+    "xstate.after(myDelay)#(machine).b": {
+      type: "xstate.after(myDelay)#(machine).b";
+    };
     "xstate.init": { type: "xstate.init" };
   };
   invokeSrcNameMap: {};
   missingImplementations: {
-    actions: never;
+    actions: "someAction";
     services: never;
     guards: never;
-    delays: never;
+    delays: "myDelay";
   };
   eventsCausingActions: {
-    someAction: "FOO";
-    otherAction: "BAR";
+    someAction: "xstate.after(myDelay)#(machine).b";
   };
   eventsCausingServices: {};
   eventsCausingGuards: {};
-  eventsCausingDelays: {};
+  eventsCausingDelays: {
+    myDelay: "NEXT";
+  };
   matchesStates: "a" | "b" | "c";
   tags: never;
 }
 "
 `;
 
-exports[`getTypegenOutput bug-report-1 1`] = `
-"// This file was automatically generated. Edits will be overwritten
-
-export interface Typegen0 {
-  "@@xstate/typegen": true;
-  internalEvents: {
-    "done.invoke.machine:invocation[0]": {
-      type: "done.invoke.machine:invocation[0]";
-      data: unknown;
-      __tip: "See the XState TS docs to learn how to strongly type this.";
-    };
-    "done.invoke.machine.initialise:invocation[0]": {
-      type: "done.invoke.machine.initialise:invocation[0]";
-      data: unknown;
-      __tip: "See the XState TS docs to learn how to strongly type this.";
-    };
-    "done.invoke.machine.ready.refresh:invocation[0]": {
-      type: "done.invoke.machine.ready.refresh:invocation[0]";
-      data: unknown;
-      __tip: "See the XState TS docs to learn how to strongly type this.";
-    };
-    "xstate.after(5000)#ready": { type: "xstate.after(5000)#ready" };
-    "xstate.init": { type: "xstate.init" };
-  };
-  invokeSrcNameMap: {
-    pollData:
-      | "done.invoke.machine:invocation[0]"
-      | "done.invoke.machine.ready.refresh:invocation[0]";
-    getData: "done.invoke.machine.initialise:invocation[0]";
-  };
-  missingImplementations: {
-    actions: never;
-    services: never;
-    guards: never;
-    delays: never;
-  };
-  eventsCausingActions: {
-    assignData:
-      | "done.invoke.machine:invocation[0]"
-      | "done.invoke.machine.initialise:invocation[0]"
-      | "done.invoke.machine.ready.refresh:invocation[0]";
-  };
-  eventsCausingServices: {
-    pollData: "xstate.init" | "xstate.after(5000)#ready";
-    getData: "xstate.init";
-  };
-  eventsCausingGuards: {};
-  eventsCausingDelays: {};
-  matchesStates:
-    | "initialise"
-    | "ready"
-    | "ready.idle"
-    | "ready.refresh"
-    | "error"
-    | { ready?: "idle" | "refresh" };
-  tags: never;
-}
-"
-`;
-
-exports[`getTypegenOutput chooseInMachineOptions 1`] = `
+exports[`getTypegenOutput choose-defined-in-implementations 1`] = `
 "// This file was automatically generated. Edits will be overwritten
 
 export interface Typegen0 {
@@ -148,37 +149,90 @@ export interface Typegen0 {
 "
 `;
 
-exports[`getTypegenOutput event-causing-delay 1`] = `
+exports[`getTypegenOutput entry-action-on-initial-state-of-targeted-ancestor 1`] = `
 "// This file was automatically generated. Edits will be overwritten
 
 export interface Typegen0 {
   "@@xstate/typegen": true;
   internalEvents: {
-    "xstate.after(myDelay)#(machine).b": {
-      type: "xstate.after(myDelay)#(machine).b";
-    };
     "xstate.init": { type: "xstate.init" };
   };
   invokeSrcNameMap: {};
   missingImplementations: {
-    actions: never;
+    actions: "sayHello";
     services: never;
     guards: never;
     delays: never;
   };
-  eventsCausingActions: {};
+  eventsCausingActions: {
+    sayHello: "GO_STRING";
+  };
   eventsCausingServices: {};
   eventsCausingGuards: {};
-  eventsCausingDelays: {
-    myDelay: "NEXT";
+  eventsCausingDelays: {};
+  matchesStates: "a" | "b" | "b.c" | { b?: "c" };
+  tags: never;
+}
+"
+`;
+
+exports[`getTypegenOutput entry-actions-basic 1`] = `
+"// This file was automatically generated. Edits will be overwritten
+
+export interface Typegen0 {
+  "@@xstate/typegen": true;
+  internalEvents: {
+    "xstate.init": { type: "xstate.init" };
   };
+  invokeSrcNameMap: {};
+  missingImplementations: {
+    actions: "someAction" | "otherAction";
+    services: never;
+    guards: never;
+    delays: never;
+  };
+  eventsCausingActions: {
+    someAction: "FOO";
+    otherAction: "BAR";
+  };
+  eventsCausingServices: {};
+  eventsCausingGuards: {};
+  eventsCausingDelays: {};
   matchesStates: "a" | "b" | "c";
   tags: never;
 }
 "
 `;
 
-exports[`getTypegenOutput exitActionWithTransitionOnDescendant 1`] = `
+exports[`getTypegenOutput entry-actions-within-targeted-parallel 1`] = `
+"// This file was automatically generated. Edits will be overwritten
+
+export interface Typegen0 {
+  "@@xstate/typegen": true;
+  internalEvents: {
+    "xstate.init": { type: "xstate.init" };
+  };
+  invokeSrcNameMap: {};
+  missingImplementations: {
+    actions: "sayHello" | "sayBazinga";
+    services: never;
+    guards: never;
+    delays: never;
+  };
+  eventsCausingActions: {
+    sayHello: "GO_STRING";
+    sayBazinga: "GO_STRING";
+  };
+  eventsCausingServices: {};
+  eventsCausingGuards: {};
+  eventsCausingDelays: {};
+  matchesStates: "a" | "b" | "b.c" | "b.d" | { b?: "c" | "d" };
+  tags: never;
+}
+"
+`;
+
+exports[`getTypegenOutput exit-action-external-transition-out-of-source 1`] = `
 "// This file was automatically generated. Edits will be overwritten
 
 export interface Typegen0 {
@@ -189,7 +243,91 @@ export interface Typegen0 {
   };
   invokeSrcNameMap: {};
   missingImplementations: {
-    actions: never;
+    actions: "doSomethingWithFoo";
+    services: never;
+    guards: never;
+    delays: never;
+  };
+  eventsCausingActions: {
+    doSomethingWithFoo: "xstate.stop" | "FOO";
+  };
+  eventsCausingServices: {};
+  eventsCausingGuards: {};
+  eventsCausingDelays: {};
+  matchesStates: "a" | "b";
+  tags: never;
+}
+"
+`;
+
+exports[`getTypegenOutput exit-action-external-transition-within-source 1`] = `
+"// This file was automatically generated. Edits will be overwritten
+
+export interface Typegen0 {
+  "@@xstate/typegen": true;
+  internalEvents: {
+    "xstate.stop": { type: "xstate.stop" };
+    "xstate.init": { type: "xstate.init" };
+  };
+  invokeSrcNameMap: {};
+  missingImplementations: {
+    actions: "exitA";
+    services: never;
+    guards: never;
+    delays: never;
+  };
+  eventsCausingActions: {
+    exitA: "xstate.stop";
+  };
+  eventsCausingServices: {};
+  eventsCausingGuards: {};
+  eventsCausingDelays: {};
+  matchesStates: "a" | "a.c" | "a.d" | { a?: "c" | "d" };
+  tags: never;
+}
+"
+`;
+
+exports[`getTypegenOutput exit-action-internal-transition 1`] = `
+"// This file was automatically generated. Edits will be overwritten
+
+export interface Typegen0 {
+  "@@xstate/typegen": true;
+  internalEvents: {
+    "xstate.stop": { type: "xstate.stop" };
+    "xstate.init": { type: "xstate.init" };
+  };
+  invokeSrcNameMap: {};
+  missingImplementations: {
+    actions: "exitA";
+    services: never;
+    guards: never;
+    delays: never;
+  };
+  eventsCausingActions: {
+    exitA: "xstate.stop";
+  };
+  eventsCausingServices: {};
+  eventsCausingGuards: {};
+  eventsCausingDelays: {};
+  matchesStates: "a" | "a.c" | "a.d" | { a?: "c" | "d" };
+  tags: never;
+}
+"
+`;
+
+exports[`getTypegenOutput exit-action-on-ancestor-with-external-transition-on-descendant 1`] = `
+"// This file was automatically generated. Edits will be overwritten
+
+export interface Typegen0 {
+  "@@xstate/typegen": true;
+  internalEvents: {
+    "xstate.stop": { type: "xstate.stop" };
+    "xstate.init": { type: "xstate.init" };
+  };
+  invokeSrcNameMap: {};
+  missingImplementations: {
+    actions: "doSomethingWithFoo";
     services: never;
     guards: never;
     delays: never;
@@ -206,7 +344,7 @@ export interface Typegen0 {
 "
 `;
 
-exports[`getTypegenOutput exitActions 1`] = `
+exports[`getTypegenOutput exit-action-within-ancestor-with-external-transition-outside-of-source 1`] = `
 "// This file was automatically generated. Edits will be overwritten
 
 export interface Typegen0 {
@@ -217,51 +355,7 @@ export interface Typegen0 {
   };
   invokeSrcNameMap: {};
   missingImplementations: {
-    actions: never;
-    services: never;
-    guards: never;
-    delays: never;
-  };
-  eventsCausingActions: {
-    doSomethingWithFoo: "xstate.stop" | "FOO";
-  };
-  eventsCausingServices: {};
-  eventsCausingGuards: {};
-  eventsCausingDelays: {};
-  matchesStates: "a" | "b";
-  tags: never;
-}
-export interface Typegen1 {
-  "@@xstate/typegen": true;
-  internalEvents: {
-    "xstate.stop": { type: "xstate.stop" };
-    "xstate.init": { type: "xstate.init" };
-  };
-  invokeSrcNameMap: {};
-  missingImplementations: {
-    actions: never;
-    services: never;
-    guards: never;
-    delays: never;
-  };
-  eventsCausingActions: {
-    exitA: "xstate.stop";
-  };
-  eventsCausingServices: {};
-  eventsCausingGuards: {};
-  eventsCausingDelays: {};
-  matchesStates: "a" | "a.c" | "a.d" | { a?: "c" | "d" };
-  tags: never;
-}
-export interface Typegen2 {
-  "@@xstate/typegen": true;
-  internalEvents: {
-    "xstate.stop": { type: "xstate.stop" };
-    "xstate.init": { type: "xstate.init" };
-  };
-  invokeSrcNameMap: {};
-  missingImplementations: {
-    actions: never;
+    actions: "myAction";
     services: never;
     guards: never;
     delays: never;
@@ -278,7 +372,65 @@ export interface Typegen2 {
 "
 `;
 
-exports[`getTypegenOutput functionsInOptions 1`] = `
+exports[`getTypegenOutput guard-provided-function 1`] = `
+"// This file was automatically generated. Edits will be overwritten
+
+export interface Typegen0 {
+  "@@xstate/typegen": true;
+  internalEvents: {
+    "xstate.init": { type: "xstate.init" };
+  };
+  invokeSrcNameMap: {};
+  missingImplementations: {
+    actions: "sayHello";
+    services: never;
+    guards: never;
+    delays: never;
+  };
+  eventsCausingActions: {
+    sayHello: "FOO";
+  };
+  eventsCausingServices: {};
+  eventsCausingGuards: {
+    guard: "FOO";
+  };
+  eventsCausingDelays: {};
+  matchesStates: undefined;
+  tags: never;
+}
+"
+`;
+
+exports[`getTypegenOutput invoke-within-targeted-parallel 1`] = `
+"// This file was automatically generated. Edits will be overwritten
+
+export interface Typegen0 {
+  "@@xstate/typegen": true;
+  internalEvents: {
+    "xstate.init": { type: "xstate.init" };
+  };
+  invokeSrcNameMap: {
+    jump: "done.invoke.(machine).b.c:invocation[0]";
+  };
+  missingImplementations: {
+    actions: never;
+    services: "jump";
+    guards: never;
+    delays: never;
+  };
+  eventsCausingActions: {};
+  eventsCausingServices: {
+    jump: "GO_STRING";
+  };
+  eventsCausingGuards: {};
+  eventsCausingDelays: {};
+  matchesStates: "a" | "b" | "b.c" | { b?: "c" };
+  tags: never;
+}
+"
+`;
+
+exports[`getTypegenOutput service-provided-function 1`] = `
 "// This file was automatically generated. Edits will be overwritten
 
 export interface Typegen0 {
@@ -296,162 +448,10 @@ export interface Typegen0 {
     guards: never;
     delays: never;
   };
-  eventsCausingActions: {
-    sayHello: "FOO";
-  };
+  eventsCausingActions: {};
   eventsCausingServices: {
     service1: "xstate.init";
     service2: "xstate.init";
-  };
-  eventsCausingGuards: {
-    guard: "FOO";
-  };
-  eventsCausingDelays: {};
-  matchesStates: undefined;
-  tags: never;
-}
-"
-`;
-
-exports[`getTypegenOutput parallel-entry 1`] = `
-"// This file was automatically generated. Edits will be overwritten
-
-export interface Typegen0 {
-  "@@xstate/typegen": true;
-  internalEvents: {
-    "xstate.init": { type: "xstate.init" };
-  };
-  invokeSrcNameMap: {};
-  missingImplementations: {
-    actions: never;
-    services: never;
-    guards: never;
-    delays: never;
-  };
-  eventsCausingActions: {
-    sayHello: "GO_STRING";
-  };
-  eventsCausingServices: {};
-  eventsCausingGuards: {};
-  eventsCausingDelays: {};
-  matchesStates: "a" | "b" | "b.c" | { b?: "c" };
-  tags: never;
-}
-"
-`;
-
-exports[`getTypegenOutput parallel-invoke 1`] = `
-"// This file was automatically generated. Edits will be overwritten
-
-export interface Typegen0 {
-  "@@xstate/typegen": true;
-  internalEvents: {
-    "xstate.init": { type: "xstate.init" };
-  };
-  invokeSrcNameMap: {
-    jump: "done.invoke.(machine).b.c:invocation[0]";
-  };
-  missingImplementations: {
-    actions: never;
-    services: never;
-    guards: never;
-    delays: never;
-  };
-  eventsCausingActions: {};
-  eventsCausingServices: {
-    jump: "GO_STRING";
-  };
-  eventsCausingGuards: {};
-  eventsCausingDelays: {};
-  matchesStates: "a" | "b" | "b.c" | { b?: "c" };
-  tags: never;
-}
-"
-`;
-
-exports[`getTypegenOutput recursive-entry 1`] = `
-"// This file was automatically generated. Edits will be overwritten
-
-export interface Typegen0 {
-  "@@xstate/typegen": true;
-  internalEvents: {
-    "xstate.init": { type: "xstate.init" };
-  };
-  invokeSrcNameMap: {};
-  missingImplementations: {
-    actions: never;
-    services: never;
-    guards: never;
-    delays: never;
-  };
-  eventsCausingActions: {
-    sayHello: "GO_STRING";
-  };
-  eventsCausingServices: {};
-  eventsCausingGuards: {};
-  eventsCausingDelays: {};
-  matchesStates: "a" | "b" | "b.c" | { b?: "c" };
-  tags: never;
-}
-"
-`;
-
-exports[`getTypegenOutput recursive-invoke 1`] = `
-"// This file was automatically generated. Edits will be overwritten
-
-export interface Typegen0 {
-  "@@xstate/typegen": true;
-  internalEvents: {
-    "xstate.init": { type: "xstate.init" };
-  };
-  invokeSrcNameMap: {
-    jump: "done.invoke.(machine).b.c:invocation[0]";
-  };
-  missingImplementations: {
-    actions: never;
-    services: never;
-    guards: never;
-    delays: never;
-  };
-  eventsCausingActions: {};
-  eventsCausingServices: {
-    jump: "GO_STRING";
-  };
-  eventsCausingGuards: {};
-  eventsCausingDelays: {};
-  matchesStates: "a" | "b" | "b.c" | { b?: "c" };
-  tags: never;
-}
-"
-`;
-
-exports[`getTypegenOutput type-safe-services 1`] = `
-"// This file was automatically generated. Edits will be overwritten
-
-export interface Typegen0 {
-  "@@xstate/typegen": true;
-  internalEvents: {
-    "done.invoke.(machine):invocation[0]": {
-      type: "done.invoke.(machine):invocation[0]";
-      data: unknown;
-      __tip: "See the XState TS docs to learn how to strongly type this.";
-    };
-    "xstate.init": { type: "xstate.init" };
-  };
-  invokeSrcNameMap: {
-    makeFetch: "done.invoke.(machine):invocation[0]";
-  };
-  missingImplementations: {
-    actions: never;
-    services: never;
-    guards: never;
-    delays: never;
-  };
-  eventsCausingActions: {
-    sayHello: "done.invoke.(machine):invocation[0]";
-  };
-  eventsCausingServices: {
-    makeFetch: "xstate.init";
   };
   eventsCausingGuards: {};
   eventsCausingDelays: {};
