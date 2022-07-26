@@ -32,6 +32,10 @@ Navigate around machines easily with jump to definition on targets, actions, gua
 
 <img src="https://raw.githubusercontent.com/statelyai/xstate-tools/main/assets/jump-to-definition.png" alt="" />
 
+### Snippets (BETA)
+
+We include one snippet with this extension, `xsm`, which is short for **XS**tate**M**achine.
+
 ## Hints and Tips
 
 ### Ignoring machines
