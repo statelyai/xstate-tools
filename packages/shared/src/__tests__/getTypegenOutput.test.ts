@@ -1,53 +1,38 @@
-import { execSync } from "child_process";
 import * as fs from "fs";
-import * as minimatch from "minimatch";
+import * as fsP from "fs/promises";
 import * as path from "path";
+import { format } from "prettier";
 import {
   getDocumentValidationsResults,
   getTypegenOutput,
   makeXStateUpdateEvent,
 } from "..";
 
+const examplesPath = path.resolve(__dirname, "__examples__");
+
 describe("getTypegenOutput", () => {
-  const examplesPath = path.resolve(__dirname, "__examples__");
-
-  minimatch
-    .match(fs.readdirSync(examplesPath), "*.typegen.ts")
-    .map((file) => fs.unlinkSync(path.join(examplesPath, file)));
-
-  const tsExtensionFiles = fs
-    .readdirSync(examplesPath)
-    .filter((file) => file.endsWith(".ts"));
-
-  tsExtensionFiles.forEach((file) => {
-    const fileText = fs.readFileSync(
-      path.resolve(__dirname, "__examples__", file),
-      "utf8"
-    );
-
-    const event = makeXStateUpdateEvent(
-      // URI doesn't matter here
-      "",
-      getDocumentValidationsResults(fileText)
-    );
-
-    fs.writeFileSync(
-      path.resolve(
-        __dirname,
-        "__examples__",
-        file.slice(0, -3) + ".typegen.ts"
-      ),
-      getTypegenOutput(event)
-    );
-  });
-
-  it("Should pass tsc", () => {
-    try {
-      execSync(`tsc`, {
-        cwd: path.resolve(__dirname, "__examples__"),
-      });
-    } catch (e: any) {
-      throw new Error(e.stdout.toString());
+  fs.readdirSync(examplesPath).forEach((file) => {
+    if (file.includes(".typegen.")) {
+      return;
     }
+    (file.includes(".only.") ? it.only : it)(
+      file.slice(0, -path.extname(file).length),
+      async () => {
+        const content = await fsP.readFile(
+          path.join(examplesPath, file),
+          "utf8"
+        );
+
+        const event = makeXStateUpdateEvent(
+          // URI doesn't matter here
+          "",
+          getDocumentValidationsResults(content)
+        );
+
+        expect(
+          format(getTypegenOutput(event), { parser: "typescript" })
+        ).toMatchSnapshot();
+      }
+    );
   });
 });
