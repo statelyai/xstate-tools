@@ -81,6 +81,16 @@
           "type": "boolean",
           "default": true,
           "description": "Enable nesting the generated typegen files."
+        },
+        "xstate.theme": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "dark",
+            "light"
+          ],
+          "default": "auto",
+          "description": "Color theme for the visual editor. Auto syncs the vscode theme with the editor theme."
         }
       }
     }
