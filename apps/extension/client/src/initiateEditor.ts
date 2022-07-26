@@ -8,6 +8,7 @@ import {
 } from "@xstate/tools-shared";
 import * as path from "path";
 import * as vscode from "vscode";
+import { ColorThemeKind } from "vscode";
 import { MachineConfig } from "xstate";
 import { getAuth, SignInResult } from "./auth";
 import { getBaseUrl } from "./constants";
@@ -60,6 +61,16 @@ export const initiateEditor = (context: vscode.ExtensionContext) => {
       return;
     }
 
+    const settingsTheme =
+      vscode.workspace
+        .getConfiguration("xstate")
+        .get<"auto" | "dark" | "light">("theme") ?? "auto";
+    const themeKind =
+      settingsTheme === "auto"
+        ? vscode.window.activeColorTheme.kind === ColorThemeKind.Dark
+          ? "dark"
+          : "light"
+        : settingsTheme;
     if (currentPanel) {
       currentPanel.reveal(vscode.ViewColumn.Beside);
 
@@ -72,6 +83,7 @@ export const initiateEditor = (context: vscode.ExtensionContext) => {
         token: result,
         implementations,
         baseUrl,
+        themeKind,
       });
     } else {
       currentPanel = vscode.window.createWebviewPanel(
@@ -98,6 +110,7 @@ export const initiateEditor = (context: vscode.ExtensionContext) => {
         token: result,
         implementations,
         baseUrl,
+        themeKind,
       });
 
       currentPanel.webview.onDidReceiveMessage(

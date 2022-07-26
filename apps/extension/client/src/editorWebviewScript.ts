@@ -1,5 +1,6 @@
 import { ImplementationsMetadata } from "@xstate/tools-shared";
 import { compressToEncodedURIComponent } from "lz-string";
+
 import { assign, createMachine, interpret, MachineConfig } from "xstate";
 import { TokenInfo } from "./auth";
 
@@ -17,6 +18,7 @@ export interface WebViewMachineContext {
   token: TokenInfo | undefined;
   implementations: ImplementationsMetadata;
   baseUrl: string;
+  themeKind: "light" | "dark";
 }
 
 export type EditorWebviewScriptEvent =
@@ -29,6 +31,7 @@ export type EditorWebviewScriptEvent =
       token: TokenInfo;
       implementations: ImplementationsMetadata;
       baseUrl: string;
+      themeKind: any;
     }
   | {
       type: "NODE_SELECTED";
@@ -102,6 +105,7 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
         services: {},
       },
       baseUrl: "",
+      themeKind: "dark",
     },
     invoke: {
       src: () => (send) => {
@@ -155,6 +159,7 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
                 token: event.token,
                 implementations: event.implementations,
                 baseUrl: event.baseUrl,
+                themeKind: event.themeKind,
               };
             }),
             internal: false,
@@ -176,7 +181,9 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
              * */
             iframe.src = `${
               context.baseUrl
-            }/registry/editor/from-url?runningInStatelyExtension=true&config=${compressToEncodedURIComponent(
+            }/registry/editor/from-url?runningInStatelyExtension=true&themeKind=${
+              context.themeKind
+            }&config=${compressToEncodedURIComponent(
               JSON.stringify(context.config)
             )}${
               context.layoutString ? `&layout=${context.layoutString}` : ""
@@ -197,6 +204,7 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
                   token: event.token,
                   implementations: event.implementations,
                   baseUrl: event.baseUrl,
+                  themeKind: event.themeKind,
                 };
               }),
               "updateIframe",
