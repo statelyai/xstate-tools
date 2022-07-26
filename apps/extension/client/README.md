@@ -34,27 +34,24 @@ Navigate around machines easily with jump to definition on targets, actions, gua
 
 ### Snippets (BETA)
 
-As an experimental feature we're included one snippet with this extension, `xsm`, which is short for **XS**tate**M**achine.
+As an experimental feature, we include a snippet with this extension, `xsm`, which is short for **XSt**ate**M**achine. Using this snippet, you can get a working machine you can edit using the visual editor in seconds.
 
-Then based on the scope we can create an untyped machine if we are in `js` or `jsx` files.
-In this scope `xsm` would become:
+You will get an untyped machine if you type `xsm` and expand in a `js` or `jsx` file.
 
 ```js
 import { createMachine } from "xstate";
 const toggleMachine = createMachine({
   id: "toggle",
-  initial: "inactive",
+  initial: "initialState",
   states: {
-    inactive: {},
+    initialState: {},
   },
 });
 ```
 
-Example of `xsm` in a javascript scope:
-
 https://user-images.githubusercontent.com/167574/171016896-455d7772-cbbd-4b4c-8d77-f96f98383e03.mp4
 
-And in `ts` or `tsx` files `xsm` would become:
+In a `ts` or `tsx` file you will get a machine using typegen:
 
 ```ts
 import { createMachine } from "xstate";
@@ -75,9 +72,9 @@ const demoMachine = createMachine({
 });
 ```
 
-Example of `xsm` in a typescript scope:
-
 https://user-images.githubusercontent.com/167574/171017059-d997a158-c307-4c95-8f66-46210835a56a.mp4
+
+In `vue` files you'll get both options.
 
 ## Hints and Tips
 
