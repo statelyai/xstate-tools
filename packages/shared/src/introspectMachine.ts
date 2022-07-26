@@ -351,7 +351,17 @@ function collectEnterables(ctx: TraversalContext, node: XState.StateNode) {
     return;
   }
 
-  const enterableNodes = [node, ...node.initialStateNodes];
+  const enterableNodes = new Set([node]);
+  const initialLeafNodes = node.initialStateNodes;
+
+  let current: typeof node | undefined;
+  while ((current = initialLeafNodes.pop())) {
+    let marker = current;
+    while (marker !== node) {
+      enterableNodes.add(marker);
+      marker = marker.parent!;
+    }
+  }
 
   enterableNodes.forEach((enterableNode) => {
     enterableNode.invoke.forEach((service) => {
@@ -385,7 +395,6 @@ export const introspectMachine = (machine: XState.StateNode) => {
 
   collectSimpleInformation(ctx, machine);
 
-  // TODO: ensure that root exit action gets called for external root transitions
   enterState(ctx, machine, "xstate.init");
   collectEnterables(ctx, machine);
 

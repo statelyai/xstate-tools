@@ -8,7 +8,7 @@ type Context = {
 
 const machine = createMachine(
   {
-    initial: "ready",
+    initial: "initialise",
     id: "machine",
     tsTypes: {} as import("./bug-report-1.typegen").Typegen0,
     schema: {
@@ -86,7 +86,7 @@ const machine = createMachine(
           data: event.data,
         }),
     },
-  },
+  }
 ).withConfig({
   actions: {},
 });

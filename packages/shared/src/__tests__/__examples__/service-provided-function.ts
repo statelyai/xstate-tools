@@ -2,7 +2,7 @@ import { createMachine } from "xstate";
 
 createMachine(
   {
-    tsTypes: {} as import("./functionsInOptions.typegen").Typegen0,
+    tsTypes: {} as import("./service-provided-function.typegen").Typegen0,
     schema: {
       services: {
         service1: {} as {
@@ -11,12 +11,6 @@ createMachine(
         service2: {} as {
           data: boolean;
         },
-      },
-    },
-    on: {
-      FOO: {
-        cond: "guard",
-        actions: "sayHello",
       },
     },
     invoke: [
@@ -29,14 +23,6 @@ createMachine(
     ],
   },
   {
-    guards: {
-      guard() {
-        return true;
-      },
-    },
-    actions: {
-      sayHello() {},
-    },
     services: {
       service1() {
         return Promise.resolve(true);
@@ -45,9 +31,5 @@ createMachine(
         return Promise.resolve(true);
       },
     },
-  },
-).withConfig(
-  // Should have no warning because all implementations
-  // have been passed
-  {},
+  }
 );
