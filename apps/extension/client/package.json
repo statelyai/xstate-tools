@@ -23,6 +23,7 @@
   "categories": [
     "Linters",
     "Visualization",
+    "Snippets",
     "Other"
   ],
   "keywords": [
@@ -93,7 +94,12 @@
           "description": "Color theme for the visual editor. Auto syncs the VS Code theme with the editor theme."
         }
       }
-    }
+    },
+    "snippets": [
+      {
+        "path": "snippets/xstate.code-snippets"
+      }
+    ]
   },
   "scripts": {
     "lint": "tsc",
