@@ -286,6 +286,35 @@ export interface Typegen0 {
 "
 `;
 
+exports[`getTypegenOutput entry-actions-receive-init-event 1`] = `
+"// This file was automatically generated. Edits will be overwritten
+
+export interface Typegen0 {
+  "@@xstate/typegen": true;
+  internalEvents: {
+    "xstate.init": { type: "xstate.init" };
+  };
+  invokeSrcNameMap: {};
+  missingImplementations: {
+    actions: "rootEntry" | "entryA1" | "entryA";
+    services: never;
+    guards: never;
+    delays: never;
+  };
+  eventsCausingActions: {
+    rootEntry: "FOO" | "xstate.init";
+    entryA1: "FOO" | "xstate.init";
+    entryA: "FOO" | "xstate.init";
+  };
+  eventsCausingServices: {};
+  eventsCausingGuards: {};
+  eventsCausingDelays: {};
+  matchesStates: "a" | "a.a1" | { a?: "a1" };
+  tags: never;
+}
+"
+`;
+
 exports[`getTypegenOutput entry-actions-within-targeted-parallel 1`] = `
 "// This file was automatically generated. Edits will be overwritten
 
@@ -296,14 +325,14 @@ export interface Typegen0 {
   };
   invokeSrcNameMap: {};
   missingImplementations: {
-    actions: "sayHello" | "sayBazinga";
+    actions: "sayBazinga" | "sayHello";
     services: never;
     guards: never;
     delays: never;
   };
   eventsCausingActions: {
-    sayHello: "GO_STRING";
     sayBazinga: "GO_STRING";
+    sayHello: "GO_STRING";
   };
   eventsCausingServices: {};
   eventsCausingGuards: {};

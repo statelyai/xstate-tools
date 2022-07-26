@@ -15,24 +15,27 @@ describe("getTypegenOutput", () => {
     if (file.includes(".typegen.")) {
       return;
     }
-    (file.includes(".only.") ? it.only : it)(
-      file.slice(0, -path.extname(file).length),
-      async () => {
-        const content = await fsP.readFile(
-          path.join(examplesPath, file),
-          "utf8"
-        );
+    const runTest = async () => {
+      const content = await fsP.readFile(path.join(examplesPath, file), "utf8");
 
-        const event = makeXStateUpdateEvent(
-          // URI doesn't matter here
-          "",
-          getDocumentValidationsResults(content)
-        );
+      const event = makeXStateUpdateEvent(
+        // URI doesn't matter here
+        "",
+        getDocumentValidationsResults(content)
+      );
 
-        expect(
-          format(getTypegenOutput(event), { parser: "typescript" })
-        ).toMatchSnapshot();
-      }
-    );
+      expect(
+        format(getTypegenOutput(event), { parser: "typescript" })
+      ).toMatchSnapshot();
+    };
+
+    const extensionlessFile = file.slice(0, -path.extname(file).length);
+
+    if (/\.only$/.test(extensionlessFile)) {
+      // preserve original test name
+      it.only(extensionlessFile.replace(/\.only$/, ""), runTest);
+    } else {
+      it(extensionlessFile, runTest);
+    }
   });
 });
