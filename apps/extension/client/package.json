@@ -90,7 +90,7 @@
             "light"
           ],
           "default": "auto",
-          "description": "Color theme for the visual editor. Auto syncs the vscode theme with the editor theme."
+          "description": "Color theme for the visual editor. Auto syncs the VS Code theme with the editor theme."
         }
       }
     }
