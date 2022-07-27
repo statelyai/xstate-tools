@@ -5,12 +5,9 @@
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "target": "es2015"
   },
-  "include": [
-    "src"
-  ],
-  "exclude": [
-    "src/__tests__/__examples__"
-  ]
+  "include": ["src"],
+  "exclude": ["src/__tests__/__examples__"]
 }
