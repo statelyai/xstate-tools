@@ -9,7 +9,6 @@ import {
 import * as path from "path";
 import * as vscode from "vscode";
 import { ColorThemeKind } from "vscode";
-import type { LanguageClient } from "vscode-languageclient/node";
 import { MachineConfig } from "xstate";
 import { getAuth, SignInResult } from "./auth";
 import { getBaseUrl } from "./constants";
@@ -18,10 +17,7 @@ import { getWebviewContent } from "./getWebviewContent";
 import { handleDefinitionUpdate } from "./handleDefinitionUpdate";
 import { handleNodeSelected } from "./handleNodeSelected";
 
-export const initiateEditor = (
-  context: vscode.ExtensionContext,
-  client: LanguageClient
-) => {
+export const initiateEditor = (context: vscode.ExtensionContext) => {
   const baseUrl = getBaseUrl();
 
   let currentPanel: vscode.WebviewPanel | undefined = undefined;
@@ -142,13 +138,27 @@ export const initiateEditor = (
     }
   };
 
+  let lastSentPathAndText: string | undefined;
   context.subscriptions.push(
-    vscode.workspace.onDidSaveTextDocument(async (document) => {
-      const text = document.getText();
-      const result = parseMachinesFromFile(text);
+    // We use onDidChange over onDidSave to catch changes made to the document outside of VS Code
+    vscode.workspace.onDidChangeTextDocument(({ document }) => {
+      // Only send the text if it isn't dirty, which should be the case after a save
+      if (document.isDirty) return;
 
-      if (result.machines.length > 0) {
-        result.machines.forEach((machine, index) => {
+      const text = document.getText();
+
+      /*
+       * If we already sent the text, don't send it again.
+       * We need this because onDidChangeTextDocument gets called multiple times on a save.
+       * In theory multiple documents could have the same text content, so we prepend the path to the text to make it unique.
+       */
+      if (document.uri.path + text === lastSentPathAndText) return;
+
+      const parsed = parseMachinesFromFile(text);
+      if (parsed.machines.length > 0) {
+        lastSentPathAndText = document.uri.path + text;
+
+        parsed.machines.forEach((machine, index) => {
           sendMessage({
             type: "RECEIVE_CONFIG_UPDATE_FROM_VSCODE",
             config: machine.toConfig({ hashInlineImplementations: true })!,
