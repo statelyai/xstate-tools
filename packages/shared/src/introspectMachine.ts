@@ -138,9 +138,15 @@ class ItemMap {
    * Add a triggering event to an item in the cache, for
    * instance the event type which triggers a guard/action/service
    */
-  addEventToItem(itemName: string, eventType: string) {
+  addEventToItem(itemName: string, eventType: string | Iterable<string>) {
     this.addItem(itemName);
-    this.map[itemName].events.add(eventType);
+    if (typeof eventType === "string") {
+      this.map[itemName].events.add(eventType);
+      return;
+    }
+    for (const event of eventType) {
+      this.map[itemName].events.add(event);
+    }
   }
 
   /**
@@ -192,7 +198,7 @@ function collectInvokes(ctx: TraversalContext, node: XState.StateNode) {
 
 function collectAction(
   ctx: TraversalContext,
-  eventType: string,
+  eventType: string | Iterable<string>,
   actionObject: XState.ActionObject<any, XState.EventObject>
 ) {
   if (
@@ -232,7 +238,7 @@ function collectAction(
 // when implementing this consider how it should handle cycles
 function collectActions(
   ctx: TraversalContext,
-  eventType: string,
+  eventType: string | Iterable<string>,
   actionObjects: XState.ActionObject<any, XState.EventObject>[]
 ) {
   actionObjects.forEach((actionObject) => {
@@ -423,17 +429,14 @@ function collectEnterables(ctx: TraversalContext, node: XState.StateNode) {
       }
     });
 
-    sourceEvents.forEach((eventType) => {
-      collectActions(ctx, eventType, enterableNode.onEntry);
-    });
+    collectActions(ctx, sourceEvents, enterableNode.onEntry);
   });
 
   getChildren(node).forEach((child) => collectEnterables(ctx, child));
 }
 
 function collectEventsLeadingToFinalStates(ctx: TraversalContext) {
-  const { machine } = ctx;
-  const relevantFinalStates = new Set(getRelevantFinalStates(machine));
+  const relevantFinalStates = new Set(getRelevantFinalStates(ctx.machine));
   const leafParallelSeenMap = new Map<
     XState.StateNode,
     { events: Set<string>; nodes: Set<XState.StateNode> }
@@ -458,9 +461,7 @@ function collectEventsLeadingToFinalStates(ctx: TraversalContext) {
     while (marker) {
       seenStates.add(marker);
 
-      for (const eventType of sourceEvents) {
-        collectActions(ctx, eventType, marker.onExit);
-      }
+      collectActions(ctx, sourceEvents, marker.onExit);
 
       if (marker.parent?.type === "parallel") {
         leafParallelSeenMap.set(marker, {
@@ -479,21 +480,17 @@ function collectEventsLeadingToFinalStates(ctx: TraversalContext) {
         continue;
       }
       for (const node of otherSeen.nodes) {
-        for (const eventType of seen.events) {
-          collectActions(ctx, eventType, node.onExit);
-        }
+        collectActions(ctx, seen.events, node.onExit);
       }
     }
   }
   const eventsLeadingToFinalStates = new Set(
-    Array.from(leafParallelSeenMap.values())
-      .map(({ events }) => Array.from(events))
-      .flat()
+    Array.from(leafParallelSeenMap.values()).flatMap(({ events }) =>
+      Array.from(events)
+    )
   );
   getAllNodesToNodes(Array.from(leafParallelSeenMap.keys())).forEach((node) => {
-    eventsLeadingToFinalStates.forEach((eventType) =>
-      collectActions(ctx, eventType, node.onExit)
-    );
+    collectActions(ctx, eventsLeadingToFinalStates, node.onExit);
   });
 }
 
