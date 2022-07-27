@@ -1,5 +1,20 @@
 # @xstate/cli
 
+## 0.3.0
+
+### Minor Changes
+
+- [#114](https://github.com/statelyai/xstate-tools/pull/114) [`267db6b`](https://github.com/statelyai/xstate-tools/commit/267db6b00f6f7fda1145e0631638620b7649afe0) Thanks [@mattpocock](https://github.com/mattpocock)! - Gave typegen the ability to calculate all of the events which can fire exit actions.
+
+### Patch Changes
+
+- [#170](https://github.com/statelyai/xstate-tools/pull/170) [`bd0972c`](https://github.com/statelyai/xstate-tools/commit/bd0972c) Thanks [@Andarist](https://github.com/Andarist)! - Fixed a couple of issues with entry and exit actions not having the appropriate event types associated with them in the generated typegen information. Those issues were mainly related to actions defined on the "path" in the machine in between the source and target states.
+
+* [#182](https://github.com/statelyai/xstate-tools/pull/182) [`fa09f36`](https://github.com/statelyai/xstate-tools/commit/fa09f3648fba735ec205819c3660b20cfac3f6fe) Thanks [@Andarist](https://github.com/Andarist)! - Fixed an issue with some entry actions between the target and the resolved leaf not having the appropriate event types associated them in the generated typegen information.
+
+* Updated dependencies [[`267db6b`](https://github.com/statelyai/xstate-tools/commit/267db6b00f6f7fda1145e0631638620b7649afe0), [`2e1a1f5`](https://github.com/statelyai/xstate-tools/commit/2e1a1f5554481867d3d77916e00c36c98b497f5a), [`fa09f36`](https://github.com/statelyai/xstate-tools/commit/fa09f3648fba735ec205819c3660b20cfac3f6fe)]:
+  - @xstate/tools-shared@1.2.0
+
 ## 0.2.1
 
 ### Patch Changes
