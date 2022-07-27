@@ -147,7 +147,11 @@ export const initiateEditor = (context: vscode.ExtensionContext) => {
 
       const text = document.getText();
 
-      // If we already sent the text, don't send it again. We need this because onDidChangeTextDocument gets called multiple times on a save.
+      /*
+       * If we already sent the text, don't send it again.
+       * We need this because onDidChangeTextDocument gets called multiple times on a save.
+       * In theory multiple documents could have the same text content, so we prepend the path to the text to make it unique.
+       */
       if (document.uri.path + text === lastSentPathAndText) return;
 
       const parsed = parseMachinesFromFile(text);
