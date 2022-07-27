@@ -7,6 +7,47 @@ export interface SubState {
   states: Record<string, SubState>;
 }
 
+function getRelevantFinalStates(node: XState.StateNode): XState.StateNode[] {
+  switch (node.type) {
+    case "compound":
+      return getChildren(node)
+        .map((childNode) =>
+          childNode.type === "final"
+            ? [childNode]
+            : getRelevantFinalStates(childNode)
+        )
+        .flat();
+    case "parallel":
+      const finalStatesPerRegion = getChildren(node).map(
+        getRelevantFinalStates
+      );
+      return finalStatesPerRegion.every((perRegion) => !!perRegion.length)
+        ? finalStatesPerRegion.flat()
+        : [];
+    default:
+      return [];
+  }
+}
+
+function getAllNodesToNodes(nodes: XState.StateNode[]) {
+  const seen = new Set<XState.StateNode>();
+  const result = new Set<XState.StateNode>();
+  for (const node of nodes) {
+    let marker: typeof node | undefined = node;
+    while (marker) {
+      if (seen.has(marker)) {
+        break;
+      }
+
+      result.add(marker);
+
+      seen.add(marker);
+      marker = marker.parent;
+    }
+  }
+  return result;
+}
+
 function getChildren(node: XState.StateNode) {
   return Object.keys(node.states)
     .map((key) => node.states[key])
@@ -208,12 +249,12 @@ function enterState(
   node: XState.StateNode,
   eventType: string
 ) {
-  let nodeIdToSourceEventItem = ctx.nodeIdToSourceEventMap.get(node.id);
+  let nodeIdToSourceEventItem = ctx.nodeIdToSourceEventsMap.get(node.id);
   if (nodeIdToSourceEventItem) {
     nodeIdToSourceEventItem.add(eventType);
     return;
   }
-  ctx.nodeIdToSourceEventMap.set(node.id, new Set([eventType]));
+  ctx.nodeIdToSourceEventsMap.set(node.id, new Set([eventType]));
 }
 
 function exitChildren(
@@ -309,7 +350,7 @@ function createTraversalContext(machine: XState.StateNode) {
     machine,
 
     serviceSrcToIdMap: new Map<string, Set<string>>(),
-    nodeIdToSourceEventMap: new Map<string, Set<string>>(),
+    nodeIdToSourceEventsMap: new Map<string, Set<string>>(),
 
     actions: new ItemMap({
       checkIfOptional: (name) => Boolean(machine.options?.actions?.[name]),
@@ -344,7 +385,7 @@ function collectSimpleInformation(
 }
 
 function collectEnterables(ctx: TraversalContext, node: XState.StateNode) {
-  const sourceEvents = ctx.nodeIdToSourceEventMap.get(node.id);
+  const sourceEvents = ctx.nodeIdToSourceEventsMap.get(node.id);
 
   if (!sourceEvents) {
     getChildren(node).forEach((child) => collectEnterables(ctx, child));
@@ -390,6 +431,72 @@ function collectEnterables(ctx: TraversalContext, node: XState.StateNode) {
   getChildren(node).forEach((child) => collectEnterables(ctx, child));
 }
 
+function collectEventsLeadingToFinalStates(ctx: TraversalContext) {
+  const { machine } = ctx;
+  const relevantFinalStates = new Set(getRelevantFinalStates(machine));
+  const leafParallelSeenMap = new Map<
+    XState.StateNode,
+    { events: Set<string>; nodes: Set<XState.StateNode> }
+  >();
+
+  for (const finalState of relevantFinalStates) {
+    const sourceEvents = ctx.nodeIdToSourceEventsMap.get(finalState.id);
+
+    if (!sourceEvents) {
+      continue;
+    }
+
+    const seenEvents = new Set<string>();
+    const seenStates = new Set<XState.StateNode>();
+
+    for (const eventType of sourceEvents) {
+      seenEvents.add(eventType);
+    }
+
+    let marker: typeof finalState | undefined = finalState;
+
+    while (marker) {
+      seenStates.add(marker);
+
+      for (const eventType of sourceEvents) {
+        collectActions(ctx, eventType, marker.onExit);
+      }
+
+      if (marker.parent?.type === "parallel") {
+        leafParallelSeenMap.set(marker, {
+          events: seenEvents,
+          nodes: seenStates,
+        });
+        break;
+      }
+
+      marker = marker.parent;
+    }
+  }
+  for (const [leafParallel, seen] of leafParallelSeenMap) {
+    for (const [otherParallel, otherSeen] of leafParallelSeenMap) {
+      if (otherParallel === leafParallel) {
+        continue;
+      }
+      for (const node of otherSeen.nodes) {
+        for (const eventType of seen.events) {
+          collectActions(ctx, eventType, node.onExit);
+        }
+      }
+    }
+  }
+  const eventsLeadingToFinalStates = new Set(
+    Array.from(leafParallelSeenMap.values())
+      .map(({ events }) => Array.from(events))
+      .flat()
+  );
+  getAllNodesToNodes(Array.from(leafParallelSeenMap.keys())).forEach((node) => {
+    eventsLeadingToFinalStates.forEach((eventType) =>
+      collectActions(ctx, eventType, node.onExit)
+    );
+  });
+}
+
 export const introspectMachine = (machine: XState.StateNode) => {
   const ctx = createTraversalContext(machine);
 
@@ -398,10 +505,12 @@ export const introspectMachine = (machine: XState.StateNode) => {
   enterState(ctx, machine, "xstate.init");
   collectEnterables(ctx, machine);
 
+  collectEventsLeadingToFinalStates(ctx);
+
   return {
     states: machine.stateIds.map((id) => ({
       id,
-      sources: ctx.nodeIdToSourceEventMap.get(id) || new Set(),
+      sources: ctx.nodeIdToSourceEventsMap.get(id) || new Set(),
     })),
     stateMatches: getMatchesStates(machine),
     subState: makeSubStateFromNode(machine),
