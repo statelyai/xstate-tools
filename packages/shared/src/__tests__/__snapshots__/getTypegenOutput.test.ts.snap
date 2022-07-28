@@ -484,6 +484,60 @@ export interface Typegen0 {
 "
 `;
 
+exports[`getTypegenOutput exit-action-parallel-root-event-only-within-final-configuration 1`] = `
+"// This file was automatically generated. Edits will be overwritten
+
+export interface Typegen0 {
+  "@@xstate/typegen": true;
+  internalEvents: {
+    "xstate.stop": { type: "xstate.stop" };
+    "xstate.init": { type: "xstate.init" };
+  };
+  invokeSrcNameMap: {};
+  missingImplementations: {
+    actions:
+      | "rootExit"
+      | "aExit"
+      | "a1Exit"
+      | "a2Exit"
+      | "a3Exit"
+      | "bExit"
+      | "b1Exit"
+      | "b2Exit"
+      | "b3Exit";
+    services: never;
+    guards: never;
+    delays: never;
+  };
+  eventsCausingActions: {
+    rootExit: "xstate.stop" | "TICK_A2" | "TICK_B2";
+    aExit: "xstate.stop" | "TICK_A2" | "TICK_B2";
+    a1Exit: "xstate.stop" | "TICK_A1";
+    a2Exit: "xstate.stop" | "TICK_A2";
+    a3Exit: "xstate.stop" | "TICK_A2" | "TICK_B2";
+    bExit: "xstate.stop" | "TICK_B2" | "TICK_A2";
+    b1Exit: "xstate.stop" | "TICK_B1";
+    b2Exit: "xstate.stop" | "TICK_B2";
+    b3Exit: "xstate.stop" | "TICK_B2" | "TICK_A2";
+  };
+  eventsCausingServices: {};
+  eventsCausingGuards: {};
+  eventsCausingDelays: {};
+  matchesStates:
+    | "a"
+    | "a.a1"
+    | "a.a2"
+    | "a.a3"
+    | "b"
+    | "b.b1"
+    | "b.b2"
+    | "b.b3"
+    | { a?: "a1" | "a2" | "a3"; b?: "b1" | "b2" | "b3" };
+  tags: never;
+}
+"
+`;
+
 exports[`getTypegenOutput exit-action-parallel-root-with-final-states 1`] = `
 "// This file was automatically generated. Edits will be overwritten
 
@@ -553,6 +607,186 @@ export interface Typegen0 {
     | "b.b1"
     | "b.b2"
     | { a?: "a1" | "a2"; b?: "b1" | "b2" };
+  tags: never;
+}
+"
+`;
+
+exports[`getTypegenOutput exit-action-parallel-root-with-mixed-states 1`] = `
+"// This file was automatically generated. Edits will be overwritten
+
+export interface Typegen0 {
+  "@@xstate/typegen": true;
+  internalEvents: {
+    "xstate.stop": { type: "xstate.stop" };
+    "xstate.init": { type: "xstate.init" };
+  };
+  invokeSrcNameMap: {};
+  missingImplementations: {
+    actions:
+      | "rootExit"
+      | "aExit"
+      | "a12Exit"
+      | "a22Exit"
+      | "bExit"
+      | "b12Exit"
+      | "b22Exit"
+      | "cExit";
+    services: never;
+    guards: never;
+    delays: never;
+  };
+  eventsCausingActions: {
+    rootExit:
+      | "xstate.stop"
+      | "TICK_A11"
+      | "TICK_A21"
+      | "TICK_B11"
+      | "TICK_B21"
+      | "TICK_C1";
+    aExit:
+      | "xstate.stop"
+      | "TICK_A11"
+      | "TICK_A21"
+      | "TICK_B11"
+      | "TICK_B21"
+      | "TICK_C1";
+    a12Exit:
+      | "xstate.stop"
+      | "TICK_A11"
+      | "TICK_A21"
+      | "TICK_B11"
+      | "TICK_B21"
+      | "TICK_C1";
+    a22Exit:
+      | "xstate.stop"
+      | "TICK_A21"
+      | "TICK_A11"
+      | "TICK_B11"
+      | "TICK_B21"
+      | "TICK_C1";
+    bExit:
+      | "xstate.stop"
+      | "TICK_A11"
+      | "TICK_A21"
+      | "TICK_B11"
+      | "TICK_B21"
+      | "TICK_C1";
+    b12Exit:
+      | "xstate.stop"
+      | "TICK_B11"
+      | "TICK_A11"
+      | "TICK_A21"
+      | "TICK_B21"
+      | "TICK_C1";
+    b22Exit:
+      | "xstate.stop"
+      | "TICK_B21"
+      | "TICK_A11"
+      | "TICK_A21"
+      | "TICK_B11"
+      | "TICK_C1";
+    cExit:
+      | "xstate.stop"
+      | "TICK_C1"
+      | "TICK_A11"
+      | "TICK_A21"
+      | "TICK_B11"
+      | "TICK_B21";
+  };
+  eventsCausingServices: {};
+  eventsCausingGuards: {};
+  eventsCausingDelays: {};
+  matchesStates:
+    | "a"
+    | "a.a1"
+    | "a.a1.a11"
+    | "a.a1.a12"
+    | "a.a2"
+    | "a.a2.a21"
+    | "a.a2.a22"
+    | "b"
+    | "b.b1"
+    | "b.b1.b11"
+    | "b.b1.b12"
+    | "b.b2"
+    | "b.b2.b21"
+    | "b.b2.b22"
+    | "c"
+    | "c.c1"
+    | "c.c2"
+    | {
+        a?: "a1" | "a2" | { a1?: "a11" | "a12"; a2?: "a21" | "a22" };
+        b?: "b1" | "b2" | { b1?: "b11" | "b12"; b2?: "b21" | "b22" };
+        c?: "c1" | "c2";
+      };
+  tags: never;
+}
+"
+`;
+
+exports[`getTypegenOutput exit-action-parallel-root-with-parallel-states 1`] = `
+"// This file was automatically generated. Edits will be overwritten
+
+export interface Typegen0 {
+  "@@xstate/typegen": true;
+  internalEvents: {
+    "xstate.stop": { type: "xstate.stop" };
+    "xstate.init": { type: "xstate.init" };
+  };
+  invokeSrcNameMap: {};
+  missingImplementations: {
+    actions:
+      | "rootExit"
+      | "aExit"
+      | "a1Exit"
+      | "a12Exit"
+      | "a2Exit"
+      | "a22Exit"
+      | "bExit"
+      | "b1Exit"
+      | "b12Exit"
+      | "b2Exit"
+      | "b22Exit";
+    services: never;
+    guards: never;
+    delays: never;
+  };
+  eventsCausingActions: {
+    rootExit: "xstate.stop" | "TICK_A11" | "TICK_A21" | "TICK_B11" | "TICK_B21";
+    aExit: "xstate.stop" | "TICK_A11" | "TICK_A21" | "TICK_B11" | "TICK_B21";
+    a1Exit: "xstate.stop" | "TICK_A11" | "TICK_A21" | "TICK_B11" | "TICK_B21";
+    a12Exit: "xstate.stop" | "TICK_A11" | "TICK_A21" | "TICK_B11" | "TICK_B21";
+    a2Exit: "xstate.stop" | "TICK_A21" | "TICK_A11" | "TICK_B11" | "TICK_B21";
+    a22Exit: "xstate.stop" | "TICK_A21" | "TICK_A11" | "TICK_B11" | "TICK_B21";
+    bExit: "xstate.stop" | "TICK_A11" | "TICK_A21" | "TICK_B11" | "TICK_B21";
+    b1Exit: "xstate.stop" | "TICK_B11" | "TICK_A11" | "TICK_A21" | "TICK_B21";
+    b12Exit: "xstate.stop" | "TICK_B11" | "TICK_A11" | "TICK_A21" | "TICK_B21";
+    b2Exit: "xstate.stop" | "TICK_B21" | "TICK_A11" | "TICK_A21" | "TICK_B11";
+    b22Exit: "xstate.stop" | "TICK_B21" | "TICK_A11" | "TICK_A21" | "TICK_B11";
+  };
+  eventsCausingServices: {};
+  eventsCausingGuards: {};
+  eventsCausingDelays: {};
+  matchesStates:
+    | "a"
+    | "a.a1"
+    | "a.a1.a11"
+    | "a.a1.a12"
+    | "a.a2"
+    | "a.a2.a21"
+    | "a.a2.a22"
+    | "b"
+    | "b.b1"
+    | "b.b1.b11"
+    | "b.b1.b12"
+    | "b.b2"
+    | "b.b2.b21"
+    | "b.b2.b22"
+    | {
+        a?: "a1" | "a2" | { a1?: "a11" | "a12"; a2?: "a21" | "a22" };
+        b?: "b1" | "b2" | { b1?: "b11" | "b12"; b2?: "b21" | "b22" };
+      };
   tags: never;
 }
 "
