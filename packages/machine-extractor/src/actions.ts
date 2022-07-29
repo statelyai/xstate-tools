@@ -1,4 +1,4 @@
-import { types as t } from "@babel/core";
+import { NodePath, types as t } from "@babel/core";
 import { Action, ChooseCondition } from "xstate";
 import { assign, choose, forwardTo, send } from "xstate/lib/actions";
 import { Cond, CondNode } from "./conds";
@@ -33,6 +33,7 @@ import { wrapParserResult } from "./wrapParserResult";
 
 export interface ActionNode {
   node: t.Node;
+  path: NodePath<t.Node>;
   action: Action<any, any>;
   name: string;
   chooseConditions?: ParsedChooseCondition[];
@@ -49,63 +50,67 @@ export interface ParsedChooseCondition {
 export const ActionAsIdentifier = maybeTsAsExpression(
   createParser({
     babelMatcher: t.isIdentifier,
-    parseNode: (node, context): ActionNode => {
+    parsePath: (path, context): ActionNode => {
       return {
-        action: node.name,
-        node,
-        name: node.name,
+        action: path.node.name,
+        node: path.node,
+        path,
+        name: path.node.name,
         declarationType: "identifier",
-        inlineDeclarationId: context.getNodeHash(node),
+        inlineDeclarationId: context.getNodeHash(path.node),
       };
     },
-  }),
+  })
 );
 
 export const ActionAsFunctionExpression = maybeTsAsExpression(
   maybeIdentifierTo(
     createParser({
       babelMatcher: isFunctionOrArrowFunctionExpression,
-      parseNode: (node, context): ActionNode => {
+      parsePath: (path, context): ActionNode => {
         const action = function actions() {};
-        const id = context.getNodeHash(node);
+        const id = context.getNodeHash(path.node);
 
         action.toJSON = () => id;
         return {
-          node,
+          node: path.node,
+          path,
           action,
           name: "",
           declarationType: "inline",
           inlineDeclarationId: id,
         };
       },
-    }),
-  ),
+    })
+  )
 );
 
 export const ActionAsString = maybeTsAsExpression(
   maybeIdentifierTo(
     createParser({
       babelMatcher: t.isStringLiteral,
-      parseNode: (node, context): ActionNode => {
+      parsePath: (path, context): ActionNode => {
         return {
-          action: node.value,
-          node,
-          name: node.value,
+          path,
+          action: path.node.value,
+          node: path.node,
+          name: path.node.value,
           declarationType: "named",
-          inlineDeclarationId: context.getNodeHash(node),
+          inlineDeclarationId: context.getNodeHash(path.node),
         };
       },
-    }),
-  ),
+    })
+  )
 );
 
 export const ActionAsNode = createParser({
   babelMatcher: t.isNode,
-  parseNode: (node, context): ActionNode => {
-    const id = context.getNodeHash(node);
+  parsePath: (path, context): ActionNode => {
+    const id = context.getNodeHash(path.node);
     return {
+      path,
       action: id,
-      node,
+      node: path.node,
       name: "",
       declarationType: "unknown",
       inlineDeclarationId: id,
@@ -120,12 +125,12 @@ const ChooseFirstArg = arrayOf(
     // too recursive
     // TODO - fix
     actions: maybeArrayOf(ActionAsString),
-  }),
+  })
 );
 
 export const ChooseAction = wrapParserResult(
   namedFunctionCall("choose", ChooseFirstArg),
-  (result, node, context): ActionNode => {
+  (result, path, context): ActionNode => {
     const conditions: ParsedChooseCondition[] = [];
 
     result.argument1Result?.forEach((arg1Result) => {
@@ -153,26 +158,29 @@ export const ChooseAction = wrapParserResult(
     });
 
     return {
-      node: node,
+      path,
+      node: path.node,
       action: choose(conditions.map((condition) => condition.condition)),
       chooseConditions: conditions,
       name: "",
       declarationType: "inline",
-      inlineDeclarationId: context.getNodeHash(node),
+      inlineDeclarationId: context.getNodeHash(path.node),
     };
-  },
+  }
 );
 
 interface AssignFirstArg {
+  path: NodePath<t.Node>;
   node: t.Node;
   value: {} | (() => {});
 }
 
 const AssignFirstArgObject = createParser({
   babelMatcher: t.isObjectExpression,
-  parseNode: (node, context) => {
+  parsePath: (path, context) => {
     return {
-      node,
+      path,
+      node: path.node,
       value: {},
     };
   },
@@ -180,7 +188,7 @@ const AssignFirstArgObject = createParser({
 
 const AssignFirstArgFunction = createParser({
   babelMatcher: isFunctionOrArrowFunctionExpression,
-  parseNode: (node, context) => {
+  parsePath: (path, context) => {
     const value = function anonymous() {
       return {};
     };
@@ -189,7 +197,8 @@ const AssignFirstArgFunction = createParser({
     };
 
     return {
-      node,
+      path,
+      node: path.node,
       value,
     };
   },
@@ -202,7 +211,7 @@ const AssignFirstArg = unionType<AssignFirstArg>([
 
 export const AssignAction = wrapParserResult(
   namedFunctionCall("assign", AssignFirstArg),
-  (result, node, context): ActionNode => {
+  (result, path, context): ActionNode => {
     const defaultAction = function anonymous() {
       return {};
     };
@@ -211,13 +220,14 @@ export const AssignAction = wrapParserResult(
     };
 
     return {
+      path,
       node: result.node,
       action: assign(result.argument1Result?.value || defaultAction),
       name: "",
       declarationType: "inline",
-      inlineDeclarationId: context.getNodeHash(node),
+      inlineDeclarationId: context.getNodeHash(path.node),
     };
-  },
+  }
 );
 
 export const SendActionSecondArg = objectTypeWithKnownKeys({
@@ -233,10 +243,11 @@ export const SendAction = wrapParserResult(
   namedFunctionCall(
     "send",
     unionType<{ node: t.Node; value?: string }>([StringLiteral, AnyNode]),
-    SendActionSecondArg,
+    SendActionSecondArg
   ),
-  (result, node, context): ActionNode => {
+  (result, path, context): ActionNode => {
     return {
+      path,
       node: result.node,
       name: "",
       action: send(
@@ -250,12 +261,12 @@ export const SendAction = wrapParserResult(
           id: result.argument2Result?.id?.value,
           to: result.argument2Result?.to?.value,
           delay: result.argument2Result?.delay?.value,
-        },
+        }
       ),
       declarationType: "inline",
-      inlineDeclarationId: context.getNodeHash(node),
+      inlineDeclarationId: context.getNodeHash(path.node),
     };
-  },
+  }
 );
 
 export const ForwardToActionSecondArg = objectTypeWithKnownKeys({
@@ -264,17 +275,18 @@ export const ForwardToActionSecondArg = objectTypeWithKnownKeys({
 
 export const ForwardToAction = wrapParserResult(
   namedFunctionCall("forwardTo", StringLiteral, ForwardToActionSecondArg),
-  (result, node, context): ActionNode => {
+  (result, path, context): ActionNode => {
     return {
       node: result.node,
       action: forwardTo(result.argument1Result?.value || "", {
         to: result.argument2Result?.to?.value,
       }),
+      path,
       name: "",
       declarationType: "inline",
-      inlineDeclarationId: context.getNodeHash(node),
+      inlineDeclarationId: context.getNodeHash(path.node),
     };
-  },
+  }
 );
 
 const NamedAction = unionType([
@@ -306,5 +318,5 @@ const BasicAction = unionType([
 export const ArrayOfBasicActions = maybeArrayOf(BasicAction);
 
 export const MaybeArrayOfActions = maybeArrayOf(
-  unionType([NamedAction, BasicAction]),
+  unionType([NamedAction, BasicAction])
 );
