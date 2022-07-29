@@ -1,5 +1,14 @@
 # stately-vscode
 
+## 1.9.1
+
+### Patch Changes
+
+- [#190](https://github.com/statelyai/xstate-tools/pull/190) [`a5f091f`](https://github.com/statelyai/xstate-tools/commit/a5f091f0606a183d62dce7dcf45c57474bffab04) Thanks [@Andarist](https://github.com/Andarist)! - Fixed an issue with events leading to a machine being put in its final configuration not being added to the appropriate exit actions.
+
+- Updated dependencies [[`a5f091f`](https://github.com/statelyai/xstate-tools/commit/a5f091f0606a183d62dce7dcf45c57474bffab04)]:
+  - @xstate/tools-shared@1.2.1
+
 ## 1.9.0
 
 ### Minor Changes
