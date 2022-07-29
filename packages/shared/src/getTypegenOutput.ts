@@ -63,6 +63,7 @@ export const getTypegenOutput = (event: {
 
         const requiredActions = actions
           .filter((action) => !machine.actionsInOptions.includes(action.name))
+          .sort()
           .map((action) => JSON.stringify(action.name))
           .join(" | ");
 
@@ -70,24 +71,30 @@ export const getTypegenOutput = (event: {
           .filter(
             (service) => !machine.servicesInOptions.includes(service.name)
           )
+          .sort()
           .map((service) => JSON.stringify(service.name))
           .join(" | ");
 
         const requiredGuards = guards
           .filter((guard) => !machine.guardsInOptions.includes(guard.name))
+          .sort()
           .map((guard) => JSON.stringify(guard.name))
           .join(" | ");
 
         const requiredDelays = delays
           .filter((delay) => !machine.delaysInOptions.includes(delay.name))
+          .sort()
           .map((delay) => JSON.stringify(delay.name))
           .join(" | ");
 
-        const tags = machine.tags.map((tag) => JSON.stringify(tag)).join(" | ");
+        const tags = machine.tags
+          .sort()
+          .map((tag) => JSON.stringify(tag))
+          .join(" | ");
 
-        const matchesStates = introspectResult.stateMatches.map((candidate) =>
-          JSON.stringify(candidate)
-        );
+        const matchesStates = introspectResult.stateMatches
+          .sort()
+          .map((candidate) => JSON.stringify(candidate));
 
         const objectSyntax = getStateMatchesObjectSyntax(introspectResult);
 
@@ -124,7 +131,10 @@ export const getTypegenOutput = (event: {
         return `export interface Typegen${index} {
           '@@xstate/typegen': true;
           internalEvents: {
-            ${Object.values(internalEvents).join("\n")}
+            ${Object.entries(internalEvents)
+              .sort(([keyA], [keyB]) => (keyA < keyB ? -1 : 1))
+              .map(([, value]) => value)
+              .join("\n")}
           };
           invokeSrcNameMap: {
             ${Array.from(introspectResult.serviceSrcToIdMap)
@@ -133,6 +143,7 @@ export const getTypegenOutput = (event: {
                   (service) => service.src === src
                 );
               })
+              .sort(([srcA], [srcB]) => (srcA < srcB ? -1 : 1))
               .map(([src, ids]) => {
                 return `${JSON.stringify(src)}: ${Array.from(ids)
                   .map((item) => JSON.stringify(`done.invoke.${item}`))
@@ -201,6 +212,7 @@ const collectInternalEvents = (lineArrays: { events: string[] }[][]) => {
 
 const displayEventsCausing = (lines: { name: string; events: string[] }[]) => {
   return lines
+    .sort((lineA, lineB) => (lineA.name < lineB.name ? -1 : 1))
     .map((line) => {
       return `${JSON.stringify(line.name)}: ${
         line.events.length
@@ -210,6 +222,7 @@ const displayEventsCausing = (lines: { name: string; events: string[] }[]) => {
               })
             )
               .map((event) => JSON.stringify(event))
+              .sort()
               .join(" | ")
           : "never"
       };`;
