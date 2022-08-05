@@ -1,5 +1,14 @@
 # stately-vscode
 
+## 1.9.2
+
+### Patch Changes
+
+- [#195](https://github.com/statelyai/xstate-tools/pull/195) [`446b5aa`](https://github.com/statelyai/xstate-tools/commit/446b5aa1753043032c08385afbc14b6ed3d60e5d) Thanks [@Andarist](https://github.com/Andarist)! - Preserve `predictableActionArguments` config key when updating the machines.
+
+- Updated dependencies [[`446b5aa`](https://github.com/statelyai/xstate-tools/commit/446b5aa1753043032c08385afbc14b6ed3d60e5d)]:
+  - @xstate/tools-shared@1.2.2
+
 ## 1.9.1
 
 ### Patch Changes
