@@ -1,7 +1,6 @@
-import { parseMachinesFromFile } from "@xstate/machine-extractor";
-import { getNewMachineText, ImplementationsMetadata } from "..";
+import { hashedId, parseMachinesFromFile } from "@xstate/machine-extractor";
 import { MachineConfig } from "xstate";
-import { hashedId } from "@xstate/machine-extractor";
+import { getNewMachineText, ImplementationsMetadata } from "..";
 
 const defaultImplementations = {
   actions: {},
@@ -12,7 +11,7 @@ const defaultImplementations = {
 const runTest = (
   input: string,
   newConfig: MachineConfig<any, any, any>,
-  implementations: ImplementationsMetadata = defaultImplementations,
+  implementations: ImplementationsMetadata = defaultImplementations
 ) => {
   return getNewMachineText({
     fileName: __filename,
@@ -25,7 +24,7 @@ const runTest = (
 };
 
 describe("getNewMachineText", () => {
-  it("Should preserve context, tsTypes, meta, data, delimiter and preserveActionOrder keys", async () => {
+  it("Should preserve context, tsTypes, meta, data, delimiter, preserveActionOrder and predictableActionArguments keys", async () => {
     const INPUT = `
 			createMachine({
 				context: {
@@ -38,6 +37,7 @@ describe("getNewMachineText", () => {
 				data: () => {},
 				delimiter: "/",
 				preserveActionOrder: true,
+				predictableActionArguments: true,
 			})
 		`;
 
@@ -53,8 +53,9 @@ describe("getNewMachineText", () => {
 	data: () => {},
 	delimiter: "/",
 	preserveActionOrder: true,
+	predictableActionArguments: true,
 	id: "wow",
-}`,
+}`
     );
   });
 
@@ -73,7 +74,7 @@ describe("getNewMachineText", () => {
       `{
 	schema: {} as {},
 	id: "wow",
-}`,
+}`
     );
   });
 
@@ -97,7 +98,7 @@ describe("getNewMachineText", () => {
 	id: "wow",
 	on: {},
 	states: {},
-}`,
+}`
     );
   });
 
@@ -146,7 +147,7 @@ describe("getNewMachineText", () => {
               jsImplementation: "() => {}",
             },
           },
-        },
+        }
       );
 
       expect(newText).toEqual(
@@ -160,7 +161,7 @@ describe("getNewMachineText", () => {
 			cond: () => {},
 		},
 	},
-}`,
+}`
       );
     });
 
@@ -188,7 +189,7 @@ describe("getNewMachineText", () => {
           },
           guards: {},
           services: {},
-        },
+        }
       );
 
       expect(newText).toEqual(
@@ -198,12 +199,12 @@ describe("getNewMachineText", () => {
 			// Amazing stuff "wow", cool
 		},
 	],
-}`,
+}`
       );
     });
 
     it("Should ignore whitespace differences between inline implementations when hashing them", async () => {
-      const idWithWhitespace = hashedId(`   
+      const idWithWhitespace = hashedId(`
 			() => {
 
 
@@ -230,13 +231,13 @@ describe("getNewMachineText", () => {
           },
           services: {},
           guards: {},
-        },
+        }
       );
 
       expect(newText).toEqual(
         `{
 	entry: [() => {}],
-}`,
+}`
       );
     });
 
@@ -257,7 +258,7 @@ describe("getNewMachineText", () => {
     expect(newText).toEqual(
       `{
 	description: "Hello, world!",
-}`,
+}`
     );
   });
 
@@ -287,7 +288,7 @@ describe("getNewMachineText", () => {
 		a: {},
 		b: {},
 	},
-}`,
+}`
     );
   });
 });

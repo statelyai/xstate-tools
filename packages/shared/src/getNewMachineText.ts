@@ -31,6 +31,7 @@ const STATE_KEYS_TO_PRESERVE = [
   "data",
   "delimiter",
   "preserveActionOrder",
+  "predictableActionArguments",
 ] as const;
 
 // those keys shouldn't be part of the `MachineConfig` type
