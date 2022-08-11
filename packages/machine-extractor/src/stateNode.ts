@@ -1,4 +1,4 @@
-import { types as t } from "@babel/core";
+import { NodePath, types as t } from "@babel/core";
 import { MaybeArrayOfActions } from "./actions";
 import { Context } from "./context";
 import { History } from "./history";
@@ -24,7 +24,10 @@ const After = objectOf(MaybeTransitionArray);
 const Tags = maybeArrayOf(StringLiteral);
 
 type WithValueNodes<T> = {
-  [K in keyof T]: T[K] & { _valueNode?: t.Node };
+  [K in keyof T]: T[K] & {
+    _valueNode?: t.Node;
+    _valueNodePath?: NodePath<t.Node>;
+  };
 };
 
 /**
@@ -69,7 +72,7 @@ export type StateNodeReturn = WithValueNodes<{
   delimiter?: GetParserResult<typeof StringLiteral>;
   key?: GetParserResult<typeof StringLiteral>;
 }> &
-  Pick<ObjectPropertyInfo, "node">;
+  Pick<ObjectPropertyInfo, "node" | "_path">;
 
 const StateNodeObject: AnyParser<StateNodeReturn> = objectTypeWithKnownKeys(
   () => ({

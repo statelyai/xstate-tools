@@ -1,14 +1,14 @@
-import { AnyParser } from ".";
 import { types as t } from "@babel/core";
+import { AnyParser } from ".";
 import { createParser } from "./createParser";
 import { unionType } from "./unionType";
 
 export const tsAsExpression = <Result>(parser: AnyParser<Result>) => {
   return createParser({
     babelMatcher: t.isTSAsExpression,
-    parseNode: (node, context) => {
-      if (parser.matches(node.expression)) {
-        return parser.parse(node.expression, context);
+    parsePath: (path, context) => {
+      if (parser.matches(path.get("expression")?.node)) {
+        return parser.parse(path.get("expression"), context);
       }
     },
   });

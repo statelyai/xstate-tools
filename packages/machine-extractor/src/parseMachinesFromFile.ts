@@ -31,13 +31,17 @@ export const parseMachinesFromFile = (fileContents: string): ParseResult => {
     },
   }) as t.File;
 
+  return traverseParseResult(parseResult, fileContents);
+};
+
+export const traverseParseResult = (file: t.File, fileContents: string) => {
   let result: ParseResult = {
     machines: [],
     comments: [],
-    file: parseResult,
+    file: file,
   };
 
-  parseResult.comments?.forEach((comment) => {
+  file.comments?.forEach((comment) => {
     if (comment.value.includes("xstate-ignore-next-line")) {
       result.comments.push({
         node: comment,
@@ -56,10 +60,10 @@ export const parseMachinesFromFile = (fileContents: string): ParseResult => {
     return hashedId(fileText);
   };
 
-  traverse(parseResult as any, {
+  traverse(file as any, {
     CallExpression(path) {
-      const ast = MachineCallExpression.parse(path.node as any, {
-        file: parseResult,
+      const ast = MachineCallExpression.parse(path, {
+        file: file,
         getNodeHash: getNodeHash,
       });
       if (ast) {

@@ -29,6 +29,7 @@
     "extractor": "yarn workspace @xstate/machine-extractor",
     "server": "yarn workspace @xstate/vscode-server",
     "client": "yarn workspace stately-vscode",
+    "🍿": "yarn workspace @xstate/recast-experiment",
     "shared": "yarn workspace @xstate/tools-shared",
     "prepare": "husky install",
     "postinstall": "preconstruct dev && manypkg check",
