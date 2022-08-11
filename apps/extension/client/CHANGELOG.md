@@ -1,5 +1,11 @@
 # stately-vscode
 
+## 1.9.3
+
+### Patch Changes
+
+- [#198](https://github.com/statelyai/xstate-tools/pull/198) [`82b6c7c`](https://github.com/statelyai/xstate-tools/commit/82b6c7c603eef515853b81ff29d0738548b6c051) Thanks [@mellson](https://github.com/mellson)! - Updated `xsm` snippet for TypeScript machines to make it easier to type context and events.
+
 ## 1.9.2
 
 ### Patch Changes
