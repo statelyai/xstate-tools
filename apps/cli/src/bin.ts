@@ -102,37 +102,69 @@ program
   .description("Generate TypeScript types from XState machines")
   .argument("<files>", "The files to target, expressed as a glob pattern")
   .option("-w, --watch", "Run the typegen in watch mode")
-  .action(async (filesPattern: string, opts: { watch?: boolean }) => {
-    if (opts.watch) {
-      // TODO: implement per path queuing to avoid tasks related to the same file from overlapping their execution
-      const processFile = (path: string) => {
-        if (path.endsWith(".typegen.ts")) {
-          return;
-        }
-        writeToFiles([path]).catch(() => {});
-      };
-      // TODO: handle removals
-      watch(filesPattern, { awaitWriteFinish: true })
-        .on("add", processFile)
-        .on("change", processFile);
-    } else {
-      const tasks: Array<Promise<void>> = [];
-      // TODO: could this cleanup outdated typegen files?
-      watch(filesPattern, { persistent: false })
-        .on("add", (path) => {
+  .option(
+    "-p, --poll",
+    "Use polling instead of filesystem events when watching"
+  )
+  .option(
+    "-i, --ignored <patterns...>",
+    "Defines files/paths to be ignored (anymatch-compatible definition)"
+  )
+  .action(
+    async (
+      filesPattern: string,
+      opts: { watch?: boolean; poll?: boolean; ignored?: string[] }
+    ) => {
+      const ignored = opts.ignored ?? undefined;
+      const shouldPoll = opts.poll ?? false;
+      const pollInterval = 10;
+      const shouldCoalesceWriteEvents =
+        shouldPoll || process.platform === "win32";
+
+      if (opts.watch) {
+        // TODO: implement per path queuing to avoid tasks related to the same file from overlapping their execution
+        const processFile = (path: string) => {
           if (path.endsWith(".typegen.ts")) {
             return;
           }
-          tasks.push(writeToFiles([path]));
+          writeToFiles([path]).catch(() => {});
+        };
+
+        // TODO: handle removals
+        watch(filesPattern, {
+          ignored,
+          usePolling: shouldPoll,
+          interval: shouldPoll ? pollInterval : undefined,
+          ignoreInitial: true,
+          awaitWriteFinish: shouldCoalesceWriteEvents
+            ? {
+                stabilityThreshold: 50,
+                pollInterval: pollInterval,
+              }
+            : false,
         })
-        .on("ready", async () => {
-          const settled = await allSettled(tasks);
-          if (settled.some((result) => result.status === "rejected")) {
-            process.exit(1);
-          }
-          process.exit(0);
-        });
+          .on("add", processFile)
+          .on("change", processFile);
+      } else {
+        const tasks: Array<Promise<void>> = [];
+        // TODO: could this cleanup outdated typegen files?
+        watch(filesPattern, { persistent: false, ignored })
+          .on("add", (path) => {
+            // console.log(`${path} - processing`);
+            if (path.endsWith(".typegen.ts")) {
+              return;
+            }
+            tasks.push(writeToFiles([path]));
+          })
+          .on("ready", async () => {
+            const settled = await allSettled(tasks);
+            if (settled.some((result) => result.status === "rejected")) {
+              process.exit(1);
+            }
+            process.exit(0);
+          });
+      }
     }
-  });
+  );
 
 program.parse(process.argv);
