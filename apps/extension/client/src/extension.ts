@@ -13,12 +13,10 @@ import {
   TransportKind,
 } from "vscode-languageclient/node";
 import { uniqueId } from "xstate/lib/utils";
-import { getAuth, SignInResult } from "./auth";
 import { handleTypegenNestingConfig } from "./checkTypegenNesting";
 import { initiateEditor } from "./initiateEditor";
 import { initiateTypegen } from "./initiateTypegen";
 import { initiateVisualizer } from "./initiateVisualizer";
-import { uriHandler } from "./UriHandler";
 
 let client: LanguageClient;
 
@@ -101,48 +99,6 @@ export async function activate(context: vscode.ExtensionContext) {
   initiateVisualizer(context, client, addXStateUpdateListener);
   initiateEditor(context);
   initiateTypegen(context, client, addXStateUpdateListener);
-
-  context.subscriptions.push(
-    vscode.window.registerUriHandler(uriHandler),
-    vscode.commands.registerCommand("stately-xstate.sign-out", async () => {
-      await getAuth(context).signOut();
-
-      vscode.window.showInformationMessage("Signed out successfully.");
-    })
-  );
-  context.subscriptions.push(
-    vscode.commands.registerCommand("stately-xstate.sign-in", async () => {
-      const result = await vscode.window.withProgress<SignInResult>(
-        {
-          location: vscode.ProgressLocation.Notification,
-          title: "Signing in via Stately...",
-          cancellable: true,
-        },
-        (_, token) => {
-          return getAuth(context).signIn(token.onCancellationRequested);
-        }
-      );
-
-      if (result === "could-not-open-external-url") {
-        vscode.window.showErrorMessage("Could not open an external URL");
-        return;
-      } else if (result === "timed-out") {
-        vscode.window.showErrorMessage(
-          "The authentication request timed out. Please try again."
-        );
-        return;
-      } else if (result === "unknown-error") {
-        vscode.window.showErrorMessage(
-          "An unknown error occurred. Please try again."
-        );
-        return;
-      } else if (result === "cancelled") {
-        return;
-      } else {
-        vscode.window.showInformationMessage("Signed in successfully.");
-      }
-    })
-  );
 }
 
 export function deactivate(): Thenable<void> | undefined {

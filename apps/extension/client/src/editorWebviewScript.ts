@@ -2,7 +2,6 @@ import { ImplementationsMetadata } from "@xstate/tools-shared";
 import { compressToEncodedURIComponent } from "lz-string";
 
 import { assign, createMachine, interpret, MachineConfig } from "xstate";
-import { TokenInfo } from "./auth";
 
 declare global {
   function acquireVsCodeApi(): {
@@ -15,7 +14,6 @@ export interface WebViewMachineContext {
   uri: string;
   index: number;
   layoutString: string | undefined;
-  token: TokenInfo | undefined;
   implementations: ImplementationsMetadata;
   baseUrl: string;
   themeKind: "light" | "dark";
@@ -28,7 +26,6 @@ export type EditorWebviewScriptEvent =
       layoutString: string | undefined;
       uri: string;
       index: number;
-      token: TokenInfo;
       implementations: ImplementationsMetadata;
       baseUrl: string;
       themeKind: any;
@@ -98,7 +95,6 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
       uri: "",
       index: 0,
       layoutString: undefined,
-      token: undefined,
       implementations: {
         actions: {},
         guards: {},
@@ -156,7 +152,6 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
                 index: event.index,
                 uri: event.uri,
                 layoutString: event.layoutString,
-                token: event.token,
                 implementations: event.implementations,
                 baseUrl: event.baseUrl,
                 themeKind: event.themeKind,
@@ -189,7 +184,7 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
               context.layoutString ? `&layout=${context.layoutString}` : ""
             }&implementations=${compressToEncodedURIComponent(
               JSON.stringify(context.implementations)
-            )}${getTokenHash(context.token!)}`;
+            )}}`;
           },
         },
         on: {
@@ -201,7 +196,6 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
                   index: event.index,
                   uri: event.uri,
                   layoutString: event.layoutString,
-                  token: event.token,
                   implementations: event.implementations,
                   baseUrl: event.baseUrl,
                   themeKind: event.themeKind,
@@ -273,12 +267,3 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
 );
 
 interpret(machine).start();
-
-const getTokenHash = (tokenInfo: TokenInfo) => {
-  return `#access_token=${tokenInfo.token}&expires_in=${(
-    tokenInfo.expiresAt -
-    Date.now() / 1000
-  ).toFixed(0)}&provider_token=${tokenInfo.providerToken}&refresh_token=${
-    tokenInfo.refreshToken
-  }&token_type=bearer`;
-};
