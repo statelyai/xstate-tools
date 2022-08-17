@@ -35,7 +35,7 @@ describe('getNewMachineText', () => {
 					cool: true
 				},
 				data: () => {},
-				delimiter: "/",
+				delimiter: '/',
 				preserveActionOrder: true,
 				predictableActionArguments: true,
 			})
@@ -51,10 +51,10 @@ describe('getNewMachineText', () => {
 	tsTypes: {},
 	meta: { cool: true },
 	data: () => {},
-	delimiter: "/",
+	delimiter: '/',
 	preserveActionOrder: true,
 	predictableActionArguments: true,
-	id: "wow",
+	id: 'wow',
 }`,
     );
   });
@@ -73,7 +73,7 @@ describe('getNewMachineText', () => {
     expect(newText).toEqual(
       `{
 	schema: {} as {},
-	id: "wow",
+	id: 'wow',
 }`,
     );
   });
@@ -81,7 +81,7 @@ describe('getNewMachineText', () => {
   it('Should preserve the order of top-level keys', async () => {
     const INPUT = `
 			createMachine({
-				id: "test",
+				id: 'test',
 				on: {},
 				states: {},
 			})
@@ -95,7 +95,7 @@ describe('getNewMachineText', () => {
 
     expect(newText).toEqual(
       `{
-	id: "wow",
+	id: 'wow',
 	on: {},
 	states: {},
 }`,
@@ -257,7 +257,7 @@ describe('getNewMachineText', () => {
 
     expect(newText).toEqual(
       `{
-	description: "Hello, world!",
+	description: 'Hello, world!',
 }`,
     );
   });
