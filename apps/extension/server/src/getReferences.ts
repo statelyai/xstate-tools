@@ -1,11 +1,11 @@
-import { TextDocumentIdentifier } from "vscode-languageserver";
-import { Position, Range } from "vscode-languageserver-textdocument";
-import { createMachine } from "xstate";
-import { getCursorHoverType } from "./getCursorHoverType";
 import {
   DocumentValidationsResult,
   getRangeFromSourceLocation,
-} from "@xstate/tools-shared";
+} from '@xstate/tools-shared';
+import { TextDocumentIdentifier } from 'vscode-languageserver';
+import { Position, Range } from 'vscode-languageserver-textdocument';
+import { createMachine } from 'xstate';
+import { getCursorHoverType } from './getCursorHoverType';
 
 export const getReferences = (params: {
   textDocument: TextDocumentIdentifier;
@@ -18,7 +18,7 @@ export const getReferences = (params: {
   );
 
   try {
-    if (cursorHover?.type === "TARGET") {
+    if (cursorHover?.type === 'TARGET') {
       const config = cursorHover.machine.toConfig();
       if (!config) return [];
 
@@ -52,7 +52,7 @@ export const getReferences = (params: {
         },
       ];
     }
-    if (cursorHover?.type === "INITIAL") {
+    if (cursorHover?.type === 'INITIAL') {
       const config = cursorHover.machine.toConfig();
       if (!config) return [];
       const fullMachine = createMachine(config);
@@ -78,7 +78,7 @@ export const getReferences = (params: {
         },
       ];
     }
-    if (cursorHover?.type === "ACTION") {
+    if (cursorHover?.type === 'ACTION') {
       const node = cursorHover.machine.getActionImplementation(
         cursorHover.name,
       );
@@ -91,9 +91,9 @@ export const getReferences = (params: {
           },
         ];
       }
-    } else if (cursorHover?.type === "ACTION_IMPLEMENTATION") {
+    } else if (cursorHover?.type === 'ACTION_IMPLEMENTATION') {
       const actions = cursorHover.machine
-        .getAllConds(["named"])
+        .getAllConds(['named'])
         .filter((elem) => elem.name === cursorHover.name);
 
       return actions.map((action) => {
@@ -104,7 +104,7 @@ export const getReferences = (params: {
       });
     }
 
-    if (cursorHover?.type === "COND") {
+    if (cursorHover?.type === 'COND') {
       const node = cursorHover.machine.getGuardImplementation(cursorHover.name);
 
       if (node?.keyNode.loc) {
@@ -115,9 +115,9 @@ export const getReferences = (params: {
           },
         ];
       }
-    } else if (cursorHover?.type === "COND_IMPLEMENTATION") {
+    } else if (cursorHover?.type === 'COND_IMPLEMENTATION') {
       const guards = cursorHover.machine
-        .getAllConds(["named"])
+        .getAllConds(['named'])
         .filter((elem) => elem.name === cursorHover.name);
 
       return guards.map((guard) => {
@@ -127,7 +127,7 @@ export const getReferences = (params: {
         };
       });
     }
-    if (cursorHover?.type === "SERVICE") {
+    if (cursorHover?.type === 'SERVICE') {
       const node = cursorHover.machine.getServiceImplementation(
         cursorHover.name,
       );
@@ -140,9 +140,9 @@ export const getReferences = (params: {
           },
         ];
       }
-    } else if (cursorHover?.type === "SERVICE_IMPLEMENTATION") {
+    } else if (cursorHover?.type === 'SERVICE_IMPLEMENTATION') {
       const services = cursorHover.machine
-        .getAllServices(["named"])
+        .getAllServices(['named'])
         .filter((elem) => elem.src === cursorHover.name);
 
       return services.map((service) => {

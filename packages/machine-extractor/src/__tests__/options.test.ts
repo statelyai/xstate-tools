@@ -1,8 +1,8 @@
-import { parseMachinesFromFile } from "..";
-import { types as t } from "@babel/core";
+import { types as t } from '@babel/core';
+import { parseMachinesFromFile } from '..';
 
-describe("Options", () => {
-  it("Should handle functions declared as ObjectMethod", () => {
+describe('Options', () => {
+  it('Should handle functions declared as ObjectMethod', () => {
     const result = parseMachinesFromFile(`
       const machine = createMachine({}, {
         services: {

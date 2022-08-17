@@ -9,11 +9,11 @@
 // - actions
 // - XState (all XState exports)
 
-import { assign, Machine } from "xstate";
+import { Machine } from 'xstate';
 
 export const fetchMachine = Machine({
-  id: "fetch",
-  initial: "idle",
+  id: 'fetch',
+  initial: 'idle',
   context: {
     retries: 0,
   },
@@ -21,23 +21,23 @@ export const fetchMachine = Machine({
     idle: {
       on: {
         FETCH: {
-          target: "loading",
+          target: 'loading',
         },
       },
     },
     loading: {
       on: {
-        RESOLVE: { target: "success" },
-        REJECT: { target: "failure" },
+        RESOLVE: { target: 'success' },
+        REJECT: { target: 'failure' },
       },
     },
     success: {
-      type: "final",
+      type: 'final',
     },
     failure: {
       on: {
         RETRY: {
-          target: "loading",
+          target: 'loading',
         },
       },
     },

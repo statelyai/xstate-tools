@@ -1,16 +1,16 @@
-import { types as t } from "@babel/core";
-import { DeclarationType } from ".";
-import { createParser } from "./createParser";
-import { maybeIdentifierTo } from "./identifiers";
-import { BooleanLiteral, StringLiteral } from "./scalars";
-import { MaybeTransitionArray } from "./transitions";
-import { maybeTsAsExpression } from "./tsAsExpression";
-import { unionType } from "./unionType";
+import { types as t } from '@babel/core';
+import { DeclarationType } from '.';
+import { createParser } from './createParser';
+import { maybeIdentifierTo } from './identifiers';
+import { BooleanLiteral, StringLiteral } from './scalars';
+import { MaybeTransitionArray } from './transitions';
+import { maybeTsAsExpression } from './tsAsExpression';
+import { unionType } from './unionType';
 import {
   isFunctionOrArrowFunctionExpression,
   maybeArrayOf,
   objectTypeWithKnownKeys,
-} from "./utils";
+} from './utils';
 
 interface InvokeNode {
   node: t.Node;
@@ -29,7 +29,7 @@ const InvokeSrcFunctionExpression = maybeTsAsExpression(
         return {
           value: id,
           node,
-          declarationType: "inline",
+          declarationType: 'inline',
           inlineDeclarationId: id,
         };
       },
@@ -44,7 +44,7 @@ const InvokeSrcNode = createParser({
     return {
       value: id,
       node,
-      declarationType: "unknown",
+      declarationType: 'unknown',
       inlineDeclarationId: id,
     };
   },
@@ -55,7 +55,7 @@ const InvokeSrcStringLiteral = createParser({
   parseNode: (node, context): InvokeNode => ({
     value: node.value,
     node,
-    declarationType: "named",
+    declarationType: 'named',
     inlineDeclarationId: context.getNodeHash(node),
   }),
 });
@@ -67,7 +67,7 @@ const InvokeSrcIdentifier = createParser({
     return {
       value: id,
       node,
-      declarationType: "identifier",
+      declarationType: 'identifier',
       inlineDeclarationId: context.getNodeHash(node),
     };
   },

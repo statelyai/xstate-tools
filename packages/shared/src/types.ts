@@ -1,6 +1,6 @@
-import { MachineConfig, MachineOptions, StateMachine } from "xstate";
-import { MachineParseResult } from "@xstate/machine-extractor";
-import { IntrospectMachineResult } from ".";
+import { MachineParseResult } from '@xstate/machine-extractor';
+import { MachineConfig, MachineOptions, StateMachine } from 'xstate';
+import { IntrospectMachineResult } from '.';
 
 export interface GlobalSettings {
   showVisualEditorWarnings: boolean;
@@ -32,7 +32,7 @@ export interface XStateUpdateMachine {
   delaysInOptions: string[];
   tags: string[];
   hasTypesNode: boolean;
-  chooseActionsInOptions: MachineOptions<any, any, any>["actions"];
+  chooseActionsInOptions: MachineOptions<any, any, any>['actions'];
 }
 
 export interface XStateUpdateEvent {

@@ -1,11 +1,11 @@
-import { Node, parse, traverse, types as t } from "@babel/core";
+import { Node, parse, traverse, types as t } from '@babel/core';
 import {
   ALLOWED_CALL_EXPRESSION_NAMES,
   MachineCallExpression,
-} from "./machineCallExpression";
-import { MachineParseResult } from "./MachineParseResult";
-import { ParseResult } from "./types";
-import { hashedId } from "./utils";
+} from './machineCallExpression';
+import { MachineParseResult } from './MachineParseResult';
+import { ParseResult } from './types';
+import { hashedId } from './utils';
 
 export const parseMachinesFromFile = (fileContents: string): ParseResult => {
   if (
@@ -19,14 +19,14 @@ export const parseMachinesFromFile = (fileContents: string): ParseResult => {
   }
 
   const parseResult = parse(fileContents, {
-    sourceType: "module",
+    sourceType: 'module',
     configFile: false,
     babelrc: false,
     parserOpts: {
       plugins: [
-        "typescript",
-        "jsx",
-        ["decorators", { decoratorsBeforeExport: false }],
+        'typescript',
+        'jsx',
+        ['decorators', { decoratorsBeforeExport: false }],
       ],
     },
   }) as t.File;
@@ -38,15 +38,15 @@ export const parseMachinesFromFile = (fileContents: string): ParseResult => {
   };
 
   parseResult.comments?.forEach((comment) => {
-    if (comment.value.includes("xstate-ignore-next-line")) {
+    if (comment.value.includes('xstate-ignore-next-line')) {
       result.comments.push({
         node: comment,
-        type: "xstate-ignore-next-line",
+        type: 'xstate-ignore-next-line',
       });
-    } else if (comment.value.includes("@xstate-layout")) {
+    } else if (comment.value.includes('@xstate-layout')) {
       result.comments.push({
         node: comment,
-        type: "xstate-layout",
+        type: 'xstate-layout',
       });
     }
   });
@@ -68,7 +68,7 @@ export const parseMachinesFromFile = (fileContents: string): ParseResult => {
             ast,
             fileComments: result.comments,
             scope: path.scope,
-          })
+          }),
         );
       }
     },

@@ -163,7 +163,7 @@
 
   ```ts
   createMachine({
-    entry: ["sayHello"]
+    entry: ['sayHello'],
   });
   ```
 
@@ -173,9 +173,9 @@
   createMachine({
     entry: [
       () => {
-        console.log("Hello!");
-      }
-    ]
+        console.log('Hello!');
+      },
+    ],
   });
   ```
 

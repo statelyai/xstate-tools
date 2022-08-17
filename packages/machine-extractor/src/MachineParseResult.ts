@@ -1,17 +1,17 @@
-import { Action, Condition, MachineOptions } from "xstate";
-import { types as t, NodePath } from "@babel/core";
-import { TMachineCallExpression } from "./machineCallExpression";
-import { StateNodeReturn } from "./stateNode";
+import { NodePath, types as t } from '@babel/core';
+import { Action, Condition, MachineOptions } from 'xstate';
+import { choose } from 'xstate/lib/actions';
+import { DeclarationType } from '.';
+import { ActionNode, ParsedChooseCondition } from './actions';
+import { TMachineCallExpression } from './machineCallExpression';
+import { RecordOfArrays } from './RecordOfArrays';
+import { StateNodeReturn } from './stateNode';
 import {
   toMachineConfig,
   ToMachineConfigParseOptions,
-} from "./toMachineConfig";
-import { StringLiteralNode, Comment } from "./types";
-import { TransitionConfigNode } from "./transitions";
-import { ActionNode, ParsedChooseCondition } from "./actions";
-import { DeclarationType } from ".";
-import { RecordOfArrays } from "./RecordOfArrays";
-import { choose } from "xstate/lib/actions";
+} from './toMachineConfig';
+import { TransitionConfigNode } from './transitions';
+import { Comment, StringLiteralNode } from './types';
 
 export interface MachineParseResultStateNode {
   path: string[];
@@ -36,12 +36,12 @@ export class MachineParseResult {
   ast: TMachineCallExpression;
   public fileComments: Comment[];
   private stateNodes: MachineParseResultStateNode[];
-  public scope: NodePath["scope"];
+  public scope: NodePath['scope'];
 
   constructor(props: {
     ast: TMachineCallExpression;
     fileComments: Comment[];
-    scope: NodePath["scope"];
+    scope: NodePath['scope'];
   }) {
     this.ast = props.ast;
     this.fileComments = props.fileComments;
@@ -56,7 +56,7 @@ export class MachineParseResult {
 
     const getSubNodes = (
       definition: StateNodeReturn | undefined,
-      path: string[]
+      path: string[],
     ) => {
       if (definition) {
         nodes.push({
@@ -78,7 +78,7 @@ export class MachineParseResult {
   getIsIgnored = () => {
     if (!this.ast?.callee?.loc) return false;
     const isIgnored = this.fileComments.some((comment) => {
-      if (comment.type !== "xstate-ignore-next-line") return false;
+      if (comment.type !== 'xstate-ignore-next-line') return false;
 
       return comment.node.loc.end.line === this.ast!.callee.loc!.start.line - 1;
     });
@@ -87,7 +87,7 @@ export class MachineParseResult {
   };
 
   public getChooseActionsToAddToOptions = () => {
-    const actions: MachineOptions<any, any, any>["actions"] = {};
+    const actions: MachineOptions<any, any, any>['actions'] = {};
 
     const chooseActions = this.getChooseActionsInOptions();
 
@@ -97,7 +97,7 @@ export class MachineParseResult {
           action.node.chooseConditions.map((chooseCondition) => ({
             actions: chooseCondition.actionNodes.map((action) => action.name),
             cond: chooseCondition.condition.cond,
-          }))
+          })),
         );
       }
     });
@@ -115,11 +115,11 @@ export class MachineParseResult {
     this.ast.options?.actions?.properties.forEach((actionProperty) => {
       if (
         actionProperty.result &&
-        "action" in actionProperty.result &&
+        'action' in actionProperty.result &&
         actionProperty.result.chooseConditions
       ) {
         const actionInConfig = allActionsInConfig.find(
-          (a) => a.node.name === actionProperty.key
+          (a) => a.node.name === actionProperty.key,
         );
 
         if (actionInConfig) {
@@ -147,14 +147,14 @@ export class MachineParseResult {
   getLayoutComment = (): { value: string; comment: Comment } | undefined => {
     if (!this.ast?.callee?.loc) return undefined;
     const layoutComment = this.fileComments.find((comment) => {
-      if (comment.type !== "xstate-layout") return false;
+      if (comment.type !== 'xstate-layout') return false;
 
       return comment.node.loc.end.line === this.ast!.callee.loc!.start.line - 1;
     });
 
     if (!layoutComment) return undefined;
 
-    const comment = layoutComment?.node.value || "";
+    const comment = layoutComment?.node.value || '';
 
     const value = getLayoutString(comment);
 
@@ -228,7 +228,7 @@ export class MachineParseResult {
 
   getStateNodeByPath = (path: string[]) => {
     return this.stateNodes.find((node) => {
-      return node.path.join("") === path.join("");
+      return node.path.join('') === path.join('');
     });
   };
 
@@ -240,11 +240,11 @@ export class MachineParseResult {
 
   getAllConds = (
     declarationTypes: DeclarationType[] = [
-      "identifier",
-      "inline",
-      "unknown",
-      "named",
-    ]
+      'identifier',
+      'inline',
+      'unknown',
+      'named',
+    ],
   ) => {
     const conds: {
       node: t.Node;
@@ -276,7 +276,7 @@ export class MachineParseResult {
           if (
             chooseCondition.conditionNode?.declarationType &&
             declarationTypes.includes(
-              chooseCondition.conditionNode?.declarationType
+              chooseCondition.conditionNode?.declarationType,
             )
           ) {
             conds.push({
@@ -315,7 +315,7 @@ export class MachineParseResult {
 
     this.getTransitions().forEach((transition) => {
       transition.config?.actions?.forEach((action) =>
-        addAction(action, transition.fromPath)
+        addAction(action, transition.fromPath),
       );
     });
 
@@ -339,11 +339,11 @@ export class MachineParseResult {
 
   getAllActions = (
     declarationTypes: DeclarationType[] = [
-      "identifier",
-      "inline",
-      "unknown",
-      "named",
-    ]
+      'identifier',
+      'inline',
+      'unknown',
+      'named',
+    ],
   ) => {
     const actions: {
       node: t.Node;
@@ -384,11 +384,11 @@ export class MachineParseResult {
 
   getAllServices = (
     declarationTypes: DeclarationType[] = [
-      "identifier",
-      "inline",
-      "unknown",
-      "named",
-    ]
+      'identifier',
+      'inline',
+      'unknown',
+      'named',
+    ],
   ) => {
     const services: {
       node: t.Node;
@@ -402,7 +402,7 @@ export class MachineParseResult {
     this.stateNodes.map((stateNode) => {
       stateNode.ast.invoke?.forEach((invoke) => {
         const invokeSrc =
-          typeof invoke.src?.value === "string" ? invoke.src.value : undefined;
+          typeof invoke.src?.value === 'string' ? invoke.src.value : undefined;
         if (
           invoke.src?.declarationType &&
           declarationTypes.includes(invoke.src?.declarationType)

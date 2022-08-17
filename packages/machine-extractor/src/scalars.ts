@@ -1,13 +1,13 @@
-import { types as t } from "@babel/core";
-import { createParser } from "./createParser";
+import { types as t } from '@babel/core';
+import { createParser } from './createParser';
 import {
   maybeIdentifierTo,
   memberExpressionReferencingEnumMember,
-} from "./identifiers";
-import { StringLiteralNode } from "./types";
-import { maybeTsAsExpression } from "./tsAsExpression";
-import { unionType } from "./unionType";
-import { wrapParserResult } from "./wrapParserResult";
+} from './identifiers';
+import { maybeTsAsExpression } from './tsAsExpression';
+import { StringLiteralNode } from './types';
+import { unionType } from './unionType';
+import { wrapParserResult } from './wrapParserResult';
 
 export const StringLiteral = unionType([
   wrapParserResult(memberExpressionReferencingEnumMember, (node) => {
@@ -74,7 +74,7 @@ export const TemplateLiteral = maybeTsAsExpression(
     createParser({
       babelMatcher: t.isTemplateLiteral,
       parseNode: (node) => {
-        let value = "";
+        let value = '';
 
         // TODO - this might lead to weird issues if there is actually more than a single quasi there
         node.quasis.forEach((quasi) => {

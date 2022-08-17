@@ -1,6 +1,6 @@
-import { parseMachinesFromFile } from "../parseMachinesFromFile";
+import { parseMachinesFromFile } from '../parseMachinesFromFile';
 
-it("Should handle createTestMachine", () => {
+it('Should handle createTestMachine', () => {
   const machines = parseMachinesFromFile(`
   	createTestMachine({});
   `);

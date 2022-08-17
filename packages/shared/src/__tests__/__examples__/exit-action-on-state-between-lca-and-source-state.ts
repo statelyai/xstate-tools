@@ -1,24 +1,24 @@
-import { createMachine } from "xstate";
+import { createMachine } from 'xstate';
 
 createMachine({
   tsTypes:
-    {} as import("./exit-action-on-state-between-lca-and-source-state.typegen").Typegen0,
-  initial: "a",
-  exit: ["rootExit"],
+    {} as import('./exit-action-on-state-between-lca-and-source-state.typegen').Typegen0,
+  initial: 'a',
+  exit: ['rootExit'],
   states: {
     a: {
-      exit: ["sayHello"],
-      initial: "a1",
+      exit: ['sayHello'],
+      initial: 'a1',
       states: {
         a1: {
           on: {
-            FOO: "#b",
+            FOO: '#b',
           },
         },
       },
     },
     b: {
-      id: "b",
+      id: 'b',
     },
   },
 });

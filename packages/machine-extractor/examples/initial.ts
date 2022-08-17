@@ -1,7 +1,7 @@
-import { createMachine } from "xstate";
+import { createMachine } from 'xstate';
 
 const machine = createMachine({
-  initial: "idle",
+  initial: 'idle',
   states: {
     idle: {},
   },

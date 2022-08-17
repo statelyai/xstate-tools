@@ -1,20 +1,20 @@
-import { createMachine } from "xstate";
+import { createMachine } from 'xstate';
 
 createMachine({
   tsTypes:
-    {} as import("./entry-action-on-initial-state-of-targeted-ancestor.typegen").Typegen0,
-  initial: "a",
+    {} as import('./entry-action-on-initial-state-of-targeted-ancestor.typegen').Typegen0,
+  initial: 'a',
   states: {
     a: {
       on: {
-        GO_STRING: "b",
+        GO_STRING: 'b',
       },
     },
     b: {
-      initial: "c",
+      initial: 'c',
       states: {
         c: {
-          entry: ["sayHello"],
+          entry: ['sayHello'],
         },
       },
     },

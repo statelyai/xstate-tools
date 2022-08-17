@@ -1,18 +1,18 @@
-import { createMachine } from "xstate";
+import { createMachine } from 'xstate';
 
 createMachine({
-  tsTypes: {} as import("./exit-action-root-final-state.typegen").Typegen0,
-  exit: "rootExit",
-  initial: "a",
+  tsTypes: {} as import('./exit-action-root-final-state.typegen').Typegen0,
+  exit: 'rootExit',
+  initial: 'a',
   states: {
     a: {
       on: {
-        TICK: "b",
+        TICK: 'b',
       },
     },
     b: {
-      type: "final",
-      exit: "finalExit",
+      type: 'final',
+      exit: 'finalExit',
     },
   },
 });

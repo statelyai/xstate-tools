@@ -1,7 +1,7 @@
-import { createMachine } from "xstate";
+import { createMachine } from 'xstate';
 
 export const machine = createMachine({
-  initial: "wow",
+  initial: 'wow',
   states: {
     wow: {},
   },

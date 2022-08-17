@@ -1,9 +1,9 @@
-import { DocumentValidationsResult, XStateUpdateEvent } from "./types";
-import { resolveUriToFilePrefix } from "./resolveUriToFilePrefix";
+import { resolveUriToFilePrefix } from './resolveUriToFilePrefix';
+import { DocumentValidationsResult, XStateUpdateEvent } from './types';
 
 export const makeXStateUpdateEvent = (
   uri: string,
-  machines: Pick<DocumentValidationsResult, "parseResult">[]
+  machines: Pick<DocumentValidationsResult, 'parseResult'>[],
 ): XStateUpdateEvent => {
   return {
     uri: resolveUriToFilePrefix(uri),
@@ -16,43 +16,43 @@ export const makeXStateUpdateEvent = (
         definitionLoc: machine.parseResult?.ast?.definition?.node.loc,
         namedGuards:
           machine.parseResult
-            ?.getAllConds(["named"])
+            ?.getAllConds(['named'])
             .map((elem) => elem.name) || [],
         namedActions:
           machine.parseResult
-            ?.getAllActions(["named"])
+            ?.getAllActions(['named'])
             .map((elem) => elem.name) || [],
         allServices:
           machine.parseResult
-            ?.getAllServices(["named"])
+            ?.getAllServices(['named'])
             .map((elem) => ({ src: elem.src, id: elem.id })) || [],
         actionsInOptions:
           machine.parseResult?.ast?.options?.actions?.properties.map(
-            (property) => property.key
+            (property) => property.key,
           ) || [],
         delaysInOptions:
           machine.parseResult?.ast?.options?.delays?.properties.map(
-            (property) => property.key
+            (property) => property.key,
           ) || [],
         guardsInOptions:
           machine.parseResult?.ast?.options?.guards?.properties.map(
-            (property) => property.key
+            (property) => property.key,
           ) || [],
         servicesInOptions:
           machine.parseResult?.ast?.options?.services?.properties.map(
-            (property) => property.key
+            (property) => property.key,
           ) || [],
         tags: Array.from(
           new Set(
             machine.parseResult
               ?.getAllStateNodes()
               .flatMap(
-                (node) => node.ast.tags?.map((tag) => tag.value) || []
-              ) || []
-          )
+                (node) => node.ast.tags?.map((tag) => tag.value) || [],
+              ) || [],
+          ),
         ),
         hasTypesNode: Boolean(
-          machine.parseResult?.ast?.definition?.tsTypes?.node
+          machine.parseResult?.ast?.definition?.tsTypes?.node,
         ),
         chooseActionsInOptions:
           machine.parseResult?.getChooseActionsToAddToOptions() || {},

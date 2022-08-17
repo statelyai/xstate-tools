@@ -1,4 +1,4 @@
-import { createMachine, actions } from "xstate";
+import { actions, createMachine } from 'xstate';
 
 const {
   after,

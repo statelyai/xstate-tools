@@ -1,10 +1,10 @@
-import { processFileEdits } from "..";
+import { processFileEdits } from '..';
 
-describe("processFileEdits", () => {
+describe('processFileEdits', () => {
   it.each([
     [
       `Hello, everyone!`,
-      [{ start: 0, end: 0, newText: "Great, " }],
+      [{ start: 0, end: 0, newText: 'Great, ' }],
       `Great, Hello, everyone!`,
     ],
     [

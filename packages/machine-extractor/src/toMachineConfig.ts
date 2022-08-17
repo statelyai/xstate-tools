@@ -3,12 +3,12 @@ import {
   MachineConfig,
   StateNodeConfig,
   TransitionConfigOrTarget,
-} from "xstate";
-import { MaybeArrayOfActions } from "./actions";
-import { TMachineCallExpression } from "./machineCallExpression";
-import { StateNodeReturn } from "./stateNode";
-import { MaybeTransitionArray } from "./transitions";
-import { GetParserResult } from "./utils";
+} from 'xstate';
+import { MaybeArrayOfActions } from './actions';
+import { TMachineCallExpression } from './machineCallExpression';
+import { StateNodeReturn } from './stateNode';
+import { MaybeTransitionArray } from './transitions';
+import { GetParserResult } from './utils';
 
 export interface ToMachineConfigParseOptions {
   /**
@@ -22,7 +22,7 @@ export interface ToMachineConfigParseOptions {
 
 const parseStateNode = (
   astResult: StateNodeReturn,
-  opts: ToMachineConfigParseOptions | undefined
+  opts: ToMachineConfigParseOptions | undefined,
 ): StateNodeConfig<any, any, any> => {
   const config: MachineConfig<any, any, any> = {};
 
@@ -67,7 +67,7 @@ const parseStateNode = (
     astResult.on.properties.forEach((onProperty) => {
       (config.on as any)[onProperty.key] = getTransitions(
         onProperty.result,
-        opts
+        opts,
       );
     });
   }
@@ -78,7 +78,7 @@ const parseStateNode = (
     astResult.after.properties.forEach((afterProperty) => {
       (config.after as any)[afterProperty.key] = getTransitions(
         afterProperty.result,
-        opts
+        opts,
       );
     });
   }
@@ -123,7 +123,7 @@ const parseStateNode = (
       let src: string;
       if (opts?.hashInlineImplementations) {
         src =
-          invoke.src.declarationType === "named"
+          invoke.src.declarationType === 'named'
             ? invoke.src.value
             : invoke.src.inlineDeclarationId;
       } else {
@@ -168,7 +168,7 @@ const parseStateNode = (
 
 export const toMachineConfig = (
   result: TMachineCallExpression,
-  opts?: ToMachineConfigParseOptions
+  opts?: ToMachineConfigParseOptions,
 ): MachineConfig<any, any, any> | undefined => {
   if (!result?.definition) return undefined;
   return parseStateNode(result?.definition, opts);
@@ -176,12 +176,12 @@ export const toMachineConfig = (
 
 export const getActionConfig = (
   astActions: GetParserResult<typeof MaybeArrayOfActions>,
-  opts: ToMachineConfigParseOptions | undefined
+  opts: ToMachineConfigParseOptions | undefined,
 ): Actions<any, any> => {
   const actions: Actions<any, any> = [];
 
   astActions?.forEach((action) => {
-    if (opts?.hashInlineImplementations && action.declarationType !== "named") {
+    if (opts?.hashInlineImplementations && action.declarationType !== 'named') {
       actions.push({
         type: action.inlineDeclarationId,
       });
@@ -199,7 +199,7 @@ export const getActionConfig = (
 
 export const getTransitions = (
   astTransitions: GetParserResult<typeof MaybeTransitionArray>,
-  opts: ToMachineConfigParseOptions | undefined
+  opts: ToMachineConfigParseOptions | undefined,
 ): TransitionConfigOrTarget<any, any> => {
   const transitions: TransitionConfigOrTarget<any, any> = [];
 
@@ -215,7 +215,7 @@ export const getTransitions = (
     if (transition?.cond) {
       if (
         opts?.hashInlineImplementations &&
-        transition.cond.declarationType !== "named"
+        transition.cond.declarationType !== 'named'
       ) {
         toPush.cond = transition.cond.inlineDeclarationId;
       } else {

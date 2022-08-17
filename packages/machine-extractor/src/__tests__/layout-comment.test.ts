@@ -1,7 +1,7 @@
-import { parseMachinesFromFile } from "..";
+import { parseMachinesFromFile } from '..';
 
-describe("Layout comments", () => {
-  it("Should ensure that layout comments are parsed", () => {
+describe('Layout comments', () => {
+  it('Should ensure that layout comments are parsed', () => {
     const result = parseMachinesFromFile(`
       /** @xstate-layout layout-string */
       const machine = createMachine({});

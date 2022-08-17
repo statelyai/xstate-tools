@@ -1,5 +1,5 @@
-import { createMachine } from "xstate";
+import { createMachine } from 'xstate';
 
 export const machine = createMachine({
-  description: "Hello",
+  description: 'Hello',
 });

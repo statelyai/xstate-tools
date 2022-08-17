@@ -1,7 +1,7 @@
-import { AnyParser } from ".";
-import { types as t } from "@babel/core";
-import { createParser } from "./createParser";
-import { unionType } from "./unionType";
+import { types as t } from '@babel/core';
+import { AnyParser } from '.';
+import { createParser } from './createParser';
+import { unionType } from './unionType';
 
 export const tsAsExpression = <Result>(parser: AnyParser<Result>) => {
   return createParser({

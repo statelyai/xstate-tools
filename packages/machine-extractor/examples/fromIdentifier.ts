@@ -1,9 +1,9 @@
-import { createMachine, MachineConfig } from "xstate";
+import { createMachine, MachineConfig } from 'xstate';
 
 const config: MachineConfig<any, any, any> = {
   on: {
     NEXT: {
-      target: ".next",
+      target: '.next',
     },
   },
   states: {

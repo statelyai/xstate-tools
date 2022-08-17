@@ -1,23 +1,23 @@
-import * as os from "os";
-import * as vscode from "vscode";
-import { assign, createMachine, interpret } from "xstate";
-import { writeToTypegenFile, XStateUpdateEvent } from "@xstate/tools-shared";
+import { writeToTypegenFile, XStateUpdateEvent } from '@xstate/tools-shared';
+import * as os from 'os';
+import * as vscode from 'vscode';
+import { assign, createMachine, interpret } from 'xstate';
 
 const throttledTypegenCreationMachine = createMachine<
   {
     eventMap: Record<string, XStateUpdateEvent>;
   },
-  { type: "RECEIVE_NEW_EVENT"; event: XStateUpdateEvent }
+  { type: 'RECEIVE_NEW_EVENT'; event: XStateUpdateEvent }
 >(
   {
-    initial: "idle",
+    initial: 'idle',
     context: {
       eventMap: {},
     },
     preserveActionOrder: true,
     on: {
       RECEIVE_NEW_EVENT: {
-        target: ".throttling",
+        target: '.throttling',
         internal: false,
         actions: assign((context, event) => {
           return {
@@ -31,11 +31,11 @@ const throttledTypegenCreationMachine = createMachine<
     },
     states: {
       idle: {
-        entry: ["executeAction", "clearActions"],
+        entry: ['executeAction', 'clearActions'],
       },
       throttling: {
         after: {
-          500: "idle",
+          500: 'idle',
         },
       },
     },
@@ -47,7 +47,7 @@ const throttledTypegenCreationMachine = createMachine<
           Object.entries(context.eventMap).map(async ([, event]) => {
             const uri = event.uri;
             let pathFromUri = vscode.Uri.parse(uri, true).path;
-            if (os.platform() === "win32") {
+            if (os.platform() === 'win32') {
               pathFromUri = pathFromUri.slice(1);
             }
 
@@ -66,7 +66,7 @@ const throttledTypegenCreationMachine = createMachine<
         };
       }),
     },
-  }
+  },
 );
 
 export const startTypegenService = () =>

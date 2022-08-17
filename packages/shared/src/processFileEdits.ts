@@ -8,7 +8,9 @@ export const processFileEdits = (
   oldText: string,
   fileEdits: FileEdit[],
 ): string => {
-  const fileEditsSortedByStart = [...fileEdits].sort((a, b) => b.start - a.start);
+  const fileEditsSortedByStart = [...fileEdits].sort(
+    (a, b) => b.start - a.start,
+  );
 
   let newText = oldText;
 

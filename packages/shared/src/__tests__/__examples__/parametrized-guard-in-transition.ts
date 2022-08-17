@@ -1,15 +1,15 @@
-import { createMachine } from "xstate";
+import { createMachine } from 'xstate';
 
 createMachine({
-  tsTypes: {} as import("./parametrized-guard-in-transition.typegen").Typegen0,
-  initial: "a",
+  tsTypes: {} as import('./parametrized-guard-in-transition.typegen').Typegen0,
+  initial: 'a',
   states: {
     a: {
       on: {
         MY_AWESOME_EVENT: {
-          target: "b",
+          target: 'b',
           cond: {
-            type: "myAwesomeGuard",
+            type: 'myAwesomeGuard',
           },
         },
       },

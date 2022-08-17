@@ -1,16 +1,16 @@
-import { createMachine } from "xstate";
+import { createMachine } from 'xstate';
 
 createMachine({
-  initial: "a",
+  initial: 'a',
   tsTypes:
-    {} as import("./exit-action-external-transition-within-source.typegen").Typegen0,
+    {} as import('./exit-action-external-transition-within-source.typegen').Typegen0,
   states: {
     a: {
-      exit: "exitA",
-      initial: "c",
+      exit: 'exitA',
+      initial: 'c',
       on: {
         FOO: {
-          target: ".d",
+          target: '.d',
           internal: false,
         },
       },

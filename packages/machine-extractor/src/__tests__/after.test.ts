@@ -1,7 +1,7 @@
-import { parseMachinesFromFile } from "..";
+import { parseMachinesFromFile } from '..';
 
-describe("After parsing", () => {
-  it("Should be able to grab actions and guards declared inside a delay", () => {
+describe('After parsing', () => {
+  it('Should be able to grab actions and guards declared inside a delay', () => {
     const result = parseMachinesFromFile(`
       createMachine({
         after: {
@@ -13,7 +13,7 @@ describe("After parsing", () => {
     `);
 
     expect(
-      Object.keys(result.machines[0].getAllActions(["named"])),
+      Object.keys(result.machines[0].getAllActions(['named'])),
     ).toHaveLength(2);
   });
 });

@@ -1,5 +1,5 @@
-import { types as t } from "@babel/core";
-import { Parser, ParserContext } from "./types";
+import { types as t } from '@babel/core';
+import { Parser, ParserContext } from './types';
 
 /**
  * Creates a parser, which can be run later on AST nodes

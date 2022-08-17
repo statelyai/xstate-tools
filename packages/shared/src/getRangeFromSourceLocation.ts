@@ -1,7 +1,9 @@
-import { Range } from "vscode-languageserver-textdocument";
-import { types as t } from "@babel/core";
+import { types as t } from '@babel/core';
+import { Range } from 'vscode-languageserver-textdocument';
 
-export const getRangeFromSourceLocation = (location: t.SourceLocation): Range => {
+export const getRangeFromSourceLocation = (
+  location: t.SourceLocation,
+): Range => {
   return {
     start: {
       character: location.start.column,

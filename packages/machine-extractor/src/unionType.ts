@@ -1,4 +1,4 @@
-import { AnyParser, ParserContext } from ".";
+import { AnyParser, ParserContext } from '.';
 
 /**
  * Used to declare when a type can be either one

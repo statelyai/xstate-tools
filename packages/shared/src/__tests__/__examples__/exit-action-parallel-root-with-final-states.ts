@@ -1,34 +1,34 @@
-import { createMachine } from "xstate";
+import { createMachine } from 'xstate';
 
 createMachine({
   tsTypes:
-    {} as import("./exit-action-parallel-root-with-final-states.typegen").Typegen0,
-  exit: "rootExit",
-  type: "parallel",
+    {} as import('./exit-action-parallel-root-with-final-states.typegen').Typegen0,
+  exit: 'rootExit',
+  type: 'parallel',
   states: {
     a: {
-      exit: "aExit",
+      exit: 'aExit',
       states: {
         a1: {
           on: {
-            TICK_A: "a2",
+            TICK_A: 'a2',
           },
         },
         a2: {
-          type: "final",
+          type: 'final',
         },
       },
     },
     b: {
-      exit: "bExit",
+      exit: 'bExit',
       states: {
         b1: {
           on: {
-            TICK_B: "b2",
+            TICK_B: 'b2',
           },
         },
         b2: {
-          type: "final",
+          type: 'final',
         },
       },
     },

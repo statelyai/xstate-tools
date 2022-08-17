@@ -1,7 +1,7 @@
-import { parseMachinesFromFile } from "../parseMachinesFromFile";
+import { parseMachinesFromFile } from '../parseMachinesFromFile';
 
-describe("Delays", () => {
-  it("Should pick up delays in options", () => {
+describe('Delays', () => {
+  it('Should pick up delays in options', () => {
     const machines = parseMachinesFromFile(`
       createMachine({}, {
         delays: {
@@ -18,9 +18,9 @@ describe("Delays", () => {
       (val) => val.key,
     );
 
-    expect(propertyKeys).toEqual(["SOME_NAME", "SOMETHING_ELSE", "WOW"]);
+    expect(propertyKeys).toEqual(['SOME_NAME', 'SOMETHING_ELSE', 'WOW']);
   });
-  it("Should be able to grab all named delays", () => {
+  it('Should be able to grab all named delays', () => {
     const machines = parseMachinesFromFile(`
       createMachine({
         after: {
@@ -34,9 +34,9 @@ describe("Delays", () => {
     const result = machines.machines[0];
 
     expect(Object.keys(result.getAllNamedDelays())).toEqual([
-      "SOME_NAME",
-      "SOMETHING_ELSE",
-      "WOW",
+      'SOME_NAME',
+      'SOMETHING_ELSE',
+      'WOW',
     ]);
   });
 });

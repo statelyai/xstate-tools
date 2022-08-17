@@ -1,9 +1,9 @@
-import { createMachine } from "xstate";
+import { createMachine } from 'xstate';
 
 createMachine({
-  tsTypes: {} as import("./guard-single-quote.typegen").Typegen0,
+  tsTypes: {} as import('./guard-single-quote.typegen').Typegen0,
   schema: {
-    events: {} as { type: "PING" },
+    events: {} as { type: 'PING' },
   },
   on: {
     PING: {

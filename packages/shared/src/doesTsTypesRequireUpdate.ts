@@ -1,5 +1,5 @@
-import { Node } from "@babel/core";
-import { getRawTextFromNode } from "./getRawTextFromNode";
+import { Node } from '@babel/core';
+import { getRawTextFromNode } from './getRawTextFromNode';
 
 export const doesTsTypesRequireUpdate = (opts: {
   fileText: string;

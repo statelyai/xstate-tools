@@ -1,90 +1,90 @@
-import { createMachine } from "xstate";
+import { createMachine } from 'xstate';
 
 createMachine({
   tsTypes:
-    {} as import("./exit-action-parallel-root-with-mixed-states.typegen").Typegen0,
-  exit: "rootExit",
-  type: "parallel",
+    {} as import('./exit-action-parallel-root-with-mixed-states.typegen').Typegen0,
+  exit: 'rootExit',
+  type: 'parallel',
   states: {
     a: {
-      type: "parallel",
-      exit: "aExit",
+      type: 'parallel',
+      exit: 'aExit',
       states: {
         a1: {
-          initial: "a11",
+          initial: 'a11',
           states: {
             a11: {
               on: {
-                TICK_A11: "a12",
+                TICK_A11: 'a12',
               },
             },
             a12: {
-              exit: "a12Exit",
-              type: "final",
+              exit: 'a12Exit',
+              type: 'final',
             },
           },
         },
         a2: {
-          initial: "a21",
+          initial: 'a21',
           states: {
             a21: {
               on: {
-                TICK_A21: "a22",
+                TICK_A21: 'a22',
               },
             },
             a22: {
-              exit: "a22Exit",
-              type: "final",
+              exit: 'a22Exit',
+              type: 'final',
             },
           },
         },
       },
     },
     b: {
-      type: "parallel",
-      exit: "bExit",
+      type: 'parallel',
+      exit: 'bExit',
       states: {
         b1: {
-          initial: "b11",
+          initial: 'b11',
           states: {
             b11: {
               on: {
-                TICK_B11: "b12",
+                TICK_B11: 'b12',
               },
             },
             b12: {
-              exit: "b12Exit",
-              type: "final",
+              exit: 'b12Exit',
+              type: 'final',
             },
           },
         },
         b2: {
-          initial: "b21",
+          initial: 'b21',
           states: {
             b21: {
               on: {
-                TICK_B21: "b22",
+                TICK_B21: 'b22',
               },
             },
             b22: {
-              exit: "b22Exit",
-              type: "final",
+              exit: 'b22Exit',
+              type: 'final',
             },
           },
         },
       },
     },
     c: {
-      initial: "c1",
-      exit: "cExit",
+      initial: 'c1',
+      exit: 'cExit',
       states: {
         c1: {
           on: {
-            TICK_C1: "c2",
+            TICK_C1: 'c2',
           },
         },
         c2: {
-          type: "final",
+          type: 'final',
         },
       },
     },

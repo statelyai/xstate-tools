@@ -1,25 +1,25 @@
-import { createMachine } from "xstate";
+import { createMachine } from 'xstate';
 
 createMachine({
-  initial: "a",
+  initial: 'a',
   tsTypes:
-    {} as import("./exit-action-on-ancestor-with-external-transition-on-descendant.typegen").Typegen0,
+    {} as import('./exit-action-on-ancestor-with-external-transition-on-descendant.typegen').Typegen0,
   states: {
     a: {
-      exit: "doSomethingWithFoo",
-      initial: "a1",
+      exit: 'doSomethingWithFoo',
+      initial: 'a1',
       states: {
         a1: {
           on: {
             FOO: {
-              target: "#b",
+              target: '#b',
             },
           },
         },
       },
     },
     b: {
-      id: "b",
+      id: 'b',
     },
   },
 });

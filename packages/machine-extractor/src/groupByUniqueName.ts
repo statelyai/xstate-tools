@@ -1,4 +1,4 @@
-import { RecordOfArrays } from "./RecordOfArrays";
+import { RecordOfArrays } from './RecordOfArrays';
 
 export const groupByUniqueName = <T extends { name: string }>(
   arr: T[],

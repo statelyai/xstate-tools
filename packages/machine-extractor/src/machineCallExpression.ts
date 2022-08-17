@@ -1,18 +1,18 @@
-import { types as t } from "@babel/core";
-import { StateNode } from "./stateNode";
-import { GetParserResult } from "./utils";
-import { MachineOptions } from "./options";
-import { createParser } from "./createParser";
-import { AnyTypeParameterList } from "./typeParameters";
+import { types as t } from '@babel/core';
+import { createParser } from './createParser';
+import { MachineOptions } from './options';
+import { StateNode } from './stateNode';
+import { AnyTypeParameterList } from './typeParameters';
+import { GetParserResult } from './utils';
 
 export type TMachineCallExpression = GetParserResult<
   typeof MachineCallExpression
 >;
 
 export const ALLOWED_CALL_EXPRESSION_NAMES = [
-  "createMachine",
-  "Machine",
-  "createTestMachine",
+  'createMachine',
+  'Machine',
+  'createTestMachine',
 ];
 
 export const MachineCallExpression = createParser({

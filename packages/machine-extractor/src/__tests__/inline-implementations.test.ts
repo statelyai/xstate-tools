@@ -1,7 +1,7 @@
-import { parseMachinesFromFile } from "../parseMachinesFromFile";
+import { parseMachinesFromFile } from '../parseMachinesFromFile';
 
-describe("Inline implementations", () => {
-  it("Should pick up guards declared inline deeper than the root level", () => {
+describe('Inline implementations', () => {
+  it('Should pick up guards declared inline deeper than the root level', () => {
     const input = `
 			createMachine({
 				states: {
@@ -23,6 +23,6 @@ describe("Inline implementations", () => {
     const parsedId = (config as any)?.states.a.always.cond;
 
     expect(parsedId).toBeTruthy();
-    expect(typeof parsedId).toEqual("string");
+    expect(typeof parsedId).toEqual('string');
   });
 });

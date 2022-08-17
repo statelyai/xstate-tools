@@ -9,14 +9,14 @@
 // - actions
 // - XState (all XState exports)
 
-import { assign, Machine } from "xstate";
+import { Machine } from 'xstate';
 
 export const always = Machine({
-  initial: "checking",
+  initial: 'checking',
   states: {
     checking: {
       always: {
-        target: "next",
+        target: 'next',
       },
     },
     next: {},

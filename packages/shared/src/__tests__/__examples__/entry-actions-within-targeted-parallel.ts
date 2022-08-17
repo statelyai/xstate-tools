@@ -1,23 +1,23 @@
-import { createMachine } from "xstate";
+import { createMachine } from 'xstate';
 
 const machine = createMachine({
   tsTypes:
-    {} as import("./entry-actions-within-targeted-parallel.typegen").Typegen0,
-  initial: "a",
+    {} as import('./entry-actions-within-targeted-parallel.typegen').Typegen0,
+  initial: 'a',
   states: {
     a: {
       on: {
-        GO_STRING: "b",
+        GO_STRING: 'b',
       },
     },
     b: {
-      type: "parallel",
+      type: 'parallel',
       states: {
         c: {
-          entry: "sayHello",
+          entry: 'sayHello',
         },
         d: {
-          entry: "sayBazinga",
+          entry: 'sayBazinga',
         },
       },
     },

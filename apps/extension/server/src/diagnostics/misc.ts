@@ -1,7 +1,7 @@
-import { DiagnosticSeverity } from "vscode-languageserver";
-import { Range } from "vscode-languageserver-textdocument";
-import { ConditionPredicate, createMachine } from "xstate";
-import { DiagnosticGetter } from "../getDiagnostics";
+import { DiagnosticSeverity } from 'vscode-languageserver';
+import { Range } from 'vscode-languageserver-textdocument';
+import { ConditionPredicate, createMachine } from 'xstate';
+import { DiagnosticGetter } from '../getDiagnostics';
 
 // TODO - refactor
 export const miscDiagnostics: DiagnosticGetter = (machine, textDocument) => {

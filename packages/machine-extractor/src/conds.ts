@@ -1,9 +1,9 @@
-import { types as t } from "@babel/core";
-import { Condition } from "xstate";
-import { DeclarationType } from ".";
-import { createParser } from "./createParser";
-import { unionType } from "./unionType";
-import { isFunctionOrArrowFunctionExpression } from "./utils";
+import { types as t } from '@babel/core';
+import { Condition } from 'xstate';
+import { DeclarationType } from '.';
+import { createParser } from './createParser';
+import { unionType } from './unionType';
+import { isFunctionOrArrowFunctionExpression } from './utils';
 
 export interface CondNode {
   node: t.Node;
@@ -18,11 +18,11 @@ const CondAsFunctionExpression = createParser({
   parseNode: (node, context): CondNode => {
     return {
       node,
-      name: "",
+      name: '',
       cond: () => {
         return false;
       },
-      declarationType: "inline",
+      declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
   },
@@ -35,7 +35,7 @@ const CondAsStringLiteral = createParser({
       node,
       name: node.value,
       cond: node.value,
-      declarationType: "named",
+      declarationType: 'named',
       inlineDeclarationId: context.getNodeHash(node),
     };
   },
@@ -51,8 +51,8 @@ const CondAsParametrizedGuard = createParser({
         continue;
       }
       if (
-        (t.isStringLiteral(prop.key) && prop.key.value === "type") ||
-        (t.isIdentifier(prop.key) && prop.key.name === "type")
+        (t.isStringLiteral(prop.key) && prop.key.value === 'type') ||
+        (t.isIdentifier(prop.key) && prop.key.name === 'type')
       ) {
         propValue = prop.value;
         break;
@@ -68,7 +68,7 @@ const CondAsParametrizedGuard = createParser({
       node,
       name: propValue.value,
       cond: propValue.value,
-      declarationType: "named",
+      declarationType: 'named',
       inlineDeclarationId: id,
     };
   },
@@ -80,9 +80,9 @@ const CondAsNode = createParser({
     const id = context.getNodeHash(node);
     return {
       node,
-      name: "",
+      name: '',
       cond: id,
-      declarationType: "unknown",
+      declarationType: 'unknown',
       inlineDeclarationId: id,
     };
   },

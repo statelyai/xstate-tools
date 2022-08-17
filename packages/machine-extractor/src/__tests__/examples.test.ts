@@ -1,12 +1,12 @@
-import * as fs from "fs";
-import * as path from "path";
-import { StateMachine } from "xstate";
-import { parseMachinesFromFile } from "../parseMachinesFromFile";
-import { testUtils } from "../testUtils";
+import * as fs from 'fs';
+import * as path from 'path';
+import { StateMachine } from 'xstate';
+import { parseMachinesFromFile } from '../parseMachinesFromFile';
+import { testUtils } from '../testUtils';
 
-const examples = fs.readdirSync(path.resolve(__dirname, "../../examples"));
+const examples = fs.readdirSync(path.resolve(__dirname, '../../examples'));
 
-describe("Examples", () => {
+describe('Examples', () => {
   examples.forEach((example) => {
     test(example, async () => {
       const exampleMachineImports = require(`../../examples/${example}`);
@@ -16,7 +16,7 @@ describe("Examples", () => {
       );
 
       const fileAsString = fs
-        .readFileSync(path.resolve(__dirname, "../../examples", example))
+        .readFileSync(path.resolve(__dirname, '../../examples', example))
         .toString();
 
       const { machines } = parseMachinesFromFile(fileAsString);
@@ -31,7 +31,7 @@ describe("Examples", () => {
 
           expect(machineConfigUnderTest).toEqual(sourceMachineConfig);
         } catch (e: any) {
-          if (!e.message.includes("Received: serializes to the same string")) {
+          if (!e.message.includes('Received: serializes to the same string')) {
             throw e;
           }
         }

@@ -1,40 +1,40 @@
-import { createMachine } from "xstate";
+import { createMachine } from 'xstate';
 
 createMachine(
   {
-    tsTypes: {} as import("./basic.typegen").Typegen0,
+    tsTypes: {} as import('./basic.typegen').Typegen0,
     schema: {
       events: {} as
         | {
-            type: "FOO";
+            type: 'FOO';
           }
         | {
-            type: "BAR";
+            type: 'BAR';
           },
     },
-    initial: "a",
+    initial: 'a',
     states: {
       a: {
         on: {
-          FOO: "b",
-          BAR: "c",
+          FOO: 'b',
+          BAR: 'c',
         },
       },
       b: {
-        entry: ["someAction"],
+        entry: ['someAction'],
       },
       c: {
-        entry: ["otherAction"],
+        entry: ['otherAction'],
       },
     },
   },
   {
     actions: {
       someAction: (context, event) => {
-        ((accept: "FOO") => {})(event.type);
+        ((accept: 'FOO') => {})(event.type);
       },
       otherAction: (context, event) => {
-        ((accept: "BAR") => {})(event.type);
+        ((accept: 'BAR') => {})(event.type);
       },
     },
   },

@@ -1,15 +1,15 @@
-import { createMachine } from "xstate";
+import { createMachine } from 'xstate';
 
 createMachine({
-  initial: "a",
+  initial: 'a',
   tsTypes:
-    {} as import("./exit-action-external-transition-out-of-source.typegen").Typegen0,
+    {} as import('./exit-action-external-transition-out-of-source.typegen').Typegen0,
   states: {
     a: {
-      exit: "doSomethingWithFoo",
+      exit: 'doSomethingWithFoo',
       on: {
         FOO: {
-          target: "b",
+          target: 'b',
         },
       },
     },
