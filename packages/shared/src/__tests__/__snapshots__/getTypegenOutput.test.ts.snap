@@ -995,6 +995,61 @@ export interface Typegen0 {
 "
 `;
 
+exports[`getTypegenOutput parametrized-guard-in-always-transition 1`] = `
+"// This file was automatically generated. Edits will be overwritten
+
+export interface Typegen0 {
+  "@@xstate/typegen": true;
+  internalEvents: {
+    "": { type: "" };
+    "xstate.init": { type: "xstate.init" };
+  };
+  invokeSrcNameMap: {};
+  missingImplementations: {
+    actions: never;
+    services: never;
+    guards: "myAwesomeGuard";
+    delays: never;
+  };
+  eventsCausingActions: {};
+  eventsCausingServices: {};
+  eventsCausingGuards: {
+    myAwesomeGuard: "";
+  };
+  eventsCausingDelays: {};
+  matchesStates: "a" | "b" | "c";
+  tags: never;
+}
+"
+`;
+
+exports[`getTypegenOutput parametrized-guard-in-transition 1`] = `
+"// This file was automatically generated. Edits will be overwritten
+
+export interface Typegen0 {
+  "@@xstate/typegen": true;
+  internalEvents: {
+    "xstate.init": { type: "xstate.init" };
+  };
+  invokeSrcNameMap: {};
+  missingImplementations: {
+    actions: never;
+    services: never;
+    guards: "myAwesomeGuard";
+    delays: never;
+  };
+  eventsCausingActions: {};
+  eventsCausingServices: {};
+  eventsCausingGuards: {
+    myAwesomeGuard: "MY_AWESOME_EVENT";
+  };
+  eventsCausingDelays: {};
+  matchesStates: "a" | "b";
+  tags: never;
+}
+"
+`;
+
 exports[`getTypegenOutput service-provided-function 1`] = `
 "// This file was automatically generated. Edits will be overwritten
 
