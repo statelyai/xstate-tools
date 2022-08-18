@@ -1,11 +1,16 @@
 name: CI
-on: [push, pull_request]
+on:
+  push:
+    branches: [main]
+  pull_request:
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request && github.event.pull_request.head.sha || env.GITHUB_SHA }}
       - uses: actions/setup-node@v2
         with:
           node-version: 14.x
