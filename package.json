@@ -22,7 +22,8 @@
     "vscode": "^1.52.0"
   },
   "lint-staged": {
-    "*": "prettier --write --ignore-unknown"
+    "*": "prettier --write --ignore-unknown",
+    "**/bundled-editor/assets/*.js": "node ./scripts/require-minified-bundled-editor.js"
   },
   "scripts": {
     "cli": "yarn workspace @xstate/cli",
@@ -91,7 +92,7 @@
     "concurrently": "6.2.0",
     "esbuild": "^0.14.48",
     "eslint": "^7.26.0",
-    "husky": ">=6",
+    "husky": "^8.0.1",
     "lint-staged": ">=10",
     "prettier": "^2.3.1",
     "turbo": "^1.1.2",

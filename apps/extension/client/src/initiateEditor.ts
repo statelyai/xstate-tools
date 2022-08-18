@@ -4,7 +4,7 @@ import {
   getInlineImplementations,
   ImplementationsMetadata,
   isCursorInPosition,
-  resolveUriToFilePrefix,
+  resolveUriToFilePrefix
 } from '@xstate/tools-shared';
 import * as path from 'path';
 import * as vscode from 'vscode';
@@ -12,7 +12,6 @@ import { ColorThemeKind } from 'vscode';
 import { MachineConfig } from 'xstate';
 import { getBaseUrl } from './constants';
 import { EditorWebviewScriptEvent } from './editorWebviewScript';
-import { getWebviewContent } from './getWebviewContent';
 import { handleDefinitionUpdate } from './handleDefinitionUpdate';
 import { handleNodeSelected } from './handleNodeSelected';
 
@@ -56,20 +55,40 @@ export const initiateEditor = (context: vscode.ExtensionContext) => {
         themeKind,
       });
     } else {
+      const bundledEditorRootUri = vscode.Uri.file(
+        path.join(context.extensionPath, 'bundled-editor'),
+      );
+      const htmlContent = new TextDecoder().decode(
+        await vscode.workspace.fs.readFile(
+          vscode.Uri.joinPath(bundledEditorRootUri, 'index.html'),
+        ),
+      );
+
       currentPanel = vscode.window.createWebviewPanel(
         'editor',
         'XState Editor',
         vscode.ViewColumn.Beside,
-        { enableScripts: true, retainContextWhenHidden: true },
+        {
+          enableScripts: true,
+          retainContextWhenHidden: true,
+        },
       );
 
-      const onDiskPath = vscode.Uri.file(
-        path.join(context.extensionPath, 'scripts', 'editorWebview.js'),
+      const baseTag = `<base href="${currentPanel.webview.asWebviewUri(
+        bundledEditorRootUri,
+      )}/">`;
+
+      const initialDataScript = `<script>window.__params = ${JSON.stringify({
+        themeKind,
+        config,
+        layoutString,
+        implementations,
+      })}</script>`;
+
+      currentPanel.webview.html = htmlContent.replace(
+        '<head>',
+        `<head>${baseTag}${initialDataScript}`,
       );
-
-      const src = currentPanel.webview.asWebviewUri(onDiskPath);
-
-      currentPanel.webview.html = getWebviewContent(src, 'XState Editor');
 
       sendMessage({
         type: 'RECEIVE_SERVICE',
