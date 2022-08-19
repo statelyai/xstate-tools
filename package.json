@@ -97,5 +97,6 @@
     "turbo": "^1.1.2",
     "typescript": "^4.3.5"
   },
-  "prettier": {}
+  "prettier": {},
+  "packageManager": "yarn@1.22.19"
 }
