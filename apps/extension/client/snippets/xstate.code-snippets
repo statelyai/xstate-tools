@@ -1,0 +1,20 @@
+{
+  "XState Machine": {
+    "scope": "javascript,javascriptreact,vue",
+    "prefix": "xsm",
+    "body": [
+      "import { createMachine } from 'xstate';",
+      "const ${1:nameOf}Machine = createMachine({\n\tid: '${1:nameOf}',\n\tinitial: '${2:initialState}',\n\tstates: {\n\t\t${2:initialState}: {$0},\n\t}\n});"
+    ],
+    "description": "Outline for XState Machine"
+  },
+  "XState Typegen Machine": {
+    "scope": "typescript,typescriptreact,vue",
+    "prefix": "xsm",
+    "body": [
+      "import { createMachine } from 'xstate';",
+      "const ${1:nameOf}Machine = createMachine({\n\tid: '${1:nameOf}',\n\ttsTypes: {},\n\tschema: {\n\t\tcontext: {} as { ${2:contextType} },\n\t\tevents: {} as { type: '${3:eventType}' },\n\t},\n\tcontext: {\n\t\t${4:initialContextValue},\n\t},\n\tinitial: '${5:initialState}',\n\tstates: {\n\t\t${5:initialState}: {},\n\t},\n});$0"
+    ],
+    "description": "Outline for XState Typegen Machine"
+  }
+}

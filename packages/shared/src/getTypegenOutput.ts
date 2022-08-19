@@ -1,6 +1,6 @@
 import { createMachine } from "xstate";
-import { introspectMachine } from "./introspectMachine";
 import { getStateMatchesObjectSyntax } from "./getStateMatchesObjectSyntax";
+import { introspectMachine } from "./introspectMachine";
 import { XStateUpdateMachine } from "./types";
 
 export const getTypegenOutput = (event: {
@@ -63,6 +63,7 @@ export const getTypegenOutput = (event: {
 
         const requiredActions = actions
           .filter((action) => !machine.actionsInOptions.includes(action.name))
+          .sort()
           .map((action) => JSON.stringify(action.name))
           .join(" | ");
 
@@ -70,24 +71,30 @@ export const getTypegenOutput = (event: {
           .filter(
             (service) => !machine.servicesInOptions.includes(service.name)
           )
+          .sort()
           .map((service) => JSON.stringify(service.name))
           .join(" | ");
 
         const requiredGuards = guards
           .filter((guard) => !machine.guardsInOptions.includes(guard.name))
+          .sort()
           .map((guard) => JSON.stringify(guard.name))
           .join(" | ");
 
         const requiredDelays = delays
           .filter((delay) => !machine.delaysInOptions.includes(delay.name))
+          .sort()
           .map((delay) => JSON.stringify(delay.name))
           .join(" | ");
 
-        const tags = machine.tags.map((tag) => JSON.stringify(tag)).join(" | ");
+        const tags = machine.tags
+          .sort()
+          .map((tag) => JSON.stringify(tag))
+          .join(" | ");
 
-        const matchesStates = introspectResult.stateMatches.map((candidate) =>
-          JSON.stringify(candidate)
-        );
+        const matchesStates = introspectResult.stateMatches
+          .sort()
+          .map((candidate) => JSON.stringify(candidate));
 
         const objectSyntax = getStateMatchesObjectSyntax(introspectResult);
 
@@ -127,34 +134,36 @@ export const getTypegenOutput = (event: {
 
         return `export interface Typegen${index} {
           '@@xstate/typegen': true;
-          eventsCausingActions: {
-            ${displayEventsCausing(actions)}
-          };
           internalEvents: {
-            ${Object.values(internalEvents).join("\n")}
+            ${Object.entries(internalEvents)
+              .sort(([keyA], [keyB]) => (keyA < keyB ? -1 : 1))
+              .map(([, value]) => value)
+              .join("\n")}
           };
           invokeSrcNameMap: {
-            ${Object.keys(introspectResult.serviceSrcToIdMap)
-              .filter((src) => {
+            ${Array.from(introspectResult.serviceSrcToIdMap)
+              .filter(([src]) => {
                 return machine.allServices.some(
                   (service) => service.src === src
                 );
               })
-              .map((src) => {
-                const set = Array.from(introspectResult.serviceSrcToIdMap[src]);
-
-                return `${JSON.stringify(src)}: ${set
+              .sort(([srcA], [srcB]) => (srcA < srcB ? -1 : 1))
+              .map(([src, ids]) => {
+                return `${JSON.stringify(src)}: ${Array.from(ids)
                   .map((item) => JSON.stringify(`done.invoke.${item}`))
                   .join(" | ")};`;
               })
               .join("\n")}
-          }
+          };
           missingImplementations: {
             ${`actions: ${requiredActions || "never"};`}
             ${`services: ${requiredServices || "never"};`}
             ${`guards: ${requiredGuards || "never"};`}
             ${`delays: ${requiredDelays || "never"};`}
-          }
+          };
+          eventsCausingActions: {
+            ${displayEventsCausing(actions)}
+          };
           eventsCausingServices: {
             ${displayEventsCausing(services)}
           };
@@ -186,18 +195,18 @@ const collectInternalEvents = (lineArrays: { events: string[] }[][]) => {
   lineArrays.forEach((lines) => {
     lines.forEach((line) => {
       line.events.forEach((event) => {
+        const safelyQuoted = JSON.stringify(event);
         if (event.startsWith("done.invoke")) {
-          internalEvents[event] = `${JSON.stringify(
+          internalEvents[
             event
-          )}: { type: ${JSON.stringify(
-            event
-          )}; data: unknown; __tip: "See the XState TS docs to learn how to strongly type this."; };`;
+          ] = `${safelyQuoted}: { type: ${safelyQuoted}; data: unknown; __tip: "See the XState TS docs to learn how to strongly type this."; };`;
         } else if (event.startsWith("xstate.") || event === "") {
-          internalEvents[event] = `'${event}': { type: '${event}' };`;
+          const safelyQuoted = JSON.stringify(event);
+          internalEvents[event] = `${safelyQuoted}: { type: ${safelyQuoted} };`;
         } else if (event.startsWith("error.platform")) {
-          internalEvents[event] = `${JSON.stringify(
+          internalEvents[
             event
-          )}: { type: ${JSON.stringify(event)}; data: unknown; };`;
+          ] = `${safelyQuoted}: { type: ${safelyQuoted}; data: unknown; };`;
         }
       });
     });
@@ -208,20 +217,19 @@ const collectInternalEvents = (lineArrays: { events: string[] }[][]) => {
 
 const displayEventsCausing = (lines: { name: string; events: string[] }[]) => {
   return lines
+    .sort((lineA, lineB) => (lineA.name < lineB.name ? -1 : 1))
     .map((line) => {
       return `${JSON.stringify(line.name)}: ${
-        unique(
-          line.events.map((event) => {
-            return event;
-          })
-        )
-          .map((event) => JSON.stringify(event))
-          .join(" | ") ||
-        /**
-         * If no transitions go to this guard/service/action, it's guaranteed
-         * to be caused by xstate.init.
-         */
-        "'xstate.init'"
+        line.events.length
+          ? unique(
+              line.events.map((event) => {
+                return event;
+              })
+            )
+              .map((event) => JSON.stringify(event))
+              .sort()
+              .join(" | ")
+          : "never"
       };`;
     })
     .join("\n");

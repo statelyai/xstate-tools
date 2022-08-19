@@ -4,7 +4,7 @@
   "description": "Visual editing, autocomplete and typegen for XState",
   "license": "MIT",
   "author": "Stately Team",
-  "version": "1.8.1",
+  "version": "1.9.3",
   "private": true,
   "engines": {
     "vscode": "^1.52.0"
@@ -23,6 +23,7 @@
   "categories": [
     "Linters",
     "Visualization",
+    "Snippets",
     "Other"
   ],
   "keywords": [
@@ -81,21 +82,36 @@
           "type": "boolean",
           "default": true,
           "description": "Enable nesting the generated typegen files."
+        },
+        "xstate.theme": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "dark",
+            "light"
+          ],
+          "default": "auto",
+          "description": "Color theme for the visual editor. Auto syncs the VS Code theme with the editor theme."
         }
       }
-    }
+    },
+    "snippets": [
+      {
+        "path": "snippets/xstate.code-snippets"
+      }
+    ]
   },
   "scripts": {
     "lint": "tsc",
     "test": "jest --passWithNoTests",
     "viz:build": "esbuild src/vizWebviewScript.ts --bundle --outfile=scripts/vizWebview.js",
     "editor:build": "esbuild src/editorWebviewScript.ts --bundle --outfile=scripts/editorWebview.js",
-    "build": "esbuild --bundle --platform=\"node\" src/extension.ts --outfile=dist/index.js --external:vscode --format=cjs"
+    "build": "esbuild --bundle --platform=\"node\" src/extension.ts --outfile=dist/index.js --external:vscode --format=cjs --sourcemap"
   },
   "dependencies": {
     "@types/lz-string": "^1.3.34",
     "@xstate/inspect": "^0.4.1",
-    "@xstate/tools-shared": "1.1.6",
+    "@xstate/tools-shared": "1.2.2",
     "lz-string": "^1.4.4",
     "vscode-languageclient": "^7.0.0",
     "xstate": "^4.29.0"

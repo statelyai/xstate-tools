@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { Uri } from "vscode";
 
 // More info on the patterns in this comment: https://github.com/statelyai/xstate-tools/pull/146#discussion_r889904447
 const typegenPatternKeys = ["*.ts", "*.tsx", "*.mts", "*.cts"];
@@ -7,6 +8,14 @@ const typegenPattern = "${capture}.typegen.ts";
 const getXStateConfig = () => vscode.workspace.getConfiguration("xstate");
 const getFileNestingConfig = () =>
   vscode.workspace.getConfiguration("explorer.fileNesting");
+
+const getExistingNestingPattern = (
+  fileNestingPatterns: object,
+  patternKey: string
+) =>
+  patternKey in fileNestingPatterns
+    ? fileNestingPatterns[patternKey as keyof typeof fileNestingPatterns]
+    : "";
 
 // Checks if the user has our typegen pattern set in their workspace config
 const hasTypegenPattern = (fileNestingPatterns: object) =>
@@ -33,14 +42,17 @@ const enableTypegenNesting = () => {
   const fileNestingConfig = getFileNestingConfig();
 
   const fileNestingPatterns = fileNestingConfig.get("patterns");
-  if (typeof fileNestingPatterns !== "object") return;
+  if (!fileNestingPatterns || typeof fileNestingPatterns !== "object") return;
 
   // If the user chooses to enable file nesting for typegen files we need to make sure that VSCode's file nesting is also enabled
   fileNestingConfig.update("enabled", true, true);
 
   const getUpdatedPattern = (typegenPatternKey: string) => {
     // Check if the user has a pattern defined for ts files
-    const existingTsPattern = fileNestingPatterns[typegenPatternKey];
+    const existingTsPattern = getExistingNestingPattern(
+      fileNestingPatterns,
+      typegenPatternKey
+    );
 
     // If the user has defined a pattern for ts files we add our typegen pattern to it, otherwise we create a new pattern
     return existingTsPattern
@@ -70,12 +82,14 @@ const disableTypegenNesting = () => {
   const fileNestingConfig = getFileNestingConfig();
 
   const fileNestingPatterns = fileNestingConfig.get("patterns");
-  if (typeof fileNestingPatterns !== "object") return;
+  if (!fileNestingPatterns || typeof fileNestingPatterns !== "object") return;
 
   const getUpdatedPattern = (typegenPatternKey: string) => {
     // Check if the user has a pattern defined for ts files
-    const existingTsPattern: string | undefined =
-      fileNestingPatterns[typegenPatternKey];
+    const existingTsPattern: string | undefined = getExistingNestingPattern(
+      fileNestingPatterns,
+      typegenPatternKey
+    );
 
     // If there's no patterns defined for ts files we don't need to do anything
     if (!existingTsPattern || existingTsPattern === "") return "";
@@ -131,7 +145,7 @@ export const handleTypegenNestingConfig = () => {
 
   // VSCode's configuration for xstate
   const fileNestingPatterns = fileNestingConfig.get("patterns");
-  if (typeof fileNestingPatterns !== "object") return;
+  if (!fileNestingPatterns || typeof fileNestingPatterns !== "object") return;
 
   const xstateConfig = getXStateConfig();
   const nestTypegenFiles = xstateConfig.get<boolean>("nestTypegenFiles");
@@ -143,11 +157,13 @@ export const handleTypegenNestingConfig = () => {
     // Show prompt if the user wants to nest typegen files but hasn't defined our pattern yet
     const enableOption = "Enable";
     const disableOption = "No, don't ask again";
+    const learnMoreOption = "Learn more";
     vscode.window
       .showInformationMessage(
         "Do you want to enable file nesting for XState typegen files?",
         enableOption,
-        disableOption
+        disableOption,
+        learnMoreOption
       )
       .then((choice) => {
         switch (choice) {
@@ -157,6 +173,11 @@ export const handleTypegenNestingConfig = () => {
           case disableOption:
             getXStateConfig().update("nestTypegenFiles", false, true);
             disableTypegenNesting();
+            break;
+          case learnMoreOption:
+            vscode.env.openExternal(
+              Uri.parse("https://stately.ai/blog/nesting-xstate-typegen-files")
+            );
             break;
         }
       });

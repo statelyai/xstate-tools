@@ -1,20 +1,20 @@
-import * as path from "path";
-import * as vscode from "vscode";
-import { LanguageClient } from "vscode-languageclient/node";
 import { parseMachinesFromFile } from "@xstate/machine-extractor";
 import {
   doesTsTypesRequireUpdate,
   getRangeFromSourceLocation,
   XStateUpdateEvent,
 } from "@xstate/tools-shared";
+import * as path from "path";
+import * as vscode from "vscode";
+import { LanguageClient } from "vscode-languageclient/node";
 import { startTypegenService } from "./typegenService";
 
 export const initiateTypegen = (
   context: vscode.ExtensionContext,
   client: LanguageClient,
   registerXStateUpdateListener: (
-    listener: (event: XStateUpdateEvent) => void,
-  ) => vscode.Disposable,
+    listener: (event: XStateUpdateEvent) => void
+  ) => vscode.Disposable
 ) => {
   const typegenService = startTypegenService();
 
@@ -34,7 +34,7 @@ export const initiateTypegen = (
           new Promise((resolve) => {
             const fileEdits: vscode.TextEdit[] = [];
             const relativePath = removeExtension(
-              path.basename(event.document.uri.path),
+              path.basename(event.document.uri.path)
             );
             let machineIndex = 0;
             result.machines.forEach((machine, index) => {
@@ -48,7 +48,7 @@ export const initiateTypegen = (
 
                 if (requiresUpdate) {
                   const position = getRangeFromSourceLocation(
-                    machine.ast.definition.tsTypes?.node?.loc,
+                    machine.ast.definition.tsTypes?.node?.loc!
                   );
 
                   fileEdits.push(
@@ -56,15 +56,15 @@ export const initiateTypegen = (
                       new vscode.Range(
                         new vscode.Position(
                           position.start.line,
-                          position.start.character,
+                          position.start.character
                         ),
                         new vscode.Position(
                           position.end.line,
-                          position.end.character,
-                        ),
+                          position.end.character
+                        )
                       ),
-                      `{} as import("./${relativePath}.typegen").Typegen${machineIndex}`,
-                    ),
+                      `{} as import("./${relativePath}.typegen").Typegen${machineIndex}`
+                    )
                   );
                 }
 
@@ -72,10 +72,10 @@ export const initiateTypegen = (
               }
             });
             resolve(fileEdits);
-          }),
+          })
         );
       }
-    }),
+    })
   );
 
   context.subscriptions.push(
@@ -85,7 +85,7 @@ export const initiateTypegen = (
         type: "RECEIVE_NEW_EVENT",
         event,
       });
-    }),
+    })
   );
 };
 

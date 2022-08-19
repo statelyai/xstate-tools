@@ -1,5 +1,69 @@
 # stately-vscode
 
+## 1.9.3
+
+### Patch Changes
+
+- [#198](https://github.com/statelyai/xstate-tools/pull/198) [`82b6c7c`](https://github.com/statelyai/xstate-tools/commit/82b6c7c603eef515853b81ff29d0738548b6c051) Thanks [@mellson](https://github.com/mellson)! - Updated `xsm` snippet for TypeScript machines to make it easier to type context and events.
+
+## 1.9.2
+
+### Patch Changes
+
+- [#195](https://github.com/statelyai/xstate-tools/pull/195) [`446b5aa`](https://github.com/statelyai/xstate-tools/commit/446b5aa1753043032c08385afbc14b6ed3d60e5d) Thanks [@Andarist](https://github.com/Andarist)! - Preserve `predictableActionArguments` config key when updating the machines.
+
+- Updated dependencies [[`446b5aa`](https://github.com/statelyai/xstate-tools/commit/446b5aa1753043032c08385afbc14b6ed3d60e5d)]:
+  - @xstate/tools-shared@1.2.2
+
+## 1.9.1
+
+### Patch Changes
+
+- [#190](https://github.com/statelyai/xstate-tools/pull/190) [`a5f091f`](https://github.com/statelyai/xstate-tools/commit/a5f091f0606a183d62dce7dcf45c57474bffab04) Thanks [@Andarist](https://github.com/Andarist)! - Fixed an issue with events leading to a machine being put in its final configuration not being added to the appropriate exit actions.
+
+- Updated dependencies [[`a5f091f`](https://github.com/statelyai/xstate-tools/commit/a5f091f0606a183d62dce7dcf45c57474bffab04)]:
+  - @xstate/tools-shared@1.2.1
+
+## 1.9.0
+
+### Minor Changes
+
+- [#114](https://github.com/statelyai/xstate-tools/pull/114) [`267db6b`](https://github.com/statelyai/xstate-tools/commit/267db6b00f6f7fda1145e0631638620b7649afe0) Thanks [@mattpocock](https://github.com/mattpocock)! - Gave typegen the ability to calculate all of the events which can fire exit actions.
+
+* [#189](https://github.com/statelyai/xstate-tools/pull/189) [`4ed3d9b`](https://github.com/statelyai/xstate-tools/commit/4ed3d9b9c3530569cd878d98b319b011d1edfb3a) Thanks [@farskid](https://github.com/farskid)! - Adds a setting to sync the visual editor theme with the VS Code theme
+
+- [#188](https://github.com/statelyai/xstate-tools/pull/188) [`e54ce0d`](https://github.com/statelyai/xstate-tools/commit/e54ce0d03040a62dd045ad892c9533305081109e) Thanks [@mellson](https://github.com/mellson)! - Changes made outside VS Code are now sent to the visual editor.
+
+* [#144](https://github.com/statelyai/xstate-tools/pull/144) [`0af1105`](https://github.com/statelyai/xstate-tools/commit/0af1105ddba0c00a04bfa11470261a69d15abc1f) Thanks [@mellson](https://github.com/mellson)! - Added a snippet, xsm, to create a working machine you can edit using the visual editor in seconds.
+
+### Patch Changes
+
+- [#170](https://github.com/statelyai/xstate-tools/pull/170) [`bd0972c`](https://github.com/statelyai/xstate-tools/commit/bd0972c) Thanks [@Andarist](https://github.com/Andarist)! - Fixed a couple of issues with entry and exit actions not having the appropriate event types associated with them in the generated typegen information. Those issues were mainly related to actions defined on the "path" in the machine in between the source and target states.
+
+* [#182](https://github.com/statelyai/xstate-tools/pull/182) [`fa09f36`](https://github.com/statelyai/xstate-tools/commit/fa09f3648fba735ec205819c3660b20cfac3f6fe) Thanks [@Andarist](https://github.com/Andarist)! - Fixed an issue with some entry actions between the target and the resolved leaf not having the appropriate event types associated them in the generated typegen information.
+
+* Updated dependencies [[`267db6b`](https://github.com/statelyai/xstate-tools/commit/267db6b00f6f7fda1145e0631638620b7649afe0), [`2e1a1f5`](https://github.com/statelyai/xstate-tools/commit/2e1a1f5554481867d3d77916e00c36c98b497f5a), [`fa09f36`](https://github.com/statelyai/xstate-tools/commit/fa09f3648fba735ec205819c3660b20cfac3f6fe)]:
+  - @xstate/tools-shared@1.2.0
+
+## 1.8.3
+
+### Patch Changes
+
+- [#164](https://github.com/statelyai/xstate-tools/pull/164) [`74b013b`](https://github.com/statelyai/xstate-tools/commit/74b013b74632e1ac87543dedfc54da8c3e3764dc) Thanks [@mellson](https://github.com/mellson)! - Added learn more link to file nesting prompt.
+
+## 1.8.2
+
+### Patch Changes
+
+- [#156](https://github.com/statelyai/xstate-tools/pull/156) [`6a9a761`](https://github.com/statelyai/xstate-tools/commit/6a9a7610c412ff0ce420be4c08c108c95648a2cf) Thanks [@mellson](https://github.com/mellson)! - Added functionality to allow the editor to communicate with the VS Code extension.
+
+* [#146](https://github.com/statelyai/xstate-tools/pull/146) [`97df9bb`](https://github.com/statelyai/xstate-tools/commit/97df9bbd2942d7414f5a3dfdfbd5e57792d61279) Thanks [@mellson](https://github.com/mellson)! - Added a setting and a helper prompt to enable file nesting of typegen files.
+
+- [#129](https://github.com/statelyai/xstate-tools/pull/129) [`117c89a`](https://github.com/statelyai/xstate-tools/commit/117c89a340d794b5c679b41b51b13619f49c8fd6) Thanks [@mattpocock](https://github.com/mattpocock)! - Fixed a bug where children of states entered from transitions would not have their entry actions or invocations typed properly.
+
+- Updated dependencies [[`117c89a`](https://github.com/statelyai/xstate-tools/commit/117c89a340d794b5c679b41b51b13619f49c8fd6)]:
+  - @xstate/tools-shared@1.1.7
+
 ## 1.8.1
 
 ### Patch Changes

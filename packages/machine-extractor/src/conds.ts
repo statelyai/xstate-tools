@@ -41,6 +41,39 @@ const CondAsStringLiteral = createParser({
   },
 });
 
+const CondAsParametrizedGuard = createParser({
+  babelMatcher: t.isObjectExpression,
+  parseNode: (node, context): CondNode | null => {
+    let propValue: t.Node | null = null;
+
+    for (const prop of node.properties) {
+      if (!t.isObjectProperty(prop) || prop.computed) {
+        continue;
+      }
+      if (
+        (t.isStringLiteral(prop.key) && prop.key.value === "type") ||
+        (t.isIdentifier(prop.key) && prop.key.name === "type")
+      ) {
+        propValue = prop.value;
+        break;
+      }
+    }
+
+    if (!propValue || !t.isStringLiteral(propValue)) {
+      return null;
+    }
+
+    const id = context.getNodeHash(node);
+    return {
+      node,
+      name: propValue.value,
+      cond: propValue.value,
+      declarationType: "named",
+      inlineDeclarationId: id,
+    };
+  },
+});
+
 const CondAsNode = createParser({
   babelMatcher: t.isNode,
   parseNode: (node, context): CondNode => {
@@ -55,23 +88,9 @@ const CondAsNode = createParser({
   },
 });
 
-const CondAsIdentifier = createParser({
-  babelMatcher: t.isIdentifier,
-  parseNode: (node, context): CondNode => {
-    const id = context.getNodeHash(node);
-    return {
-      node,
-      name: "",
-      cond: id,
-      declarationType: "identifier",
-      inlineDeclarationId: id,
-    };
-  },
-});
-
 export const Cond = unionType([
   CondAsFunctionExpression,
   CondAsStringLiteral,
-  CondAsIdentifier,
+  CondAsParametrizedGuard,
   CondAsNode,
 ]);

@@ -1,54 +1,41 @@
-import { execSync } from "child_process";
 import * as fs from "fs";
+import * as fsP from "fs/promises";
 import * as path from "path";
+import { format } from "prettier";
 import {
   getDocumentValidationsResults,
   getTypegenOutput,
   makeXStateUpdateEvent,
 } from "..";
 
+const examplesPath = path.resolve(__dirname, "__examples__");
+
 describe("getTypegenOutput", () => {
-  const examplesPath = path.resolve(__dirname, "__examples__");
-
   fs.readdirSync(examplesPath).forEach((file) => {
-    if (file.endsWith(".typegen.ts")) {
-      fs.unlinkSync(path.resolve(__dirname, "__examples__", file));
+    if (file.includes(".typegen.")) {
+      return;
     }
-  });
+    const runTest = async () => {
+      const content = await fsP.readFile(path.join(examplesPath, file), "utf8");
 
-  const tsExtensionFiles = fs
-    .readdirSync(examplesPath)
-    .filter((file) => file.endsWith(".ts"));
+      const event = makeXStateUpdateEvent(
+        // URI doesn't matter here
+        "",
+        getDocumentValidationsResults(content)
+      );
 
-  tsExtensionFiles.forEach((file) => {
-    const fileText = fs.readFileSync(
-      path.resolve(__dirname, "__examples__", file),
-      "utf8"
-    );
+      expect(
+        format(getTypegenOutput(event), { parser: "typescript" })
+      ).toMatchSnapshot();
+    };
 
-    const event = makeXStateUpdateEvent(
-      // URI doesn't matter here
-      "",
-      getDocumentValidationsResults(fileText)
-    );
+    const extensionlessFile = file.slice(0, -path.extname(file).length);
 
-    fs.writeFileSync(
-      path.resolve(
-        __dirname,
-        "__examples__",
-        file.slice(0, -3) + ".typegen.ts"
-      ),
-      getTypegenOutput(event)
-    );
-  });
-
-  it("Should pass tsc", () => {
-    try {
-      execSync(`tsc`, {
-        cwd: path.resolve(__dirname, "__examples__"),
-      });
-    } catch (e: any) {
-      throw new Error(e.stdout.toString());
+    if (/\.only$/.test(extensionlessFile)) {
+      // preserve original test name
+      it.only(extensionlessFile.replace(/\.only$/, ""), runTest);
+    } else {
+      it(extensionlessFile, runTest);
     }
   });
 });
