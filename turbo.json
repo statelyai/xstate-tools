@@ -1,0 +1,35 @@
+{
+  "globalDependencies": [
+    "package.json"
+  ],
+  "pipeline": {
+    "lint": {
+      "outputs": []
+    },
+    "test": {
+      "outputs": []
+    },
+    "viz:build": {
+      "outputs": [
+        "scripts/vizWebview.js"
+      ],
+      "cache": false
+    },
+    "editor:build": {
+      "outputs": [
+        "scripts/editorWebview.js"
+      ],
+      "cache": false
+    },
+    "build": {
+      "dependsOn": [
+        "viz:build",
+        "editor:build"
+      ],
+      "outputs": [
+        "dist/**"
+      ],
+      "cache": false
+    }
+  }
+}

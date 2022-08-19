@@ -42,41 +42,6 @@
       "packages/*"
     ]
   },
-  "turbo": {
-    "globalDependencies": [
-      "package.json"
-    ],
-    "pipeline": {
-      "lint": {
-        "outputs": []
-      },
-      "test": {
-        "outputs": []
-      },
-      "viz:build": {
-        "outputs": [
-          "scripts/vizWebview.js"
-        ],
-        "cache": false
-      },
-      "editor:build": {
-        "outputs": [
-          "scripts/editorWebview.js"
-        ],
-        "cache": false
-      },
-      "build": {
-        "dependsOn": [
-          "viz:build",
-          "editor:build"
-        ],
-        "outputs": [
-          "dist/**"
-        ],
-        "cache": false
-      }
-    }
-  },
   "dependencies": {
     "@babel/core": "^7.12.10",
     "@babel/plugin-transform-modules-commonjs": "^7.16.8",
