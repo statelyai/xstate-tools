@@ -17,6 +17,7 @@ export const getTypegenOutput = (event: {
     | "tags"
     | "allServices"
     | "chooseActionsInOptions"
+    | "pureActionsInOptions"
   >[];
 }) => {
   return `
@@ -39,6 +40,7 @@ export const getTypegenOutput = (event: {
           guards: guardsToMock,
           actions: {
             ...machine.chooseActionsInOptions,
+            ...machine.pureActionsInOptions,
           },
         });
 

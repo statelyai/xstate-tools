@@ -1,4 +1,4 @@
-import { ActionNode, ChooseAction } from "./actions";
+import { ActionNode, ChooseAction, PureAction } from "./actions";
 import { maybeIdentifierTo } from "./identifiers";
 import { AnyNode, BooleanLiteral } from "./scalars";
 import { maybeTsAsExpression } from "./tsAsExpression";
@@ -8,7 +8,11 @@ import { types as t } from "@babel/core";
 
 const MachineOptionsObject = objectTypeWithKnownKeys({
   actions: objectOf(
-    unionType<ActionNode | { node: t.Node }>([ChooseAction, AnyNode])
+    unionType<ActionNode | { node: t.Node }>([
+      ChooseAction,
+      PureAction,
+      AnyNode,
+    ])
   ),
   services: objectOf(AnyNode),
   guards: objectOf(AnyNode),

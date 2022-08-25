@@ -4,7 +4,6 @@ import {
   done,
   escalate,
   log,
-  pure,
   raise,
   respond,
   sendParent,
@@ -87,20 +86,7 @@ export const LogAction = wrapParserResult(
       declarationType: "inline",
       inlineDeclarationId: context.getNodeHash(node),
     };
-  },
-);
-
-export const PureAction = wrapParserResult(
-  namedFunctionCall("pure", AnyNode),
-  (result, node, context): ActionNode => {
-    return {
-      node: result.node,
-      action: pure(() => []),
-      name: "",
-      declarationType: "inline",
-      inlineDeclarationId: context.getNodeHash(node),
-    };
-  },
+  }
 );
 
 export const RaiseAction = wrapParserResult(

@@ -33,6 +33,7 @@ export interface XStateUpdateMachine {
   tags: string[];
   hasTypesNode: boolean;
   chooseActionsInOptions: MachineOptions<any, any, any>["actions"];
+  pureActionsInOptions: MachineOptions<any, any, any>["actions"];
 }
 
 export interface XStateUpdateEvent {

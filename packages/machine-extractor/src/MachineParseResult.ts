@@ -11,7 +11,7 @@ import { TransitionConfigNode } from "./transitions";
 import { ActionNode, ParsedChooseCondition } from "./actions";
 import { DeclarationType } from ".";
 import { RecordOfArrays } from "./RecordOfArrays";
-import { choose } from "xstate/lib/actions";
+import { choose, pure } from "xstate/lib/actions";
 
 export interface MachineParseResultStateNode {
   path: string[];
@@ -137,6 +137,58 @@ export class MachineParseResult {
     });
 
     return chooseActions;
+  };
+
+  public getPureActionsToAddToOptions = () => {
+    const actions: MachineOptions<any, any, any>["actions"] = {};
+
+    const pureActions = this.getPureActionsInOptions();
+
+    pureActions.forEach((action) => {
+      if (action.node.pureActions) {
+        actions[action.node.name] = pure(() =>
+          action.node.pureActions?.map((action) => ({
+            type: action.action as string,
+          }))
+        );
+      }
+    });
+
+    return actions;
+  };
+
+  private getPureActionsInOptions = (): {
+    node: ActionNode;
+    statePath: string[];
+  }[] => {
+    const pureActions: { node: ActionNode; statePath: string[] }[] = [];
+    const allActionsInConfig = this.getAllActionsInConfig();
+
+    this.ast.options?.actions?.properties.forEach((actionProperty) => {
+      if (
+        actionProperty.result &&
+        "action" in actionProperty.result &&
+        actionProperty.result.pureActions
+      ) {
+        const actionInConfig = allActionsInConfig.find(
+          (a) => a.node.name === actionProperty.key
+        );
+
+        if (actionInConfig) {
+          pureActions.push({
+            node: Object.assign(actionProperty.result, {
+              /**
+               * Give it the name of the action in the config
+               */
+              name: actionInConfig.node.name,
+            }),
+            statePath: actionInConfig.statePath,
+          });
+        }
+      }
+    });
+
+    return pureActions;
   };
 
   /**
@@ -311,6 +363,10 @@ export class MachineParseResult {
           addAction(action, statePath);
         });
       });
+
+      action.pureActions?.forEach((actionNode) => {
+        addAction(actionNode, statePath);
+      });
     };
 
     this.getTransitions().forEach((transition) => {
@@ -376,6 +432,12 @@ export class MachineParseResult {
         chooseCondition.actionNodes.forEach((chooseAction) => {
           addActionIfHasName(chooseAction, action.statePath);
         });
+      });
+    });
+
+    this.getPureActionsInOptions().forEach((action) => {
+      action.node.pureActions?.forEach((pureAction) => {
+        addActionIfHasName(pureAction, action.statePath);
       });
     });
 
