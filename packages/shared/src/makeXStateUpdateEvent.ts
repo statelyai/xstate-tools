@@ -56,6 +56,8 @@ export const makeXStateUpdateEvent = (
         ),
         chooseActionsInOptions:
           machine.parseResult?.getChooseActionsToAddToOptions() || {},
+        pureActionsInOptions:
+          machine.parseResult?.getPureActionsToAddToOptions() || {},
       };
     }),
   };

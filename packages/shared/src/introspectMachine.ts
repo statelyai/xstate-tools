@@ -219,6 +219,18 @@ function collectAction(
         ctx.actions.addEventToItem(condActions, eventType);
       }
     });
+  } else if (actionObject.type === "xstate.pure") {
+    try {
+      const pureActions = actionObject.get();
+
+      if (Array.isArray(pureActions)) {
+        pureActions.forEach((pureAction) => {
+          ctx.actions.addEventToItem(pureAction.type, eventType);
+        });
+      }
+    } catch (e) {
+      return;
+    }
   } else {
     ctx.actions.addEventToItem(actionObject.type, eventType);
   }

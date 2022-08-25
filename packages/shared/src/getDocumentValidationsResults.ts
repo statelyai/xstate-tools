@@ -18,9 +18,11 @@ export const getDocumentValidationsResults = (
       const config = parseResult.toConfig();
       const chooseActionsForOptions =
         parseResult.getChooseActionsToAddToOptions();
+      const pureActionsForOptions = parseResult.getPureActionsToAddToOptions();
+
       try {
         const machine: any = createMachine(config as any, {
-          actions: chooseActionsForOptions,
+          actions: { ...chooseActionsForOptions, ...pureActionsForOptions },
         });
         const introspectionResult = introspectMachine(machine as any);
         return {

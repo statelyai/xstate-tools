@@ -1,6 +1,6 @@
 import { types as t } from "@babel/core";
 import { Action, ChooseCondition } from "xstate";
-import { assign, choose, forwardTo, send } from "xstate/lib/actions";
+import { assign, choose, forwardTo, pure, send } from "xstate/lib/actions";
 import { Cond, CondNode } from "./conds";
 import { createParser } from "./createParser";
 import { maybeIdentifierTo } from "./identifiers";
@@ -10,7 +10,6 @@ import {
   DoneAction,
   EscalateAction,
   LogAction,
-  PureAction,
   RaiseAction,
   RespondAction,
   SendParentAction,
@@ -36,6 +35,7 @@ export interface ActionNode {
   action: Action<any, any>;
   name: string;
   chooseConditions?: ParsedChooseCondition[];
+  pureActions?: ActionNode[];
   declarationType: DeclarationType;
   inlineDeclarationId: string;
 }
@@ -58,7 +58,7 @@ export const ActionAsIdentifier = maybeTsAsExpression(
         inlineDeclarationId: context.getNodeHash(node),
       };
     },
-  }),
+  })
 );
 
 export const ActionAsFunctionExpression = maybeTsAsExpression(
@@ -78,8 +78,8 @@ export const ActionAsFunctionExpression = maybeTsAsExpression(
           inlineDeclarationId: id,
         };
       },
-    }),
-  ),
+    })
+  )
 );
 
 export const ActionAsString = maybeTsAsExpression(
@@ -95,8 +95,8 @@ export const ActionAsString = maybeTsAsExpression(
           inlineDeclarationId: context.getNodeHash(node),
         };
       },
-    }),
-  ),
+    })
+  )
 );
 
 export const ActionAsNode = createParser({
@@ -120,7 +120,7 @@ const ChooseFirstArg = arrayOf(
     // too recursive
     // TODO - fix
     actions: maybeArrayOf(ActionAsString),
-  }),
+  })
 );
 
 export const ChooseAction = wrapParserResult(
@@ -160,7 +160,53 @@ export const ChooseAction = wrapParserResult(
       declarationType: "inline",
       inlineDeclarationId: context.getNodeHash(node),
     };
+  }
+);
+
+const PureGetReturn = maybeArrayOf(ActionAsString);
+
+const PureFirstArg = createParser({
+  babelMatcher: isFunctionOrArrowFunctionExpression,
+  parseNode: (node, context) => {
+    const actions = PureGetReturn.parse(node.body, context)?.filter(
+      (action): action is ActionNode => action !== null
+    );
+
+    const value = function anonymous() {
+      return actions?.map((action) => ({ type: action.name }));
+    };
+
+    value.toJSON = () => {
+      return actions;
+    };
+
+    return {
+      node,
+      value,
+      actions,
+    };
   },
+});
+
+export const PureAction = wrapParserResult(
+  namedFunctionCall("pure", PureFirstArg),
+  (result, node, context): ActionNode => {
+    const defaultAction = function anonymous() {
+      return [];
+    };
+    defaultAction.toJSON = () => {
+      return [];
+    };
+
+    return {
+      node,
+      action: pure(result.argument1Result?.value ?? defaultAction),
+      pureActions: result.argument1Result?.actions,
+      name: "",
+      declarationType: "inline",
+      inlineDeclarationId: context.getNodeHash(node),
+    };
+  }
 );
 
 interface AssignFirstArg {
@@ -217,7 +263,7 @@ export const AssignAction = wrapParserResult(
       declarationType: "inline",
       inlineDeclarationId: context.getNodeHash(node),
     };
-  },
+  }
 );
 
 export const SendActionSecondArg = objectTypeWithKnownKeys({
