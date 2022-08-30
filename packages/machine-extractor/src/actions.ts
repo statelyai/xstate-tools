@@ -36,6 +36,7 @@ export interface ActionNode {
   action: Action<any, any>;
   name: string;
   chooseConditions?: ParsedChooseCondition[];
+  groupActions?: ActionNode[];
   declarationType: DeclarationType;
   inlineDeclarationId: string;
 }
@@ -58,7 +59,7 @@ export const ActionAsIdentifier = maybeTsAsExpression(
         inlineDeclarationId: context.getNodeHash(node),
       };
     },
-  }),
+  })
 );
 
 export const ActionAsFunctionExpression = maybeTsAsExpression(
@@ -78,8 +79,8 @@ export const ActionAsFunctionExpression = maybeTsAsExpression(
           inlineDeclarationId: id,
         };
       },
-    }),
-  ),
+    })
+  )
 );
 
 export const ActionAsString = maybeTsAsExpression(
@@ -95,9 +96,27 @@ export const ActionAsString = maybeTsAsExpression(
           inlineDeclarationId: context.getNodeHash(node),
         };
       },
-    }),
-  ),
+    })
+  )
 );
+
+export const ActionGroup = createParser({
+  babelMatcher: t.isArrayExpression,
+  parseNode: (node, context): ActionNode => {
+    const groupActions = node.elements
+      .map((element) => ActionAsString.parse(element, context))
+      .filter((action): action is ActionNode => !!action);
+
+    return {
+      action: "",
+      node,
+      name: "",
+      groupActions,
+      declarationType: "inline",
+      inlineDeclarationId: context.getNodeHash(node),
+    };
+  },
+});
 
 export const ActionAsNode = createParser({
   babelMatcher: t.isNode,
@@ -120,7 +139,7 @@ const ChooseFirstArg = arrayOf(
     // too recursive
     // TODO - fix
     actions: maybeArrayOf(ActionAsString),
-  }),
+  })
 );
 
 export const ChooseAction = wrapParserResult(
@@ -160,7 +179,7 @@ export const ChooseAction = wrapParserResult(
       declarationType: "inline",
       inlineDeclarationId: context.getNodeHash(node),
     };
-  },
+  }
 );
 
 interface AssignFirstArg {
@@ -217,7 +236,7 @@ export const AssignAction = wrapParserResult(
       declarationType: "inline",
       inlineDeclarationId: context.getNodeHash(node),
     };
-  },
+  }
 );
 
 export const SendActionSecondArg = objectTypeWithKnownKeys({
@@ -233,7 +252,7 @@ export const SendAction = wrapParserResult(
   namedFunctionCall(
     "send",
     unionType<{ node: t.Node; value?: string }>([StringLiteral, AnyNode]),
-    SendActionSecondArg,
+    SendActionSecondArg
   ),
   (result, node, context): ActionNode => {
     return {
@@ -250,12 +269,12 @@ export const SendAction = wrapParserResult(
           id: result.argument2Result?.id?.value,
           to: result.argument2Result?.to?.value,
           delay: result.argument2Result?.delay?.value,
-        },
+        }
       ),
       declarationType: "inline",
       inlineDeclarationId: context.getNodeHash(node),
     };
-  },
+  }
 );
 
 export const ForwardToActionSecondArg = objectTypeWithKnownKeys({
@@ -274,7 +293,7 @@ export const ForwardToAction = wrapParserResult(
       declarationType: "inline",
       inlineDeclarationId: context.getNodeHash(node),
     };
-  },
+  }
 );
 
 const NamedAction = unionType([
@@ -306,5 +325,5 @@ const BasicAction = unionType([
 export const ArrayOfBasicActions = maybeArrayOf(BasicAction);
 
 export const MaybeArrayOfActions = maybeArrayOf(
-  unionType([NamedAction, BasicAction]),
+  unionType([NamedAction, BasicAction])
 );

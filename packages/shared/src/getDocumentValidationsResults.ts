@@ -1,8 +1,8 @@
-import { createMachine } from "xstate";
 import { parseMachinesFromFile } from "@xstate/machine-extractor";
-import { DocumentValidationsResult } from "./types";
+import { createMachine } from "xstate";
 import { filterOutIgnoredMachines } from "./filterOutIgnoredMachines";
 import { introspectMachine } from "./introspectMachine";
+import { DocumentValidationsResult } from "./types";
 
 export const getDocumentValidationsResults = (
   text: string
@@ -18,9 +18,11 @@ export const getDocumentValidationsResults = (
       const config = parseResult.toConfig();
       const chooseActionsForOptions =
         parseResult.getChooseActionsToAddToOptions();
+      const groupActionsForOptions =
+        parseResult.getActionGroupsToAddToOptions();
       try {
         const machine: any = createMachine(config as any, {
-          actions: chooseActionsForOptions,
+          actions: { ...chooseActionsForOptions, ...groupActionsForOptions },
         });
         const introspectionResult = introspectMachine(machine as any);
         return {

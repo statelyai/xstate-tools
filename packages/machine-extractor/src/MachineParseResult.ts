@@ -1,17 +1,18 @@
+import { NodePath, types as t } from "@babel/core";
 import { Action, Condition, MachineOptions } from "xstate";
-import { types as t, NodePath } from "@babel/core";
+import { choose } from "xstate/lib/actions";
+import { DeclarationType } from ".";
+import { ActionNode, ParsedChooseCondition } from "./actions";
 import { TMachineCallExpression } from "./machineCallExpression";
+import { RecordOfArrays } from "./RecordOfArrays";
 import { StateNodeReturn } from "./stateNode";
 import {
   toMachineConfig,
   ToMachineConfigParseOptions,
 } from "./toMachineConfig";
-import { StringLiteralNode, Comment } from "./types";
 import { TransitionConfigNode } from "./transitions";
-import { ActionNode, ParsedChooseCondition } from "./actions";
-import { DeclarationType } from ".";
-import { RecordOfArrays } from "./RecordOfArrays";
-import { choose } from "xstate/lib/actions";
+import { Comment, StringLiteralNode } from "./types";
+import { ObjectOfReturn } from "./utils";
 
 export interface MachineParseResultStateNode {
   path: string[];
@@ -137,6 +138,77 @@ export class MachineParseResult {
     });
 
     return chooseActions;
+  };
+
+  public getActionGroupsToAddToOptions = () => {
+    const actions: MachineOptions<any, any, any>["actions"] = {};
+
+    const groupActions = this.getActionGroupsInOptions();
+
+    groupActions.forEach((action) => {
+      actions[action.node.name] = {
+        type: "xstate.actionGroup",
+        actions: action.node.groupActions?.map((groupAction) => ({
+          type: groupAction.name,
+        })),
+      };
+    });
+
+    return actions;
+  };
+
+  private getActionGroupsInOptions = (): {
+    node: ActionNode;
+    statePath: string[];
+  }[] => {
+    const groupActions: { node: ActionNode; statePath: string[] }[] = [];
+    const allActionsInConfig = this.getAllActionsInConfig();
+
+    type ActionProperty = ObjectOfReturn<ActionNode>["properties"][number];
+
+    const actionGroupProperties = (this.ast.options?.actions?.properties.filter(
+      (actionProperty) =>
+        "action" in actionProperty?.result &&
+        actionProperty?.result?.groupActions
+    ) ?? []) as ActionProperty[];
+
+    const findChildGroupActions = (groupActions: ActionNode[]) =>
+      groupActions.reduce((acc, action) => {
+        const childProperty = actionGroupProperties.find(
+          (property) => property.key === action.name
+        );
+
+        if (childProperty?.result?.groupActions) {
+          acc.push(...findChildGroupActions(childProperty.result.groupActions));
+        }
+
+        return acc;
+      }, groupActions);
+
+    actionGroupProperties.forEach((actionProperty) => {
+      const actionInConfig = allActionsInConfig.find(
+        (a) => a.node.name === actionProperty.key
+      );
+
+      if (!actionInConfig) return;
+
+      const allGroupActions = findChildGroupActions(
+        actionProperty.result.groupActions ?? []
+      );
+
+      groupActions.push({
+        node: Object.assign(actionProperty.result, {
+          /**
+           * Give it the name of the action in the config
+           */
+          name: actionInConfig.node.name,
+          groupActions: allGroupActions,
+        }),
+        statePath: actionInConfig.statePath,
+      });
+    });
+
+    return groupActions;
   };
 
   /**
@@ -376,6 +448,12 @@ export class MachineParseResult {
         chooseCondition.actionNodes.forEach((chooseAction) => {
           addActionIfHasName(chooseAction, action.statePath);
         });
+      });
+    });
+
+    this.getActionGroupsInOptions().forEach((action) => {
+      action.node.groupActions?.forEach((groupAction) => {
+        addActionIfHasName(groupAction, action.statePath);
       });
     });
 

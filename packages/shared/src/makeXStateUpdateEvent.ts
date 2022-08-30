@@ -1,5 +1,5 @@
-import { DocumentValidationsResult, XStateUpdateEvent } from "./types";
 import { resolveUriToFilePrefix } from "./resolveUriToFilePrefix";
+import { DocumentValidationsResult, XStateUpdateEvent } from "./types";
 
 export const makeXStateUpdateEvent = (
   uri: string,
@@ -56,6 +56,8 @@ export const makeXStateUpdateEvent = (
         ),
         chooseActionsInOptions:
           machine.parseResult?.getChooseActionsToAddToOptions() || {},
+        actionGroupsInOptions:
+          machine.parseResult?.getActionGroupsToAddToOptions() || {},
       };
     }),
   };

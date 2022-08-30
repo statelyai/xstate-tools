@@ -219,6 +219,13 @@ function collectAction(
         ctx.actions.addEventToItem(condActions, eventType);
       }
     });
+  } else if (
+    actionObject.type === "xstate.actionGroup" &&
+    Array.isArray(actionObject.actions)
+  ) {
+    actionObject.actions.forEach((groupAction) => {
+      ctx.actions.addEventToItem(groupAction.type, eventType);
+    });
   } else {
     ctx.actions.addEventToItem(actionObject.type, eventType);
   }

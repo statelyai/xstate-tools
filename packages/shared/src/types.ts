@@ -1,5 +1,5 @@
-import { MachineConfig, MachineOptions, StateMachine } from "xstate";
 import { MachineParseResult } from "@xstate/machine-extractor";
+import { MachineConfig, MachineOptions, StateMachine } from "xstate";
 import { IntrospectMachineResult } from ".";
 
 export interface GlobalSettings {
@@ -33,6 +33,7 @@ export interface XStateUpdateMachine {
   tags: string[];
   hasTypesNode: boolean;
   chooseActionsInOptions: MachineOptions<any, any, any>["actions"];
+  actionGroupsInOptions: MachineOptions<any, any, any>["actions"];
 }
 
 export interface XStateUpdateEvent {
