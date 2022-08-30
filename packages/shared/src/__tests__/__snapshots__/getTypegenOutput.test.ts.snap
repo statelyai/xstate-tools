@@ -29,6 +29,38 @@ export interface Typegen0 {
 "
 `;
 
+exports[`getTypegenOutput action-groups-nested 1`] = `
+"// This file was automatically generated. Edits will be overwritten
+
+export interface Typegen0 {
+  "@@xstate/typegen": true;
+  internalEvents: {
+    "xstate.init": { type: "xstate.init" };
+  };
+  invokeSrcNameMap: {};
+  missingImplementations: {
+    actions: "1" | "2" | "3";
+    services: never;
+    guards: never;
+    delays: never;
+  };
+  eventsCausingActions: {
+    "1": "event1" | "xstate.init";
+    "2": "event1" | "event2" | "xstate.init";
+    "3": "event1" | "event2" | "event3" | "xstate.init";
+    group1: "event1" | "xstate.init";
+    group2: "event1" | "event2" | "xstate.init";
+    group3: "event1" | "event2" | "event3" | "xstate.init";
+  };
+  eventsCausingServices: {};
+  eventsCausingGuards: {};
+  eventsCausingDelays: {};
+  matchesStates: undefined;
+  tags: never;
+}
+"
+`;
+
 exports[`getTypegenOutput action-missing 1`] = `
 "// This file was automatically generated. Edits will be overwritten
 

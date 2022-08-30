@@ -12,6 +12,7 @@ import {
 } from "./toMachineConfig";
 import { TransitionConfigNode } from "./transitions";
 import { Comment, StringLiteralNode } from "./types";
+import { ObjectOfReturn } from "./utils";
 
 export interface MachineParseResultStateNode {
   path: string[];
@@ -163,28 +164,48 @@ export class MachineParseResult {
     const groupActions: { node: ActionNode; statePath: string[] }[] = [];
     const allActionsInConfig = this.getAllActionsInConfig();
 
-    this.ast.options?.actions?.properties.forEach((actionProperty) => {
-      if (
-        actionProperty.result &&
-        "action" in actionProperty.result &&
-        actionProperty.result.groupActions
-      ) {
-        const actionInConfig = allActionsInConfig.find(
-          (a) => a.node.name === actionProperty.key
+    type ActionProperty = ObjectOfReturn<ActionNode>["properties"][number];
+
+    const actionGroupProperties = (this.ast.options?.actions?.properties.filter(
+      (actionProperty) =>
+        "action" in actionProperty?.result &&
+        actionProperty?.result?.groupActions
+    ) ?? []) as ActionProperty[];
+
+    const findChildGroupActions = (groupActions: ActionNode[]) =>
+      groupActions.reduce((acc, action) => {
+        const childProperty = actionGroupProperties.find(
+          (property) => property.key === action.name
         );
 
-        if (actionInConfig) {
-          groupActions.push({
-            node: Object.assign(actionProperty.result, {
-              /**
-               * Give it the name of the action in the config
-               */
-              name: actionInConfig.node.name,
-            }),
-            statePath: actionInConfig.statePath,
-          });
+        if (childProperty?.result?.groupActions) {
+          acc.push(...findChildGroupActions(childProperty.result.groupActions));
         }
-      }
+
+        return acc;
+      }, groupActions);
+
+    actionGroupProperties.forEach((actionProperty) => {
+      const actionInConfig = allActionsInConfig.find(
+        (a) => a.node.name === actionProperty.key
+      );
+
+      if (!actionInConfig) return;
+
+      const allGroupActions = findChildGroupActions(
+        actionProperty.result.groupActions ?? []
+      );
+
+      groupActions.push({
+        node: Object.assign(actionProperty.result, {
+          /**
+           * Give it the name of the action in the config
+           */
+          name: actionInConfig.node.name,
+          groupActions: allGroupActions,
+        }),
+        statePath: actionInConfig.statePath,
+      });
     });
 
     return groupActions;
