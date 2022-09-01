@@ -4,7 +4,6 @@ import { IntrospectMachineResult } from '.';
 
 export interface GlobalSettings {
   showVisualEditorWarnings: boolean;
-  targetEditorBaseUrl: string;
 }
 
 export interface SourceLocation {

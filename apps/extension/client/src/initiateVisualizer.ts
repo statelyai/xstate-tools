@@ -10,6 +10,7 @@ import * as vscode from 'vscode';
 import { LanguageClient } from 'vscode-languageclient/node';
 import { MachineConfig } from 'xstate';
 import { getWebviewContent } from './getWebviewContent';
+import * as typeSafeVsCode from './typeSafeVsCode';
 import { VizWebviewMachineEvent } from './vizWebviewScript';
 
 export const initiateVisualizer = (
@@ -77,7 +78,7 @@ export const initiateVisualizer = (
   };
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('stately-xstate.visualize', () => {
+    typeSafeVsCode.registerCommand('stately-xstate.visualize', () => {
       try {
         const activeTextEditor = vscode.window.activeTextEditor!;
         const currentSelection = activeTextEditor.selection;
@@ -87,9 +88,7 @@ export const initiateVisualizer = (
           parseMachinesFromFile(currentText),
         );
 
-        let foundIndex: number | null = null;
-
-        const machine = result.machines.find((machine, index) => {
+        const foundIndex = result.machines.findIndex((machine, index) => {
           if (
             machine?.ast?.definition?.node?.loc ||
             machine?.ast?.options?.node?.loc
@@ -105,14 +104,14 @@ export const initiateVisualizer = (
               );
 
             if (isInPosition) {
-              foundIndex = index;
               return true;
             }
           }
           return false;
         });
 
-        if (machine) {
+        if (foundIndex !== -1) {
+          const machine = result.machines[foundIndex];
           startService(
             machine.toConfig() as any,
             foundIndex!,
@@ -148,14 +147,9 @@ export const initiateVisualizer = (
     }),
   );
   context.subscriptions.push(
-    vscode.commands.registerCommand(
+    typeSafeVsCode.registerCommand(
       'stately-xstate.inspect',
-      async (
-        config: MachineConfig<any, any, any>,
-        machineIndex: number,
-        uri: string,
-        guardsToMock: string[],
-      ) => {
+      (config, machineIndex, uri, guardsToMock) => {
         startService(config, machineIndex, uri, guardsToMock);
       },
     ),

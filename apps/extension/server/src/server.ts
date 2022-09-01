@@ -45,7 +45,6 @@ let hasWorkspaceFolderCapability = false;
 
 const defaultSettings: GlobalSettings = {
   showVisualEditorWarnings: true,
-  targetEditorBaseUrl: 'https://stately.ai',
 };
 let globalSettings: GlobalSettings = defaultSettings;
 
@@ -63,6 +62,7 @@ connection.onInitialize((params: InitializeParams) => {
 
   const result: InitializeResult = {
     capabilities: {
+      // TODO: we should strive for using `TextDocumentSyncKind.Incremental`
       textDocumentSync: TextDocumentSyncKind.Full,
       codeActionProvider: {
         resolveProvider: true,
@@ -148,6 +148,7 @@ connection.onDefinition((params) => {
   });
 });
 
+// TODO: make the registered code lenses type-safe
 connection.onCodeLens((params): CodeLens[] => {
   const machinesParseResult = documentValidationsCache.get(
     params.textDocument.uri,

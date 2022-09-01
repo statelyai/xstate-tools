@@ -8,3 +8,11 @@ createMachine({
     idle: {},
   },
 });
+
+createMachine({
+  id: '(machine)2',
+  initial: 'elo',
+  states: {
+    elo: {},
+  },
+});
