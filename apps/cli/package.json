@@ -22,7 +22,7 @@
     "@xstate/tools-shared": "1.2.2",
     "chokidar": "^3.5.3",
     "commander": "^8.0.0",
-    "xstate": "^4.29.0"
+    "xstate": "^4.33.4"
   },
   "author": "Stately Team",
   "license": "MIT"

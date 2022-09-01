@@ -2,8 +2,19 @@
  * Copyright (c) Microsoft Corporation. All rights reserved.
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
-import { CodeLens } from "vscode-languageserver";
-import { TextDocument, TextEdit } from "vscode-languageserver-textdocument";
+import { MachineParseResult } from '@xstate/machine-extractor';
+import {
+  DocumentValidationsResult,
+  getDocumentValidationsResults,
+  getRangeFromSourceLocation,
+  getRawTextFromNode,
+  getSetOfNames,
+  getTransitionsFromNode,
+  GlobalSettings,
+  makeXStateUpdateEvent,
+} from '@xstate/tools-shared';
+import { CodeLens } from 'vscode-languageserver';
+import { TextDocument, TextEdit } from 'vscode-languageserver-textdocument';
 import {
   CompletionItem,
   CompletionItemKind,
@@ -16,22 +27,11 @@ import {
   TextDocumentPositionParams,
   TextDocuments,
   TextDocumentSyncKind,
-} from "vscode-languageserver/node";
-import { assign, createMachine, interpret } from "xstate";
-import { MachineParseResult } from "@xstate/machine-extractor";
-import {
-  DocumentValidationsResult,
-  getDocumentValidationsResults,
-  getRangeFromSourceLocation,
-  getRawTextFromNode,
-  getSetOfNames,
-  getTransitionsFromNode,
-  GlobalSettings,
-  makeXStateUpdateEvent,
-} from "@xstate/tools-shared";
-import { getCursorHoverType } from "./getCursorHoverType";
-import { getDiagnostics } from "./getDiagnostics";
-import { getReferences } from "./getReferences";
+} from 'vscode-languageserver/node';
+import { assign, createMachine, interpret } from 'xstate';
+import { getCursorHoverType } from './getCursorHoverType';
+import { getDiagnostics } from './getDiagnostics';
+import { getReferences } from './getReferences';
 
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -45,7 +45,6 @@ let hasWorkspaceFolderCapability = false;
 
 const defaultSettings: GlobalSettings = {
   showVisualEditorWarnings: true,
-  targetEditorBaseUrl: "https://stately.ai",
 };
 let globalSettings: GlobalSettings = defaultSettings;
 
@@ -63,16 +62,17 @@ connection.onInitialize((params: InitializeParams) => {
 
   const result: InitializeResult = {
     capabilities: {
+      // TODO: we should strive for using `TextDocumentSyncKind.Incremental`
       textDocumentSync: TextDocumentSyncKind.Full,
       codeActionProvider: {
         resolveProvider: true,
       },
       declarationProvider: {
         documentSelector: [
-          "typescript",
-          "typescriptreact",
-          "javascript",
-          "javascriptreact",
+          'typescript',
+          'typescriptreact',
+          'javascript',
+          'javascriptreact',
         ],
       },
       definitionProvider: true,
@@ -117,7 +117,7 @@ function getDocumentSettings(resource: string): Thenable<GlobalSettings> {
   if (!result) {
     result = connection.workspace.getConfiguration({
       scopeUri: resource,
-      section: "xstate",
+      section: 'xstate',
     });
     documentSettings.set(resource, result);
   }
@@ -148,6 +148,7 @@ connection.onDefinition((params) => {
   });
 });
 
+// TODO: make the registered code lenses type-safe
 connection.onCodeLens((params): CodeLens[] => {
   const machinesParseResult = documentValidationsCache.get(
     params.textDocument.uri,
@@ -162,8 +163,8 @@ connection.onCodeLens((params): CodeLens[] => {
       {
         range: getRangeFromSourceLocation(callee?.loc!),
         command: {
-          title: "Open Visual Editor",
-          command: "stately-xstate.edit-code-lens",
+          title: 'Open Visual Editor',
+          command: 'stately-xstate.edit-code-lens',
           arguments: [
             machine.parseResult?.toConfig({ hashInlineImplementations: true }),
             index,
@@ -175,14 +176,14 @@ connection.onCodeLens((params): CodeLens[] => {
       {
         range: getRangeFromSourceLocation(callee?.loc!),
         command: {
-          title: "Open Inspector",
-          command: "stately-xstate.inspect",
+          title: 'Open Inspector',
+          command: 'stately-xstate.inspect',
           arguments: [
             machine.parseResult?.toConfig(),
             index,
             params.textDocument.uri,
             machine.parseResult
-              ?.getAllConds(["named"])
+              ?.getAllConds(['named'])
               .map((cond) => cond.name),
           ],
         },
@@ -204,7 +205,7 @@ async function validateDocument(textDocument: TextDocument): Promise<void> {
     diagnostics.push(...getDiagnostics(machines, textDocument, settings));
     const event = makeXStateUpdateEvent(textDocument.uri, machines);
 
-    connection.sendNotification("xstate/update", event);
+    connection.sendNotification('xstate/update', event);
   } catch (e) {
     documentValidationsCache.delete(textDocument.uri);
   }
@@ -218,16 +219,16 @@ interface Context {
 }
 
 type Event = {
-  type: "DOCUMENT_DID_CHANGE";
+  type: 'DOCUMENT_DID_CHANGE';
   document: TextDocument;
 };
 
 const serverMachine = createMachine<Context, Event>({
-  initial: "validating",
+  initial: 'validating',
   context: {},
   on: {
     DOCUMENT_DID_CHANGE: {
-      target: ".throttling",
+      target: '.throttling',
       actions: assign((context, event) => {
         return {
           document: event.document,
@@ -238,7 +239,7 @@ const serverMachine = createMachine<Context, Event>({
   states: {
     throttling: {
       after: {
-        200: "validating",
+        200: 'validating',
       },
     },
     validating: {
@@ -248,10 +249,10 @@ const serverMachine = createMachine<Context, Event>({
           await validateDocument(context.document);
         },
         onDone: {
-          target: "idle",
+          target: 'idle',
         },
         onError: {
-          target: "idle",
+          target: 'idle',
           actions: (context, event) => {
             connection.console.log(JSON.stringify(event.data));
           },
@@ -268,7 +269,7 @@ const serverService = interpret(serverMachine).start();
 // when the text document first opened or when its content has changed.
 documents.onDidChangeContent((change) => {
   serverService.send({
-    type: "DOCUMENT_DID_CHANGE",
+    type: 'DOCUMENT_DID_CHANGE',
     document: change.document,
   });
 });
@@ -304,7 +305,7 @@ connection.onCompletion(
       _textDocumentPosition.position,
     );
 
-    if (cursor?.type === "TARGET") {
+    if (cursor?.type === 'TARGET') {
       const possibleTransitions = getTransitionsFromNode(
         createMachine(cursor.machine.toConfig() as any).getStateNodeByPath(
           cursor.state.path,
@@ -319,7 +320,7 @@ connection.onCompletion(
         };
       });
     }
-    if (cursor?.type === "INITIAL") {
+    if (cursor?.type === 'INITIAL') {
       const state = createMachine(
         cursor.machine.toConfig() as any,
       ).getStateNodeByPath(cursor.state.path);
@@ -333,8 +334,8 @@ connection.onCompletion(
       });
     }
 
-    if (cursor?.type === "ACTION") {
-      const actions = getSetOfNames(cursor.machine.getAllActions(["named"]));
+    if (cursor?.type === 'ACTION') {
+      const actions = getSetOfNames(cursor.machine.getAllActions(['named']));
 
       cursor.machine.ast.options?.actions?.properties.forEach((action) => {
         actions.add(action.key);
@@ -348,8 +349,8 @@ connection.onCompletion(
       });
     }
 
-    if (cursor?.type === "COND") {
-      const conds = getSetOfNames(cursor.machine.getAllConds(["named"]));
+    if (cursor?.type === 'COND') {
+      const conds = getSetOfNames(cursor.machine.getAllConds(['named']));
 
       cursor.machine.ast.options?.guards?.properties.forEach((cond) => {
         conds.add(cond.key);
@@ -363,10 +364,10 @@ connection.onCompletion(
       });
     }
 
-    if (cursor?.type === "SERVICE") {
+    if (cursor?.type === 'SERVICE') {
       const services = getSetOfNames(
         cursor.machine
-          .getAllServices(["named"])
+          .getAllServices(['named'])
           .map((invoke) => ({ ...invoke, name: invoke.src })),
       );
 
@@ -396,7 +397,7 @@ connection.onCodeAction((params) => {
   }
   const result = getCursorHoverType(machinesParseResult, params.range.start);
 
-  if (result?.type === "ACTION") {
+  if (result?.type === 'ACTION') {
     return [
       {
         title: `Add ${result.name} to options`,
@@ -404,7 +405,7 @@ connection.onCodeAction((params) => {
           changes: {
             [params.textDocument.uri]: getTextEditsForImplementation(
               result.machine,
-              "actions",
+              'actions',
               result.name,
               machinesParseResult[0].documentText,
             ),
@@ -413,7 +414,7 @@ connection.onCodeAction((params) => {
       },
     ];
   }
-  if (result?.type === "SERVICE") {
+  if (result?.type === 'SERVICE') {
     return [
       {
         title: `Add ${result.name} to options`,
@@ -421,7 +422,7 @@ connection.onCodeAction((params) => {
           changes: {
             [params.textDocument.uri]: getTextEditsForImplementation(
               result.machine,
-              "services",
+              'services',
               result.name,
               machinesParseResult[0].documentText,
             ),
@@ -430,7 +431,7 @@ connection.onCodeAction((params) => {
       },
     ];
   }
-  if (result?.type === "COND") {
+  if (result?.type === 'COND') {
     return [
       {
         title: `Add ${result.name} to options`,
@@ -438,7 +439,7 @@ connection.onCodeAction((params) => {
           changes: {
             [params.textDocument.uri]: getTextEditsForImplementation(
               result.machine,
-              "guards",
+              'guards',
               result.name,
               machinesParseResult[0].documentText,
             ),
@@ -465,7 +466,7 @@ connection.listen();
 
 const getTextEditsForImplementation = (
   machine: MachineParseResult,
-  type: "services" | "actions" | "guards",
+  type: 'services' | 'actions' | 'guards',
   name: string,
   text: string,
 ): TextEdit[] => {
