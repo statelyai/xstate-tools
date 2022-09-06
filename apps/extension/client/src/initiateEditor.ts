@@ -31,8 +31,6 @@ type DefinitionUpdatedEvent = {
   type: 'DEFINITION_UPDATED';
   config: MachineConfig<any, any, any>;
   layoutString: string;
-  uri: string;
-  index: number;
   implementations: ImplementationsMetadata;
 };
 
@@ -197,6 +195,9 @@ const machine = createMachine(
                 internal: false,
                 actions: 'forwardToWebview',
               },
+              MACHINE_TEXT_CHANGED: {
+                actions: 'forwardToWebview',
+              },
             },
           },
         },
@@ -299,19 +300,21 @@ const machine = createMachine(
                 config,
                 index: machineIndex,
                 uri,
-                // uri:  resolveUriToFilePrefix(activeTextEditor.document.uri.path),
                 layoutString,
                 implementations,
               });
             },
           ),
       onDidChangeTextDocumentListener:
-        ({ extensionContext }) =>
+        ({ extensionContext }, { uri, index }) =>
         (sendBack) => {
           // TODO: debounce?
           return registerDisposable(
             extensionContext,
             vscode.workspace.onDidChangeTextDocument(({ document }) => {
+              if (uri !== resolveUriToFilePrefix(document.uri.path)) {
+                return;
+              }
               // TODO: try to avoid resetting the whole thing when document is edited outside of the config
               const text = document.getText();
 
@@ -322,21 +325,19 @@ const machine = createMachine(
                */
               // if (document.uri.path + text === lastSentPathAndText) return;
 
+              // TODO: only listen to changes to the currently edited machine
               const parsed = parseMachinesFromFile(text);
               if (parsed.machines.length > 0) {
                 // lastSentPathAndText = document.uri.path + text;
-                // TODO: handle more machines in a file
-                const machine = parsed.machines[0];
+                // TODO: this is far from ideal, because the index might change if somebody removes a machine preceding the one we are editing
+                const machine = parsed.machines[index];
 
                 sendBack({
                   type: 'MACHINE_TEXT_CHANGED',
                   config: machine.toConfig({
                     hashInlineImplementations: true,
                   })!,
-
-                  // TODO: handle more machines in a file
-                  // only listen to changes to the currently edited machine
-                  index: 0,
+                  index,
                   uri: resolveUriToFilePrefix(document.uri.path),
                   layoutString: machine.getLayoutComment()?.value || '',
                   implementations: getInlineImplementations(machine, text),
@@ -346,16 +347,32 @@ const machine = createMachine(
           );
         },
       webviewActor:
-        ({ extensionContext }, { config, implementations, layoutString }) =>
+        (
+          { extensionContext },
+          {
+            config,
+            implementations,
+            layoutString,
+            uri: initialUri,
+            index: initialIndex,
+          },
+        ) =>
         (sendBack, onReceive) => {
           let canceled = false;
+          let uri = initialUri;
+          let index = initialIndex;
+
           const webviewPanel = createWebviewPanel();
 
           const messageListenerDisposable = registerDisposable(
             extensionContext,
             webviewPanel.webview.onDidReceiveMessage((event: StudioEvent) => {
               if (event.type === 'DEFINITION_UPDATED') {
-                handleDefinitionUpdate(event);
+                handleDefinitionUpdate({
+                  ...event,
+                  index,
+                  uri,
+                });
               } else if (event.type === 'NODE_SELECTED') {
                 handleNodeSelected(event);
               } else if (event.type === 'OPEN_LINK') {
@@ -372,10 +389,22 @@ const machine = createMachine(
             }),
           );
 
-          onReceive((event: EditMachine) => {
+          onReceive((event: EditMachine | MachineTextChanged) => {
             switch (event.type) {
               case 'EDIT_MACHINE': {
+                uri = event.uri;
+                index = event.index;
+
                 webviewPanel.reveal(vscode.ViewColumn.Beside);
+                webviewPanel.webview.postMessage({
+                  type: 'UPDATE_CONFIG',
+                  config: event.config,
+                  layoutString: event.layoutString,
+                  implementations: event.implementations,
+                });
+                return;
+              }
+              case 'MACHINE_TEXT_CHANGED': {
                 webviewPanel.webview.postMessage({
                   type: 'UPDATE_CONFIG',
                   config: event.config,

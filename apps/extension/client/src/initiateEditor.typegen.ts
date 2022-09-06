@@ -13,7 +13,7 @@ export interface Typegen0 {
     delays: never;
   };
   eventsCausingActions: {
-    forwardToWebview: 'EDIT_MACHINE';
+    forwardToWebview: 'EDIT_MACHINE' | 'MACHINE_TEXT_CHANGED';
   };
   eventsCausingServices: {
     onDidChangeTextDocumentListener: 'EDIT_MACHINE';

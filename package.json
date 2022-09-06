@@ -60,16 +60,9 @@
         ],
         "cache": false
       },
-      "editor:build": {
-        "outputs": [
-          "scripts/editorWebview.js"
-        ],
-        "cache": false
-      },
       "build": {
         "dependsOn": [
-          "viz:build",
-          "editor:build"
+          "viz:build"
         ],
         "outputs": [
           "dist/**"
