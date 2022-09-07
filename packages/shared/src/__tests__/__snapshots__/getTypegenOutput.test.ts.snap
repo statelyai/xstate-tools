@@ -25,6 +25,7 @@ export interface Typegen0 {
   eventsCausingGuards: {};
   eventsCausingDelays: {};
   matchesStates: undefined;
+  stateValues: undefined;
   tags: never;
 }
 "
@@ -52,6 +53,7 @@ export interface Typegen0 {
   eventsCausingGuards: {};
   eventsCausingDelays: {};
   matchesStates: undefined;
+  stateValues: undefined;
   tags: never;
 }
 "
@@ -80,6 +82,7 @@ export interface Typegen0 {
   eventsCausingGuards: {};
   eventsCausingDelays: {};
   matchesStates: undefined;
+  stateValues: undefined;
   tags: never;
 }
 "
@@ -112,6 +115,7 @@ export interface Typegen0 {
     myDelay: "NEXT";
   };
   matchesStates: "a" | "b" | "c";
+  stateValues: "a" | "b" | "c";
   tags: never;
 }
 "
@@ -144,6 +148,7 @@ export interface Typegen0 {
   };
   eventsCausingDelays: {};
   matchesStates: "a" | "b";
+  stateValues: "a" | "b";
   tags: never;
 }
 "
@@ -171,6 +176,7 @@ export interface Typegen0 {
   eventsCausingGuards: {};
   eventsCausingDelays: {};
   matchesStates: "a" | "b" | "b.c" | { b?: "c" };
+  stateValues: "a" | "b" | { b: "c" };
   tags: never;
 }
 "
@@ -198,6 +204,7 @@ export interface Typegen0 {
   eventsCausingGuards: {};
   eventsCausingDelays: {};
   matchesStates: "a" | "b" | "b.c" | { b?: "c" };
+  stateValues: "a" | "b" | { b: "c" };
   tags: never;
 }
 "
@@ -226,6 +233,7 @@ export interface Typegen0 {
   eventsCausingGuards: {};
   eventsCausingDelays: {};
   matchesStates: "a" | "b" | "b.b1" | { b?: "b1" };
+  stateValues: "a" | "b" | { b: "b1" };
   tags: never;
 }
 "
@@ -253,6 +261,7 @@ export interface Typegen0 {
   eventsCausingGuards: {};
   eventsCausingDelays: {};
   matchesStates: "a" | "b";
+  stateValues: "a" | "b";
   tags: never;
 }
 "
@@ -281,6 +290,7 @@ export interface Typegen0 {
   eventsCausingGuards: {};
   eventsCausingDelays: {};
   matchesStates: "a" | "b" | "c";
+  stateValues: "a" | "b" | "c";
   tags: never;
 }
 "
@@ -310,6 +320,7 @@ export interface Typegen0 {
   eventsCausingGuards: {};
   eventsCausingDelays: {};
   matchesStates: "a" | "a.a1" | { a?: "a1" };
+  stateValues: "a" | { a: "a1" };
   tags: never;
 }
 "
@@ -338,6 +349,7 @@ export interface Typegen0 {
   eventsCausingGuards: {};
   eventsCausingDelays: {};
   matchesStates: "a" | "b" | "b.c" | "b.d" | { b?: "c" | "d" };
+  stateValues: "a" | "b" | { b: "c" } | { b: "d" };
   tags: never;
 }
 "
@@ -366,6 +378,7 @@ export interface Typegen0 {
   eventsCausingGuards: {};
   eventsCausingDelays: {};
   matchesStates: "a" | "b";
+  stateValues: "a" | "b";
   tags: never;
 }
 "
@@ -394,6 +407,7 @@ export interface Typegen0 {
   eventsCausingGuards: {};
   eventsCausingDelays: {};
   matchesStates: "a" | "a.c" | "a.d" | { a?: "c" | "d" };
+  stateValues: "a" | { a: "c" } | { a: "d" };
   tags: never;
 }
 "
@@ -422,6 +436,7 @@ export interface Typegen0 {
   eventsCausingGuards: {};
   eventsCausingDelays: {};
   matchesStates: "a" | "a.c" | "a.d" | { a?: "c" | "d" };
+  stateValues: "a" | { a: "c" } | { a: "d" };
   tags: never;
 }
 "
@@ -450,6 +465,7 @@ export interface Typegen0 {
   eventsCausingGuards: {};
   eventsCausingDelays: {};
   matchesStates: "a" | "a.a1" | "b" | { a?: "a1" };
+  stateValues: "a" | { a: "a1" } | "b";
   tags: never;
 }
 "
@@ -479,6 +495,7 @@ export interface Typegen0 {
   eventsCausingGuards: {};
   eventsCausingDelays: {};
   matchesStates: "a" | "a.a1" | "b" | { a?: "a1" };
+  stateValues: "a" | { a: "a1" } | "b";
   tags: never;
 }
 "
@@ -533,6 +550,15 @@ export interface Typegen0 {
     | "b.b2"
     | "b.b3"
     | { a?: "a1" | "a2" | "a3"; b?: "b1" | "b2" | "b3" };
+  stateValues:
+    | "a"
+    | { a: "a1" }
+    | { a: "a2" }
+    | { a: "a3" }
+    | "b"
+    | { b: "b1" }
+    | { b: "b2" }
+    | { b: "b3" };
   tags: never;
 }
 "
@@ -570,6 +596,13 @@ export interface Typegen0 {
     | "b.b1"
     | "b.b2"
     | { a?: "a1" | "a2"; b?: "b1" | "b2" };
+  stateValues:
+    | "a"
+    | { a: "a1" }
+    | { a: "a2" }
+    | "b"
+    | { b: "b1" }
+    | { b: "b2" };
   tags: never;
 }
 "
@@ -607,6 +640,13 @@ export interface Typegen0 {
     | "b.b1"
     | "b.b2"
     | { a?: "a1" | "a2"; b?: "b1" | "b2" };
+  stateValues:
+    | "a"
+    | { a: "a1" }
+    | { a: "a2" }
+    | "b"
+    | { b: "b1" }
+    | { b: "b2" };
   tags: never;
 }
 "
@@ -720,6 +760,24 @@ export interface Typegen0 {
         b?: "b1" | "b2" | { b1?: "b11" | "b12"; b2?: "b21" | "b22" };
         c?: "c1" | "c2";
       };
+  stateValues:
+    | "a"
+    | { a: "a1" }
+    | { a: { a1: "a11" } }
+    | { a: { a1: "a12" } }
+    | { a: "a2" }
+    | { a: { a2: "a21" } }
+    | { a: { a2: "a22" } }
+    | "b"
+    | { b: "b1" }
+    | { b: { b1: "b11" } }
+    | { b: { b1: "b12" } }
+    | { b: "b2" }
+    | { b: { b2: "b21" } }
+    | { b: { b2: "b22" } }
+    | "c"
+    | { c: "c1" }
+    | { c: "c2" };
   tags: never;
 }
 "
@@ -787,6 +845,21 @@ export interface Typegen0 {
         a?: "a1" | "a2" | { a1?: "a11" | "a12"; a2?: "a21" | "a22" };
         b?: "b1" | "b2" | { b1?: "b11" | "b12"; b2?: "b21" | "b22" };
       };
+  stateValues:
+    | "a"
+    | { a: "a1" }
+    | { a: { a1: "a11" } }
+    | { a: { a1: "a12" } }
+    | { a: "a2" }
+    | { a: { a2: "a21" } }
+    | { a: { a2: "a22" } }
+    | "b"
+    | { b: "b1" }
+    | { b: { b1: "b11" } }
+    | { b: { b1: "b12" } }
+    | { b: "b2" }
+    | { b: { b2: "b21" } }
+    | { b: { b2: "b22" } };
   tags: never;
 }
 "
@@ -815,6 +888,7 @@ export interface Typegen0 {
   eventsCausingGuards: {};
   eventsCausingDelays: {};
   matchesStates: "a" | "b";
+  stateValues: "a" | "b";
   tags: never;
 }
 "
@@ -844,6 +918,7 @@ export interface Typegen0 {
   eventsCausingGuards: {};
   eventsCausingDelays: {};
   matchesStates: "a" | "b";
+  stateValues: "a" | "b";
   tags: never;
 }
 "
@@ -875,6 +950,7 @@ export interface Typegen0 {
   eventsCausingGuards: {};
   eventsCausingDelays: {};
   matchesStates: "a" | "b" | "c" | "d";
+  stateValues: "a" | "b" | "c" | "d";
   tags: never;
 }
 "
@@ -903,6 +979,7 @@ export interface Typegen0 {
   eventsCausingGuards: {};
   eventsCausingDelays: {};
   matchesStates: "a" | "a.b" | "c" | { a?: "b" };
+  stateValues: "a" | { a: "b" } | "c";
   tags: never;
 }
 "
@@ -932,6 +1009,7 @@ export interface Typegen0 {
   eventsCausingGuards: {};
   eventsCausingDelays: {};
   matchesStates: "a" | "a.a1" | "a.a2" | { a?: "a1" | "a2" };
+  stateValues: "a" | { a: "a1" } | { a: "a2" };
   tags: never;
 }
 "
@@ -961,6 +1039,7 @@ export interface Typegen0 {
   };
   eventsCausingDelays: {};
   matchesStates: undefined;
+  stateValues: undefined;
   tags: never;
 }
 "
@@ -990,6 +1069,7 @@ export interface Typegen0 {
   eventsCausingGuards: {};
   eventsCausingDelays: {};
   matchesStates: "a" | "b" | "b.c" | { b?: "c" };
+  stateValues: "a" | "b" | { b: "c" };
   tags: never;
 }
 "
@@ -1018,6 +1098,7 @@ export interface Typegen0 {
   };
   eventsCausingDelays: {};
   matchesStates: "a" | "b" | "c";
+  stateValues: "a" | "b" | "c";
   tags: never;
 }
 "
@@ -1045,6 +1126,7 @@ export interface Typegen0 {
   };
   eventsCausingDelays: {};
   matchesStates: "a" | "b";
+  stateValues: "a" | "b";
   tags: never;
 }
 "
@@ -1076,6 +1158,7 @@ export interface Typegen0 {
   eventsCausingGuards: {};
   eventsCausingDelays: {};
   matchesStates: undefined;
+  stateValues: undefined;
   tags: never;
 }
 "

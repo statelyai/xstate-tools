@@ -1,7 +1,7 @@
 import { INLINE_IMPLEMENTATION_TYPE } from "@xstate/machine-extractor";
 import * as XState from "xstate";
 import { InvokeDefinition } from "xstate";
-import { getMatchesStates } from "./getTransitionsFromNode";
+import { getMatchesStates, getStateValues } from "./getTransitionsFromNode";
 
 export interface SubState {
   states: Record<string, SubState>;
@@ -510,6 +510,7 @@ export const introspectMachine = (machine: XState.StateNode) => {
       sources: ctx.nodeIdToSourceEventsMap.get(id) || new Set(),
     })),
     stateMatches: getMatchesStates(machine),
+    stateValues: getStateValues(machine),
     subState: makeSubStateFromNode(machine),
     guards: ctx.guards.toDataShape(),
     actions: ctx.actions.toDataShape(),
