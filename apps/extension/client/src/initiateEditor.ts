@@ -10,7 +10,6 @@ import * as path from "path";
 import * as vscode from "vscode";
 import { ColorThemeKind } from "vscode";
 import { MachineConfig } from "xstate";
-import { getAuth, SignInResult } from "./auth";
 import { getBaseUrl } from "./constants";
 import { EditorWebviewScriptEvent } from "./editorWebviewScript";
 import { getWebviewContent } from "./getWebviewContent";
@@ -33,34 +32,6 @@ export const initiateEditor = (context: vscode.ExtensionContext) => {
     layoutString: string | undefined,
     implementations: ImplementationsMetadata
   ) => {
-    const result = await vscode.window.withProgress<SignInResult>(
-      {
-        location: vscode.ProgressLocation.Window,
-        title: "Signing in via Stately...",
-        cancellable: true,
-      },
-      (_, token) => {
-        return getAuth(context).signIn(token.onCancellationRequested);
-      }
-    );
-
-    if (result === "could-not-open-external-url") {
-      vscode.window.showErrorMessage("Could not open an external URL");
-      return;
-    } else if (result === "timed-out") {
-      vscode.window.showErrorMessage(
-        "The authentication request timed out. Please try again."
-      );
-      return;
-    } else if (result === "unknown-error") {
-      vscode.window.showErrorMessage(
-        "An unknown error occurred. Please try again."
-      );
-      return;
-    } else if (result === "cancelled") {
-      return;
-    }
-
     const settingsTheme =
       vscode.workspace
         .getConfiguration("xstate")
@@ -80,7 +51,6 @@ export const initiateEditor = (context: vscode.ExtensionContext) => {
         index: machineIndex,
         uri: resolveUriToFilePrefix(uri),
         layoutString,
-        token: result,
         implementations,
         baseUrl,
         themeKind,
@@ -107,7 +77,6 @@ export const initiateEditor = (context: vscode.ExtensionContext) => {
         index: machineIndex,
         uri: resolveUriToFilePrefix(uri),
         layoutString,
-        token: result,
         implementations,
         baseUrl,
         themeKind,
