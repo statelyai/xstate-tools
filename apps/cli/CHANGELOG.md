@@ -1,5 +1,15 @@
 # @xstate/cli
 
+## 0.3.3
+
+### Patch Changes
+
+- [#203](https://github.com/statelyai/xstate-tools/pull/203) [`a49095f`](https://github.com/statelyai/xstate-tools/commit/a49095ff41656a9de2249083614ab1b8777b8a35) Thanks [@Andarist](https://github.com/Andarist)! - Fixed an issue with parametrized guards not being recognized by typegen. Note that this doesn't provide type-safe custom parameters for your guard implementations. It only allows `event` parameter to be inferred.
+
+- Updated dependencies [[`a49095f`](https://github.com/statelyai/xstate-tools/commit/a49095ff41656a9de2249083614ab1b8777b8a35)]:
+  - @xstate/machine-extractor@0.7.1
+  - @xstate/tools-shared@1.2.3
+
 ## 0.3.2
 
 ### Patch Changes

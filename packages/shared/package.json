@@ -1,10 +1,10 @@
 {
   "name": "@xstate/tools-shared",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "main": "dist/xstate-tools-shared.cjs.js",
   "license": "MIT",
   "dependencies": {
-    "@xstate/machine-extractor": "0.7.0"
+    "@xstate/machine-extractor": "0.7.1"
   },
   "scripts": {
     "lint": "tsc",
