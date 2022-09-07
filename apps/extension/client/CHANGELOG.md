@@ -1,5 +1,18 @@
 # stately-vscode
 
+## 1.10.0
+
+### Minor Changes
+
+- [#201](https://github.com/statelyai/xstate-tools/pull/201) [`d439ace`](https://github.com/statelyai/xstate-tools/commit/d439ace70d04fabf9006b18dc4b9e5358d7f5a61) Thanks [@Andarist](https://github.com/Andarist)! - The requirement to authenticate with the extension has been removed.
+
+### Patch Changes
+
+- [#203](https://github.com/statelyai/xstate-tools/pull/203) [`a49095f`](https://github.com/statelyai/xstate-tools/commit/a49095ff41656a9de2249083614ab1b8777b8a35) Thanks [@Andarist](https://github.com/Andarist)! - Fixed an issue with parametrized guards not being recognized by typegen. Note that this doesn't provide type-safe custom parameters for your guard implementations. It only allows `event` parameter to be inferred.
+
+- Updated dependencies []:
+  - @xstate/tools-shared@1.2.3
+
 ## 1.9.3
 
 ### Patch Changes
