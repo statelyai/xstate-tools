@@ -307,14 +307,14 @@ export const objectTypeWithKnownKeys = <
 
             let result: any | undefined;
 
-            if (t.isObjectMethod(property.node)) {
+            if (property.path.isObjectMethod()) {
               result = parser.parse(property.path, context);
-            } else if (t.isObjectProperty(property.node)) {
+            } else if (property.path.isObjectProperty()) {
               result = parser.parse(
                 (property.path as NodePath<t.ObjectProperty>).get("value"),
                 context
               );
-              if (result) {
+              if (result && "value" in property.node) {
                 result._valueNode = property.node.value;
               }
             }
