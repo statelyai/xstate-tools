@@ -17,7 +17,7 @@ import { wrapParserResult } from "./wrapParserResult";
 
 export const parserFromBabelMatcher = <T extends t.Node>(
   babelMatcher: (node: any) => node is T
-) => createParser({ babelMatcher, parseNode: (node) => node });
+) => createParser({ babelMatcher, extract: (node) => node });
 
 /**
  * Useful for when something might, or might not,
@@ -28,7 +28,7 @@ export const maybeArrayOf = <Result>(
 ): AnyParser<Result[]> => {
   const arrayParser = createParser({
     babelMatcher: t.isArrayExpression,
-    parseNode: (path, context) => {
+    extract: (path, context) => {
       const toReturn: Result[] = [];
 
       path.get("elements").map((elem) => {
@@ -66,7 +66,7 @@ export const arrayOf = <Result>(
 ): AnyParser<Result[]> => {
   return createParser({
     babelMatcher: t.isArrayExpression,
-    parseNode: (path, context) => {
+    extract: (path, context) => {
       const toReturn: Result[] = [];
 
       path.get("elements").map((elem) => {
@@ -83,7 +83,7 @@ export const arrayOf = <Result>(
 
 export const objectMethod = createParser({
   babelMatcher: t.isObjectMethod,
-  parseNode: (path, context) => {
+  extract: (path, context) => {
     return {
       node: path.node,
       path,
@@ -110,7 +110,7 @@ export const staticObjectProperty = <KeyResult>(
     babelMatcher: (node): node is t.ObjectProperty => {
       return t.isObjectProperty(node) && !node.computed;
     },
-    parseNode: (path, context) => {
+    extract: (path, context) => {
       return {
         node: path.node,
         path,
@@ -122,7 +122,7 @@ export const staticObjectProperty = <KeyResult>(
 export const spreadElement = <Result>(parser: AnyParser<Result>) => {
   return createParser({
     babelMatcher: t.isSpreadElement,
-    parseNode: (path, context) => {
+    extract: (path, context) => {
       const result = {
         node: path.node,
         path,
@@ -154,7 +154,7 @@ export const dynamicObjectProperty = <KeyResult>(
     babelMatcher: (node): node is t.ObjectProperty => {
       return t.isObjectProperty(node) && node.computed;
     },
-    parseNode: (path, context) => {
+    extract: (path, context) => {
       return {
         node: path.node,
         path,
@@ -167,7 +167,7 @@ const staticPropertyWithKey = staticObjectProperty(
   unionType<{ node: t.Node; path: NodePath<t.Node>; value: string | number }>([
     createParser({
       babelMatcher: t.isIdentifier,
-      parseNode: (path) => {
+      extract: (path) => {
         return {
           node: path.node,
           path,
@@ -226,7 +226,7 @@ export const getPropertiesOfObjectExpression = (
     const spreadElementResult = spreadElementReferencingIdentifier(
       createParser({
         babelMatcher: t.isObjectExpression,
-        parseNode: (path) => path,
+        extract: (path) => path,
       })
     ).parse(property as any, context);
 
@@ -288,7 +288,7 @@ export const objectTypeWithKnownKeys = <
     maybeIdentifierTo(
       createParser<t.ObjectExpression, GetObjectKeysResult<T>>({
         babelMatcher: t.isObjectExpression,
-        parseNode: (path, context) => {
+        extract: (path, context) => {
           const properties = getPropertiesOfObjectExpression(path, context);
 
           const parseObject =
@@ -349,7 +349,7 @@ export const objectOf = <Result>(
   return maybeIdentifierTo(
     createParser({
       babelMatcher: t.isObjectExpression,
-      parseNode: (path, context) => {
+      extract: (path, context) => {
         const properties = getPropertiesOfObjectExpression(path, context);
 
         const toReturn = {
@@ -399,7 +399,7 @@ export const namedFunctionCall = <Argument1Result, Argument2Result>(
     maybeIdentifierTo(
       createParser({
         babelMatcher: t.isCallExpression,
-        parseNode: (node) => {
+        extract: (node) => {
           return node;
         },
       })
@@ -430,7 +430,7 @@ export const namedFunctionCall = <Argument1Result, Argument2Result>(
 
       return node.callee.name === name;
     },
-    parseNode: (path, context) => {
+    extract: (path, context) => {
       return {
         node: path.node,
         path: path,

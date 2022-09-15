@@ -16,7 +16,7 @@ export interface CondNode {
 
 const CondAsFunctionExpression = createParser({
   babelMatcher: isFunctionOrArrowFunctionExpression,
-  parseNode: (path, context): CondNode => {
+  extract: (path, context): CondNode => {
     return {
       path,
       node: path.node,
@@ -32,7 +32,7 @@ const CondAsFunctionExpression = createParser({
 
 const CondAsStringLiteral = createParser({
   babelMatcher: t.isStringLiteral,
-  parseNode: (path, context): CondNode => {
+  extract: (path, context): CondNode => {
     return {
       path,
       node: path.node,
@@ -46,7 +46,7 @@ const CondAsStringLiteral = createParser({
 
 const CondAsParametrizedGuard = createParser({
   babelMatcher: t.isObjectExpression,
-  parseNode: (path, context): CondNode | null => {
+  extract: (path, context): CondNode | null => {
     let propValue: t.Node | null = null;
 
     for (const prop of path.node.properties) {
@@ -80,7 +80,7 @@ const CondAsParametrizedGuard = createParser({
 
 const CondAsNode = createParser({
   babelMatcher: t.isNode,
-  parseNode: (path, context): CondNode => {
+  extract: (path, context): CondNode => {
     const id = context.getNodeHash(path.node);
     return {
       path,

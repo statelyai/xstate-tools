@@ -50,7 +50,7 @@ export interface ParsedChooseCondition {
 export const ActionAsIdentifier = maybeTsAsExpression(
   createParser({
     babelMatcher: t.isIdentifier,
-    parseNode: (path, context): ActionNode => {
+    extract: (path, context): ActionNode => {
       return {
         action: path.node.name,
         node: path.node,
@@ -67,7 +67,7 @@ export const ActionAsFunctionExpression = maybeTsAsExpression(
   maybeIdentifierTo(
     createParser({
       babelMatcher: isFunctionOrArrowFunctionExpression,
-      parseNode: (path, context): ActionNode => {
+      extract: (path, context): ActionNode => {
         const action = function actions() {};
         const id = context.getNodeHash(path.node);
 
@@ -89,7 +89,7 @@ export const ActionAsString = maybeTsAsExpression(
   maybeIdentifierTo(
     createParser({
       babelMatcher: t.isStringLiteral,
-      parseNode: (path, context): ActionNode => {
+      extract: (path, context): ActionNode => {
         return {
           path,
           action: path.node.value,
@@ -105,7 +105,7 @@ export const ActionAsString = maybeTsAsExpression(
 
 export const ActionAsNode = createParser({
   babelMatcher: t.isNode,
-  parseNode: (path, context): ActionNode => {
+  extract: (path, context): ActionNode => {
     const id = context.getNodeHash(path.node);
     return {
       path,
@@ -177,7 +177,7 @@ interface AssignFirstArg {
 
 const AssignFirstArgObject = createParser({
   babelMatcher: t.isObjectExpression,
-  parseNode: (path, context) => {
+  extract: (path, context) => {
     return {
       path,
       node: path.node,
@@ -188,7 +188,7 @@ const AssignFirstArgObject = createParser({
 
 const AssignFirstArgFunction = createParser({
   babelMatcher: isFunctionOrArrowFunctionExpression,
-  parseNode: (path, context) => {
+  extract: (path, context) => {
     const value = function anonymous() {
       return {};
     };

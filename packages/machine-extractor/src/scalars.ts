@@ -21,7 +21,7 @@ export const StringLiteral = unionType([
     maybeIdentifierTo(
       createParser({
         babelMatcher: t.isStringLiteral,
-        parseNode: (path): StringLiteralNode => {
+        extract: (path): StringLiteralNode => {
           return {
             value: path.node.value,
             node: path.node,
@@ -37,7 +37,7 @@ export const NumericLiteral = maybeTsAsExpression(
   maybeIdentifierTo(
     createParser({
       babelMatcher: t.isNumericLiteral,
-      parseNode: (path) => {
+      extract: (path) => {
         return {
           value: path.node.value,
           node: path.node,
@@ -52,7 +52,7 @@ export const BooleanLiteral = maybeTsAsExpression(
   maybeIdentifierTo(
     createParser({
       babelMatcher: t.isBooleanLiteral,
-      parseNode: (path) => {
+      extract: (path) => {
         return {
           value: path.node.value,
           node: path.node,
@@ -65,19 +65,19 @@ export const BooleanLiteral = maybeTsAsExpression(
 
 export const AnyNode = createParser({
   babelMatcher: t.isNode,
-  parseNode: (path) => ({ path, node: path.node }),
+  extract: (path) => ({ path, node: path.node }),
 });
 
 export const Identifier = createParser({
   babelMatcher: t.isIdentifier,
-  parseNode: (path) => ({ path, node: path.node }),
+  extract: (path) => ({ path, node: path.node }),
 });
 
 export const TemplateLiteral = maybeTsAsExpression(
   maybeIdentifierTo(
     createParser({
       babelMatcher: t.isTemplateLiteral,
-      parseNode: (path) => {
+      extract: (path) => {
         let value = "";
 
         // TODO - this might lead to weird issues if there is actually more than a single quasi there

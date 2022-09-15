@@ -24,7 +24,7 @@ const InvokeSrcFunctionExpression = maybeTsAsExpression(
   maybeIdentifierTo(
     createParser({
       babelMatcher: isFunctionOrArrowFunctionExpression,
-      parseNode: (path, context): InvokeNode => {
+      extract: (path, context): InvokeNode => {
         const id = context.getNodeHash(path.node);
 
         return {
@@ -41,7 +41,7 @@ const InvokeSrcFunctionExpression = maybeTsAsExpression(
 
 const InvokeSrcNode = createParser({
   babelMatcher: t.isNode,
-  parseNode: (path, context): InvokeNode => {
+  extract: (path, context): InvokeNode => {
     const id = context.getNodeHash(path.node);
     return {
       value: id,
@@ -55,7 +55,7 @@ const InvokeSrcNode = createParser({
 
 const InvokeSrcStringLiteral = createParser({
   babelMatcher: t.isStringLiteral,
-  parseNode: (path, context): InvokeNode => ({
+  extract: (path, context): InvokeNode => ({
     value: path.node.value,
     path,
     node: path.node,
@@ -66,7 +66,7 @@ const InvokeSrcStringLiteral = createParser({
 
 const InvokeSrcIdentifier = createParser({
   babelMatcher: t.isIdentifier,
-  parseNode: (path, context): InvokeNode => {
+  extract: (path, context): InvokeNode => {
     const id = context.getNodeHash(path.node);
     return {
       value: id,

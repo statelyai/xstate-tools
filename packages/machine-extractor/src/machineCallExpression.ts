@@ -17,7 +17,7 @@ export const ALLOWED_CALL_EXPRESSION_NAMES = [
 
 export const MachineCallExpression = createParser({
   babelMatcher: t.isCallExpression,
-  parseNode: (path, context) => {
+  extract: (path, context) => {
     const node = path.node;
     if (
       t.isMemberExpression(node.callee) &&

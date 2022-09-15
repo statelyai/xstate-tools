@@ -38,7 +38,7 @@ export const identifierReferencingVariableDeclaration = <Result>(
 ) => {
   return createParser({
     babelMatcher: t.isIdentifier,
-    parseNode: (path, context) => {
+    extract: (path, context) => {
       const variableDeclarator = findVariableDeclaratorWithName(
         context.file,
         path.node.name
@@ -104,7 +104,7 @@ const deepMemberExpression: Parser<
   babelMatcher(node): node is t.MemberExpression | t.Identifier {
     return t.isIdentifier(node) || t.isMemberExpression(node);
   },
-  parseNode: (path, context) => {
+  extract: (path, context) => {
     const child = path.get("object") as unknown as NodePath<
       t.MemberExpression | t.Identifier
     >;
@@ -122,7 +122,7 @@ export const objectExpressionWithDeepPath = <Result>(
 ) =>
   createParser({
     babelMatcher: t.isObjectExpression,
-    parseNode: (path, context) => {
+    extract: (path, context) => {
       let currentIndex = 0;
       let currentPath: NodePath<t.ObjectExpression> | undefined | null = path;
 
@@ -163,7 +163,7 @@ export const memberExpressionReferencingObjectExpression = <Result>(
 ) =>
   createParser({
     babelMatcher: t.isMemberExpression,
-    parseNode: (path, context) => {
+    extract: (path, context) => {
       const result = deepMemberExpression.parse(path, context);
 
       const rootIdentifier = getRootIdentifierOfDeepMemberExpression(result);
@@ -180,7 +180,7 @@ export const memberExpressionReferencingObjectExpression = <Result>(
 
 export const memberExpressionReferencingEnumMember = createParser({
   babelMatcher: t.isMemberExpression,
-  parseNode: (path, context) => {
+  extract: (path, context) => {
     const result = deepMemberExpression.parse(path, context);
 
     const rootIdentifier = getRootIdentifierOfDeepMemberExpression(result);
