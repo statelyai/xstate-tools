@@ -1,19 +1,35 @@
-import { processFileEdits } from "..";
+import { processFileEdits } from '..';
 
-describe("processFileEdits", () => {
+describe('processFileEdits', () => {
   it.each([
     [
       `Hello, everyone!`,
-      [{ start: 0, end: 0, newText: "Great, " }],
+      [
+        {
+          range: [
+            { line: 0, column: 0, index: 0 },
+            { line: 0, column: 0, index: 0 },
+          ] as const,
+          newText: 'Great, ',
+        },
+      ],
       `Great, Hello, everyone!`,
     ],
     [
       `{}, {}`,
       [
-        { start: 0, end: 2, newText: `{} as {}` },
         {
-          start: 4,
-          end: 6,
+          range: [
+            { line: 0, column: 0, index: 0 },
+            { line: 0, column: 2, index: 2 },
+          ] as const,
+          newText: `{} as {}`,
+        },
+        {
+          range: [
+            { line: 0, column: 4, index: 4 },
+            { line: 0, column: 6, index: 6 },
+          ] as const,
           newText: `{} as {}`,
         },
       ],

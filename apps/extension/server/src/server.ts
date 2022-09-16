@@ -2,43 +2,40 @@
  * Copyright (c) Microsoft Corporation. All rights reserved.
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
-import { MachineParseResult } from '@xstate/machine-extractor';
 import {
-  DocumentValidationsResult,
-  getDocumentValidationsResults,
+  MachineParseResult,
+  parseMachinesFromFile,
+} from '@xstate/machine-extractor';
+import {
+  filterOutIgnoredMachines,
+  getInlineImplementations,
   getRangeFromSourceLocation,
   getRawTextFromNode,
   getSetOfNames,
   getTransitionsFromNode,
+  getTsTypesEdits,
+  getTypegenData,
   GlobalSettings,
-  makeXStateUpdateEvent,
+  isCursorInPosition,
 } from '@xstate/tools-shared';
-import { CodeLens } from 'vscode-languageserver';
+import deepEqual from 'fast-deep-equal';
+import { CodeLens, Position } from 'vscode-languageserver';
 import { TextDocument, TextEdit } from 'vscode-languageserver-textdocument';
 import {
   CompletionItem,
   CompletionItemKind,
-  createConnection,
-  Diagnostic,
   DidChangeConfigurationNotification,
-  InitializeParams,
   InitializeResult,
-  ProposedFeatures,
-  TextDocumentPositionParams,
-  TextDocuments,
   TextDocumentSyncKind,
 } from 'vscode-languageserver/node';
-import { assign, createMachine, interpret } from 'xstate';
+import { createMachine } from 'xstate';
 import { getCursorHoverType } from './getCursorHoverType';
 import { getDiagnostics } from './getDiagnostics';
 import { getReferences } from './getReferences';
+import { CachedDocument } from './types';
+import { createTypeSafeConnection } from './typeSafeConnection';
 
-// Create a connection for the server, using Node's IPC as a transport.
-// Also include all preview / proposed LSP features.
-const connection = createConnection(ProposedFeatures.all);
-
-// Create a simple text document manager.
-const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
+const connection = createTypeSafeConnection();
 
 let hasConfigurationCapability = false;
 let hasWorkspaceFolderCapability = false;
@@ -48,11 +45,11 @@ const defaultSettings: GlobalSettings = {
 };
 let globalSettings: GlobalSettings = defaultSettings;
 
-connection.onInitialize((params: InitializeParams) => {
+let displayedMachine: { uri: string; machineIndex: number } | undefined;
+
+connection.onInitialize((params) => {
   const capabilities = params.capabilities;
 
-  // Does the client support the `workspace/configuration` request?
-  // If not, we fall back using global settings.
   hasConfigurationCapability = !!(
     capabilities.workspace && !!capabilities.workspace.configuration
   );
@@ -62,8 +59,7 @@ connection.onInitialize((params: InitializeParams) => {
 
   const result: InitializeResult = {
     capabilities: {
-      // TODO: we should strive for using `TextDocumentSyncKind.Incremental`
-      textDocumentSync: TextDocumentSyncKind.Full,
+      textDocumentSync: TextDocumentSyncKind.Incremental,
       codeActionProvider: {
         resolveProvider: true,
       },
@@ -73,11 +69,11 @@ connection.onInitialize((params: InitializeParams) => {
           'typescriptreact',
           'javascript',
           'javascriptreact',
+          // TODO: figure out how can we support vue, svelte and more
         ],
       },
       definitionProvider: true,
       referencesProvider: true,
-      // Tell the client that this server supports code completion.
       completionProvider: {
         resolveProvider: true,
       },
@@ -113,170 +109,134 @@ function getDocumentSettings(resource: string): Thenable<GlobalSettings> {
   if (!hasConfigurationCapability) {
     return Promise.resolve(globalSettings);
   }
-  let result = documentSettings.get(resource);
-  if (!result) {
-    result = connection.workspace.getConfiguration({
-      scopeUri: resource,
-      section: 'xstate',
-    });
-    documentSettings.set(resource, result);
+  let cachedResult = documentSettings.get(resource);
+  if (cachedResult) {
+    return cachedResult;
   }
-  return result;
+  const configurationPromise = connection.workspace.getConfiguration({
+    scopeUri: resource,
+    section: 'xstate',
+  });
+  documentSettings.set(resource, configurationPromise);
+  return configurationPromise;
 }
 
-// Only keep settings for open documents
-documents.onDidClose((e) => {
-  documentSettings.delete(e.document.uri);
+connection.documents.onDidClose(({ document }) => {
+  documentsCache.delete(document.uri);
+  documentSettings.delete(document.uri);
 });
 
-const documentValidationsCache: Map<string, DocumentValidationsResult[]> =
-  new Map();
+const documentsCache: Map<string, CachedDocument> = new Map();
 
 connection.onReferences((params) => {
-  return getReferences({
-    ...params,
-    machinesParseResult:
-      documentValidationsCache.get(params.textDocument.uri) || [],
-  });
+  const cachedDocument = documentsCache.get(params.textDocument.uri);
+  if (!cachedDocument) {
+    return;
+  }
+  return getReferences(params, cachedDocument);
 });
 
 connection.onDefinition((params) => {
-  return getReferences({
-    ...params,
-    machinesParseResult:
-      documentValidationsCache.get(params.textDocument.uri) || [],
-  });
+  const cachedDocument = documentsCache.get(params.textDocument.uri);
+  if (!cachedDocument) {
+    return;
+  }
+  // TOOD: this should return a definition and not references
+  return getReferences(params, cachedDocument);
 });
 
 // TODO: make the registered code lenses type-safe
-connection.onCodeLens((params): CodeLens[] => {
-  const machinesParseResult = documentValidationsCache.get(
-    params.textDocument.uri,
-  );
+connection.onCodeLens(({ textDocument }) => {
+  const cachedDocument = documentsCache.get(textDocument.uri);
 
-  if (!machinesParseResult) {
+  if (!cachedDocument) {
     return [];
   }
-  return machinesParseResult.flatMap((machine, index): CodeLens[] => {
-    const callee = machine.parseResult?.ast?.callee;
-    return [
-      {
-        range: getRangeFromSourceLocation(callee?.loc!),
-        command: {
-          title: 'Open Visual Editor',
-          command: 'stately-xstate.edit-code-lens',
-          arguments: [
-            machine.parseResult?.toConfig({ hashInlineImplementations: true }),
-            index,
-            params.textDocument.uri,
-            machine.parseResult?.getLayoutComment()?.value,
-          ],
-        },
-      },
-      {
-        range: getRangeFromSourceLocation(callee?.loc!),
-        command: {
-          title: 'Open Inspector',
-          command: 'stately-xstate.inspect',
-          arguments: [
-            machine.parseResult?.toConfig(),
-            index,
-            params.textDocument.uri,
-            machine.parseResult
-              ?.getAllConds(['named'])
-              .map((cond) => cond.name),
-          ],
-        },
-      },
-    ];
-  });
-});
 
-async function validateDocument(textDocument: TextDocument): Promise<void> {
-  const text = textDocument.getText();
-  const settings = await getDocumentSettings(textDocument.uri);
-
-  const diagnostics: Diagnostic[] = [];
-
-  try {
-    const machines = getDocumentValidationsResults(text);
-    documentValidationsCache.set(textDocument.uri, machines);
-
-    diagnostics.push(...getDiagnostics(machines, textDocument, settings));
-    const event = makeXStateUpdateEvent(textDocument.uri, machines);
-
-    connection.sendNotification('xstate/update', event);
-  } catch (e) {
-    documentValidationsCache.delete(textDocument.uri);
-  }
-
-  // Send the computed diagnostics to VSCode.
-  connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
-}
-
-interface Context {
-  document?: TextDocument;
-}
-
-type Event = {
-  type: 'DOCUMENT_DID_CHANGE';
-  document: TextDocument;
-};
-
-const serverMachine = createMachine<Context, Event>({
-  initial: 'validating',
-  context: {},
-  on: {
-    DOCUMENT_DID_CHANGE: {
-      target: '.throttling',
-      actions: assign((context, event) => {
-        return {
-          document: event.document,
-        };
-      }),
-    },
-  },
-  states: {
-    throttling: {
-      after: {
-        200: 'validating',
-      },
-    },
-    validating: {
-      invoke: {
-        src: async (context) => {
-          if (!context.document) return;
-          await validateDocument(context.document);
-        },
-        onDone: {
-          target: 'idle',
-        },
-        onError: {
-          target: 'idle',
-          actions: (context, event) => {
-            connection.console.log(JSON.stringify(event.data));
+  return cachedDocument.machineResults.flatMap(
+    (machineResult, index): CodeLens[] => {
+      const callee = machineResult.ast.callee;
+      return [
+        {
+          range: getRangeFromSourceLocation(callee.loc!),
+          command: {
+            title: 'Open Visual Editor',
+            command: 'stately-xstate.edit-code-lens',
+            arguments: [textDocument.uri, index],
           },
         },
-      },
+        {
+          range: getRangeFromSourceLocation(callee.loc!),
+          command: {
+            title: 'Open Inspector',
+            command: 'stately-xstate.inspect',
+            arguments: [textDocument.uri, index],
+          },
+        },
+      ];
     },
-    idle: {},
-  },
+  );
 });
 
-const serverService = interpret(serverMachine).start();
+async function handleDocumentChange(textDocument: TextDocument): Promise<void> {
+  const previouslyCachedDocument = documentsCache.get(textDocument.uri);
+  try {
+    const text = textDocument.getText();
+    const [settings, machineResults] = await Promise.all([
+      getDocumentSettings(textDocument.uri),
+      filterOutIgnoredMachines(parseMachinesFromFile(text)).machines,
+    ]);
 
-// The content of a text document has changed. This event is emitted
-// when the text document first opened or when its content has changed.
-documents.onDidChangeContent((change) => {
-  serverService.send({
-    type: 'DOCUMENT_DID_CHANGE',
-    document: change.document,
-  });
+    const types = machineResults
+      .filter((machineResult) => !!machineResult.ast.definition?.tsTypes?.node)
+      .map((machineResult, index) =>
+        getTypegenData(textDocument.uri, index, machineResult),
+      );
+
+    documentsCache.set(textDocument.uri, {
+      documentText: text,
+      machineResults,
+      types,
+    });
+
+    if (displayedMachine?.uri === textDocument.uri) {
+      const machineResult = machineResults[displayedMachine.machineIndex];
+      connection.sendNotification('displayedMachineUpdated', {
+        config: machineResult.toConfig()!,
+        layoutString: machineResult.getLayoutComment()?.value,
+        implementations: getInlineImplementations(machineResult, text),
+        namedGuards:
+          machineResult.getAllConds(['named']).map((elem) => elem.name) || [],
+      });
+    }
+    connection.sendDiagnostics({
+      uri: textDocument.uri,
+      diagnostics: getDiagnostics(machineResults, textDocument, settings),
+    });
+    if (
+      types.some((t) => t.typesNode.value === t.data.tsTypesValue) &&
+      !deepEqual(
+        previouslyCachedDocument?.types.map((t) => t.data),
+        types.map((t) => t.data),
+      )
+    ) {
+      connection.sendNotification('typesUpdated', {
+        uri: textDocument.uri,
+        types,
+      });
+    }
+  } catch (e) {
+    connection.sendDiagnostics({ uri: textDocument.uri, diagnostics: [] });
+  }
+}
+
+connection.documents.onDidChangeContent(({ document }) => {
+  documentsCache.delete(document.uri);
+  handleDocumentChange(document);
 });
 
 connection.onDidChangeConfiguration((change) => {
   if (hasConfigurationCapability) {
-    // Reset all cached document settings
     documentSettings.clear();
   } else {
     globalSettings = <GlobalSettings>(
@@ -284,118 +244,114 @@ connection.onDidChangeConfiguration((change) => {
     );
   }
 
-  // Revalidate all open text documents
-  documents.all().forEach(validateDocument);
+  connection.documents.all().forEach(handleDocumentChange);
 });
 
-// This handler provides the initial list of the completion items.
-connection.onCompletion(
-  (_textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
-    const machinesParseResult = documentValidationsCache.get(
-      _textDocumentPosition.textDocument.uri,
-    );
+connection.onCompletion(({ textDocument, position }): CompletionItem[] => {
+  const cachedDocument = documentsCache.get(textDocument.uri);
 
-    if (!machinesParseResult) {
-      return [];
-    }
-    connection.console.log(JSON.stringify(_textDocumentPosition));
-
-    const cursor = getCursorHoverType(
-      machinesParseResult,
-      _textDocumentPosition.position,
-    );
-
-    if (cursor?.type === 'TARGET') {
-      const possibleTransitions = getTransitionsFromNode(
-        createMachine(cursor.machine.toConfig() as any).getStateNodeByPath(
-          cursor.state.path,
-        ) as any,
-      );
-
-      return possibleTransitions.map((transition) => {
-        return {
-          insertText: transition,
-          label: transition,
-          kind: CompletionItemKind.EnumMember,
-        };
-      });
-    }
-    if (cursor?.type === 'INITIAL') {
-      const state = createMachine(
-        cursor.machine.toConfig() as any,
-      ).getStateNodeByPath(cursor.state.path);
-
-      return Object.keys(state.states).map((state) => {
-        return {
-          label: state,
-          insertText: state,
-          kind: CompletionItemKind.EnumMember,
-        };
-      });
-    }
-
-    if (cursor?.type === 'ACTION') {
-      const actions = getSetOfNames(cursor.machine.getAllActions(['named']));
-
-      cursor.machine.ast.options?.actions?.properties.forEach((action) => {
-        actions.add(action.key);
-      });
-      return Array.from(actions).map((actionName) => {
-        return {
-          label: actionName,
-          insertText: actionName,
-          kind: CompletionItemKind.EnumMember,
-        };
-      });
-    }
-
-    if (cursor?.type === 'COND') {
-      const conds = getSetOfNames(cursor.machine.getAllConds(['named']));
-
-      cursor.machine.ast.options?.guards?.properties.forEach((cond) => {
-        conds.add(cond.key);
-      });
-      return Array.from(conds).map((condName) => {
-        return {
-          label: condName,
-          insertText: condName,
-          kind: CompletionItemKind.EnumMember,
-        };
-      });
-    }
-
-    if (cursor?.type === 'SERVICE') {
-      const services = getSetOfNames(
-        cursor.machine
-          .getAllServices(['named'])
-          .map((invoke) => ({ ...invoke, name: invoke.src })),
-      );
-
-      cursor.machine.ast.options?.services?.properties.forEach((service) => {
-        services.add(service.key);
-      });
-      return Array.from(services).map((serviceName) => {
-        return {
-          label: serviceName,
-          insertText: serviceName,
-          kind: CompletionItemKind.EnumMember,
-        };
-      });
-    }
-
-    return [];
-  },
-);
-
-connection.onCodeAction((params) => {
-  const machinesParseResult = documentValidationsCache.get(
-    params.textDocument.uri,
-  );
-
-  if (!machinesParseResult) {
+  if (!cachedDocument) {
     return [];
   }
-  const result = getCursorHoverType(machinesParseResult, params.range.start);
+
+  const cursor = getCursorHoverType(cachedDocument.machineResults, position);
+
+  if (cursor?.type === 'TARGET') {
+    const possibleTransitions = getTransitionsFromNode(
+      createMachine(cursor.machine.toConfig() as any).getStateNodeByPath(
+        cursor.state.path,
+      ) as any,
+    );
+
+    return possibleTransitions.map((transition) => {
+      return {
+        insertText: transition,
+        label: transition,
+        kind: CompletionItemKind.EnumMember,
+      };
+    });
+  }
+  if (cursor?.type === 'INITIAL') {
+    const state = createMachine(
+      cursor.machine.toConfig() as any,
+    ).getStateNodeByPath(cursor.state.path);
+
+    return Object.keys(state.states).map((state) => {
+      return {
+        label: state,
+        insertText: state,
+        kind: CompletionItemKind.EnumMember,
+      };
+    });
+  }
+
+  if (cursor?.type === 'ACTION') {
+    const actions = getSetOfNames(cursor.machine.getAllActions(['named']));
+
+    cursor.machine.ast.options?.actions?.properties.forEach((action) => {
+      actions.add(action.key);
+    });
+    return Array.from(actions).map((actionName) => {
+      return {
+        label: actionName,
+        insertText: actionName,
+        kind: CompletionItemKind.EnumMember,
+      };
+    });
+  }
+
+  if (cursor?.type === 'COND') {
+    const conds = getSetOfNames(cursor.machine.getAllConds(['named']));
+
+    cursor.machine.ast.options?.guards?.properties.forEach((cond) => {
+      conds.add(cond.key);
+    });
+    return Array.from(conds).map((condName) => {
+      return {
+        label: condName,
+        insertText: condName,
+        kind: CompletionItemKind.EnumMember,
+      };
+    });
+  }
+
+  if (cursor?.type === 'SERVICE') {
+    const services = getSetOfNames(
+      cursor.machine
+        .getAllServices(['named'])
+        .map((invoke) => ({ ...invoke, name: invoke.src })),
+    );
+
+    cursor.machine.ast.options?.services?.properties.forEach((service) => {
+      services.add(service.key);
+    });
+    return Array.from(services).map((serviceName) => {
+      return {
+        label: serviceName,
+        insertText: serviceName,
+        kind: CompletionItemKind.EnumMember,
+      };
+    });
+  }
+
+  return [];
+});
+
+// we don't have any additional things to resolve here
+// the `ServerCapabilities['completionProvider']` type doesn't accept `true` though
+// so it suggests that it's required or something, maybe `completionProvider: {}` would work
+connection.onCompletionResolve((item) => item);
+
+connection.onCodeAction((params) => {
+  const cachedDocument = documentsCache.get(params.textDocument.uri);
+
+  if (!cachedDocument) {
+    return [];
+  }
+  const result = getCursorHoverType(
+    cachedDocument.machineResults,
+    params.range.start,
+  );
 
   if (result?.type === 'ACTION') {
     return [
@@ -407,7 +363,7 @@ connection.onCodeAction((params) => {
               result.machine,
               'actions',
               result.name,
-              machinesParseResult[0].documentText,
+              cachedDocument.documentText,
             ),
           },
         },
@@ -424,7 +380,7 @@ connection.onCodeAction((params) => {
               result.machine,
               'services',
               result.name,
-              machinesParseResult[0].documentText,
+              cachedDocument.documentText,
             ),
           },
         },
@@ -441,7 +397,7 @@ connection.onCodeAction((params) => {
               result.machine,
               'guards',
               result.name,
-              machinesParseResult[0].documentText,
+              cachedDocument.documentText,
             ),
           },
         },
@@ -450,19 +406,6 @@ connection.onCodeAction((params) => {
   }
   return [];
 });
-
-// This handler resolves additional information for the item selected in
-// the completion list.
-connection.onCompletionResolve((item: CompletionItem): CompletionItem => {
-  return item;
-});
-
-// Make the text document manager listen on the connection
-// for open, change and close text document events
-documents.listen(connection);
-
-// Listen on the connection
-connection.listen();
 
 const getTextEditsForImplementation = (
   machine: MachineParseResult,
@@ -538,3 +481,133 @@ const getTextEditsForImplementation = (
 
   return [];
 };
+
+connection.onRequest('getMachineAtIndex', ({ uri, machineIndex }) => {
+  const cachedDocument = documentsCache.get(uri);
+
+  if (!cachedDocument || !cachedDocument.machineResults.length) {
+    throw new Error('There were no machines recognized in this document');
+  }
+
+  const machineResult = cachedDocument.machineResults[machineIndex];
+
+  if (!machineResult) {
+    throw new Error(
+      `Machine ${machineIndex} was not found. This document has only ${cachedDocument.machineResults.length} machine(s)`,
+    );
+  }
+
+  return {
+    config: machineResult.toConfig({
+      hashInlineImplementations: true,
+    })!,
+    layoutString: machineResult.getLayoutComment()?.value,
+    implementations: getInlineImplementations(
+      machineResult,
+      cachedDocument.documentText,
+    ),
+    namedGuards: Array.from(
+      getSetOfNames(machineResult.getAllConds(['named'])),
+    ),
+  };
+});
+
+connection.onRequest('getMachineAtCursorPosition', ({ uri, position }) => {
+  const cachedDocument = documentsCache.get(uri);
+
+  if (!cachedDocument || !cachedDocument.machineResults.length) {
+    throw new Error('There were no machines recognized in this document');
+  }
+
+  const vsCodePosition = Position.create(position.line, position.column);
+
+  const machineResultIndex = cachedDocument.machineResults.findIndex(
+    (machineResult) => {
+      return (
+        isCursorInPosition(
+          machineResult.ast.definition?.node?.loc!,
+          vsCodePosition,
+        ) ||
+        isCursorInPosition(
+          machineResult.ast.options?.node?.loc!,
+          vsCodePosition,
+        )
+      );
+    },
+  );
+
+  if (machineResultIndex === -1) {
+    throw new Error(
+      `Machine at position ${JSON.stringify(position)} was not found`,
+    );
+  }
+
+  const machineResult = cachedDocument.machineResults[machineResultIndex];
+
+  return {
+    config: machineResult.toConfig({
+      hashInlineImplementations: true,
+    })!,
+    machineIndex: machineResultIndex,
+    layoutString: machineResult.getLayoutComment()?.value,
+    implementations: getInlineImplementations(
+      machineResult,
+      cachedDocument.documentText,
+    ),
+    namedGuards: Array.from(
+      getSetOfNames(machineResult.getAllConds(['named'])),
+    ),
+  };
+});
+
+connection.onRequest('getTsTypesEdits', ({ uri }) => {
+  const cachedDocument = documentsCache.get(uri);
+  if (!cachedDocument) {
+    return [];
+  }
+  return getTsTypesEdits(cachedDocument.types);
+});
+
+connection.onRequest('getNodePosition', ({ path }) => {
+  if (!displayedMachine) {
+    return;
+  }
+
+  const cachedDocument = documentsCache.get(displayedMachine.uri);
+
+  if (!cachedDocument) {
+    return;
+  }
+
+  const machineResult =
+    cachedDocument.machineResults[displayedMachine.machineIndex];
+
+  const node = machineResult.getStateNodeByPath(path);
+
+  if (!node) {
+    return;
+  }
+
+  return [
+    {
+      line: node.ast.node.loc!.start.line,
+      column: node.ast.node.loc!.start.column,
+      index: node.ast.node.start!,
+    },
+    {
+      line: node.ast.node.loc!.end.line,
+      column: node.ast.node.loc!.end.column,
+      index: node.ast.node.end!,
+    },
+  ];
+});
+
+connection.onRequest('setDisplayedMachine', ({ uri, machineIndex }) => {
+  displayedMachine = { uri, machineIndex };
+});
+
+connection.onRequest('clearDisplayedMachine', () => {
+  displayedMachine = undefined;
+});
+
+connection.listen();

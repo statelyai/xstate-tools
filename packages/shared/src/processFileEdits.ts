@@ -1,22 +1,20 @@
-export type FileEdit = {
-  start: number;
-  end: number;
-  newText: string;
-};
+import { TextEdit } from './types';
 
 export const processFileEdits = (
   oldText: string,
-  fileEdits: FileEdit[],
+  textEdits: TextEdit[],
 ): string => {
-  const fileEditsSortedByStart = [...fileEdits].sort((a, b) => b.start - a.start);
+  const sortedEdits = [...textEdits].sort(
+    (a, b) => b.range[0].index - a.range[0].index,
+  );
 
   let newText = oldText;
 
-  for (const fileEdit of fileEditsSortedByStart) {
+  for (const edit of sortedEdits) {
     newText =
-      newText.substr(0, fileEdit.start) +
-      fileEdit.newText +
-      newText.substr(fileEdit.end);
+      newText.slice(0, edit.range[0].index) +
+      edit.newText +
+      newText.slice(edit.range[1].index);
   }
 
   return newText;

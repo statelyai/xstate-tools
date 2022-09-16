@@ -1,40 +1,32 @@
-import { inspect } from "@xstate/inspect";
-import { assign, createMachine, interpret, MachineConfig } from "xstate";
+import { inspect } from '@xstate/inspect';
+import { assign, createMachine, interpret, MachineConfig } from 'xstate';
 
 export interface WebViewMachineContext {
   config: MachineConfig<any, any, any>;
-  uri: string;
-  index: number;
   guardsToMock: string[];
 }
 
 export type VizWebviewMachineEvent =
   | {
-      type: "RECEIVE_SERVICE";
+      type: 'RECEIVE_SERVICE';
       config: MachineConfig<any, any, any>;
-      uri: string;
-      index: number;
       guardsToMock: string[];
     }
   | {
-      type: "UPDATE";
+      type: 'UPDATE';
       config: MachineConfig<any, any, any>;
-      uri: string;
-      index: number;
       guardsToMock: string[];
     };
 
 const machine = createMachine<WebViewMachineContext, VizWebviewMachineEvent>({
-  initial: "waitingForFirstContact",
+  initial: 'waitingForFirstContact',
   context: {
     config: {},
-    uri: "",
-    index: 0,
     guardsToMock: [],
   },
   invoke: {
     src: () => (send) => {
-      window.addEventListener("message", (event) => {
+      window.addEventListener('message', (event) => {
         try {
           send(event.data);
         } catch (e) {
@@ -45,13 +37,11 @@ const machine = createMachine<WebViewMachineContext, VizWebviewMachineEvent>({
   },
   on: {
     RECEIVE_SERVICE: {
-      target: ".hasService",
+      target: '.hasService',
       actions: assign((context, event) => {
         return {
           config: event.config,
-          index: event.index,
-          uri: event.uri,
-          guardsToMock: event.guardsToMock || [],
+          guardsToMock: event.guardsToMock,
         };
       }),
       internal: false,
@@ -63,16 +53,11 @@ const machine = createMachine<WebViewMachineContext, VizWebviewMachineEvent>({
     hasService: {
       on: {
         UPDATE: {
-          cond: (context, event) => {
-            return context.uri === event.uri && context.index === event.index;
-          },
-          target: ".startingInspector",
+          target: '.startingInspector',
           actions: assign((context, event) => {
             return {
               config: event.config,
-              index: event.index,
-              uri: event.uri,
-              guardsToMock: event.guardsToMock || [],
+              guardsToMock: event.guardsToMock,
             };
           }),
           internal: false,
@@ -82,7 +67,7 @@ const machine = createMachine<WebViewMachineContext, VizWebviewMachineEvent>({
         src: () => () => {
           const inspector = inspect({
             iframe: () =>
-              document.getElementById("iframe") as HTMLIFrameElement,
+              document.getElementById('iframe') as HTMLIFrameElement,
             url: `https://xstate-viz-git-farskid-embedded-mode-statelyai.vercel.app/viz/embed?inspect&zoom=1&pan=1&controls=1`,
           });
 
@@ -91,27 +76,31 @@ const machine = createMachine<WebViewMachineContext, VizWebviewMachineEvent>({
           };
         },
       },
-      initial: "startingInspector",
+      initial: 'startingInspector',
       states: {
         startingInspector: {
           after: {
-            100: "startingInterpreter",
+            100: 'startingInterpreter',
           },
         },
         startingInterpreter: {
           invoke: {
-            src: (context) => (send) => {
+            src: (context) => () => {
               const guards: Record<string, () => boolean> = {};
 
-              context.guardsToMock?.forEach((guard) => {
+              context.guardsToMock.forEach((guard) => {
                 guards[guard] = () => true;
               });
 
-              context.config.context = {};
-
-              const machine = createMachine(context.config || {}, {
-                guards,
-              });
+              const machine = createMachine(
+                {
+                  ...context.config,
+                  context: {},
+                },
+                {
+                  guards,
+                },
+              );
 
               const service = interpret(machine, {
                 devTools: true,

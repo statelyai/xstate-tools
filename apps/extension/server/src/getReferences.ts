@@ -1,24 +1,24 @@
-import { TextDocumentIdentifier } from "vscode-languageserver";
-import { Position, Range } from "vscode-languageserver-textdocument";
-import { createMachine } from "xstate";
-import { getCursorHoverType } from "./getCursorHoverType";
-import {
-  DocumentValidationsResult,
-  getRangeFromSourceLocation,
-} from "@xstate/tools-shared";
+import { getRangeFromSourceLocation } from '@xstate/tools-shared';
+import { TextDocumentIdentifier } from 'vscode-languageserver';
+import { Position, Range } from 'vscode-languageserver-textdocument';
+import { createMachine } from 'xstate';
+import { getCursorHoverType } from './getCursorHoverType';
+import { CachedDocument } from './types';
 
-export const getReferences = (params: {
-  textDocument: TextDocumentIdentifier;
-  position: Position;
-  machinesParseResult: DocumentValidationsResult[];
-}): { uri: string; range: Range }[] => {
-  const cursorHover = getCursorHoverType(
-    params.machinesParseResult,
-    params.position,
-  );
+export const getReferences = (
+  {
+    position,
+    textDocument,
+  }: {
+    position: Position;
+    textDocument: TextDocumentIdentifier;
+  },
+  { machineResults }: CachedDocument,
+): { uri: string; range: Range }[] => {
+  const cursorHover = getCursorHoverType(machineResults, position);
 
   try {
-    if (cursorHover?.type === "TARGET") {
+    if (cursorHover?.type === 'TARGET') {
       const config = cursorHover.machine.toConfig();
       if (!config) return [];
 
@@ -47,12 +47,12 @@ export const getReferences = (params: {
 
       return [
         {
-          uri: params.textDocument.uri,
+          uri: textDocument.uri,
           range: getRangeFromSourceLocation(node.ast.node.loc),
         },
       ];
     }
-    if (cursorHover?.type === "INITIAL") {
+    if (cursorHover?.type === 'INITIAL') {
       const config = cursorHover.machine.toConfig();
       if (!config) return [];
       const fullMachine = createMachine(config);
@@ -73,12 +73,12 @@ export const getReferences = (params: {
 
       return [
         {
-          uri: params.textDocument.uri,
+          uri: textDocument.uri,
           range: getRangeFromSourceLocation(node.ast.node.loc),
         },
       ];
     }
-    if (cursorHover?.type === "ACTION") {
+    if (cursorHover?.type === 'ACTION') {
       const node = cursorHover.machine.getActionImplementation(
         cursorHover.name,
       );
@@ -86,48 +86,48 @@ export const getReferences = (params: {
       if (node?.keyNode.loc) {
         return [
           {
-            uri: params.textDocument.uri,
+            uri: textDocument.uri,
             range: getRangeFromSourceLocation(node.keyNode.loc),
           },
         ];
       }
-    } else if (cursorHover?.type === "ACTION_IMPLEMENTATION") {
+    } else if (cursorHover?.type === 'ACTION_IMPLEMENTATION') {
       const actions = cursorHover.machine
-        .getAllConds(["named"])
+        .getAllConds(['named'])
         .filter((elem) => elem.name === cursorHover.name);
 
       return actions.map((action) => {
         return {
-          uri: params.textDocument.uri,
+          uri: textDocument.uri,
           range: getRangeFromSourceLocation(action.node.loc!),
         };
       });
     }
 
-    if (cursorHover?.type === "COND") {
+    if (cursorHover?.type === 'COND') {
       const node = cursorHover.machine.getGuardImplementation(cursorHover.name);
 
       if (node?.keyNode.loc) {
         return [
           {
-            uri: params.textDocument.uri,
+            uri: textDocument.uri,
             range: getRangeFromSourceLocation(node.keyNode.loc),
           },
         ];
       }
-    } else if (cursorHover?.type === "COND_IMPLEMENTATION") {
+    } else if (cursorHover?.type === 'COND_IMPLEMENTATION') {
       const guards = cursorHover.machine
-        .getAllConds(["named"])
+        .getAllConds(['named'])
         .filter((elem) => elem.name === cursorHover.name);
 
       return guards.map((guard) => {
         return {
-          uri: params.textDocument.uri,
+          uri: textDocument.uri,
           range: getRangeFromSourceLocation(guard.node.loc!),
         };
       });
     }
-    if (cursorHover?.type === "SERVICE") {
+    if (cursorHover?.type === 'SERVICE') {
       const node = cursorHover.machine.getServiceImplementation(
         cursorHover.name,
       );
@@ -135,19 +135,19 @@ export const getReferences = (params: {
       if (node?.keyNode.loc) {
         return [
           {
-            uri: params.textDocument.uri,
+            uri: textDocument.uri,
             range: getRangeFromSourceLocation(node.keyNode.loc),
           },
         ];
       }
-    } else if (cursorHover?.type === "SERVICE_IMPLEMENTATION") {
+    } else if (cursorHover?.type === 'SERVICE_IMPLEMENTATION') {
       const services = cursorHover.machine
-        .getAllServices(["named"])
+        .getAllServices(['named'])
         .filter((elem) => elem.src === cursorHover.name);
 
       return services.map((service) => {
         return {
-          uri: params.textDocument.uri,
+          uri: textDocument.uri,
           range: getRangeFromSourceLocation(
             service.srcNode?.loc || service.node.loc!,
           ),

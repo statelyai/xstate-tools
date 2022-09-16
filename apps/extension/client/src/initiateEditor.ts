@@ -1,9 +1,5 @@
-import { parseMachinesFromFile } from '@xstate/machine-extractor';
 import {
-  filterOutIgnoredMachines,
-  getInlineImplementations,
   ImplementationsMetadata,
-  isCursorInPosition,
   resolveUriToFilePrefix,
 } from '@xstate/tools-shared';
 import * as path from 'path';
@@ -12,7 +8,7 @@ import { ColorThemeKind } from 'vscode';
 import { createMachine, interpret, MachineConfig } from 'xstate';
 import { forwardTo } from 'xstate/lib/actions';
 import { handleDefinitionUpdate } from './handleDefinitionUpdate';
-import { handleNodeSelected } from './handleNodeSelected';
+import { TypeSafeLanguageClient } from './typeSafeLanguageClient';
 import * as typeSafeVsCode from './typeSafeVsCode';
 
 type NodeSelectedEvent = {
@@ -134,11 +130,9 @@ type EditMachine = {
   implementations: ImplementationsMetadata;
 };
 
-type MachineTextChanged = {
-  type: 'MACHINE_TEXT_CHANGED';
+type DisplayedMachineUpdated = {
+  type: 'DISPLAYED_MACHINE_UPDATED';
   config: MachineConfig<any, any, any>;
-  index: number;
-  uri: string;
   layoutString: string | undefined;
   implementations: ImplementationsMetadata;
 };
@@ -148,10 +142,11 @@ const machine = createMachine(
     predictableActionArguments: true,
     tsTypes: {} as import('./initiateEditor.typegen').Typegen0,
     schema: {
-      events: {} as WebviewClosed | EditMachine | MachineTextChanged,
+      events: {} as WebviewClosed | EditMachine | DisplayedMachineUpdated,
     },
     context: {
       extensionContext: null! as vscode.ExtensionContext,
+      languageClient: null! as TypeSafeLanguageClient,
     },
     invoke: [
       {
@@ -184,8 +179,10 @@ const machine = createMachine(
         initial: 'editing',
         states: {
           editing: {
+            entry: 'setEditedMachine',
+            exit: 'clearEditedMachine',
             invoke: {
-              src: 'onDidChangeTextDocumentListener',
+              src: 'onDisplayedMachineUpdatedListener',
             },
             on: {
               EDIT_MACHINE: {
@@ -195,7 +192,7 @@ const machine = createMachine(
                 internal: false,
                 actions: 'forwardToWebview',
               },
-              MACHINE_TEXT_CHANGED: {
+              DISPLAYED_MACHINE_UPDATED: {
                 actions: 'forwardToWebview',
               },
             },
@@ -210,91 +207,27 @@ const machine = createMachine(
     },
     services: {
       registerEditAtCursorPositionCommand:
-        ({ extensionContext }) =>
+        ({ extensionContext, languageClient }) =>
         (sendBack) =>
-          registerCommand(extensionContext, 'stately-xstate.edit', () => {
+          registerCommand(extensionContext, 'stately-xstate.edit', async () => {
             try {
               const activeTextEditor = vscode.window.activeTextEditor!;
-              const currentSelection = activeTextEditor.selection;
-              const currentText = activeTextEditor.document.getText();
-
-              const result = filterOutIgnoredMachines(
-                parseMachinesFromFile(currentText),
+              const uri = resolveUriToFilePrefix(
+                activeTextEditor.document.uri.path,
               );
-
-              const foundIndex = result.machines.findIndex((machine) => {
-                if (
-                  machine?.ast?.definition?.node?.loc ||
-                  machine?.ast?.options?.node?.loc
-                ) {
-                  const isInPosition =
-                    isCursorInPosition(
-                      machine?.ast?.definition?.node?.loc!,
-                      currentSelection.start,
-                    ) ||
-                    isCursorInPosition(
-                      machine?.ast?.options?.node?.loc!,
-                      currentSelection.start,
-                    );
-
-                  if (isInPosition) {
-                    return true;
-                  }
-                }
-                return false;
-              });
-
-              if (foundIndex === -1) {
-                vscode.window.showErrorMessage(
-                  'Could not find a machine at the current cursor.',
+              const tokenSource = new vscode.CancellationTokenSource();
+              const { config, layoutString, implementations, machineIndex } =
+                await languageClient.sendRequest(
+                  'getMachineAtCursorPosition',
+                  {
+                    uri,
+                    position: {
+                      line: activeTextEditor.selection.start.line,
+                      column: activeTextEditor.selection.start.character,
+                    },
+                  },
+                  tokenSource.token,
                 );
-                return;
-              }
-
-              const machine = result.machines[foundIndex];
-              const implementations = getInlineImplementations(
-                machine,
-                currentText,
-              );
-
-              sendBack({
-                type: 'EDIT_MACHINE',
-                config: machine.toConfig({ hashInlineImplementations: true })!,
-
-                index: foundIndex,
-                uri: resolveUriToFilePrefix(
-                  vscode.window.activeTextEditor!.document.uri.path,
-                ),
-                layoutString: machine.getLayoutComment()?.value,
-                implementations,
-              });
-            } catch (e) {
-              vscode.window.showErrorMessage(
-                'Could not find a machine at the current cursor.',
-              );
-            }
-          }),
-      registerEditOnCodeLensClickCommand:
-        ({ extensionContext }) =>
-        (sendBack) =>
-          registerCommand(
-            extensionContext,
-            'stately-xstate.edit-code-lens',
-            (config, machineIndex, uri, layoutString) => {
-              const activeTextEditor = vscode.window.activeTextEditor!;
-              const currentText = activeTextEditor.document.getText();
-
-              const result = filterOutIgnoredMachines(
-                parseMachinesFromFile(currentText),
-              );
-
-              const machine = result.machines[machineIndex];
-
-              const implementations = getInlineImplementations(
-                machine,
-                currentText,
-              );
-
               sendBack({
                 type: 'EDIT_MACHINE',
                 config,
@@ -303,52 +236,59 @@ const machine = createMachine(
                 layoutString,
                 implementations,
               });
+            } catch {
+              vscode.window.showErrorMessage(
+                'Could not find a machine at the current cursor.',
+              );
+            }
+          }),
+      registerEditOnCodeLensClickCommand:
+        ({ extensionContext, languageClient }) =>
+        (sendBack) =>
+          registerCommand(
+            extensionContext,
+            'stately-xstate.edit-code-lens',
+            (uri, machineIndex) => {
+              const tokenSource = new vscode.CancellationTokenSource();
+
+              languageClient
+                .sendRequest(
+                  'getMachineAtIndex',
+                  { uri, machineIndex },
+                  tokenSource.token,
+                )
+                .then(({ config, layoutString, implementations }) => {
+                  sendBack({
+                    type: 'EDIT_MACHINE',
+                    config,
+                    index: machineIndex,
+                    uri,
+                    layoutString,
+                    implementations,
+                  });
+                });
             },
           ),
-      onDidChangeTextDocumentListener:
-        ({ extensionContext }, { uri, index }) =>
-        (sendBack) => {
-          // TODO: debounce?
-          return registerDisposable(
+      onDisplayedMachineUpdatedListener:
+        ({ extensionContext, languageClient }) =>
+        (sendBack) =>
+          registerDisposable(
             extensionContext,
-            vscode.workspace.onDidChangeTextDocument(({ document }) => {
-              if (uri !== resolveUriToFilePrefix(document.uri.path)) {
-                return;
-              }
-              // TODO: try to avoid resetting the whole thing when document is edited outside of the config
-              const text = document.getText();
-
-              /*
-               * If we already sent the text, don't send it again.
-               * We need this because onDidChangeTextDocument gets called multiple times on a save.
-               * In theory multiple documents could have the same text content, so we prepend the path to the text to make it unique.
-               */
-              // if (document.uri.path + text === lastSentPathAndText) return;
-
-              // TODO: only listen to changes to the currently edited machine
-              const parsed = parseMachinesFromFile(text);
-              if (parsed.machines.length > 0) {
-                // lastSentPathAndText = document.uri.path + text;
-                // TODO: this is far from ideal, because the index might change if somebody removes a machine preceding the one we are editing
-                const machine = parsed.machines[index];
-
+            languageClient.onNotification(
+              'displayedMachineUpdated',
+              ({ config, layoutString, implementations }) => {
                 sendBack({
-                  type: 'MACHINE_TEXT_CHANGED',
-                  config: machine.toConfig({
-                    hashInlineImplementations: true,
-                  })!,
-                  index,
-                  uri: resolveUriToFilePrefix(document.uri.path),
-                  layoutString: machine.getLayoutComment()?.value || '',
-                  implementations: getInlineImplementations(machine, text),
+                  type: 'DISPLAYED_MACHINE_UPDATED',
+                  config,
+                  layoutString,
+                  implementations,
                 });
-              }
-            }),
-          );
-        },
+              },
+            ),
+          ),
       webviewActor:
         (
-          { extensionContext },
+          { extensionContext, languageClient },
           {
             config,
             implementations,
@@ -374,7 +314,27 @@ const machine = createMachine(
                   uri,
                 });
               } else if (event.type === 'NODE_SELECTED') {
-                handleNodeSelected(event);
+                const editor = vscode.window.visibleTextEditors.find(
+                  (editor) => String(editor.document.uri) === uri,
+                );
+                if (!editor) {
+                  return;
+                }
+                languageClient
+                  .sendRequest('getNodePosition', { path: event.path })
+                  .then((range) => {
+                    if (!range) {
+                      return;
+                    }
+
+                    editor.revealRange(
+                      new vscode.Range(
+                        new vscode.Position(range[0].line - 1, range[0].column),
+                        new vscode.Position(range[1].line - 1, range[1].column),
+                      ),
+                      vscode.TextEditorRevealType.InCenter,
+                    );
+                  });
               } else if (event.type === 'OPEN_LINK') {
                 // TODO: test out if this is even needed now
                 vscode.env.openExternal(vscode.Uri.parse(event.url));
@@ -389,7 +349,7 @@ const machine = createMachine(
             }),
           );
 
-          onReceive((event: EditMachine | MachineTextChanged) => {
+          onReceive((event: EditMachine | DisplayedMachineUpdated) => {
             switch (event.type) {
               case 'EDIT_MACHINE': {
                 uri = event.uri;
@@ -404,7 +364,7 @@ const machine = createMachine(
                 });
                 return;
               }
-              case 'MACHINE_TEXT_CHANGED': {
+              case 'DISPLAYED_MACHINE_UPDATED': {
                 webviewPanel.webview.postMessage({
                   type: 'UPDATE_CONFIG',
                   config: event.config,
@@ -438,7 +398,12 @@ const machine = createMachine(
   },
 );
 
-export const initiateEditor = (extensionContext: vscode.ExtensionContext) => {
-  const service = interpret(machine.withContext({ extensionContext })).start();
+export const initiateEditor = (
+  extensionContext: vscode.ExtensionContext,
+  languageClient: TypeSafeLanguageClient,
+) => {
+  const service = interpret(
+    machine.withContext({ extensionContext, languageClient }),
+  ).start();
   extensionContext.subscriptions.push({ dispose: () => service.stop() });
 };

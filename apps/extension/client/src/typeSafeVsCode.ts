@@ -1,23 +1,12 @@
 import * as vscode from 'vscode';
-import { MachineConfig } from 'xstate';
 
 export interface XStateCommands {
   // those are related to the editor
   'stately-xstate.edit': [];
-  'stately-xstate.edit-code-lens': [
-    config: MachineConfig<any, any, any>,
-    machineIndex: number,
-    uri: string,
-    layoutString?: string,
-  ];
+  'stately-xstate.edit-code-lens': [uri: string, machineIndex: number];
   // those are related to the visualizer
   'stately-xstate.visualize': [];
-  'stately-xstate.inspect': [
-    config: MachineConfig<any, any, any>,
-    machineIndex: number,
-    uri: string,
-    guardsToMock: string[],
-  ];
+  'stately-xstate.inspect': [uri: string, machineIndex: number];
 }
 
 export function registerCommand<Name extends keyof XStateCommands>(

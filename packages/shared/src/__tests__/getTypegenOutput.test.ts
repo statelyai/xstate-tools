@@ -1,31 +1,27 @@
-import * as fs from "fs";
-import * as fsP from "fs/promises";
-import * as path from "path";
-import { format } from "prettier";
-import {
-  getDocumentValidationsResults,
-  getTypegenOutput,
-  makeXStateUpdateEvent,
-} from "..";
+import { parseMachinesFromFile } from '@xstate/machine-extractor';
+import * as fs from 'fs';
+import * as fsP from 'fs/promises';
+import * as path from 'path';
+import { format } from 'prettier';
+import { getTypegenData, getTypegenOutput } from '..';
 
-const examplesPath = path.resolve(__dirname, "__examples__");
+const examplesPath = path.resolve(__dirname, '__examples__');
 
-describe("getTypegenOutput", () => {
+describe('getTypegenOutput', () => {
   fs.readdirSync(examplesPath).forEach((file) => {
-    if (file.includes(".typegen.")) {
+    if (file.includes('.typegen.')) {
       return;
     }
     const runTest = async () => {
-      const content = await fsP.readFile(path.join(examplesPath, file), "utf8");
+      const filePath = path.join(examplesPath, file);
+      const content = await fsP.readFile(filePath, 'utf8');
 
-      const event = makeXStateUpdateEvent(
-        // URI doesn't matter here
-        "",
-        getDocumentValidationsResults(content)
+      const types = parseMachinesFromFile(content).machines.map(
+        (parseResult, index) => getTypegenData(filePath, index, parseResult),
       );
 
       expect(
-        format(getTypegenOutput(event), { parser: "typescript" })
+        format(getTypegenOutput(types), { parser: 'typescript' }),
       ).toMatchSnapshot();
     };
 
@@ -33,7 +29,7 @@ describe("getTypegenOutput", () => {
 
     if (/\.only$/.test(extensionlessFile)) {
       // preserve original test name
-      it.only(extensionlessFile.replace(/\.only$/, ""), runTest);
+      it.only(extensionlessFile.replace(/\.only$/, ''), runTest);
     } else {
       it(extensionlessFile, runTest);
     }

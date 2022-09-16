@@ -1,18 +1,16 @@
-import { Diagnostic } from "vscode-languageserver";
-import { TextDocument } from "vscode-languageserver-textdocument";
-import {
-  DocumentValidationsResult,
-  GlobalSettings,
-} from "@xstate/tools-shared";
-import { getMetaWarnings } from "./diagnostics/getMetaWarnings";
-import { getTypegenGenericWarnings } from "./diagnostics/getTypegenGenericWarnings";
-import { getUnusedActionImplementations } from "./diagnostics/getUnusedActionImplementations";
-import { getUnusedGuardsImplementations } from "./diagnostics/getUnusedGuardImplementations";
-import { getUnusedServicesImplementations } from "./diagnostics/getUnusedServicesImplementations";
-import { miscDiagnostics } from "./diagnostics/misc";
+import { MachineParseResult } from '@xstate/machine-extractor';
+import { GlobalSettings } from '@xstate/tools-shared';
+import { Diagnostic } from 'vscode-languageserver';
+import { TextDocument } from 'vscode-languageserver-textdocument';
+import { getMetaWarnings } from './diagnostics/getMetaWarnings';
+import { getTypegenGenericWarnings } from './diagnostics/getTypegenGenericWarnings';
+import { getUnusedActionImplementations } from './diagnostics/getUnusedActionImplementations';
+import { getUnusedGuardsImplementations } from './diagnostics/getUnusedGuardImplementations';
+import { getUnusedServicesImplementations } from './diagnostics/getUnusedServicesImplementations';
+import { miscDiagnostics } from './diagnostics/misc';
 
 export type DiagnosticGetter = (
-  result: DocumentValidationsResult,
+  machineResult: MachineParseResult,
   textDocument: TextDocument,
   settings: GlobalSettings,
 ) => Diagnostic[];
@@ -27,17 +25,11 @@ const getters: DiagnosticGetter[] = [
 ];
 
 export const getDiagnostics = (
-  validations: DocumentValidationsResult[],
+  machineResults: MachineParseResult[],
   textDocument: TextDocument,
   settings: GlobalSettings,
 ): Diagnostic[] => {
-  const diagnostics: Diagnostic[] = [];
-
-  validations.forEach((validation) => {
-    getters.forEach((getter) => {
-      diagnostics.push(...getter(validation, textDocument, settings));
-    });
-  });
-
-  return diagnostics;
+  return machineResults.flatMap((machineResult) =>
+    getters.flatMap((getter) => getter(machineResult, textDocument, settings)),
+  );
 };
