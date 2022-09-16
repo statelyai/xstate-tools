@@ -2,16 +2,14 @@
 
 import { parseMachinesFromFile } from '@xstate/machine-extractor';
 import {
-  doesTsTypesRequireUpdate,
-  FileEdit,
-  makeXStateUpdateEvent,
+  getTsTypesEdits,
+  getTypegenData,
   processFileEdits,
   writeToTypegenFile,
 } from '@xstate/tools-shared';
 import { watch } from 'chokidar';
 import { Command } from 'commander';
 import * as fs from 'fs/promises';
-import * as path from 'path';
 import { version } from '../package.json';
 
 // TODO: just use the native one when support for node 12 gets dropped
@@ -37,53 +35,22 @@ const writeToFiles = async (uriArray: string[]) => {
     uriArray.map(async (uri) => {
       try {
         const fileContents = await fs.readFile(uri, 'utf8');
-        const parseResult = parseMachinesFromFile(fileContents);
 
-        if (!parseResult.machines.length) {
-          return;
-        }
+        const types = parseMachinesFromFile(fileContents)
+          .machines.filter(
+            (machineResult) => !!machineResult?.ast.definition?.tsTypes?.node,
+          )
+          .map((machineResult, index) =>
+            getTypegenData(uri, index, machineResult),
+          );
 
-        const event = makeXStateUpdateEvent(
-          uri,
-          parseResult.machines.map((machine) => ({
-            parseResult: machine,
-          })),
-        );
+        await writeToTypegenFile(uri, types);
 
-        const fileEdits: FileEdit[] = [];
-        let machineIndex = 0;
-
-        for (const machine of parseResult.machines) {
-          if (machine.ast.definition?.tsTypes?.node) {
-            const { name } = path.parse(uri);
-            const requiresUpdate = doesTsTypesRequireUpdate({
-              fileText: fileContents,
-              machineIndex,
-              node: machine.ast.definition.tsTypes.node,
-              relativePath: name,
-            });
-
-            if (requiresUpdate) {
-              fileEdits.push({
-                start: machine.ast.definition.tsTypes.node.start!,
-                end: machine.ast.definition.tsTypes.node.end!,
-                newText: `{} as import("./${name}.typegen").Typegen${machineIndex}`,
-              });
-            }
-            machineIndex++;
-          }
-        }
-
-        if (fileEdits.length > 0) {
-          const newFile = processFileEdits(fileContents, fileEdits);
-
+        const edits = getTsTypesEdits(types);
+        if (edits.length > 0) {
+          const newFile = processFileEdits(fileContents, edits);
           await fs.writeFile(uri, newFile);
         }
-
-        await writeToTypegenFile({
-          filePath: uri,
-          event,
-        });
         console.log(`${uri} - success`);
       } catch (e: any) {
         if (e?.code === 'BABEL_PARSER_SYNTAX_ERROR') {

@@ -3,7 +3,8 @@
     "module": "commonjs",
     "target": "es2019",
     "lib": ["ES2019"],
-    "strict": true
+    "strict": true,
+    "esModuleInterop": true
   },
   "exclude": ["node_modules", ".vscode-test"]
 }

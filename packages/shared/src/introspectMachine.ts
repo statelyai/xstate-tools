@@ -1,13 +1,12 @@
 import { INLINE_IMPLEMENTATION_TYPE } from '@xstate/machine-extractor';
 import * as XState from 'xstate';
 import { InvokeDefinition } from 'xstate';
-import { getMatchesStates } from './getTransitionsFromNode';
 
-export interface SubState {
-  states: Record<string, SubState>;
-}
+type AnyStateNode = XState.StateNode<any, any, any, any, any, any>;
 
-function getRelevantFinalStates(node: XState.StateNode): XState.StateNode[] {
+export interface StateSchema extends Record<string, StateSchema> {}
+
+function getRelevantFinalStates(node: AnyStateNode): AnyStateNode[] {
   switch (node.type) {
     case 'compound':
       return getChildren(node)
@@ -29,9 +28,9 @@ function getRelevantFinalStates(node: XState.StateNode): XState.StateNode[] {
   }
 }
 
-function getAllNodesToNodes(nodes: XState.StateNode[]) {
-  const seen = new Set<XState.StateNode>();
-  const result = new Set<XState.StateNode>();
+function getAllNodesToNodes(nodes: AnyStateNode[]) {
+  const seen = new Set<AnyStateNode>();
+  const result = new Set<AnyStateNode>();
   for (const node of nodes) {
     let marker: typeof node | undefined = node;
     while (marker) {
@@ -48,13 +47,13 @@ function getAllNodesToNodes(nodes: XState.StateNode[]) {
   return result;
 }
 
-function getChildren(node: XState.StateNode) {
+function getChildren(node: AnyStateNode) {
   return Object.keys(node.states)
     .map((key) => node.states[key])
     .filter((state) => state.type !== 'history');
 }
 
-function isWithin(nodeA: XState.StateNode, nodeB: XState.StateNode) {
+function isWithin(nodeA: AnyStateNode, nodeB: AnyStateNode) {
   let marker: typeof nodeB | undefined = nodeB;
   while (marker) {
     if (nodeA === marker) {
@@ -66,10 +65,10 @@ function isWithin(nodeA: XState.StateNode, nodeB: XState.StateNode) {
 }
 
 function findLeastCommonAncestor(
-  machine: XState.StateNode,
-  nodeA: XState.StateNode,
-  nodeB: XState.StateNode,
-): XState.StateNode {
+  machine: AnyStateNode,
+  nodeA: AnyStateNode,
+  nodeB: AnyStateNode,
+): AnyStateNode {
   if (!nodeA.path.length || !nodeB.path.length) {
     return machine;
   }
@@ -91,15 +90,10 @@ function findLeastCommonAncestor(
   }
 }
 
-const makeSubStateFromNode = (node: XState.StateNode): SubState => {
-  return {
-    states: getChildren(node).reduce((subState, child) => {
-      return {
-        ...subState,
-        [child.key]: makeSubStateFromNode(child),
-      };
-    }, {}),
-  };
+const makeStateSchema = (node: AnyStateNode): StateSchema => {
+  return Object.fromEntries(
+    getChildren(node).map((child) => [child.key, makeStateSchema(child)]),
+  );
 };
 
 class ItemMap {
@@ -176,7 +170,7 @@ class ItemMap {
   }
 }
 
-function collectInvokes(ctx: TraversalContext, node: XState.StateNode) {
+function collectInvokes(ctx: TraversalContext, node: AnyStateNode) {
   node.invoke.forEach((service) => {
     const serviceSrc = getServiceSrc(service);
     if (
@@ -252,7 +246,7 @@ function collectActions(
 
 function enterState(
   ctx: TraversalContext,
-  node: XState.StateNode,
+  node: AnyStateNode,
   eventType: string,
 ) {
   let nodeIdToSourceEventItem = ctx.nodeIdToSourceEventsMap.get(node.id);
@@ -265,9 +259,9 @@ function enterState(
 
 function exitChildren(
   ctx: TraversalContext,
-  node: XState.StateNode,
+  node: AnyStateNode,
   eventType: string,
-  entered: Set<XState.StateNode> = new Set(),
+  entered: Set<AnyStateNode> = new Set(),
 ) {
   getChildren(node).forEach((child) => {
     if (entered.has(child)) {
@@ -278,7 +272,7 @@ function exitChildren(
   });
 }
 
-function collectTransitions(ctx: TraversalContext, node: XState.StateNode) {
+function collectTransitions(ctx: TraversalContext, node: AnyStateNode) {
   node.transitions.forEach((transition) => {
     if (transition.cond && transition.cond.name) {
       if (transition.cond.name !== 'cond') {
@@ -294,7 +288,7 @@ function collectTransitions(ctx: TraversalContext, node: XState.StateNode) {
 
     transition.target.forEach((target) => {
       if (isWithin(node, target)) {
-        const enteredSet = new Set<XState.StateNode>();
+        const enteredSet = new Set<AnyStateNode>();
         let marker: typeof target = target;
 
         while (marker) {
@@ -351,7 +345,7 @@ function collectTransitions(ctx: TraversalContext, node: XState.StateNode) {
 
 export type IntrospectMachineResult = ReturnType<typeof introspectMachine>;
 
-function createTraversalContext(machine: XState.StateNode) {
+function createTraversalContext(machine: AnyStateNode) {
   return {
     machine,
 
@@ -376,10 +370,7 @@ function createTraversalContext(machine: XState.StateNode) {
 type TraversalContext = ReturnType<typeof createTraversalContext>;
 
 // simple information is an information that doesn't need dereferencing target states
-function collectSimpleInformation(
-  ctx: TraversalContext,
-  node: XState.StateNode,
-) {
+function collectSimpleInformation(ctx: TraversalContext, node: AnyStateNode) {
   // TODO: history states are not handled yet
   collectInvokes(ctx, node);
   collectActions(ctx, 'xstate.stop', node.onExit);
@@ -390,7 +381,7 @@ function collectSimpleInformation(
   );
 }
 
-function collectEnterables(ctx: TraversalContext, node: XState.StateNode) {
+function collectEnterables(ctx: TraversalContext, node: AnyStateNode) {
   const sourceEvents = ctx.nodeIdToSourceEventsMap.get(node.id);
 
   if (!sourceEvents) {
@@ -438,8 +429,8 @@ function collectEnterables(ctx: TraversalContext, node: XState.StateNode) {
 function collectEventsLeadingToFinalStates(ctx: TraversalContext) {
   const relevantFinalStates = new Set(getRelevantFinalStates(ctx.machine));
   const leafParallelSeenMap = new Map<
-    XState.StateNode,
-    { events: Set<string>; nodes: Set<XState.StateNode> }
+    AnyStateNode,
+    { events: Set<string>; nodes: Set<AnyStateNode> }
   >();
 
   for (const finalState of relevantFinalStates) {
@@ -450,7 +441,7 @@ function collectEventsLeadingToFinalStates(ctx: TraversalContext) {
     }
 
     const seenEvents = new Set<string>();
-    const seenStates = new Set<XState.StateNode>();
+    const seenStates = new Set<AnyStateNode>();
 
     for (const eventType of sourceEvents) {
       seenEvents.add(eventType);
@@ -494,7 +485,7 @@ function collectEventsLeadingToFinalStates(ctx: TraversalContext) {
   });
 }
 
-export const introspectMachine = (machine: XState.StateNode) => {
+export const introspectMachine = (machine: AnyStateNode) => {
   const ctx = createTraversalContext(machine);
 
   collectSimpleInformation(ctx, machine);
@@ -509,8 +500,7 @@ export const introspectMachine = (machine: XState.StateNode) => {
       id,
       sources: ctx.nodeIdToSourceEventsMap.get(id) || new Set(),
     })),
-    stateMatches: getMatchesStates(machine),
-    subState: makeSubStateFromNode(machine),
+    stateSchema: makeStateSchema(machine),
     guards: ctx.guards.toDataShape(),
     actions: ctx.actions.toDataShape(),
     services: ctx.services.toDataShape(),

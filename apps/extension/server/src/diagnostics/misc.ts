@@ -1,19 +1,14 @@
+import { createIntrospectableMachine } from '@xstate/tools-shared';
 import { DiagnosticSeverity } from 'vscode-languageserver';
 import { Range } from 'vscode-languageserver-textdocument';
-import { ConditionPredicate, createMachine } from 'xstate';
 import { DiagnosticGetter } from '../getDiagnostics';
 
 // TODO - refactor
-export const miscDiagnostics: DiagnosticGetter = (machine, textDocument) => {
+export const miscDiagnostics: DiagnosticGetter = (
+  machineResult,
+  textDocument,
+) => {
   try {
-    const config = machine.parseResult?.toConfig();
-    if (!config) return [];
-
-    const guards: Record<string, ConditionPredicate<any, any>> = {};
-    machine.introspectionResult?.guards.lines.forEach((cond) => {
-      guards[cond.name] = () => false;
-    });
-
     // const orphanedStates = getOrphanedStates(machine);
 
     // diagnostics.push(
@@ -26,18 +21,15 @@ export const miscDiagnostics: DiagnosticGetter = (machine, textDocument) => {
     //   }),
     // );
 
-    const createdMachine = createMachine(config, {
-      guards,
-    });
-
-    createdMachine.transition(createdMachine.initialState, {});
+    const machine = createIntrospectableMachine(machineResult);
+    machine.transition(machine.initialState, {} as any);
   } catch (e) {
     let range: Range = {
       start: textDocument.positionAt(
-        machine.parseResult?.ast?.definition?.node.start || 0,
+        machineResult.ast?.definition?.node.start || 0,
       ),
       end: textDocument.positionAt(
-        machine.parseResult?.ast?.definition?.node.end || 0,
+        machineResult.ast?.definition?.node.end || 0,
       ),
     };
     // if (

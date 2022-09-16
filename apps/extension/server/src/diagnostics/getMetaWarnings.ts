@@ -3,8 +3,8 @@ import { DiagnosticSeverity } from 'vscode-languageserver';
 import { DiagnosticGetter } from '../getDiagnostics';
 
 export const getMetaWarnings: DiagnosticGetter = (
-  machine,
-  textDocument,
+  machineResult,
+  _textDocument,
   settings,
 ) => {
   /**
@@ -14,7 +14,7 @@ export const getMetaWarnings: DiagnosticGetter = (
   if (!settings.showVisualEditorWarnings) return [];
 
   const allMetaNodes =
-    machine.parseResult?.getAllStateNodes().flatMap((node) => {
+    machineResult.getAllStateNodes().flatMap((node) => {
       if (!node.ast.meta) {
         return [];
       }

@@ -1,6 +1,5 @@
-import { MachineParseResult } from '@xstate/machine-extractor';
-import { MachineConfig, MachineOptions, StateMachine } from 'xstate';
-import { IntrospectMachineResult } from '.';
+import { MachineConfig } from 'xstate';
+import { TypegenData } from './getTypegenData';
 
 export interface GlobalSettings {
   showVisualEditorWarnings: boolean;
@@ -16,35 +15,6 @@ export interface SourceLocation {
     column: number;
   };
 }
-
-export interface XStateUpdateMachine {
-  definitionLoc?: SourceLocation | null;
-  config: MachineConfig<any, any, any>;
-  typeNodeLoc?: SourceLocation | null;
-  index: number;
-  namedGuards: string[];
-  namedActions: string[];
-  actionsInOptions: string[];
-  guardsInOptions: string[];
-  servicesInOptions: string[];
-  allServices: { src: string; id: string | undefined }[];
-  delaysInOptions: string[];
-  tags: string[];
-  hasTypesNode: boolean;
-  chooseActionsInOptions: MachineOptions<any, any, any>['actions'];
-}
-
-export interface XStateUpdateEvent {
-  uri: string;
-  machines: XStateUpdateMachine[];
-}
-
-export type DocumentValidationsResult = {
-  machine?: StateMachine<any, any, any>;
-  parseResult?: MachineParseResult;
-  introspectionResult?: IntrospectMachineResult;
-  documentText: string;
-};
 
 export interface ImplementationsMetadata {
   guards: Record<
@@ -65,4 +35,71 @@ export interface ImplementationsMetadata {
       jsImplementation?: string;
     }
   >;
+}
+
+export type Position = { line: number; column: number; index: number };
+export type Range = readonly [start: Position, end: Position];
+
+export type CursorPosition = { line: number; column: number };
+
+export type TextEdit = {
+  range: Range;
+  newText: string;
+};
+
+export interface RequestMap {
+  getMachineAtIndex: {
+    params: { uri: string; machineIndex: number };
+    result: {
+      config: MachineConfig<any, any, any>;
+      layoutString: string | undefined;
+      implementations: ImplementationsMetadata;
+      namedGuards: string[];
+    };
+    error: any;
+  };
+  getMachineAtCursorPosition: {
+    params: { uri: string; position: CursorPosition };
+    result: {
+      config: MachineConfig<any, any, any>;
+      machineIndex: number;
+      layoutString: string | undefined;
+      implementations: ImplementationsMetadata;
+      namedGuards: string[];
+    };
+    error: any;
+  };
+  getTsTypesEdits: {
+    params: { uri: string };
+    result: Array<TextEdit>;
+    error: never;
+  };
+  getNodePosition: {
+    params: { path: string[] };
+    result: Range | void;
+    error: never;
+  };
+  setDisplayedMachine: {
+    params: { uri: string; machineIndex: number };
+    result: void;
+    error: never;
+  };
+  clearDisplayedMachine: {
+    params: undefined;
+    result: void;
+    error: never;
+  };
+}
+
+export interface NotificationMap {
+  displayedMachineUpdated: {
+    config: MachineConfig<any, any, any>;
+    layoutString: string | undefined;
+    implementations: ImplementationsMetadata;
+    namedGuards: string[];
+  };
+  typesUpdated: {
+    uri: string;
+    types: TypegenData[];
+  };
 }

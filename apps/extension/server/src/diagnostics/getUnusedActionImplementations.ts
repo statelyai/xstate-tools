@@ -6,17 +6,17 @@ import { DiagnosticSeverity } from 'vscode-languageserver';
 import { DiagnosticGetter } from '../getDiagnostics';
 
 export const getUnusedActionImplementations: DiagnosticGetter = (
-  machine,
-  textDocument,
+  machineResult,
 ) => {
   const allActions = getSetOfNames(
-    machine.parseResult?.getAllActions(['named']) || [],
+    machineResult.getAllActions(['named']) || [],
   );
 
-  const unusedActions =
-    machine.parseResult?.ast?.options?.actions?.properties.filter((action) => {
+  const unusedActions = machineResult.ast?.options?.actions?.properties.filter(
+    (action) => {
       return !allActions.has(action.key);
-    });
+    },
+  );
 
   return (
     unusedActions?.map((action) => {

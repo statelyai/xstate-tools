@@ -1,15 +1,18 @@
-import { IntrospectMachineResult, SubState } from '@xstate/tools-shared';
+import { StateSchema } from '@xstate/tools-shared';
+
+// in the future we might want to control the outer quote type ourselves using an additional parameter, so let's use this helper throughout this file
+const withSafeQuotes = (value: string) => JSON.stringify(value);
 
 export const getStateMatchesObjectSyntax = (
-  introspectionResult: IntrospectMachineResult,
+  stateSchema: StateSchema,
 ): string => {
-  const getUnionForSubState = (subState: SubState, depth = 0): string => {
+  const getUnionForSubState = (subState: StateSchema, depth = 0): string => {
     // Do not include sibling states in the union
     // if it's the root
     const states: string[] =
       depth === 0
         ? []
-        : Object.keys(subState.states)
+        : Object.keys(subState)
             .sort()
             .map((state) =>
               JSON.stringify(state, (_key, value) => {
@@ -26,9 +29,9 @@ export const getStateMatchesObjectSyntax = (
               }),
             );
 
-    const substatesWithChildren = Object.entries(subState.states).filter(
+    const substatesWithChildren = Object.entries(subState).filter(
       ([, value]) => {
-        return Object.keys(value.states).length > 0;
+        return Object.keys(value).length > 0;
       },
     );
 
@@ -37,7 +40,7 @@ export const getStateMatchesObjectSyntax = (
         `{ ${substatesWithChildren
           .sort(([stateA], [stateB]) => (stateA < stateB ? -1 : 1))
           .map(([state, value]) => {
-            return `${JSON.stringify(state)}?: ${getUnionForSubState(
+            return `${withSafeQuotes(state)}?: ${getUnionForSubState(
               value,
               depth + 1,
             )};`;
@@ -48,5 +51,5 @@ export const getStateMatchesObjectSyntax = (
     return `${states.join(' | ')}`;
   };
 
-  return getUnionForSubState(introspectionResult.subState);
+  return getUnionForSubState(stateSchema);
 };

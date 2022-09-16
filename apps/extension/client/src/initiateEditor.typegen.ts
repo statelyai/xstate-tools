@@ -13,10 +13,10 @@ export interface Typegen0 {
     delays: never;
   };
   eventsCausingActions: {
-    forwardToWebview: 'EDIT_MACHINE' | 'MACHINE_TEXT_CHANGED';
+    forwardToWebview: 'EDIT_MACHINE' | 'DISPLAYED_MACHINE_UPDATED';
   };
   eventsCausingServices: {
-    onDidChangeTextDocumentListener: 'EDIT_MACHINE';
+    onDisplayedMachineUpdatedListener: 'EDIT_MACHINE';
     registerEditAtCursorPositionCommand: 'xstate.init';
     registerEditOnCodeLensClickCommand: 'xstate.init';
     webviewActor: 'EDIT_MACHINE';

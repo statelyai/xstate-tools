@@ -6,17 +6,15 @@ import { DiagnosticSeverity } from 'vscode-languageserver';
 import { DiagnosticGetter } from '../getDiagnostics';
 
 export const getUnusedGuardsImplementations: DiagnosticGetter = (
-  machine,
-  textDocument,
+  machineResult,
 ) => {
-  const allGuards = getSetOfNames(
-    machine.parseResult?.getAllConds(['named']) || [],
-  );
+  const allGuards = getSetOfNames(machineResult.getAllConds(['named']) || []);
 
-  const unusedGuards =
-    machine.parseResult?.ast?.options?.guards?.properties.filter((guard) => {
+  const unusedGuards = machineResult.ast?.options?.guards?.properties.filter(
+    (guard) => {
       return !allGuards.has(guard.key);
-    });
+    },
+  );
 
   return (
     unusedGuards?.map((guard) => {
