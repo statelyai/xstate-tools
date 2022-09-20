@@ -24,7 +24,7 @@
         "--extensionDevelopmentPath=${workspaceRoot}/apps/extension/client"
       ],
       "outFiles": ["${workspaceRoot}/apps/extension/client/dist/**.js"],
-      "preLaunchTask": "npm: extension:compile"
+      "preLaunchTask": "npm: vscode:dev"
     },
     {
       "type": "node",

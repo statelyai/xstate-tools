@@ -21,6 +21,8 @@
   "devDependencies": {},
   "scripts": {
     "lint": "tsc",
-    "build": "esbuild --bundle src/server.ts --outfile=dist/index.js --external:vscode --platform=\"node\" --format=cjs"
+    "vscode:build": "esbuild --bundle src/server.ts --outfile=dist/index.js --external:vscode --platform=\"node\" --format=cjs",
+    "vscode:build:dev": "yarn vscode:build --define:process.env.NODE_ENV=\\\"development\\\"",
+    "vscode:build:prod": "yarn vscode:build --define:process.env.NODE_ENV=\\\"production\\\""
   }
 }
