@@ -48,28 +48,36 @@ export const getTypegenOutput = (types: TypegenData[]) => {
           )};
         };
         eventsCausingActions: {
-          ${Object.entries(typegenData.eventsCausingActions).map(
-            ([action, events]) =>
-              `${withSafeQuotes(action)}: ${toUnionOrNever(events)};`,
-          )}
+          ${Object.entries(typegenData.eventsCausingActions)
+            .map(
+              ([action, events]) =>
+                `${withSafeQuotes(action)}: ${toUnionOrNever(events)};`,
+            )
+            .join('\n')}
         };
         eventsCausingDelays: {
-          ${Object.entries(typegenData.eventsCausingDelays).map(
-            ([delay, events]) =>
-              `${withSafeQuotes(delay)}: ${toUnionOrNever(events)};`,
-          )}
+          ${Object.entries(typegenData.eventsCausingDelays)
+            .map(
+              ([delay, events]) =>
+                `${withSafeQuotes(delay)}: ${toUnionOrNever(events)};`,
+            )
+            .join('\n')}
         };
         eventsCausingGuards: {
-          ${Object.entries(typegenData.eventsCausingGuards).map(
-            ([guard, events]) =>
-              `${withSafeQuotes(guard)}: ${toUnionOrNever(events)};`,
-          )}
+          ${Object.entries(typegenData.eventsCausingGuards)
+            .map(
+              ([guard, events]) =>
+                `${withSafeQuotes(guard)}: ${toUnionOrNever(events)};`,
+            )
+            .join('\n')}
         };
         eventsCausingServices: {
-          ${Object.entries(typegenData.eventsCausingServices).map(
-            ([service, events]) =>
-              `${withSafeQuotes(service)}: ${toUnionOrNever(events)};`,
-          )}
+          ${Object.entries(typegenData.eventsCausingServices)
+            .map(
+              ([service, events]) =>
+                `${withSafeQuotes(service)}: ${toUnionOrNever(events)};`,
+            )
+            .join('\n')}
         };
         matchesStates: ${printMatchesStates(typegenData.stateSchema)};
         tags: ${toUnionOrNever(typegenData.tags)};
