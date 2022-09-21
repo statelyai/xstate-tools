@@ -18,7 +18,7 @@ export const getTypegenOutput = (types: TypegenData[]) => {
             .map((event) => {
               const safeEvent = withSafeQuotes(event);
               if (event.startsWith('done.invoke.')) {
-                return `${safeEvent}: { type: ${safeEvent} }; data: unknown; __tip: "See the XState TS docs to learn how to strongly type this.";`;
+                return `${safeEvent}: { type: ${safeEvent}; data: unknown; __tip: "See the XState TS docs to learn how to strongly type this." };`;
               }
               if (event.startsWith('error.platform.')) {
                 return `${safeEvent}: { type: ${safeEvent}; data: unknown };`;
