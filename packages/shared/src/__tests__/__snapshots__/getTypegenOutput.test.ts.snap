@@ -6,6 +6,7 @@ exports[`getTypegenOutput action-missing 1`] = `
 export interface Typegen0 {
   "@@xstate/typegen": true;
   internalEvents: {
+    "": { type: "" };
     "xstate.init": { type: "xstate.init" };
   };
   invokeSrcNameMap: {};
@@ -36,6 +37,7 @@ exports[`getTypegenOutput action-provided-function 1`] = `
 export interface Typegen0 {
   "@@xstate/typegen": true;
   internalEvents: {
+    "": { type: "" };
     "xstate.init": { type: "xstate.init" };
   };
   invokeSrcNameMap: {};
@@ -63,6 +65,7 @@ exports[`getTypegenOutput after-numeric-like-delay 1`] = `
 export interface Typegen0 {
   "@@xstate/typegen": true;
   internalEvents: {
+    "": { type: "" };
     "xstate.after(500)#(machine)": { type: "xstate.after(500)#(machine)" };
     "xstate.init": { type: "xstate.init" };
   };
@@ -155,7 +158,7 @@ exports[`getTypegenOutput entry-action-on-ancestor-of-targeted-descendant 1`] = 
 export interface Typegen0 {
   "@@xstate/typegen": true;
   internalEvents: {
-    GO_STRING: { type: "GO_STRING" };
+    "": { type: "" };
     "xstate.init": { type: "xstate.init" };
   };
   invokeSrcNameMap: {};
@@ -183,7 +186,7 @@ exports[`getTypegenOutput entry-action-on-initial-state-of-targeted-ancestor 1`]
 export interface Typegen0 {
   "@@xstate/typegen": true;
   internalEvents: {
-    GO_STRING: { type: "GO_STRING" };
+    "": { type: "" };
     "xstate.init": { type: "xstate.init" };
   };
   invokeSrcNameMap: {};
@@ -211,7 +214,7 @@ exports[`getTypegenOutput entry-action-on-state-between-lca-and-target 1`] = `
 export interface Typegen0 {
   "@@xstate/typegen": true;
   internalEvents: {
-    FOO: { type: "FOO" };
+    "": { type: "" };
     "xstate.init": { type: "xstate.init" };
   };
   invokeSrcNameMap: {};
@@ -295,7 +298,7 @@ exports[`getTypegenOutput entry-actions-receive-init-event 1`] = `
 export interface Typegen0 {
   "@@xstate/typegen": true;
   internalEvents: {
-    FOO: { type: "FOO" };
+    "": { type: "" };
     "xstate.init": { type: "xstate.init" };
   };
   invokeSrcNameMap: {};
@@ -325,7 +328,7 @@ exports[`getTypegenOutput entry-actions-within-targeted-parallel 1`] = `
 export interface Typegen0 {
   "@@xstate/typegen": true;
   internalEvents: {
-    GO_STRING: { type: "GO_STRING" };
+    "": { type: "" };
     "xstate.init": { type: "xstate.init" };
   };
   invokeSrcNameMap: {};
@@ -382,6 +385,7 @@ exports[`getTypegenOutput exit-action-external-transition-within-source 1`] = `
 export interface Typegen0 {
   "@@xstate/typegen": true;
   internalEvents: {
+    "": { type: "" };
     "xstate.init": { type: "xstate.init" };
     "xstate.stop": { type: "xstate.stop" };
   };
@@ -410,6 +414,7 @@ exports[`getTypegenOutput exit-action-internal-transition 1`] = `
 export interface Typegen0 {
   "@@xstate/typegen": true;
   internalEvents: {
+    "": { type: "" };
     "xstate.init": { type: "xstate.init" };
     "xstate.stop": { type: "xstate.stop" };
   };
@@ -438,7 +443,7 @@ exports[`getTypegenOutput exit-action-on-ancestor-with-external-transition-on-de
 export interface Typegen0 {
   "@@xstate/typegen": true;
   internalEvents: {
-    FOO: { type: "FOO" };
+    "": { type: "" };
     "xstate.init": { type: "xstate.init" };
     "xstate.stop": { type: "xstate.stop" };
   };
@@ -467,7 +472,7 @@ exports[`getTypegenOutput exit-action-on-state-between-lca-and-source-state 1`] 
 export interface Typegen0 {
   "@@xstate/typegen": true;
   internalEvents: {
-    FOO: { type: "FOO" };
+    "": { type: "" };
     "xstate.init": { type: "xstate.init" };
     "xstate.stop": { type: "xstate.stop" };
   };
@@ -497,10 +502,7 @@ exports[`getTypegenOutput exit-action-parallel-root-event-only-within-final-conf
 export interface Typegen0 {
   "@@xstate/typegen": true;
   internalEvents: {
-    TICK_A1: { type: "TICK_A1" };
-    TICK_A2: { type: "TICK_A2" };
-    TICK_B1: { type: "TICK_B1" };
-    TICK_B2: { type: "TICK_B2" };
+    "": { type: "" };
     "xstate.init": { type: "xstate.init" };
     "xstate.stop": { type: "xstate.stop" };
   };
@@ -555,8 +557,7 @@ exports[`getTypegenOutput exit-action-parallel-root-with-final-states 1`] = `
 export interface Typegen0 {
   "@@xstate/typegen": true;
   internalEvents: {
-    TICK_A: { type: "TICK_A" };
-    TICK_B: { type: "TICK_B" };
+    "": { type: "" };
     "xstate.init": { type: "xstate.init" };
     "xstate.stop": { type: "xstate.stop" };
   };
@@ -594,6 +595,7 @@ exports[`getTypegenOutput exit-action-parallel-root-with-missing-final-state 1`]
 export interface Typegen0 {
   "@@xstate/typegen": true;
   internalEvents: {
+    "": { type: "" };
     "xstate.init": { type: "xstate.init" };
     "xstate.stop": { type: "xstate.stop" };
   };
@@ -631,11 +633,7 @@ exports[`getTypegenOutput exit-action-parallel-root-with-mixed-states 1`] = `
 export interface Typegen0 {
   "@@xstate/typegen": true;
   internalEvents: {
-    TICK_A11: { type: "TICK_A11" };
-    TICK_A21: { type: "TICK_A21" };
-    TICK_B11: { type: "TICK_B11" };
-    TICK_B21: { type: "TICK_B21" };
-    TICK_C1: { type: "TICK_C1" };
+    "": { type: "" };
     "xstate.init": { type: "xstate.init" };
     "xstate.stop": { type: "xstate.stop" };
   };
@@ -749,10 +747,7 @@ exports[`getTypegenOutput exit-action-parallel-root-with-parallel-states 1`] = `
 export interface Typegen0 {
   "@@xstate/typegen": true;
   internalEvents: {
-    TICK_A11: { type: "TICK_A11" };
-    TICK_A21: { type: "TICK_A21" };
-    TICK_B11: { type: "TICK_B11" };
-    TICK_B21: { type: "TICK_B21" };
+    "": { type: "" };
     "xstate.init": { type: "xstate.init" };
     "xstate.stop": { type: "xstate.stop" };
   };
@@ -908,7 +903,7 @@ exports[`getTypegenOutput exit-action-within-ancestor-with-external-transition-o
 export interface Typegen0 {
   "@@xstate/typegen": true;
   internalEvents: {
-    FOO: { type: "FOO" };
+    "": { type: "" };
     "xstate.init": { type: "xstate.init" };
     "xstate.stop": { type: "xstate.stop" };
   };
@@ -937,7 +932,7 @@ exports[`getTypegenOutput exit-action-within-ancestor-with-internal-transition 1
 export interface Typegen0 {
   "@@xstate/typegen": true;
   internalEvents: {
-    FOO: { type: "FOO" };
+    "": { type: "" };
     "xstate.init": { type: "xstate.init" };
     "xstate.stop": { type: "xstate.stop" };
   };
@@ -967,7 +962,7 @@ exports[`getTypegenOutput guard-provided-function 1`] = `
 export interface Typegen0 {
   "@@xstate/typegen": true;
   internalEvents: {
-    FOO: { type: "FOO" };
+    "": { type: "" };
     "xstate.init": { type: "xstate.init" };
   };
   invokeSrcNameMap: {};
@@ -997,7 +992,7 @@ exports[`getTypegenOutput invoke-within-targeted-parallel 1`] = `
 export interface Typegen0 {
   "@@xstate/typegen": true;
   internalEvents: {
-    GO_STRING: { type: "GO_STRING" };
+    "": { type: "" };
     "xstate.init": { type: "xstate.init" };
   };
   invokeSrcNameMap: {
@@ -1082,6 +1077,7 @@ exports[`getTypegenOutput service-provided-function 1`] = `
 export interface Typegen0 {
   "@@xstate/typegen": true;
   internalEvents: {
+    "": { type: "" };
     "xstate.init": { type: "xstate.init" };
   };
   invokeSrcNameMap: {
