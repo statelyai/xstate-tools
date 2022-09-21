@@ -49,7 +49,7 @@ export const getNewMachineText = async ({
 }: {
   text: string;
   newConfig: PublicMachineConfig;
-  fileName: string;
+  fileName?: string;
   machine: MachineParseResult;
   implementations: ImplementationsMetadata;
 }): Promise<string> => {
@@ -124,7 +124,7 @@ export const getNewMachineText = async ({
     2,
   );
 
-  const prettierConfig = await prettier.resolveConfig(fileName);
+  const prettierConfig = fileName ? await prettier.resolveConfig(fileName) : {};
 
   let finalTextToInput = `{${nodesToPreserve.join('')}${json.slice(1)}`.replace(
     UNWRAPPER_REGEX,
