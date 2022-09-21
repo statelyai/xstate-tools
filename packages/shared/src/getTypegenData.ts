@@ -4,8 +4,10 @@ import { introspectMachine } from './introspectMachine';
 
 export interface TypegenData extends ReturnType<typeof getTypegenData> {}
 
+const removeExtension = (fileName: string) => fileName.replace(/\.[^/.]+$/, '');
+
 export const getTypegenData = (
-  relativePath: string,
+  fileName: string,
   machineIndex: number,
   machineResult: MachineParseResult,
 ) => {
@@ -61,7 +63,7 @@ export const getTypegenData = (
     // we sort strings here because we use deep comparison to detect a change in the output of this function
     data: {
       tsTypesValue: {
-        argument: `./${relativePath}.typegen`,
+        argument: `./${removeExtension(fileName)}.typegen`,
         qualifier: `Typegen${machineIndex}`,
       },
       internalEvents: collectPotentialInternalEvents(

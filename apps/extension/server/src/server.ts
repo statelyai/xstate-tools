@@ -28,6 +28,7 @@ import {
   InitializeResult,
   TextDocumentSyncKind,
 } from 'vscode-languageserver/node';
+import { URI, Utils as UriUtils } from 'vscode-uri';
 import { createMachine } from 'xstate';
 import { getCursorHoverType } from './getCursorHoverType';
 import { getDiagnostics } from './getDiagnostics';
@@ -190,7 +191,11 @@ async function handleDocumentChange(textDocument: TextDocument): Promise<void> {
     const types = machineResults
       .filter((machineResult) => !!machineResult.ast.definition?.tsTypes?.node)
       .map((machineResult, index) =>
-        getTypegenData(textDocument.uri, index, machineResult),
+        getTypegenData(
+          UriUtils.basename(URI.parse(textDocument.uri)),
+          index,
+          machineResult,
+        ),
       );
 
     documentsCache.set(textDocument.uri, {

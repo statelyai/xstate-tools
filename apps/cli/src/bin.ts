@@ -10,6 +10,7 @@ import {
 import { watch } from 'chokidar';
 import { Command } from 'commander';
 import * as fs from 'fs/promises';
+import * as path from 'path';
 import { version } from '../package.json';
 
 // TODO: just use the native one when support for node 12 gets dropped
@@ -41,7 +42,7 @@ const writeToFiles = async (uriArray: string[]) => {
             (machineResult) => !!machineResult?.ast.definition?.tsTypes?.node,
           )
           .map((machineResult, index) =>
-            getTypegenData(uri, index, machineResult),
+            getTypegenData(path.basename(uri), index, machineResult),
           );
 
         await writeToTypegenFile(uri, types);

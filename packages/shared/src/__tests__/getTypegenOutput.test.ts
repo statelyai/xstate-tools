@@ -17,7 +17,8 @@ describe('getTypegenOutput', () => {
       const content = await fsP.readFile(filePath, 'utf8');
 
       const types = parseMachinesFromFile(content).machines.map(
-        (parseResult, index) => getTypegenData(filePath, index, parseResult),
+        (parseResult, index) =>
+          getTypegenData(path.basename(filePath), index, parseResult),
       );
 
       expect(
