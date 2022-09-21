@@ -95,11 +95,15 @@ const toPaths = (stateSchema: StateSchema): string[] => {
 };
 
 const printMatchesStates = (stateSchema: StateSchema) => {
-  return Object.keys(stateSchema).length
-    ? `${toUnion(toPaths(stateSchema).sort())} | ${getStateMatchesObjectSyntax(
-        stateSchema,
-      )}`
-    : 'undefined';
+  if (!Object.keys(stateSchema).length) {
+    return 'undefined';
+  }
+  const stringSyntax = toUnion(toPaths(stateSchema).sort());
+  const objectSyntax = getStateMatchesObjectSyntax(stateSchema);
+  if (objectSyntax) {
+    return `${stringSyntax} | ${objectSyntax}`;
+  }
+  return `${stringSyntax}`;
 };
 
 const toUnion = (arr: string[]) => arr.map(withSafeQuotes).join(' | ');
