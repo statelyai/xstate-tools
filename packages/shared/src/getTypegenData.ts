@@ -145,11 +145,16 @@ const collectPotentialInternalEvents = (
   unique(
     lineArrays
       .flatMap((lines) => lines.flatMap((line) => line.events))
-      // TODO: we should source those from the machine config properties like after, invoke, etc
-      .filter((event) => /^(xstate|done\.invoke|error\.platform)\./.test(event))
+      .filter(
+        (event) =>
+          event === '' ||
+          // TODO: we should source those from the machine config properties like after, invoke, etc
+          // OTOH, maybe for the the optimized output we should actually rely on the events that can be given to available implementations
+          // in such a case though the `services.flatMap(...)` below would be redundant
+          /^(xstate|done\.invoke|error\.platform)\./.test(event),
+      )
       .concat(
         'xstate.init',
-        '',
         services.flatMap((service) =>
           // TODO: is this correct? shouldn't we also generate events for services without an id?
           service.id
