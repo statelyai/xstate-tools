@@ -15,7 +15,7 @@ export const findPrevTokenMatching = (
   return prevToken && match.includes(prevToken.value) ? prevToken : null;
 };
 
-export const isCreateMachineFactory = (node: TSESTree.Node): boolean =>
+export const isCreateMachineFactory = (node?: TSESTree.Node): boolean =>
   isCallExpression(node) &&
   (isIdentifierWithName("createMachine")(node.callee) ||
     isIdentifierWithName("createTestMachine")(node.callee));
