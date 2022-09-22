@@ -18,7 +18,12 @@ import {
   StartAction,
   StopAction,
 } from "./namedActions";
-import { AnyNode, NumericLiteral, StringLiteral } from "./scalars";
+import {
+  AnyNode,
+  NumericLiteral,
+  StringLiteral,
+  TemplateLiteral,
+} from "./scalars";
 import { maybeTsAsExpression } from "./tsAsExpression";
 import { DeclarationType } from "./types";
 import { unionType } from "./unionType";
@@ -101,6 +106,20 @@ export const ActionAsString = maybeTsAsExpression(
       },
     })
   )
+);
+
+export const ActionAsTemplateLiteral = wrapParserResult(
+  TemplateLiteral,
+  (result, path, context): ActionNode => {
+    return {
+      path,
+      action: result.value,
+      node: result.node,
+      name: result.value,
+      declarationType: "named",
+      inlineDeclarationId: context.getNodeHash(path.node),
+    };
+  }
 );
 
 export const ActionAsNode = createParser({
@@ -311,6 +330,7 @@ const NamedAction = unionType([
 const BasicAction = unionType([
   ActionAsFunctionExpression,
   ActionAsString,
+  ActionAsTemplateLiteral,
   ActionAsIdentifier,
   ActionAsNode,
 ]);
