@@ -1,5 +1,4 @@
-import { types as t } from "@babel/core";
-import { MachineConfig } from "xstate";
+import { NodePath, types as t } from "@babel/core";
 import { MachineParseResult } from "./MachineParseResult";
 
 export type Location = t.SourceLocation | null;
@@ -7,6 +6,7 @@ export type Location = t.SourceLocation | null;
 export interface StringLiteralNode {
   value: string;
   node: t.Node;
+  path: NodePath<t.Node>;
 }
 
 export interface ParserContext {
@@ -16,15 +16,18 @@ export interface ParserContext {
 
 export interface Parser<T extends t.Node = any, Result = any> {
   parse: (
-    node: t.Node | undefined | null,
-    context: ParserContext,
+    node: NodePath<T | undefined | null> | undefined | null,
+    context: ParserContext
   ) => Result | undefined;
-  matches: (node: T) => boolean;
+  matches: (node: t.Node) => boolean;
 }
 
 export interface AnyParser<Result> {
-  parse: (node: any, context: ParserContext) => Result | undefined;
-  matches: (node: any) => boolean;
+  parse: (
+    node: NodePath<any> | null | undefined,
+    context: ParserContext
+  ) => Result | undefined;
+  matches: (node: t.Node) => boolean;
 }
 
 export interface Comment {

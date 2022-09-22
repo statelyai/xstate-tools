@@ -58,7 +58,7 @@ export const parseMachinesFromFile = (fileContents: string): ParseResult => {
 
   traverse(parseResult as any, {
     CallExpression(path) {
-      const ast = MachineCallExpression.parse(path.node as any, {
+      const ast = MachineCallExpression.parse(path, {
         file: parseResult,
         getNodeHash: getNodeHash,
       });

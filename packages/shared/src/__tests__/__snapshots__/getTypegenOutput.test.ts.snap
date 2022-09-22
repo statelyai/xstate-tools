@@ -1,5 +1,33 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`getTypegenOutput action-as-template-literal 1`] = `
+"// This file was automatically generated. Edits will be overwritten
+
+export interface Typegen0 {
+  "@@xstate/typegen": true;
+  internalEvents: {
+    "xstate.init": { type: "xstate.init" };
+  };
+  invokeSrcNameMap: {};
+  missingImplementations: {
+    actions: never;
+    services: never;
+    guards: never;
+    delays: never;
+  };
+  eventsCausingActions: {
+    action1: "xstate.init";
+    action2: "xstate.init";
+  };
+  eventsCausingServices: {};
+  eventsCausingGuards: {};
+  eventsCausingDelays: {};
+  matchesStates: undefined;
+  tags: never;
+}
+"
+`;
+
 exports[`getTypegenOutput action-missing 1`] = `
 "// This file was automatically generated. Edits will be overwritten
 
