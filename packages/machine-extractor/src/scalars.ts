@@ -78,16 +78,12 @@ export const TemplateLiteral = maybeTsAsExpression(
     createParser({
       babelMatcher: t.isTemplateLiteral,
       extract: (path) => {
-        let value = "";
+        const evaluated = path.evaluate();
 
-        // TODO - this might lead to weird issues if there is actually more than a single quasi there
-        path.node.quasis.forEach((quasi) => {
-          value = `${value}${quasi.value.raw}`;
-        });
         return {
           node: path.node,
           path,
-          value,
+          value: evaluated.value,
         };
       },
     })
