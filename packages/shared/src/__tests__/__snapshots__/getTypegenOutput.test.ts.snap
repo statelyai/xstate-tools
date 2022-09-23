@@ -1007,16 +1007,16 @@ export interface Typegen0 {
   invokeSrcNameMap: {};
   missingImplementations: {
     actions: never;
-    services: never;
-    guards: "myAwesomeGuard";
     delays: never;
+    guards: "myAwesomeGuard";
+    services: never;
   };
   eventsCausingActions: {};
-  eventsCausingServices: {};
+  eventsCausingDelays: {};
   eventsCausingGuards: {
     myAwesomeGuard: "";
   };
-  eventsCausingDelays: {};
+  eventsCausingServices: {};
   matchesStates: "a" | "b" | "c";
   tags: never;
 }
@@ -1034,16 +1034,16 @@ export interface Typegen0 {
   invokeSrcNameMap: {};
   missingImplementations: {
     actions: never;
-    services: never;
-    guards: "myAwesomeGuard";
     delays: never;
+    guards: "myAwesomeGuard";
+    services: never;
   };
   eventsCausingActions: {};
-  eventsCausingServices: {};
+  eventsCausingDelays: {};
   eventsCausingGuards: {
     myAwesomeGuard: "MY_AWESOME_EVENT";
   };
-  eventsCausingDelays: {};
+  eventsCausingServices: {};
   matchesStates: "a" | "b";
   tags: never;
 }

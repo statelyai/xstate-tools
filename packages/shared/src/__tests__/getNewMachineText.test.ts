@@ -50,7 +50,7 @@ describe('getNewMachineText', () => {
 	tsTypes: {},
 	meta: { cool: true },
 	data: () => {},
-	delimiter: '/',
+	delimiter: "/",
 	preserveActionOrder: true,
 	predictableActionArguments: true,
 	id: "wow",
@@ -94,7 +94,7 @@ describe('getNewMachineText', () => {
 
     expect(newText).toEqual(
       `{
-	id: 'wow',
+	id: "wow",
 	on: {},
 	states: {},
 }`,
