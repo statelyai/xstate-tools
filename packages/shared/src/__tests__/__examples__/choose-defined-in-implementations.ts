@@ -1,19 +1,19 @@
-import { createMachine } from "xstate";
-import { choose } from "xstate/lib/actions";
+import { createMachine } from 'xstate';
+import { choose } from 'xstate/lib/actions';
 
 createMachine(
   {
     tsTypes:
-      {} as import("./choose-defined-in-implementations.typegen").Typegen0,
-    initial: "a",
+      {} as import('./choose-defined-in-implementations.typegen').Typegen0,
+    initial: 'a',
     states: {
       a: {
         on: {
-          FOO: "b",
+          FOO: 'b',
         },
       },
       b: {
-        entry: "wow",
+        entry: 'wow',
       },
     },
   },
@@ -27,10 +27,10 @@ createMachine(
       c: () => {},
       wow: choose([
         {
-          actions: ["a", "b", "c"],
-          cond: "cond1",
+          actions: ['a', 'b', 'c'],
+          cond: 'cond1',
         },
       ]),
     },
-  }
+  },
 );

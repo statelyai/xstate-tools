@@ -1,10 +1,10 @@
-import { createMachine } from "xstate";
+import { createMachine } from 'xstate';
 
 createMachine({
-  tsTypes: {} as import("./after.typegen").Typegen0,
+  tsTypes: {} as import('./after.typegen').Typegen0,
   after: {
     500: {
-      actions: "sayHello",
+      actions: 'sayHello',
     },
   },
 }).withConfig({

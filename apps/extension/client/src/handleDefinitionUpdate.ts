@@ -1,12 +1,12 @@
-import { parseMachinesFromFile } from "@xstate/machine-extractor";
+import { parseMachinesFromFile } from '@xstate/machine-extractor';
 import {
   getInlineImplementations,
   getNewMachineText,
   getRangeFromSourceLocation,
   resolveUriToFilePrefix,
-} from "@xstate/tools-shared";
-import * as vscode from "vscode";
-import { UpdateDefinitionEvent } from "./editorWebviewScript";
+} from '@xstate/tools-shared';
+import * as vscode from 'vscode';
+import { UpdateDefinitionEvent } from './editorWebviewScript';
 
 export const handleDefinitionUpdate = async (event: UpdateDefinitionEvent) => {
   const doc = vscode.workspace.textDocuments.find((doc) => {
@@ -29,7 +29,7 @@ export const handleDefinitionUpdate = async (event: UpdateDefinitionEvent) => {
     doc.uri,
     new vscode.Range(
       new vscode.Position(range.start.line, range.start.character),
-      new vscode.Position(range.end.line, range.end.character)
+      new vscode.Position(range.end.line, range.end.character),
     ),
     await getNewMachineText({
       fileName: doc.fileName,
@@ -37,7 +37,7 @@ export const handleDefinitionUpdate = async (event: UpdateDefinitionEvent) => {
       implementations: getInlineImplementations(machine, text),
       text,
       newConfig: event.config,
-    })
+    }),
   );
 
   const layoutComment = machine.getLayoutComment()?.comment;
@@ -50,9 +50,9 @@ export const handleDefinitionUpdate = async (event: UpdateDefinitionEvent) => {
       doc.uri,
       new vscode.Range(
         new vscode.Position(range.start.line, range.start.character),
-        new vscode.Position(range.end.line, range.end.character)
+        new vscode.Position(range.end.line, range.end.character),
       ),
-      `/** @xstate-layout ${event.layoutString} */`
+      `/** @xstate-layout ${event.layoutString} */`,
     );
   } else {
     // Insert layout comment
@@ -61,7 +61,7 @@ export const handleDefinitionUpdate = async (event: UpdateDefinitionEvent) => {
     workspaceEdit.insert(
       doc.uri,
       new vscode.Position(range.start.line, range.start.character),
-      `\n/** @xstate-layout ${event.layoutString} */\n`
+      `\n/** @xstate-layout ${event.layoutString} */\n`,
     );
   }
 

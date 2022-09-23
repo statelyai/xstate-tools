@@ -1,6 +1,6 @@
-import { hashedId, parseMachinesFromFile } from "@xstate/machine-extractor";
-import { MachineConfig } from "xstate";
-import { getNewMachineText, ImplementationsMetadata } from "..";
+import { hashedId, parseMachinesFromFile } from '@xstate/machine-extractor';
+import { MachineConfig } from 'xstate';
+import { getNewMachineText, ImplementationsMetadata } from '..';
 
 const defaultImplementations = {
   actions: {},
@@ -11,7 +11,7 @@ const defaultImplementations = {
 const runTest = (
   input: string,
   newConfig: MachineConfig<any, any, any>,
-  implementations: ImplementationsMetadata = defaultImplementations
+  implementations: ImplementationsMetadata = defaultImplementations,
 ) => {
   return getNewMachineText({
     fileName: __filename,
@@ -20,11 +20,11 @@ const runTest = (
     text: input,
     newConfig,
     // To allow us to use tabs in the example output
-  }).then((res) => res.replace(/  /g, "\t"));
+  }).then((res) => res.replace(/  /g, '\t'));
 };
 
-describe("getNewMachineText", () => {
-  it("Should preserve context, tsTypes, meta, data, delimiter, preserveActionOrder and predictableActionArguments keys", async () => {
+describe('getNewMachineText', () => {
+  it('Should preserve context, tsTypes, meta, data, delimiter, preserveActionOrder and predictableActionArguments keys', async () => {
     const INPUT = `
 			createMachine({
 				context: {
@@ -35,14 +35,14 @@ describe("getNewMachineText", () => {
 					cool: true
 				},
 				data: () => {},
-				delimiter: "/",
+				delimiter: '/',
 				preserveActionOrder: true,
 				predictableActionArguments: true,
 			})
 		`;
 
     const newText = await runTest(INPUT, {
-      id: "wow",
+      id: 'wow',
     });
 
     expect(newText).toEqual(
@@ -51,15 +51,15 @@ describe("getNewMachineText", () => {
 	tsTypes: {},
 	meta: { cool: true },
 	data: () => {},
-	delimiter: "/",
+	delimiter: '/',
 	preserveActionOrder: true,
 	predictableActionArguments: true,
-	id: "wow",
-}`
+	id: 'wow',
+}`,
     );
   });
 
-  it("Should preserve type annotations on protected keys", async () => {
+  it('Should preserve type annotations on protected keys', async () => {
     const INPUT = `
 			createMachine({
 				schema: {} as {}
@@ -67,43 +67,43 @@ describe("getNewMachineText", () => {
 		`;
 
     const newText = await runTest(INPUT, {
-      id: "wow",
+      id: 'wow',
     });
 
     expect(newText).toEqual(
       `{
 	schema: {} as {},
-	id: "wow",
-}`
+	id: 'wow',
+}`,
     );
   });
 
-  it("Should preserve the order of top-level keys", async () => {
+  it('Should preserve the order of top-level keys', async () => {
     const INPUT = `
 			createMachine({
-				id: "test",
+				id: 'test',
 				on: {},
 				states: {},
 			})
 		`;
 
     const newText = await runTest(INPUT, {
-      id: "wow",
+      id: 'wow',
       states: {},
       on: {},
     });
 
     expect(newText).toEqual(
       `{
-	id: "wow",
+	id: 'wow',
 	on: {},
 	states: {},
-}`
+}`,
     );
   });
 
-  describe("Inline implementations", () => {
-    it("Should preserve inline implementations on actions, guards and services", async () => {
+  describe('Inline implementations', () => {
+    it('Should preserve inline implementations on actions, guards and services', async () => {
       const INPUT = `
 					createMachine({
 						entry: ['action'],
@@ -121,33 +121,33 @@ describe("getNewMachineText", () => {
       const newText = await runTest(
         INPUT,
         {
-          entry: ["action"],
+          entry: ['action'],
           invoke: {
-            src: "invoke",
+            src: 'invoke',
           },
           on: {
             WOW: {
-              cond: "cond",
+              cond: 'cond',
             },
           },
         },
         {
           actions: {
             action: {
-              jsImplementation: "() => {}",
+              jsImplementation: '() => {}',
             },
           },
           guards: {
             cond: {
-              jsImplementation: "() => {}",
+              jsImplementation: '() => {}',
             },
           },
           services: {
             invoke: {
-              jsImplementation: "() => {}",
+              jsImplementation: '() => {}',
             },
           },
-        }
+        },
       );
 
       expect(newText).toEqual(
@@ -161,11 +161,11 @@ describe("getNewMachineText", () => {
 			cond: () => {},
 		},
 	},
-}`
+}`,
       );
     });
 
-    it("Should preserve comments and double-quotes inside inline implementations", async () => {
+    it('Should preserve comments and double-quotes inside inline implementations', async () => {
       const INPUT = `
 					createMachine({
 						entry: ['action'],
@@ -175,7 +175,7 @@ describe("getNewMachineText", () => {
       const newText = await runTest(
         INPUT,
         {
-          entry: ["action"],
+          entry: ['action'],
         },
         {
           actions: {
@@ -189,7 +189,7 @@ describe("getNewMachineText", () => {
           },
           guards: {},
           services: {},
-        }
+        },
       );
 
       expect(newText).toEqual(
@@ -199,11 +199,11 @@ describe("getNewMachineText", () => {
 			// Amazing stuff "wow", cool
 		},
 	],
-}`
+}`,
       );
     });
 
-    it("Should ignore whitespace differences between inline implementations when hashing them", async () => {
+    it('Should ignore whitespace differences between inline implementations when hashing them', async () => {
       const idWithWhitespace = hashedId(`
 			() => {
 
@@ -231,20 +231,20 @@ describe("getNewMachineText", () => {
           },
           services: {},
           guards: {},
-        }
+        },
       );
 
       expect(newText).toEqual(
         `{
 	entry: [() => {}],
-}`
+}`,
       );
     });
 
-    it.todo("Should preserve type annotations on inline implementations");
+    it.todo('Should preserve type annotations on inline implementations');
   });
 
-  it("Should preserve descriptions on nodes", async () => {
+  it('Should preserve descriptions on nodes', async () => {
     const INPUT = `
 			createMachine({
 				description: 'Hello',
@@ -252,17 +252,17 @@ describe("getNewMachineText", () => {
 		`;
 
     const newText = await runTest(INPUT, {
-      description: "Hello, world!",
+      description: 'Hello, world!',
     });
 
     expect(newText).toEqual(
       `{
-	description: "Hello, world!",
-}`
+	description: 'Hello, world!',
+}`,
     );
   });
 
-  it.skip("REPL", async () => {
+  it.skip('REPL', async () => {
     const INPUT = `
 			createMachine({
 				id: "test",
@@ -270,11 +270,11 @@ describe("getNewMachineText", () => {
 		`;
 
     const newText = await runTest(INPUT, {
-      id: "wow",
+      id: 'wow',
       states: {
         a: {
           on: {
-            WOW: "b",
+            WOW: 'b',
           },
         },
         b: {},
@@ -288,7 +288,7 @@ describe("getNewMachineText", () => {
 		a: {},
 		b: {},
 	},
-}`
+}`,
     );
   });
 });

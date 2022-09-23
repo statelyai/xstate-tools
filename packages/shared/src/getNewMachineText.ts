@@ -1,8 +1,8 @@
-import type { MachineParseResult } from "@xstate/machine-extractor";
-import * as prettier from "prettier";
-import { MachineConfig } from "xstate";
-import { getRawTextFromNode } from "./getRawTextFromNode";
-import { ImplementationsMetadata } from "./types";
+import type { MachineParseResult } from '@xstate/machine-extractor';
+import * as prettier from 'prettier';
+import { MachineConfig } from 'xstate';
+import { getRawTextFromNode } from './getRawTextFromNode';
+import { ImplementationsMetadata } from './types';
 
 const prettierStartRegex = /^([^{]){1,}/;
 const prettierEndRegex = /([^}]){1,}$/;
@@ -24,20 +24,20 @@ const markAsUnwrap = (str: string) => {
 const UNWRAPPER_REGEX = /"@UNWRAP_START@(.{1,})@UNWRAP_END@"/g;
 
 const STATE_KEYS_TO_PRESERVE = [
-  "context",
-  "tsTypes",
-  "schema",
-  "meta",
-  "data",
-  "delimiter",
-  "preserveActionOrder",
-  "predictableActionArguments",
+  'context',
+  'tsTypes',
+  'schema',
+  'meta',
+  'data',
+  'delimiter',
+  'preserveActionOrder',
+  'predictableActionArguments',
 ] as const;
 
 // those keys shouldn't be part of the `MachineConfig` type
 type PublicMachineConfig = Omit<
   MachineConfig<any, any, any>,
-  "parent" | "order"
+  'parent' | 'order'
 >;
 
 export const getNewMachineText = async ({
@@ -58,8 +58,8 @@ export const getNewMachineText = async ({
       machine.ast.definition?.[nodeKey]?._valueNode ||
       machine.ast.definition?.[nodeKey]?.node;
     return node
-      ? `\n${nodeKey}: ${getRawTextFromNode(text, node!).replace("\n", " ")},`
-      : "";
+      ? `\n${nodeKey}: ${getRawTextFromNode(text, node!).replace('\n', ' ')},`
+      : '';
   });
 
   const config: PublicMachineConfig = {};
@@ -67,7 +67,7 @@ export const getNewMachineText = async ({
   const getKeyStart = (key: keyof typeof config): number => {
     const value = machine.ast.definition?.[key];
 
-    if (value && "node" in value) {
+    if (value && 'node' in value) {
       return value.node.start!;
     }
     return 0;
@@ -85,28 +85,28 @@ export const getNewMachineText = async ({
     config,
     (key, value) => {
       if (
-        key === "cond" &&
+        key === 'cond' &&
         implementations?.guards?.[value]?.jsImplementation
       ) {
         return markAsUnwrap(
-          implementations?.guards?.[value]?.jsImplementation!
+          implementations?.guards?.[value]?.jsImplementation!,
         );
       }
       if (
-        key === "src" &&
+        key === 'src' &&
         implementations?.services?.[value]?.jsImplementation
       ) {
         return markAsUnwrap(
-          implementations?.services?.[value]?.jsImplementation!
+          implementations?.services?.[value]?.jsImplementation!,
         );
       }
 
-      if (["actions", "entry", "exit"].includes(key)) {
+      if (['actions', 'entry', 'exit'].includes(key)) {
         if (Array.isArray(value)) {
           return value.map((action) => {
             if (implementations?.actions?.[action]?.jsImplementation) {
               return markAsUnwrap(
-                implementations?.actions?.[action]?.jsImplementation!
+                implementations?.actions?.[action]?.jsImplementation!,
               );
             }
             return action;
@@ -114,41 +114,41 @@ export const getNewMachineText = async ({
         }
         if (implementations?.actions?.[value]?.jsImplementation) {
           return markAsUnwrap(
-            implementations?.actions?.[value]?.jsImplementation!
+            implementations?.actions?.[value]?.jsImplementation!,
           );
         }
       }
 
       return value;
     },
-    2
+    2,
   );
 
   const prettierConfig = await prettier.resolveConfig(fileName);
 
-  let finalTextToInput = `{${nodesToPreserve.join("")}${json.slice(1)}`.replace(
+  let finalTextToInput = `{${nodesToPreserve.join('')}${json.slice(1)}`.replace(
     UNWRAPPER_REGEX,
     (str) => {
       return (
         str
           // +1 and -1 for the quotes
           .slice(UNWRAP_START.length + 1, -UNWRAP_END.length - 1)
-          .replace(/\\n/g, "\n")
+          .replace(/\\n/g, '\n')
           .replace(/\\"/g, '"')
-          .replace(/\\t/g, "\t")
+          .replace(/\\t/g, '\t')
       );
-    }
+    },
   );
 
   try {
     const result = await prettier.format(`(${finalTextToInput})`, {
       ...prettierConfig,
-      parser: "typescript",
+      parser: 'typescript',
     });
 
     finalTextToInput = result
-      .replace(prettierStartRegex, "")
-      .replace(prettierEndRegex, "");
+      .replace(prettierStartRegex, '')
+      .replace(prettierEndRegex, '');
   } catch (e) {
     console.log(e);
   }

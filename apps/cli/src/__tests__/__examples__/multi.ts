@@ -1,27 +1,27 @@
-import { createMachine } from "xstate";
+import { createMachine } from 'xstate';
 
 const machine1 = createMachine(
   {
-    tsTypes: {} as import("./multi.typegen").Typegen0,
+    tsTypes: {} as import('./multi.typegen').Typegen0,
     schema: {
-      events: {} as { type: "FOO" } | { type: "BAR" },
+      events: {} as { type: 'FOO' } | { type: 'BAR' },
     },
-    initial: "a",
+    initial: 'a',
     states: {
       a: {
         on: {
-          FOO: "b",
+          FOO: 'b',
         },
       },
       b: {
-        entry: ["entryB"],
+        entry: ['entryB'],
       },
     },
   },
   {
     actions: {
       entryB: (context, event) => {
-        ((_accept: "FOO") => {})(event.type);
+        ((_accept: 'FOO') => {})(event.type);
       },
     },
   },
@@ -29,26 +29,26 @@ const machine1 = createMachine(
 
 const machine2 = createMachine(
   {
-    tsTypes: {} as import("./multi.typegen").Typegen1,
+    tsTypes: {} as import('./multi.typegen').Typegen1,
     schema: {
-      events: {} as { type: "BAZ" } | { type: "BAZ2" },
+      events: {} as { type: 'BAZ' } | { type: 'BAZ2' },
     },
-    initial: "a",
+    initial: 'a',
     states: {
       a: {
         on: {
-          BAZ: "b",
+          BAZ: 'b',
         },
       },
       b: {
-        entry: ["entryB"],
+        entry: ['entryB'],
       },
     },
   },
   {
     actions: {
       entryB: (context, event) => {
-        ((_accept: "BAZ") => {})(event.type);
+        ((_accept: 'BAZ') => {})(event.type);
       },
     },
   },

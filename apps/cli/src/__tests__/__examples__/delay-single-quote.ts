@@ -1,12 +1,12 @@
-import { createMachine } from "xstate";
+import { createMachine } from 'xstate';
 
 createMachine({
-  tsTypes: {} as import("./delay-single-quote.typegen").Typegen0,
-  initial: "a",
+  tsTypes: {} as import('./delay-single-quote.typegen').Typegen0,
+  initial: 'a',
   states: {
     a: {
       after: {
-        "just '2 minutes'": "b",
+        "just '2 minutes'": 'b',
       },
     },
     b: {},

@@ -1,14 +1,14 @@
-import { types as t } from "@babel/core";
-import { MaybeArrayOfActions } from "./actions";
-import { Context } from "./context";
-import { History } from "./history";
-import { Invoke } from "./invoke";
-import { StateMeta } from "./meta";
-import { AnyNode, BooleanLiteral, StringLiteral } from "./scalars";
-import { Schema } from "./schema";
-import { MaybeTransitionArray } from "./transitions";
-import { TsTypes } from "./tsTypes";
-import { AnyParser } from "./types";
+import { types as t } from '@babel/core';
+import { MaybeArrayOfActions } from './actions';
+import { Context } from './context';
+import { History } from './history';
+import { Invoke } from './invoke';
+import { StateMeta } from './meta';
+import { AnyNode, BooleanLiteral, StringLiteral } from './scalars';
+import { Schema } from './schema';
+import { MaybeTransitionArray } from './transitions';
+import { TsTypes } from './tsTypes';
+import { AnyParser } from './types';
 import {
   GetParserResult,
   maybeArrayOf,
@@ -16,7 +16,7 @@ import {
   ObjectOfReturn,
   ObjectPropertyInfo,
   objectTypeWithKnownKeys,
-} from "./utils";
+} from './utils';
 
 const On = objectOf(MaybeTransitionArray);
 
@@ -69,7 +69,7 @@ export type StateNodeReturn = WithValueNodes<{
   delimiter?: GetParserResult<typeof StringLiteral>;
   key?: GetParserResult<typeof StringLiteral>;
 }> &
-  Pick<ObjectPropertyInfo, "node">;
+  Pick<ObjectPropertyInfo, 'node'>;
 
 const StateNodeObject: AnyParser<StateNodeReturn> = objectTypeWithKnownKeys(
   () => ({
@@ -104,7 +104,7 @@ const StateNodeObject: AnyParser<StateNodeReturn> = objectTypeWithKnownKeys(
     version: AnyNode,
     delimiter: StringLiteral,
     key: StringLiteral,
-  })
+  }),
 );
 
 export const StateNode = StateNodeObject;

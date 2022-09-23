@@ -1,13 +1,13 @@
-import { createMachine } from "xstate";
+import { createMachine } from 'xstate';
 
 export const tagMachine = createMachine({
-  tags: "a",
+  tags: 'a',
   states: {
     foo: {
-      tags: "a",
+      tags: 'a',
     },
     bar: {
-      tags: ["b", "c"],
+      tags: ['b', 'c'],
     },
   },
 });

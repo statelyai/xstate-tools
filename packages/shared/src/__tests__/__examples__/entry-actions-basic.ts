@@ -1,20 +1,20 @@
-import { createMachine } from "xstate";
+import { createMachine } from 'xstate';
 
 createMachine({
-  tsTypes: {} as import("./entry-actions-basic.typegen").Typegen0,
-  initial: "a",
+  tsTypes: {} as import('./entry-actions-basic.typegen').Typegen0,
+  initial: 'a',
   states: {
     a: {
       on: {
-        FOO: "b",
-        BAR: "c",
+        FOO: 'b',
+        BAR: 'c',
       },
     },
     b: {
-      entry: ["someAction"],
+      entry: ['someAction'],
     },
     c: {
-      entry: ["otherAction"],
+      entry: ['otherAction'],
     },
   },
 });

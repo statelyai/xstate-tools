@@ -1,21 +1,21 @@
-import { createMachine } from "xstate";
+import { createMachine } from 'xstate';
 
 createMachine({
-  tsTypes: {} as import("./after-string-delay.typegen").Typegen0,
-  initial: "a",
+  tsTypes: {} as import('./after-string-delay.typegen').Typegen0,
+  initial: 'a',
   states: {
     a: {
       on: {
-        NEXT: "b",
+        NEXT: 'b',
       },
     },
     b: {
       after: {
-        myDelay: "c",
+        myDelay: 'c',
       },
     },
     c: {
-      entry: ["someAction"],
+      entry: ['someAction'],
     },
   },
 });

@@ -1,12 +1,12 @@
-import { types as t, traverse } from "@babel/core";
-import { createParser } from "./createParser";
-import { AnyParser } from "./types";
-import { unionType } from "./unionType";
+import { traverse, types as t } from '@babel/core';
+import { createParser } from './createParser';
+import { AnyParser } from './types';
+import { unionType } from './unionType';
 import {
   getPropertiesOfObjectExpression,
   parserFromBabelMatcher,
-} from "./utils";
-import { wrapParserResult } from "./wrapParserResult";
+} from './utils';
+import { wrapParserResult } from './wrapParserResult';
 
 /**
  * Finds a declarator in the same file which corresponds
@@ -107,7 +107,7 @@ const deepMemberExpression = createParser({
     return {
       node,
       child:
-        "object" in node
+        'object' in node
           ? deepMemberExpression.parse(node.object, context)
           : undefined,
     };

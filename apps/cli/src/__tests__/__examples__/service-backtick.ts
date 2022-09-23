@@ -1,15 +1,15 @@
-import { createMachine } from "xstate";
+import { createMachine } from 'xstate';
 
 createMachine({
-  tsTypes: {} as import("./service-backtick.typegen").Typegen0,
-  initial: "a",
+  tsTypes: {} as import('./service-backtick.typegen').Typegen0,
+  initial: 'a',
   states: {
     a: {
       invoke: {
-        id: "prepare `ticker`",
-        src: "prepare `ticker`",
-        onDone: "finished",
-        onError: "failed",
+        id: 'prepare `ticker`',
+        src: 'prepare `ticker`',
+        onDone: 'finished',
+        onError: 'failed',
       },
     },
     finished: {},

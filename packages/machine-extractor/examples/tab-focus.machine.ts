@@ -1,13 +1,13 @@
-import { assign, createMachine, Sender } from "xstate";
+import { createMachine, Sender } from 'xstate';
 
 export interface TabFocusMachineContext {}
 
 export type TabFocusMachineEvent =
   | {
-      type: "REPORT_TAB_BLUR";
+      type: 'REPORT_TAB_BLUR';
     }
   | {
-      type: "REPORT_TAB_FOCUS";
+      type: 'REPORT_TAB_FOCUS';
     };
 
 const tabFocusMachine = createMachine<
@@ -15,23 +15,23 @@ const tabFocusMachine = createMachine<
   TabFocusMachineEvent
 >(
   {
-    id: "tabFocus",
-    initial: "userIsOnTab",
+    id: 'tabFocus',
+    initial: 'userIsOnTab',
     states: {
       userIsOnTab: {
         invoke: {
-          src: "checkForDocumentBlur",
+          src: 'checkForDocumentBlur',
         },
         on: {
-          REPORT_TAB_BLUR: { target: "userIsNotOnTab" },
+          REPORT_TAB_BLUR: { target: 'userIsNotOnTab' },
         },
       },
       userIsNotOnTab: {
         invoke: {
-          src: "checkForDocumentFocus",
+          src: 'checkForDocumentFocus',
         },
         on: {
-          REPORT_TAB_FOCUS: { target: "userIsOnTab" },
+          REPORT_TAB_FOCUS: { target: 'userIsOnTab' },
         },
       },
     },
@@ -40,24 +40,24 @@ const tabFocusMachine = createMachine<
     services: {
       checkForDocumentBlur: () => (send: Sender<TabFocusMachineEvent>) => {
         const listener = () => {
-          send("REPORT_TAB_BLUR");
+          send('REPORT_TAB_BLUR');
         };
 
-        window.addEventListener("blur", listener);
+        window.addEventListener('blur', listener);
 
         return () => {
-          window.removeEventListener("blur", listener);
+          window.removeEventListener('blur', listener);
         };
       },
       checkForDocumentFocus: () => (send: Sender<TabFocusMachineEvent>) => {
         const listener = () => {
-          send("REPORT_TAB_FOCUS");
+          send('REPORT_TAB_FOCUS');
         };
 
-        window.addEventListener("focus", listener);
+        window.addEventListener('focus', listener);
 
         return () => {
-          window.removeEventListener("focus", listener);
+          window.removeEventListener('focus', listener);
         };
       },
     },

@@ -1,3 +1,4 @@
+import { types as t } from '@babel/core';
 import {
   after,
   cancel,
@@ -11,17 +12,16 @@ import {
   sendUpdate,
   start,
   stop,
-} from "xstate/lib/actions";
-import type { ActionNode } from "./actions";
-import { AnyNode, NumericLiteral, StringLiteral } from "./scalars";
-import { namedFunctionCall } from "./utils";
-import { types as t } from "@babel/core";
-import { unionType } from "./unionType";
-import { wrapParserResult } from "./wrapParserResult";
+} from 'xstate/lib/actions';
+import type { ActionNode } from './actions';
+import { AnyNode, NumericLiteral, StringLiteral } from './scalars';
+import { unionType } from './unionType';
+import { namedFunctionCall } from './utils';
+import { wrapParserResult } from './wrapParserResult';
 
 export const AfterAction = wrapParserResult(
   namedFunctionCall(
-    "after",
+    'after',
     unionType<{ node: t.Node; value: number | string }>([
       StringLiteral,
       NumericLiteral,
@@ -30,152 +30,152 @@ export const AfterAction = wrapParserResult(
   (result, node, context): ActionNode => {
     return {
       node: result.node,
-      action: after(result.argument1Result?.value || ""),
-      name: "",
-      declarationType: "inline",
+      action: after(result.argument1Result?.value || ''),
+      name: '',
+      declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
   },
 );
 
 export const CancelAction = wrapParserResult(
-  namedFunctionCall("cancel", AnyNode),
+  namedFunctionCall('cancel', AnyNode),
   (result, node, context): ActionNode => {
     return {
       node: result.node,
-      action: cancel(""),
-      name: "",
-      declarationType: "inline",
+      action: cancel(''),
+      name: '',
+      declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
   },
 );
 
 export const DoneAction = wrapParserResult(
-  namedFunctionCall("done", AnyNode),
+  namedFunctionCall('done', AnyNode),
   (result, node, context): ActionNode => {
     return {
       node: result.node,
-      action: done(""),
-      name: "",
-      declarationType: "inline",
+      action: done(''),
+      name: '',
+      declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
   },
 );
 
 export const EscalateAction = wrapParserResult(
-  namedFunctionCall("escalate", AnyNode),
+  namedFunctionCall('escalate', AnyNode),
   (result, node, context): ActionNode => {
     return {
       node: result.node,
-      action: escalate(""),
-      name: "",
-      declarationType: "inline",
+      action: escalate(''),
+      name: '',
+      declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
   },
 );
 
 export const LogAction = wrapParserResult(
-  namedFunctionCall("log", AnyNode),
+  namedFunctionCall('log', AnyNode),
   (result, node, context): ActionNode => {
     return {
       node: result.node,
       action: log(),
-      name: "",
-      declarationType: "inline",
+      name: '',
+      declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
   },
 );
 
 export const PureAction = wrapParserResult(
-  namedFunctionCall("pure", AnyNode),
+  namedFunctionCall('pure', AnyNode),
   (result, node, context): ActionNode => {
     return {
       node: result.node,
       action: pure(() => []),
-      name: "",
-      declarationType: "inline",
+      name: '',
+      declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
   },
 );
 
 export const RaiseAction = wrapParserResult(
-  namedFunctionCall("raise", AnyNode),
+  namedFunctionCall('raise', AnyNode),
   (result, node, context): ActionNode => {
     return {
       node: result.node,
-      action: raise(""),
-      name: "",
-      declarationType: "inline",
+      action: raise(''),
+      name: '',
+      declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
   },
 );
 
 export const RespondAction = wrapParserResult(
-  namedFunctionCall("respond", AnyNode),
+  namedFunctionCall('respond', AnyNode),
   (result, node, context): ActionNode => {
     return {
       node: result.node,
-      action: respond(""),
-      name: "",
-      declarationType: "inline",
+      action: respond(''),
+      name: '',
+      declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
   },
 );
 
 export const SendParentAction = wrapParserResult(
-  namedFunctionCall("sendParent", AnyNode),
+  namedFunctionCall('sendParent', AnyNode),
   (result, node, context): ActionNode => {
     return {
       node: result.node,
-      action: sendParent(""),
-      name: "",
-      declarationType: "inline",
+      action: sendParent(''),
+      name: '',
+      declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
   },
 );
 
 export const SendUpdateAction = wrapParserResult(
-  namedFunctionCall("sendUpdate", AnyNode),
+  namedFunctionCall('sendUpdate', AnyNode),
   (result, node, context): ActionNode => {
     return {
       node: result.node,
       action: sendUpdate(),
-      name: "",
-      declarationType: "inline",
+      name: '',
+      declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
   },
 );
 
 export const StartAction = wrapParserResult(
-  namedFunctionCall("start", AnyNode),
+  namedFunctionCall('start', AnyNode),
   (result, node, context): ActionNode => {
     return {
       node: result.node,
-      action: start(""),
-      name: "",
-      declarationType: "inline",
+      action: start(''),
+      name: '',
+      declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
   },
 );
 
 export const StopAction = wrapParserResult(
-  namedFunctionCall("stop", AnyNode),
+  namedFunctionCall('stop', AnyNode),
   (result, node, context): ActionNode => {
     return {
       node: result.node,
-      action: stop(""),
-      name: "",
-      declarationType: "inline",
+      action: stop(''),
+      name: '',
+      declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
   },

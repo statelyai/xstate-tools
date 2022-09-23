@@ -1,4 +1,4 @@
-import type { ParseResult } from "@xstate/machine-extractor";
+import type { ParseResult } from '@xstate/machine-extractor';
 
 export const filterOutIgnoredMachines = (
   parseResult: ParseResult,

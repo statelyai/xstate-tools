@@ -1,4 +1,4 @@
-import { assign, createMachine } from "xstate";
+import { assign, createMachine } from 'xstate';
 
 type Data = {};
 
@@ -8,9 +8,9 @@ type Context = {
 
 const machine = createMachine(
   {
-    initial: "initialise",
-    id: "machine",
-    tsTypes: {} as import("./bug-report-1.typegen").Typegen0,
+    initial: 'initialise',
+    id: 'machine',
+    tsTypes: {} as import('./bug-report-1.typegen').Typegen0,
     schema: {
       context: {
         data: [],
@@ -25,42 +25,42 @@ const machine = createMachine(
       },
     },
     invoke: {
-      src: "pollData",
+      src: 'pollData',
       onDone: {
-        actions: "assignData",
+        actions: 'assignData',
       },
     },
     states: {
       initialise: {
         invoke: {
-          src: "getData",
+          src: 'getData',
           onError: {
-            target: "error",
+            target: 'error',
           },
           onDone: {
-            target: "ready",
-            actions: ["assignData"],
+            target: 'ready',
+            actions: ['assignData'],
           },
         },
       },
       ready: {
-        id: "ready",
-        initial: "idle",
+        id: 'ready',
+        initial: 'idle',
         states: {
           idle: {},
           refresh: {
             invoke: {
-              src: "pollData",
+              src: 'pollData',
               onDone: {
-                target: "#ready.idle",
-                actions: "assignData",
+                target: '#ready.idle',
+                actions: 'assignData',
               },
             },
           },
         },
         after: {
           5000: {
-            target: "#ready.refresh",
+            target: '#ready.refresh',
           },
         },
       },
@@ -86,7 +86,7 @@ const machine = createMachine(
           data: event.data,
         }),
     },
-  }
+  },
 ).withConfig({
   actions: {},
 });

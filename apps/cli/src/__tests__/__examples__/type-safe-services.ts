@@ -1,8 +1,8 @@
-import { createMachine } from "xstate";
+import { createMachine } from 'xstate';
 
 const machine = createMachine(
   {
-    tsTypes: {} as import("./type-safe-services.typegen").Typegen0,
+    tsTypes: {} as import('./type-safe-services.typegen').Typegen0,
     schema: {} as {
       services: {
         makeFetch: {
@@ -11,16 +11,16 @@ const machine = createMachine(
       };
     },
     invoke: {
-      src: "makeFetch",
+      src: 'makeFetch',
       onDone: {
-        actions: "sayHello",
+        actions: 'sayHello',
       },
     },
   },
   {
     services: {
       makeFetch: (context, event) => {
-        return Promise.resolve("string");
+        return Promise.resolve('string');
       },
     },
     actions: {

@@ -39,10 +39,10 @@ As an experimental feature, we include a snippet with this extension, `xsm`, whi
 You will get an untyped machine if you type `xsm` and expand in a `js` or `jsx` file.
 
 ```js
-import { createMachine } from "xstate";
+import { createMachine } from 'xstate';
 const toggleMachine = createMachine({
-  id: "toggle",
-  initial: "initialState",
+  id: 'toggle',
+  initial: 'initialState',
   states: {
     initialState: {},
   },
@@ -54,18 +54,18 @@ https://user-images.githubusercontent.com/167574/171016896-455d7772-cbbd-4b4c-8d
 In a `ts` or `tsx` file you will get a machine using typegen:
 
 ```ts
-import { createMachine } from "xstate";
+import { createMachine } from 'xstate';
 const demoMachine = createMachine({
-  id: "demo",
-  tsTypes: {} as import("./test.typegen").Typegen0,
+  id: 'demo',
+  tsTypes: {} as import('./test.typegen').Typegen0,
   schema: {
     context: {} as { value: string },
-    events: {} as { type: "FOO" },
+    events: {} as { type: 'FOO' },
   },
   context: {
-    value: "",
+    value: '',
   },
-  initial: "idle",
+  initial: 'idle',
   states: {
     idle: {},
   },

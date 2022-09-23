@@ -1,6 +1,6 @@
-import { types as t } from "@babel/core";
-import { ParserContext } from ".";
-import { AnyParser } from "./types";
+import { types as t } from '@babel/core';
+import { ParserContext } from '.';
+import { AnyParser } from './types';
 
 /**
  * Allows you to wrap a parser and reformulate

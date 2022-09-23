@@ -1,16 +1,16 @@
-import { DiagnosticSeverity } from "vscode-languageserver";
-import { DiagnosticGetter } from "../getDiagnostics";
 import {
   getRangeFromSourceLocation,
   getSetOfNames,
-} from "@xstate/tools-shared";
+} from '@xstate/tools-shared';
+import { DiagnosticSeverity } from 'vscode-languageserver';
+import { DiagnosticGetter } from '../getDiagnostics';
 
 export const getUnusedGuardsImplementations: DiagnosticGetter = (
   machine,
   textDocument,
 ) => {
   const allGuards = getSetOfNames(
-    machine.parseResult?.getAllConds(["named"]) || [],
+    machine.parseResult?.getAllConds(['named']) || [],
   );
 
   const unusedGuards =

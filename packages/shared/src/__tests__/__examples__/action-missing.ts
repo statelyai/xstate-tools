@@ -1,13 +1,13 @@
-import { createMachine } from "xstate";
+import { createMachine } from 'xstate';
 
 createMachine(
   {
-    tsTypes: {} as import("./action-missing.typegen").Typegen0,
+    tsTypes: {} as import('./action-missing.typegen').Typegen0,
     entry: [
-      "someAction",
-      "otherAction",
-      "notImplementedYet",
-      "anotherNotImplementedYet",
+      'someAction',
+      'otherAction',
+      'notImplementedYet',
+      'anotherNotImplementedYet',
     ],
   },
   {
@@ -15,5 +15,5 @@ createMachine(
       someAction: () => {},
       otherAction: () => {},
     },
-  }
+  },
 );

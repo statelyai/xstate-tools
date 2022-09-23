@@ -1,5 +1,5 @@
-import type { MachineParseResult } from "@xstate/machine-extractor";
-import { getRawTextFromNode, ImplementationsMetadata } from ".";
+import type { MachineParseResult } from '@xstate/machine-extractor';
+import { getRawTextFromNode, ImplementationsMetadata } from '.';
 
 /**
  * This function takes the AST of a parsed machine (the MachineParseResult)
@@ -17,13 +17,13 @@ export const getInlineImplementations = (
      * We don't ask for 'named' implementations here,
      * since they're not declared inline
      */
-    parseResult?.getAllConds(["inline", "identifier", "unknown"]) || [];
+    parseResult?.getAllConds(['inline', 'identifier', 'unknown']) || [];
 
   const allServices =
-    parseResult?.getAllServices(["inline", "identifier", "unknown"]) || [];
+    parseResult?.getAllServices(['inline', 'identifier', 'unknown']) || [];
 
   const allActions =
-    parseResult?.getAllActions(["inline", "identifier", "unknown"]) || [];
+    parseResult?.getAllActions(['inline', 'identifier', 'unknown']) || [];
 
   const inlineImplementations: ImplementationsMetadata = {
     actions: {},

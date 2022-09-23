@@ -1,5 +1,5 @@
-import { AnyNode } from "./scalars";
-import { objectTypeWithKnownKeys } from "./utils";
+import { AnyNode } from './scalars';
+import { objectTypeWithKnownKeys } from './utils';
 
 export const Schema = objectTypeWithKnownKeys({
   context: AnyNode,

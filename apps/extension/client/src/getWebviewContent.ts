@@ -1,4 +1,4 @@
-import * as vscode from "vscode";
+import * as vscode from 'vscode';
 
 export const getWebviewContent = (scriptsSrc: vscode.Uri, title: string) => {
   return `

@@ -9,37 +9,37 @@
 // - actions
 // - XState (all XState exports)
 
-import { assign, Machine } from "xstate";
+import { Machine } from 'xstate';
 
 const makeFetchMachine = () =>
   Machine({
-    id: "fetch",
-    initial: "idle",
+    id: 'fetch',
+    initial: 'idle',
     context: {
       retries: 0,
     },
-    type: "atomic",
+    type: 'atomic',
     states: {
       idle: {
         on: {
           FETCH: {
-            target: "loading",
+            target: 'loading',
           },
         },
       },
       loading: {
         on: {
-          RESOLVE: { target: "success" },
-          REJECT: { target: "failure" },
+          RESOLVE: { target: 'success' },
+          REJECT: { target: 'failure' },
         },
       },
       success: {
-        type: "final",
+        type: 'final',
       },
       failure: {
         on: {
           RETRY: {
-            target: "loading",
+            target: 'loading',
           },
         },
       },

@@ -1,9 +1,9 @@
-import { parseMachinesFromFile } from "../parseMachinesFromFile";
-import { hashedId } from "../utils";
+import { parseMachinesFromFile } from '../parseMachinesFromFile';
+import { hashedId } from '../utils';
 
-describe("Invoke", () => {
-  it("Should allow for JSON stringifying anonymous invocations", () => {
-    const id = hashedId("() => {}");
+describe('Invoke', () => {
+  it('Should allow for JSON stringifying anonymous invocations', () => {
+    const id = hashedId('() => {}');
     const result = parseMachinesFromFile(`
       createMachine({
         invoke: {
@@ -21,7 +21,7 @@ describe("Invoke", () => {
     expect(config).toContain(id);
   });
 
-  it("Should detect inline implementations correctly", () => {
+  it('Should detect inline implementations correctly', () => {
     const result = parseMachinesFromFile(`
       createMachine({
         invoke: {
@@ -32,9 +32,9 @@ describe("Invoke", () => {
 
     const invoke = result.machines[0].ast.definition?.invoke?.[0];
 
-    expect(invoke?.src?.declarationType).toEqual("inline");
+    expect(invoke?.src?.declarationType).toEqual('inline');
 
-    const invokes = result.machines[0].getAllServices(["inline"]);
+    const invokes = result.machines[0].getAllServices(['inline']);
 
     expect(invokes).toHaveLength(1);
   });

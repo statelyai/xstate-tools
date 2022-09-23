@@ -1,12 +1,12 @@
-import { createMachine } from "xstate";
+import { createMachine } from 'xstate';
 
 createMachine({
-  tsTypes: {} as import("./delay-double-quote.typegen").Typegen0,
-  initial: "a",
+  tsTypes: {} as import('./delay-double-quote.typegen').Typegen0,
+  initial: 'a',
   states: {
     a: {
       after: {
-        'wait "forever"': "b",
+        'wait "forever"': 'b',
       },
     },
     b: {},

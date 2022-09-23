@@ -1,10 +1,10 @@
-import { types as t } from "@babel/core";
-import { createParser } from "./createParser";
-import { unionType } from "./unionType";
+import { types as t } from '@babel/core';
+import { createParser } from './createParser';
+import { unionType } from './unionType';
 
 interface HistoryNode {
   node: t.Node;
-  value: "shallow" | "deep" | boolean;
+  value: 'shallow' | 'deep' | boolean;
 }
 
 const HistoryAsString = createParser({
@@ -12,7 +12,7 @@ const HistoryAsString = createParser({
   parseNode: (node): HistoryNode => {
     return {
       node,
-      value: node.value as HistoryNode["value"],
+      value: node.value as HistoryNode['value'],
     };
   },
 });

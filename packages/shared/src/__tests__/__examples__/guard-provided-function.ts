@@ -1,12 +1,12 @@
-import { createMachine } from "xstate";
+import { createMachine } from 'xstate';
 
 createMachine(
   {
-    tsTypes: {} as import("./guard-provided-function.typegen").Typegen0,
+    tsTypes: {} as import('./guard-provided-function.typegen').Typegen0,
     on: {
       FOO: {
-        cond: "guard",
-        actions: "sayHello",
+        cond: 'guard',
+        actions: 'sayHello',
       },
     },
   },
@@ -14,5 +14,5 @@ createMachine(
     guards: {
       guard: () => true,
     },
-  }
+  },
 );

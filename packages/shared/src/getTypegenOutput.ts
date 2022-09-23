@@ -1,22 +1,22 @@
-import { createMachine } from "xstate";
-import { getStateMatchesObjectSyntax } from "./getStateMatchesObjectSyntax";
-import { introspectMachine } from "./introspectMachine";
-import { XStateUpdateMachine } from "./types";
+import { createMachine } from 'xstate';
+import { getStateMatchesObjectSyntax } from './getStateMatchesObjectSyntax';
+import { introspectMachine } from './introspectMachine';
+import { XStateUpdateMachine } from './types';
 
 export const getTypegenOutput = (event: {
   machines: Pick<
     XStateUpdateMachine,
-    | "hasTypesNode"
-    | "config"
-    | "namedGuards"
-    | "namedActions"
-    | "actionsInOptions"
-    | "guardsInOptions"
-    | "servicesInOptions"
-    | "delaysInOptions"
-    | "tags"
-    | "allServices"
-    | "chooseActionsInOptions"
+    | 'hasTypesNode'
+    | 'config'
+    | 'namedGuards'
+    | 'namedActions'
+    | 'actionsInOptions'
+    | 'guardsInOptions'
+    | 'servicesInOptions'
+    | 'delaysInOptions'
+    | 'tags'
+    | 'allServices'
+    | 'chooseActionsInOptions'
   >[];
 }) => {
   return `
@@ -45,52 +45,52 @@ export const getTypegenOutput = (event: {
         const introspectResult = introspectMachine(createdMachine as any);
 
         const actions = introspectResult.actions.lines
-          .filter((line) => !line.name.startsWith("xstate."))
+          .filter((line) => !line.name.startsWith('xstate.'))
           .filter((action) => machine.namedActions.includes(action.name));
         const guards = introspectResult.guards.lines
-          .filter((line) => !line.name.startsWith("xstate."))
+          .filter((line) => !line.name.startsWith('xstate.'))
           .filter((elem) => machine.namedGuards.includes(elem.name));
 
         const services = introspectResult.services.lines
-          .filter((line) => !line.name.startsWith("xstate."))
+          .filter((line) => !line.name.startsWith('xstate.'))
           .filter((invoke) =>
-            machine.allServices.some((service) => service.src === invoke.name)
+            machine.allServices.some((service) => service.src === invoke.name),
           );
 
         const delays = introspectResult.delays.lines.filter(
-          (line) => !line.name.startsWith("xstate.")
+          (line) => !line.name.startsWith('xstate.'),
         );
 
         const requiredActions = actions
           .filter((action) => !machine.actionsInOptions.includes(action.name))
           .sort()
           .map((action) => JSON.stringify(action.name))
-          .join(" | ");
+          .join(' | ');
 
         const requiredServices = services
           .filter(
-            (service) => !machine.servicesInOptions.includes(service.name)
+            (service) => !machine.servicesInOptions.includes(service.name),
           )
           .sort()
           .map((service) => JSON.stringify(service.name))
-          .join(" | ");
+          .join(' | ');
 
         const requiredGuards = guards
           .filter((guard) => !machine.guardsInOptions.includes(guard.name))
           .sort()
           .map((guard) => JSON.stringify(guard.name))
-          .join(" | ");
+          .join(' | ');
 
         const requiredDelays = delays
           .filter((delay) => !machine.delaysInOptions.includes(delay.name))
           .sort()
           .map((delay) => JSON.stringify(delay.name))
-          .join(" | ");
+          .join(' | ');
 
         const tags = machine.tags
           .sort()
           .map((tag) => JSON.stringify(tag))
-          .join(" | ");
+          .join(' | ');
 
         const matchesStates = introspectResult.stateMatches
           .sort()
@@ -110,20 +110,20 @@ export const getTypegenOutput = (event: {
         ]);
 
         internalEvents[
-          "xstate.init"
+          'xstate.init'
         ] = `'xstate.init': { type: 'xstate.init' };`;
 
         machine.allServices.forEach((service) => {
           if (service.id) {
             internalEvents[`done.invoke.${service.id}`] = `${JSON.stringify(
-              `done.invoke.${service.id}`
+              `done.invoke.${service.id}`,
             )}: { type: ${JSON.stringify(
-              `done.invoke.${service.id}`
+              `done.invoke.${service.id}`,
             )}; data: unknown; __tip: "See the XState TS docs to learn how to strongly type this."; };`;
             internalEvents[`error.platform.${service.id}`] = `${JSON.stringify(
-              `error.platform.${service.id}`
+              `error.platform.${service.id}`,
             )}: { type: ${JSON.stringify(
-              `error.platform.${service.id}`
+              `error.platform.${service.id}`,
             )}; data: unknown; };`;
           }
         });
@@ -134,28 +134,28 @@ export const getTypegenOutput = (event: {
             ${Object.entries(internalEvents)
               .sort(([keyA], [keyB]) => (keyA < keyB ? -1 : 1))
               .map(([, value]) => value)
-              .join("\n")}
+              .join('\n')}
           };
           invokeSrcNameMap: {
             ${Array.from(introspectResult.serviceSrcToIdMap)
               .filter(([src]) => {
                 return machine.allServices.some(
-                  (service) => service.src === src
+                  (service) => service.src === src,
                 );
               })
               .sort(([srcA], [srcB]) => (srcA < srcB ? -1 : 1))
               .map(([src, ids]) => {
                 return `${JSON.stringify(src)}: ${Array.from(ids)
                   .map((item) => JSON.stringify(`done.invoke.${item}`))
-                  .join(" | ")};`;
+                  .join(' | ')};`;
               })
-              .join("\n")}
+              .join('\n')}
           };
           missingImplementations: {
-            ${`actions: ${requiredActions || "never"};`}
-            ${`services: ${requiredServices || "never"};`}
-            ${`guards: ${requiredGuards || "never"};`}
-            ${`delays: ${requiredDelays || "never"};`}
+            ${`actions: ${requiredActions || 'never'};`}
+            ${`services: ${requiredServices || 'never'};`}
+            ${`guards: ${requiredGuards || 'never'};`}
+            ${`delays: ${requiredDelays || 'never'};`}
           };
           eventsCausingActions: {
             ${displayEventsCausing(actions)}
@@ -169,8 +169,8 @@ export const getTypegenOutput = (event: {
           eventsCausingDelays: {
             ${displayEventsCausing(delays)}
           };
-          matchesStates: ${matchesStates.join(" | ") || "undefined"};
-          tags: ${tags || "never"};
+          matchesStates: ${matchesStates.join(' | ') || 'undefined'};
+          tags: ${tags || 'never'};
         }`;
       } catch (e) {
         console.log(e);
@@ -180,7 +180,7 @@ export const getTypegenOutput = (event: {
         '@@xstate/typegen': false;
       };`;
     })
-    .join("\n")}
+    .join('\n')}
   `;
 };
 
@@ -191,14 +191,14 @@ const collectInternalEvents = (lineArrays: { events: string[] }[][]) => {
     lines.forEach((line) => {
       line.events.forEach((event) => {
         const safelyQuoted = JSON.stringify(event);
-        if (event.startsWith("done.invoke")) {
+        if (event.startsWith('done.invoke')) {
           internalEvents[
             event
           ] = `${safelyQuoted}: { type: ${safelyQuoted}; data: unknown; __tip: "See the XState TS docs to learn how to strongly type this."; };`;
-        } else if (event.startsWith("xstate.") || event === "") {
+        } else if (event.startsWith('xstate.') || event === '') {
           const safelyQuoted = JSON.stringify(event);
           internalEvents[event] = `${safelyQuoted}: { type: ${safelyQuoted} };`;
-        } else if (event.startsWith("error.platform")) {
+        } else if (event.startsWith('error.platform')) {
           internalEvents[
             event
           ] = `${safelyQuoted}: { type: ${safelyQuoted}; data: unknown; };`;
@@ -219,15 +219,15 @@ const displayEventsCausing = (lines: { name: string; events: string[] }[]) => {
           ? unique(
               line.events.map((event) => {
                 return event;
-              })
+              }),
             )
               .map((event) => JSON.stringify(event))
               .sort()
-              .join(" | ")
-          : "never"
+              .join(' | ')
+          : 'never'
       };`;
     })
-    .join("\n");
+    .join('\n');
 };
 
 const unique = <T>(array: T[]) => {

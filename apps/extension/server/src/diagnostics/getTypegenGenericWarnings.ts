@@ -1,6 +1,6 @@
-import { DiagnosticSeverity } from "vscode-languageserver";
-import { getRangeFromSourceLocation } from "@xstate/tools-shared";
-import { DiagnosticGetter } from "../getDiagnostics";
+import { getRangeFromSourceLocation } from '@xstate/tools-shared';
+import { DiagnosticSeverity } from 'vscode-languageserver';
+import { DiagnosticGetter } from '../getDiagnostics';
 
 export const getTypegenGenericWarnings: DiagnosticGetter = (machine) => {
   const typeArguments = machine?.parseResult?.ast?.typeArguments?.node;

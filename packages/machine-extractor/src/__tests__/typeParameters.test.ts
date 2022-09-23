@@ -1,7 +1,7 @@
-import { parseMachinesFromFile } from "..";
+import { parseMachinesFromFile } from '..';
 
-describe("Type parameter parsing", () => {
-  it("Should parse the correct params", () => {
+describe('Type parameter parsing', () => {
+  it('Should parse the correct params', () => {
     const fileText = `
       createMachine<Context, Event, any, any>({});
     `;
@@ -14,6 +14,6 @@ describe("Type parameter parsing", () => {
       result.machines[0].ast?.typeArguments?.node.end!,
     );
 
-    expect(sliceOfResult).toEqual("<Context, Event, any, any>");
+    expect(sliceOfResult).toEqual('<Context, Event, any, any>');
   });
 });

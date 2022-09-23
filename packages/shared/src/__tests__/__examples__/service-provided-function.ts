@@ -1,8 +1,8 @@
-import { createMachine } from "xstate";
+import { createMachine } from 'xstate';
 
 createMachine(
   {
-    tsTypes: {} as import("./service-provided-function.typegen").Typegen0,
+    tsTypes: {} as import('./service-provided-function.typegen').Typegen0,
     schema: {
       services: {
         service1: {} as {
@@ -15,10 +15,10 @@ createMachine(
     },
     invoke: [
       {
-        src: "service1",
+        src: 'service1',
       },
       {
-        src: "service2",
+        src: 'service2',
       },
     ],
   },
@@ -31,5 +31,5 @@ createMachine(
         return Promise.resolve(true);
       },
     },
-  }
+  },
 );

@@ -1,10 +1,4 @@
-import {
-  assign,
-  createMachine,
-  DoneInvokeEvent,
-  forwardTo,
-  Sender,
-} from "xstate";
+import { assign, createMachine, DoneInvokeEvent, forwardTo } from 'xstate';
 
 export interface AudioRecorderMachineContext {
   stream?: MediaStream;
@@ -13,26 +7,26 @@ export interface AudioRecorderMachineContext {
 
 export type AudioRecorderMachineEvent =
   | {
-      type: "RETRY";
+      type: 'RETRY';
     }
   | {
-      type: "RECORD";
+      type: 'RECORD';
     }
   | {
-      type: "AUDIO_CHUNK_RECEIVED";
+      type: 'AUDIO_CHUNK_RECEIVED';
       blob: Blob;
     }
   | {
-      type: "PAUSE";
+      type: 'PAUSE';
     }
   | {
-      type: "RESUME";
+      type: 'RESUME';
     }
   | {
-      type: "STOP";
+      type: 'STOP';
     }
   | {
-      type: "DOWNLOAD";
+      type: 'DOWNLOAD';
     };
 
 const audioRecorderMachine = createMachine<
@@ -40,71 +34,71 @@ const audioRecorderMachine = createMachine<
   AudioRecorderMachineEvent
 >(
   {
-    id: "audioRecorder",
-    initial: "idle",
+    id: 'audioRecorder',
+    initial: 'idle',
     context: {
       mediaChunks: [],
     },
-    exit: "removeMediaStream",
+    exit: 'removeMediaStream',
     states: {
       idle: {
         on: {
           RECORD: {
-            target: "requestingAudioOptions",
+            target: 'requestingAudioOptions',
           },
         },
       },
       requestingAudioOptions: {
         invoke: {
-          src: "requestAudioOptions",
+          src: 'requestAudioOptions',
           onError: {
-            target: "couldNotRetrieveAudioOptions",
+            target: 'couldNotRetrieveAudioOptions',
           },
           onDone: {
-            target: "recording",
-            actions: "assignStreamToContext",
+            target: 'recording',
+            actions: 'assignStreamToContext',
           },
         },
       },
       recordingFailed: {
         on: {
-          RETRY: { target: "recording" },
+          RETRY: { target: 'recording' },
         },
       },
       recording: {
         on: {
           AUDIO_CHUNK_RECEIVED: {
-            actions: "appendBlob",
+            actions: 'appendBlob',
           },
           STOP: {
-            target: "complete",
+            target: 'complete',
           },
         },
         invoke: {
-          id: "recording",
-          src: "recordFromStream",
+          id: 'recording',
+          src: 'recordFromStream',
           onError: {
-            target: "recordingFailed",
+            target: 'recordingFailed',
             actions: (context, event) => {
               console.error(event);
             },
           },
         },
-        initial: "running",
+        initial: 'running',
         states: {
           running: {
             on: {
               PAUSE: {
-                target: "paused",
-                actions: forwardTo("recording"),
+                target: 'paused',
+                actions: forwardTo('recording'),
               },
             },
           },
           paused: {
             on: {
               RESUME: {
-                target: "running",
-                actions: forwardTo("recording"),
+                target: 'running',
+                actions: forwardTo('recording'),
               },
             },
           },
@@ -113,17 +107,17 @@ const audioRecorderMachine = createMachine<
       complete: {
         on: {
           RETRY: {
-            target: "recording",
-            actions: "clearBlobData",
+            target: 'recording',
+            actions: 'clearBlobData',
           },
           DOWNLOAD: {
-            actions: "downloadBlob",
+            actions: 'downloadBlob',
           },
         },
       },
       couldNotRetrieveAudioOptions: {
         on: {
-          RETRY: { target: "requestingAudioOptions" },
+          RETRY: { target: 'requestingAudioOptions' },
         },
       },
     },
@@ -132,10 +126,10 @@ const audioRecorderMachine = createMachine<
     actions: {
       downloadBlob: (context) => {
         const blob = new Blob(context.mediaChunks, {
-          type: "audio/ogg; codecs=opus",
+          type: 'audio/ogg; codecs=opus',
         });
         const url = URL.createObjectURL(blob);
-        const downloadLink = document.createElement("a");
+        const downloadLink = document.createElement('a');
 
         downloadLink.href = url;
         downloadLink.download = `file.ogg`;
@@ -161,7 +155,7 @@ const audioRecorderMachine = createMachine<
         };
       }),
       appendBlob: assign((context, event) => {
-        if (event.type !== "AUDIO_CHUNK_RECEIVED") return {};
+        if (event.type !== 'AUDIO_CHUNK_RECEIVED') return {};
         return {
           mediaChunks: [...context.mediaChunks, event.blob],
         };
@@ -175,22 +169,22 @@ const audioRecorderMachine = createMachine<
         // @ts-ignore
         mediaRecorder.ondataavailable = (e) => {
           send({
-            type: "AUDIO_CHUNK_RECEIVED",
+            type: 'AUDIO_CHUNK_RECEIVED',
             blob: e.data,
           });
         };
         mediaRecorder.start(200);
 
         onReceive((event) => {
-          if (event.type === "PAUSE") {
+          if (event.type === 'PAUSE') {
             mediaRecorder.pause();
-          } else if (event.type === "RESUME") {
+          } else if (event.type === 'RESUME') {
             mediaRecorder.resume();
           }
         });
 
         return () => {
-          if (mediaRecorder.state !== "inactive") {
+          if (mediaRecorder.state !== 'inactive') {
             mediaRecorder.stop();
           }
         };

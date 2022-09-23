@@ -1,7 +1,7 @@
-import { IntrospectMachineResult, SubState } from "@xstate/tools-shared";
+import { IntrospectMachineResult, SubState } from '@xstate/tools-shared';
 
 export const getStateMatchesObjectSyntax = (
-  introspectionResult: IntrospectMachineResult
+  introspectionResult: IntrospectMachineResult,
 ): string => {
   const getUnionForSubState = (subState: SubState, depth = 0): string => {
     // Do not include sibling states in the union
@@ -13,7 +13,7 @@ export const getStateMatchesObjectSyntax = (
             .sort()
             .map((state) =>
               JSON.stringify(state, (_key, value) => {
-                if (typeof value !== "object") {
+                if (typeof value !== 'object') {
                   return value;
                 }
                 return Object.keys(value).reduce<Record<string, any>>(
@@ -21,15 +21,15 @@ export const getStateMatchesObjectSyntax = (
                     acc[key] = value[key];
                     return acc;
                   },
-                  {}
+                  {},
                 );
-              })
+              }),
             );
 
     const substatesWithChildren = Object.entries(subState.states).filter(
       ([, value]) => {
         return Object.keys(value.states).length > 0;
-      }
+      },
     );
 
     if (substatesWithChildren.length > 0) {
@@ -39,13 +39,13 @@ export const getStateMatchesObjectSyntax = (
           .map(([state, value]) => {
             return `${JSON.stringify(state)}?: ${getUnionForSubState(
               value,
-              depth + 1
+              depth + 1,
             )};`;
           })
-          .join("\n")} }`
+          .join('\n')} }`,
       );
     }
-    return `${states.join(" | ")}`;
+    return `${states.join(' | ')}`;
   };
 
   return getUnionForSubState(introspectionResult.subState);

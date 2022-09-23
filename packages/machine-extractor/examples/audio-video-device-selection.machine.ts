@@ -1,11 +1,4 @@
-import {
-  assign,
-  createMachine,
-  DoneInvokeEvent,
-  EventObject,
-  Sender,
-  StateNodeConfig,
-} from 'xstate';
+import { assign, createMachine, DoneInvokeEvent } from 'xstate';
 
 export interface AudioVideoDeviceSelectionMachineContext {
   audioInputDevices: MediaDeviceInfo[];

@@ -1,1 +1,1 @@
-export const INLINE_IMPLEMENTATION_TYPE = "_inline";
+export const INLINE_IMPLEMENTATION_TYPE = '_inline';

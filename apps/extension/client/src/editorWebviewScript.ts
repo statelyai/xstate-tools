@@ -1,7 +1,6 @@
-import { ImplementationsMetadata } from "@xstate/tools-shared";
-import { compressToEncodedURIComponent } from "lz-string";
-
-import { assign, createMachine, interpret, MachineConfig } from "xstate";
+import { ImplementationsMetadata } from '@xstate/tools-shared';
+import { compressToEncodedURIComponent } from 'lz-string';
+import { assign, createMachine, interpret, MachineConfig } from 'xstate';
 
 declare global {
   function acquireVsCodeApi(): {
@@ -16,12 +15,12 @@ export interface WebViewMachineContext {
   layoutString: string | undefined;
   implementations: ImplementationsMetadata;
   baseUrl: string;
-  themeKind: "light" | "dark";
+  themeKind: 'light' | 'dark';
 }
 
 export type EditorWebviewScriptEvent =
   | {
-      type: "RECEIVE_SERVICE";
+      type: 'RECEIVE_SERVICE';
       config: MachineConfig<any, any, any>;
       layoutString: string | undefined;
       uri: string;
@@ -31,16 +30,16 @@ export type EditorWebviewScriptEvent =
       themeKind: any;
     }
   | {
-      type: "NODE_SELECTED";
+      type: 'NODE_SELECTED';
       path: string[];
     }
   | {
-      type: "OPEN_LINK";
+      type: 'OPEN_LINK';
       url: string;
     }
   | VSCodeNodeSelectedEvent
   | {
-      type: "RECEIVE_CONFIG_UPDATE_FROM_VSCODE";
+      type: 'RECEIVE_CONFIG_UPDATE_FROM_VSCODE';
       config: MachineConfig<any, any, any>;
       uri: string;
       index: number;
@@ -48,7 +47,7 @@ export type EditorWebviewScriptEvent =
       implementations: ImplementationsMetadata;
     }
   | {
-      type: "DEFINITION_UPDATED";
+      type: 'DEFINITION_UPDATED';
       layoutString: string;
       config: MachineConfig<any, any, any>;
       implementations: ImplementationsMetadata;
@@ -57,19 +56,19 @@ export type EditorWebviewScriptEvent =
   | VSCodeOpenLinkEvent;
 
 export type VSCodeNodeSelectedEvent = {
-  type: "vscode.selectNode";
+  type: 'vscode.selectNode';
   path: string[];
   uri: string;
   index: number;
 };
 
 export type VSCodeOpenLinkEvent = {
-  type: "vscode.openLink";
+  type: 'vscode.openLink';
   url: string;
 };
 
 export type UpdateDefinitionEvent = {
-  type: "vscode.updateDefinition";
+  type: 'vscode.updateDefinition';
   config: MachineConfig<any, any, any>;
   layoutString: string;
   uri: string;
@@ -89,10 +88,10 @@ const getVsCodeApi = () => {
 
 const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
   {
-    initial: "waitingForFirstContact",
+    initial: 'waitingForFirstContact',
     context: {
       config: {},
-      uri: "",
+      uri: '',
       index: 0,
       layoutString: undefined,
       implementations: {
@@ -100,8 +99,8 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
         guards: {},
         services: {},
       },
-      baseUrl: "",
-      themeKind: "dark",
+      baseUrl: '',
+      themeKind: 'dark',
     },
     invoke: {
       src: () => (send) => {
@@ -114,16 +113,16 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
             console.warn(e);
           }
         };
-        window.addEventListener("message", listener);
+        window.addEventListener('message', listener);
 
-        return () => window.removeEventListener("message", listener);
+        return () => window.removeEventListener('message', listener);
       },
     },
     on: {
       NODE_SELECTED: {
         actions: (context, event) => {
           getVsCodeApi().postMessage({
-            type: "vscode.selectNode",
+            type: 'vscode.selectNode',
             index: context.index,
             uri: context.uri,
             path: event.path,
@@ -134,7 +133,7 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
       OPEN_LINK: {
         actions: (_, event) => {
           getVsCodeApi().postMessage({
-            type: "vscode.openLink",
+            type: 'vscode.openLink',
             url: event.url,
           });
         },
@@ -145,7 +144,7 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
       waitingForFirstContact: {
         on: {
           RECEIVE_SERVICE: {
-            target: "hasService",
+            target: 'hasService',
             actions: assign((_context, event) => {
               return {
                 config: event.config,
@@ -165,7 +164,7 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
         invoke: {
           src: (context) => () => {
             const iframe = document.getElementById(
-              "iframe"
+              'iframe',
             ) as HTMLIFrameElement;
 
             if (!iframe || iframe.src) return;
@@ -179,11 +178,11 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
             }/registry/editor/from-url?runningInStatelyExtension=true&themeKind=${
               context.themeKind
             }&config=${compressToEncodedURIComponent(
-              JSON.stringify(context.config)
+              JSON.stringify(context.config),
             )}${
-              context.layoutString ? `&layout=${context.layoutString}` : ""
+              context.layoutString ? `&layout=${context.layoutString}` : ''
             }&implementations=${compressToEncodedURIComponent(
-              JSON.stringify(context.implementations)
+              JSON.stringify(context.implementations),
             )}}`;
           },
         },
@@ -201,7 +200,7 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
                   themeKind: event.themeKind,
                 };
               }),
-              "updateIframe",
+              'updateIframe',
             ],
           },
           RECEIVE_CONFIG_UPDATE_FROM_VSCODE: {
@@ -217,7 +216,7 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
                   implementations: event.implementations,
                 };
               }),
-              "updateIframe",
+              'updateIframe',
             ],
           },
           DEFINITION_UPDATED: {
@@ -231,7 +230,7 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
               }),
               (ctx, event) => {
                 getVsCodeApi().postMessage({
-                  type: "vscode.updateDefinition",
+                  type: 'vscode.updateDefinition',
                   config: event.config,
                   index: ctx.index,
                   uri: ctx.uri,
@@ -248,7 +247,7 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
   {
     actions: {
       updateIframe: (context) => {
-        const iframe = document.getElementById("iframe") as HTMLIFrameElement;
+        const iframe = document.getElementById('iframe') as HTMLIFrameElement;
 
         if (!iframe) return;
 
@@ -256,14 +255,14 @@ const machine = createMachine<WebViewMachineContext, EditorWebviewScriptEvent>(
           {
             config: context.config,
             layoutString: context.layoutString,
-            type: "UPDATE_CONFIG",
+            type: 'UPDATE_CONFIG',
             implementations: context.implementations,
           },
-          "*"
+          '*',
         );
       },
     },
-  }
+  },
 );
 
 interpret(machine).start();

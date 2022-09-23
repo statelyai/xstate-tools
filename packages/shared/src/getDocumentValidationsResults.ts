@@ -1,11 +1,11 @@
-import { createMachine } from "xstate";
-import { parseMachinesFromFile } from "@xstate/machine-extractor";
-import { DocumentValidationsResult } from "./types";
-import { filterOutIgnoredMachines } from "./filterOutIgnoredMachines";
-import { introspectMachine } from "./introspectMachine";
+import { parseMachinesFromFile } from '@xstate/machine-extractor';
+import { createMachine } from 'xstate';
+import { filterOutIgnoredMachines } from './filterOutIgnoredMachines';
+import { introspectMachine } from './introspectMachine';
+import { DocumentValidationsResult } from './types';
 
 export const getDocumentValidationsResults = (
-  text: string
+  text: string,
 ): DocumentValidationsResult[] => {
   return filterOutIgnoredMachines(parseMachinesFromFile(text)).machines.map(
     (parseResult) => {
@@ -35,6 +35,6 @@ export const getDocumentValidationsResults = (
           documentText: text,
         };
       }
-    }
+    },
   );
 };

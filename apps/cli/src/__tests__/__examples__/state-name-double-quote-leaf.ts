@@ -1,11 +1,11 @@
-import { createMachine } from "xstate";
+import { createMachine } from 'xstate';
 
 createMachine({
-  tsTypes: {} as import("./state-name-double-quote-leaf.typegen").Typegen0,
+  tsTypes: {} as import('./state-name-double-quote-leaf.typegen').Typegen0,
   schema: {
-    events: {} as { type: "NEXT" },
+    events: {} as { type: 'NEXT' },
   },
-  initial: "a",
+  initial: 'a',
   states: {
     a: {
       initial: 'oh, this is just "awesome"',

@@ -1,7 +1,7 @@
-import { parseMachinesFromFile } from "..";
+import { parseMachinesFromFile } from '..';
 
-describe("xstate-ignore blocks", () => {
-  it("Should pick up the comment blocks with ignore in them", () => {
+describe('xstate-ignore blocks', () => {
+  it('Should pick up the comment blocks with ignore in them', () => {
     const result = parseMachinesFromFile(`
       // xstate-ignore-next-line
       createMachine({})
@@ -11,7 +11,7 @@ describe("xstate-ignore blocks", () => {
     expect(result.machines[0].getIsIgnored()).toEqual(true);
   });
 
-  it("Should pick up multi-line comment blocks with ignore in them", () => {
+  it('Should pick up multi-line comment blocks with ignore in them', () => {
     const result = parseMachinesFromFile(`
       /** xstate-ignore-next-line */
       createMachine({})
@@ -21,7 +21,7 @@ describe("xstate-ignore blocks", () => {
     expect(result.machines[0].getIsIgnored()).toEqual(true);
   });
 
-  it("Should ignore misspelled comments", () => {
+  it('Should ignore misspelled comments', () => {
     const result = parseMachinesFromFile(`
       /** xstate-ignore-next-sline */
       createMachine({})
@@ -31,7 +31,7 @@ describe("xstate-ignore blocks", () => {
     expect(result.machines[0].getIsIgnored()).toEqual(false);
   });
 
-  it("Should ignore comments that are above the line", () => {
+  it('Should ignore comments that are above the line', () => {
     const result = parseMachinesFromFile(`
       /** xstate-ignore-next-line */
 
@@ -40,7 +40,7 @@ describe("xstate-ignore blocks", () => {
 
     expect(result.machines[0].getIsIgnored()).toEqual(false);
   });
-  it("Should ignore comments that are inside the definition", () => {
+  it('Should ignore comments that are inside the definition', () => {
     const result = parseMachinesFromFile(`
     
       createMachine(

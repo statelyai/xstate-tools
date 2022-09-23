@@ -1,20 +1,20 @@
-import { createMachine } from "xstate";
+import { createMachine } from 'xstate';
 
 export const arraysAsTargets = createMachine({
-  type: "parallel",
+  type: 'parallel',
   on: {
-    "*": [
+    '*': [
       {
-        target: ["first.a", "second.b"],
+        target: ['first.a', 'second.b'],
       },
       {
-        target: ["first.c", "second.a"],
+        target: ['first.c', 'second.a'],
       },
     ],
   },
   states: {
     first: {
-      initial: "a",
+      initial: 'a',
       states: {
         a: {},
         b: {},
@@ -22,7 +22,7 @@ export const arraysAsTargets = createMachine({
       },
     },
     second: {
-      initial: "a",
+      initial: 'a',
       states: {
         a: {},
         b: {},
