@@ -3,7 +3,7 @@
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": true,
-    "source.organizeImports": true
+    "source.sortImports": true
   },
   "typescript.tsdk": "node_modules/typescript/lib"
 }

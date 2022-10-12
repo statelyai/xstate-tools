@@ -1,4 +1,4 @@
-import { types as t } from '@babel/core';
+import * as t from '@babel/types';
 import { AnyNode, BooleanLiteral } from './scalars';
 import { unionType } from './unionType';
 

@@ -54,7 +54,7 @@ export const handleDefinitionUpdate = async ({
 
   if (layoutComment) {
     // replace layout comment content
-    const range = getRangeFromSourceLocation(layoutComment.node.loc);
+    const range = getRangeFromSourceLocation(layoutComment.node.loc!);
 
     workspaceEdit.replace(
       doc.uri,

@@ -1,4 +1,4 @@
-import { types as t } from '@babel/core';
+import * as t from '@babel/types';
 import { Condition } from 'xstate';
 import { DeclarationType } from '.';
 import { createParser } from './createParser';

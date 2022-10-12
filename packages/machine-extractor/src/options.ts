@@ -1,4 +1,4 @@
-import { types as t } from '@babel/core';
+import * as t from '@babel/types';
 import { ActionNode, ChooseAction } from './actions';
 import { maybeIdentifierTo } from './identifiers';
 import { AnyNode, BooleanLiteral } from './scalars';
