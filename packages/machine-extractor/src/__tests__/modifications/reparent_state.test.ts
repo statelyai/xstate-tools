@@ -32,7 +32,7 @@ describe('reparent_state', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           a: {},
           b: {
@@ -41,7 +41,7 @@ describe('reparent_state', () => {
             }
           }
         }
-      })"
+      }"
     `);
   });
 
@@ -68,7 +68,7 @@ describe('reparent_state', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           a: {
             states: {
@@ -80,7 +80,7 @@ describe('reparent_state', () => {
             }
           },
         }
-      })"
+      }"
     `);
   });
 
@@ -111,7 +111,7 @@ describe('reparent_state', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           a: {},
           b: {
@@ -121,7 +121,7 @@ describe('reparent_state', () => {
             }
           }
         }
-      })"
+      }"
     `);
   });
 
@@ -149,7 +149,7 @@ describe('reparent_state', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           a: {
             states: {
@@ -162,7 +162,7 @@ describe('reparent_state', () => {
             }
           }
         }
-      })"
+      }"
     `);
   });
 
@@ -192,7 +192,7 @@ describe('reparent_state', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           a: {
             on: {
@@ -205,7 +205,7 @@ describe('reparent_state', () => {
             }
           }
         }
-      })"
+      }"
     `);
   });
 
@@ -239,7 +239,7 @@ describe('reparent_state', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           a: {
             on: {
@@ -256,7 +256,7 @@ describe('reparent_state', () => {
             }
           }
         }
-      })"
+      }"
     `);
   });
 
@@ -290,7 +290,7 @@ describe('reparent_state', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           a: {
             states: {
@@ -307,7 +307,7 @@ describe('reparent_state', () => {
             }
           }
         }
-      })"
+      }"
     `);
   });
 
@@ -339,7 +339,7 @@ describe('reparent_state', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           a: {},
           b: {
@@ -353,7 +353,7 @@ describe('reparent_state', () => {
             }
           }
         }
-      })"
+      }"
     `);
   });
 
@@ -387,7 +387,7 @@ describe('reparent_state', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           a: {},
           b: {
@@ -403,7 +403,7 @@ describe('reparent_state', () => {
             id: 'bullseye',
           }
         }
-      })"
+      }"
     `);
   });
 
@@ -435,7 +435,7 @@ describe('reparent_state', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           a: {
             states: {
@@ -452,7 +452,7 @@ describe('reparent_state', () => {
             }
           },
         }
-      })"
+      }"
     `);
   });
 
@@ -484,7 +484,7 @@ describe('reparent_state', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           b: {
             states: {
@@ -501,7 +501,7 @@ describe('reparent_state', () => {
             }
           }
         }
-      })"
+      }"
     `);
   });
 
@@ -538,7 +538,7 @@ describe('reparent_state', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           a: {
             // if we wouldn't update the target relying on this ID when moving that transition outside of this ancestor
@@ -558,7 +558,7 @@ describe('reparent_state', () => {
             }
           },
         }
-      })"
+      }"
     `);
   });
 
@@ -590,7 +590,7 @@ describe('reparent_state', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           a: {
             states: {
@@ -607,7 +607,7 @@ describe('reparent_state', () => {
             }
           },
         }
-      })"
+      }"
     `);
   });
 
@@ -635,7 +635,7 @@ describe('reparent_state', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           a: {},
           b: {
@@ -644,7 +644,7 @@ describe('reparent_state', () => {
             }
           },
         }
-      })"
+      }"
     `);
   });
 
@@ -673,7 +673,7 @@ describe('reparent_state', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           a: {
             initial: 'a1',
@@ -687,7 +687,7 @@ describe('reparent_state', () => {
             }
           },
         }
-      })"
+      }"
     `);
   });
 });

@@ -23,11 +23,11 @@ describe('remove_state', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           bar: {}
         }
-      })"
+      }"
     `);
   });
 
@@ -47,7 +47,7 @@ describe('remove_state', () => {
           path: ['foo'],
         },
       ]).newText,
-    ).toMatchInlineSnapshot(`"createMachine({})"`);
+    ).toMatchInlineSnapshot(`"{}"`);
   });
 
   it('should remove a sibling transition targeting the removed state', () => {
@@ -74,7 +74,7 @@ describe('remove_state', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           bar: {
             on: {
@@ -84,7 +84,7 @@ describe('remove_state', () => {
 
           baz: {}
         }
-      })"
+      }"
     `);
   });
 
@@ -111,7 +111,7 @@ describe('remove_state', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         on: {
           OTHER: '.baz'
         },
@@ -119,7 +119,7 @@ describe('remove_state', () => {
           bar: {},
           baz: {}
         }
-      })"
+      }"
     `);
   });
 
@@ -149,7 +149,7 @@ describe('remove_state', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           foo: {
             on: {
@@ -159,7 +159,7 @@ describe('remove_state', () => {
 
           baz: {}
         }
-      })"
+      }"
     `);
   });
 
@@ -185,11 +185,11 @@ describe('remove_state', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           bar: {}
         }
-      })"
+      }"
     `);
   });
 
@@ -217,11 +217,11 @@ describe('remove_state', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           bar: {}
         }
-      })"
+      }"
     `);
   });
 
@@ -249,11 +249,11 @@ describe('remove_state', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           bar: {}
         }
-      })"
+      }"
     `);
   });
 
@@ -281,11 +281,11 @@ describe('remove_state', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           bar: {}
         }
-      })"
+      }"
     `);
   });
 
@@ -313,7 +313,7 @@ describe('remove_state', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           bar: {
             on: {
@@ -323,7 +323,7 @@ describe('remove_state', () => {
 
           baz: {}
         }
-      })"
+      }"
     `);
   });
 
@@ -350,7 +350,7 @@ describe('remove_state', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           bar: {
             on: {
@@ -360,7 +360,7 @@ describe('remove_state', () => {
 
           baz: {}
         }
-      })"
+      }"
     `);
   });
 
@@ -384,11 +384,11 @@ describe('remove_state', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           bar: {}
         }
-      })"
+      }"
     `);
   });
 
@@ -412,11 +412,11 @@ describe('remove_state', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           bar: {}
         }
-      })"
+      }"
     `);
   });
 
@@ -443,7 +443,7 @@ describe('remove_state', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           bar: {
             invoke: {
@@ -451,7 +451,7 @@ describe('remove_state', () => {
             }
           }
         }
-      })"
+      }"
     `);
   });
 
@@ -477,11 +477,11 @@ describe('remove_state', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           bar: {}
         }
-      })"
+      }"
     `);
   });
 
@@ -514,7 +514,7 @@ describe('remove_state', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           bar: {
             on: {
@@ -524,7 +524,7 @@ describe('remove_state', () => {
 
           baz: {}
         }
-      })"
+      }"
     `);
   });
 });

@@ -31,7 +31,7 @@ describe('reanchor_transition', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'a',
         states: {
           a: {
@@ -42,7 +42,7 @@ describe('reanchor_transition', () => {
           b: {},
           c: {},
         }
-      })"
+      }"
     `);
   });
 
@@ -75,7 +75,7 @@ describe('reanchor_transition', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'a',
         states: {
           a: {
@@ -89,7 +89,7 @@ describe('reanchor_transition', () => {
           b: {},
           c: {},
         }
-      })"
+      }"
     `);
   });
 
@@ -121,7 +121,7 @@ describe('reanchor_transition', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'a',
         states: {
           a: {
@@ -132,7 +132,7 @@ describe('reanchor_transition', () => {
           b: {},
           c: {},
         }
-      })"
+      }"
     `);
   });
 
@@ -162,7 +162,7 @@ describe('reanchor_transition', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'a',
         states: {
           a: {
@@ -173,7 +173,7 @@ describe('reanchor_transition', () => {
           b: {},
           c: {},
         }
-      })"
+      }"
     `);
   });
 
@@ -205,7 +205,7 @@ describe('reanchor_transition', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'a',
         states: {
           a: {
@@ -216,7 +216,7 @@ describe('reanchor_transition', () => {
           b: {},
           c: {},
         }
-      })"
+      }"
     `);
   });
 
@@ -249,7 +249,7 @@ describe('reanchor_transition', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'a',
         states: {
           a: {
@@ -263,7 +263,7 @@ describe('reanchor_transition', () => {
           b: {},
           c: {},
         }
-      })"
+      }"
     `);
   });
 
@@ -299,7 +299,7 @@ describe('reanchor_transition', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'a',
         states: {
           a: {
@@ -313,7 +313,7 @@ describe('reanchor_transition', () => {
           b: {},
           c: {},
         }
-      })"
+      }"
     `);
   });
 
@@ -350,7 +350,7 @@ describe('reanchor_transition', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'a',
         states: {
           a: {
@@ -367,7 +367,7 @@ describe('reanchor_transition', () => {
           b: {},
           c: {},
         }
-      })"
+      }"
     `);
   });
 
@@ -402,7 +402,7 @@ describe('reanchor_transition', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'a',
         states: {
           a: {
@@ -418,7 +418,7 @@ describe('reanchor_transition', () => {
             }
           },
         }
-      })"
+      }"
     `);
   });
 
@@ -449,7 +449,7 @@ describe('reanchor_transition', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'a',
         states: {
           a: {
@@ -458,7 +458,7 @@ describe('reanchor_transition', () => {
             },
           },
         }
-      })"
+      }"
     `);
   });
 
@@ -490,7 +490,7 @@ describe('reanchor_transition', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'a',
         states: {
           a: {
@@ -502,7 +502,7 @@ describe('reanchor_transition', () => {
             },
           },
         }
-      })"
+      }"
     `);
   });
 
@@ -534,7 +534,7 @@ describe('reanchor_transition', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'a',
         states: {
           a: {
@@ -550,7 +550,7 @@ describe('reanchor_transition', () => {
             }
           },
         }
-      })"
+      }"
     `);
   });
 
@@ -585,7 +585,7 @@ describe('reanchor_transition', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'a',
         states: {
           a: {
@@ -598,7 +598,7 @@ describe('reanchor_transition', () => {
             }
           },
         }
-      })"
+      }"
     `);
   });
 
@@ -626,7 +626,7 @@ describe('reanchor_transition', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'a',
         states: {
           a: {
@@ -635,7 +635,7 @@ describe('reanchor_transition', () => {
             },
           },
         }
-      })"
+      }"
     `);
   });
 
@@ -666,7 +666,7 @@ describe('reanchor_transition', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'a',
         states: {
           a: {
@@ -677,7 +677,7 @@ describe('reanchor_transition', () => {
             },
           },
         }
-      })"
+      }"
     `);
   });
 
@@ -705,7 +705,7 @@ describe('reanchor_transition', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'a',
         states: {
           a: {
@@ -717,7 +717,7 @@ describe('reanchor_transition', () => {
             },
           },
         }
-      })"
+      }"
     `);
   });
 
@@ -747,7 +747,7 @@ describe('reanchor_transition', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'a',
         states: {
           a: {
@@ -760,7 +760,7 @@ describe('reanchor_transition', () => {
             },
           },
         }
-      })"
+      }"
     `);
   });
 
@@ -792,7 +792,7 @@ describe('reanchor_transition', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'a',
         states: {
           a: {
@@ -805,7 +805,7 @@ describe('reanchor_transition', () => {
           },
           b: {}
         }
-      })"
+      }"
     `);
   });
 
@@ -840,7 +840,7 @@ describe('reanchor_transition', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'a',
         states: {
           a: {
@@ -853,7 +853,7 @@ describe('reanchor_transition', () => {
           },
           b: {}
         }
-      })"
+      }"
     `);
   });
 
@@ -883,7 +883,7 @@ describe('reanchor_transition', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'a',
         states: {
           a: {},
@@ -894,7 +894,7 @@ describe('reanchor_transition', () => {
             }
           }
         }
-      })"
+      }"
     `);
   });
 
@@ -927,7 +927,7 @@ describe('reanchor_transition', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'a',
         states: {
           a: {},
@@ -941,7 +941,7 @@ describe('reanchor_transition', () => {
             }
           }
         }
-      })"
+      }"
     `);
   });
 
@@ -975,7 +975,7 @@ describe('reanchor_transition', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'a',
         states: {
           a: {
@@ -991,7 +991,7 @@ describe('reanchor_transition', () => {
             }
           },
         }
-      })"
+      }"
     `);
   });
 
@@ -1025,7 +1025,7 @@ describe('reanchor_transition', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'a',
         states: {
           a: {
@@ -1041,7 +1041,7 @@ describe('reanchor_transition', () => {
             }
           },
         }
-      })"
+      }"
     `);
   });
 
@@ -1074,7 +1074,7 @@ describe('reanchor_transition', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'a',
         states: {
           a: {
@@ -1093,7 +1093,7 @@ describe('reanchor_transition', () => {
             }
           },
         }
-      })"
+      }"
     `);
   });
 
@@ -1129,7 +1129,7 @@ describe('reanchor_transition', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'a',
         states: {
           a: {
@@ -1148,7 +1148,7 @@ describe('reanchor_transition', () => {
             }
           },
         }
-      })"
+      }"
     `);
   });
 
@@ -1180,7 +1180,7 @@ describe('reanchor_transition', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'a',
         states: {
           a: {
@@ -1194,7 +1194,7 @@ describe('reanchor_transition', () => {
           },
           b: {}
         }
-      })"
+      }"
     `);
   });
 
@@ -1230,7 +1230,7 @@ describe('reanchor_transition', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'a',
 
         states: {
@@ -1247,7 +1247,7 @@ describe('reanchor_transition', () => {
             }
           },
         }
-      })"
+      }"
     `);
   });
 
@@ -1277,7 +1277,7 @@ describe('reanchor_transition', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'a',
         states: {
           a: {},
@@ -1287,7 +1287,7 @@ describe('reanchor_transition', () => {
             }
           }
         }
-      })"
+      }"
     `);
   });
 });

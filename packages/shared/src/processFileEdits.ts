@@ -2,7 +2,7 @@ import { TextEdit } from './types';
 
 export const processFileEdits = (
   oldText: string,
-  textEdits: TextEdit[],
+  textEdits: Pick<TextEdit, 'range' | 'newText'>[],
 ): string => {
   const sortedEdits = [...textEdits].sort(
     (a, b) => b.range[0].index - a.range[0].index,

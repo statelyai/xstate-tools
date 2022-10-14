@@ -27,7 +27,7 @@ describe('add_guard', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         on: {
           FOO: {
             target: 'a',
@@ -37,7 +37,7 @@ describe('add_guard', () => {
         states: {
           a: {}
         }
-      })"
+      }"
     `);
   });
 
@@ -65,7 +65,7 @@ describe('add_guard', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         on: {
           FOO: {
             target: 'a',
@@ -75,7 +75,7 @@ describe('add_guard', () => {
         states: {
           a: {}
         }
-      })"
+      }"
     `);
   });
 
@@ -103,7 +103,7 @@ describe('add_guard', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         on: {
           FOO: [{
             target: 'a',
@@ -115,7 +115,7 @@ describe('add_guard', () => {
           b: {},
           c: {},
         }
-      })"
+      }"
     `);
   });
 
@@ -143,7 +143,7 @@ describe('add_guard', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         on: {
           FOO: ['a', 'b', {
             target: 'c',
@@ -155,7 +155,7 @@ describe('add_guard', () => {
           b: {},
           c: {},
         }
-      })"
+      }"
     `);
   });
 
@@ -183,7 +183,7 @@ describe('add_guard', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         on: {
           FOO: ['a', {
             target: 'b',
@@ -195,7 +195,7 @@ describe('add_guard', () => {
           b: {},
           c: {},
         }
-      })"
+      }"
     `);
   });
 
@@ -224,7 +224,7 @@ describe('add_guard', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           a: {
             invoke: {
@@ -237,7 +237,7 @@ describe('add_guard', () => {
           },
           b: {}
         }
-      })"
+      }"
     `);
   });
 });

@@ -296,18 +296,11 @@ const machine = createMachine(
       webviewActor:
         (
           { extensionContext, languageClient },
-          {
-            config,
-            implementations,
-            layoutString,
-            uri: initialUri,
-            index: initialIndex,
-          },
+          { config, implementations, layoutString, uri: initialUri },
         ) =>
         (sendBack, onReceive) => {
           let canceled = false;
           let uri = initialUri;
-          let index = initialIndex;
 
           const webviewPanel = createWebviewPanel();
 
@@ -384,7 +377,6 @@ const machine = createMachine(
             switch (event.type) {
               case 'EDIT_MACHINE': {
                 uri = event.uri;
-                index = event.index;
 
                 webviewPanel.reveal(vscode.ViewColumn.Beside);
                 webviewPanel.webview.postMessage({

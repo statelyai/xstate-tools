@@ -27,14 +27,14 @@ describe('edit_guard', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         on: {
           CALL_HIM_MAYBE: {
             cond: "isHeAwake",
             actions: 'callDavid'
           }
         }
-      })"
+      }"
     `);
   });
 
@@ -60,14 +60,14 @@ describe('edit_guard', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         on: {
           CALL_HIM_MAYBE: {
             cond: { type: "isHeAwake", time: '9am' },
             actions: 'callDavid'
           }
         }
-      })"
+      }"
     `);
   });
 });

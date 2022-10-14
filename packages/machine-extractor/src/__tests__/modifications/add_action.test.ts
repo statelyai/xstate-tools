@@ -20,9 +20,9 @@ describe('add_action', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         entry: "doStuff"
-      })"
+      }"
     `);
   });
 
@@ -46,14 +46,14 @@ describe('add_action', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'a',
         states: {
           a: {
             entry: "doStuff"
           }
         }
-      })"
+      }"
     `);
   });
 
@@ -72,9 +72,9 @@ describe('add_action', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         exit: "doStuff"
-      })"
+      }"
     `);
   });
 
@@ -98,14 +98,14 @@ describe('add_action', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'a',
         states: {
           a: {
             exit: "doStuff"
           }
         }
-      })"
+      }"
     `);
   });
 
@@ -126,9 +126,9 @@ describe('add_action', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         entry: ['bark', "doStuff"],
-      })"
+      }"
     `);
   });
 
@@ -149,9 +149,9 @@ describe('add_action', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         exit: ['bark', "doStuff"],
-      })"
+      }"
     `);
   });
 
@@ -172,9 +172,9 @@ describe('add_action', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         entry: ["doStuff", 'bark', 'meow'],
-      })"
+      }"
     `);
   });
 
@@ -195,9 +195,9 @@ describe('add_action', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         entry: ['bark', 'meow', "doStuff"],
-      })"
+      }"
     `);
   });
 
@@ -218,9 +218,9 @@ describe('add_action', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         entry: ['bark', "doStuff", 'meow'],
-      })"
+      }"
     `);
   });
 
@@ -246,7 +246,7 @@ describe('add_action', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         on: {
           FOO: {
             target: '.a',
@@ -256,7 +256,7 @@ describe('add_action', () => {
         states: {
           a: {}
         }
-      })"
+      }"
     `);
   });
 
@@ -285,7 +285,7 @@ describe('add_action', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           a: {
             invoke: {
@@ -298,7 +298,7 @@ describe('add_action', () => {
           },
           b: {}
         }
-      })"
+      }"
     `);
   });
 
@@ -327,7 +327,7 @@ describe('add_action', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         on: {
           FOO: {
             target: '.a',
@@ -338,7 +338,7 @@ describe('add_action', () => {
         states: {
           a: {}
         }
-      })"
+      }"
     `);
   });
 
@@ -367,7 +367,7 @@ describe('add_action', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         on: {
           FOO: {
             target: '.a',
@@ -377,7 +377,7 @@ describe('add_action', () => {
         states: {
           a: {}
         }
-      })"
+      }"
     `);
   });
 });

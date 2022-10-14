@@ -20,7 +20,7 @@ describe('remove_action', () => {
           actionPath: ['entry', 0],
         },
       ]).newText,
-    ).toMatchInlineSnapshot(`"createMachine({})"`);
+    ).toMatchInlineSnapshot(`"{}"`);
   });
 
   it('should be possible to remove a single exit action', () => {
@@ -38,7 +38,7 @@ describe('remove_action', () => {
           actionPath: ['exit', 0],
         },
       ]).newText,
-    ).toMatchInlineSnapshot(`"createMachine({})"`);
+    ).toMatchInlineSnapshot(`"{}"`);
   });
 
   it('should be possible to remove first entry action', () => {
@@ -57,9 +57,9 @@ describe('remove_action', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         entry: ['getRaise']
-      })"
+      }"
     `);
   });
 
@@ -79,9 +79,9 @@ describe('remove_action', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         entry: ['callDavid']
-      })"
+      }"
     `);
   });
 
@@ -101,9 +101,9 @@ describe('remove_action', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         entry: ['callDavid', 'getRaise']
-      })"
+      }"
     `);
   });
 
@@ -131,14 +131,14 @@ describe('remove_action', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         on: {
           CALL_HIM_MAYBE: '.called'
         },
         states: {
           called: {}
         }
-      })"
+      }"
     `);
   });
 
@@ -167,7 +167,7 @@ describe('remove_action', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         invoke: {
           src: 'callDavid',
           onDone: '.called'
@@ -175,7 +175,7 @@ describe('remove_action', () => {
         states: {
           called: {}
         }
-      })"
+      }"
     `);
   });
 
@@ -199,11 +199,11 @@ describe('remove_action', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         on: {
           CALL_HIM_MAYBE: undefined
         },
-      })"
+      }"
     `);
   });
 });

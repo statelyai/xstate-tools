@@ -25,13 +25,13 @@ describe('set_initial_state', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: "bar",
         states: {
           foo: {},
           bar: {},
         },
-      })"
+      }"
     `);
   });
 
@@ -60,7 +60,7 @@ describe('set_initial_state', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'foo',
         states: {
           foo: {
@@ -71,7 +71,7 @@ describe('set_initial_state', () => {
             }
           },
         },
-      })"
+      }"
     `);
   });
 
@@ -94,14 +94,14 @@ describe('set_initial_state', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           foo: {},
           bar: {},
         },
 
         initial: "bar"
-      })"
+      }"
     `);
   });
 });

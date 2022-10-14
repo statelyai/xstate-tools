@@ -22,9 +22,9 @@ describe('edit_action', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         entry: "getRaise",
-      })"
+      }"
     `);
   });
 
@@ -47,11 +47,11 @@ describe('edit_action', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         entry: {
           type: "getRaise"
         },
-      })"
+      }"
     `);
   });
 
@@ -72,9 +72,9 @@ describe('edit_action', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         exit: "getRaise",
-      })"
+      }"
     `);
   });
 
@@ -97,11 +97,11 @@ describe('edit_action', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         exit: {
           type: "getRaise"
         },
-      })"
+      }"
     `);
   });
 
@@ -122,9 +122,9 @@ describe('edit_action', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         entry: ['callDavid', "keepTheJob"],
-      })"
+      }"
     `);
   });
 
@@ -145,9 +145,9 @@ describe('edit_action', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         entry: ['callDavid', { type: "keepTheJob" }],
-      })"
+      }"
     `);
   });
 
@@ -168,9 +168,9 @@ describe('edit_action', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         exit: ['callDavid', "keepTheJob"],
-      })"
+      }"
     `);
   });
 
@@ -191,9 +191,9 @@ describe('edit_action', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         exit: ['callDavid', { type: "keepTheJob" }],
-      })"
+      }"
     `);
   });
 
@@ -218,13 +218,13 @@ describe('edit_action', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         on: {
           CALL_HIM_MAYBE: {
             actions: "getRaise"
           }
         },
-      })"
+      }"
     `);
   });
 
@@ -249,13 +249,13 @@ describe('edit_action', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         on: {
           CALL_HIM_MAYBE: {
             actions: { type: "getRaise" }
           }
         },
-      })"
+      }"
     `);
   });
 
@@ -282,7 +282,7 @@ describe('edit_action', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         on: {
           CALL_HIM_MAYBE: [{
             cond: 'isItTooLate'
@@ -290,7 +290,7 @@ describe('edit_action', () => {
             actions: "getRaise"
           }]
         },
-      })"
+      }"
     `);
   });
 });

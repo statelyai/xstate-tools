@@ -20,11 +20,11 @@ describe('add_invoke', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         invoke: {
           src: "callDavid"
         }
-      })"
+      }"
     `);
   });
 
@@ -50,7 +50,7 @@ describe('add_invoke', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         on: {
           FOO: 'a'
         },
@@ -61,7 +61,7 @@ describe('add_invoke', () => {
             }
           }
         }
-      })"
+      }"
     `);
   });
 
@@ -81,12 +81,12 @@ describe('add_invoke', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         invoke: {
           src: "callDavid",
           id: "importantCall"
         }
-      })"
+      }"
     `);
   });
 
@@ -109,13 +109,13 @@ describe('add_invoke', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         invoke: [{
           src: 'callDavid'
         }, {
           src: "getRaise"
         }]
-      })"
+      }"
     `);
   });
 
@@ -140,7 +140,7 @@ describe('add_invoke', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         invoke: [{
           src: "eeny"
         }, {
@@ -148,7 +148,7 @@ describe('add_invoke', () => {
         }, {
           src: 'moe'
         }]
-      })"
+      }"
     `);
   });
 
@@ -173,7 +173,7 @@ describe('add_invoke', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         invoke: [{
           src: 'eeny'
         }, {
@@ -181,7 +181,7 @@ describe('add_invoke', () => {
         }, {
           src: 'moe'
         }]
-      })"
+      }"
     `);
   });
 
@@ -206,7 +206,7 @@ describe('add_invoke', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         invoke: [{
           src: 'eeny'
         }, {
@@ -214,7 +214,7 @@ describe('add_invoke', () => {
         }, {
           src: "moe"
         }]
-      })"
+      }"
     `);
   });
 });

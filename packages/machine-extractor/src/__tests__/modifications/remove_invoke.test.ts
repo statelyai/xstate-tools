@@ -27,11 +27,11 @@ describe('remove_invoke', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           happy: {}
         }
-      })"
+      }"
     `);
   });
 
@@ -59,14 +59,14 @@ describe('remove_invoke', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         invoke: [{
           src: 'callDavid'
         }],
         states: {
           happy: {}
         }
-      })"
+      }"
     `);
   });
 });

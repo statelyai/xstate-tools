@@ -31,7 +31,7 @@ describe('remove_transition', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'foo',
         states: {
           foo: {
@@ -42,7 +42,7 @@ describe('remove_transition', () => {
           bar: {},
           baz: {},
         }
-      })"
+      }"
     `);
   });
 
@@ -70,13 +70,13 @@ describe('remove_transition', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'foo',
         states: {
           foo: {},
           bar: {},
         }
-      })"
+      }"
     `);
   });
 
@@ -105,7 +105,7 @@ describe('remove_transition', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'foo',
         states: {
           foo: {
@@ -116,7 +116,7 @@ describe('remove_transition', () => {
           bar: {},
           baz: {}
         }
-      })"
+      }"
     `);
   });
 
@@ -145,7 +145,7 @@ describe('remove_transition', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'foo',
         states: {
           foo: {
@@ -156,7 +156,7 @@ describe('remove_transition', () => {
           bar: {},
           baz: {}
         }
-      })"
+      }"
     `);
   });
 
@@ -186,7 +186,7 @@ describe('remove_transition', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'foo',
         states: {
           foo: {
@@ -198,7 +198,7 @@ describe('remove_transition', () => {
           baz: {},
           qwe: {},
         }
-      })"
+      }"
     `);
   });
 
@@ -226,7 +226,7 @@ describe('remove_transition', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'foo',
         states: {
           foo: {
@@ -235,7 +235,7 @@ describe('remove_transition', () => {
             }
           },
         }
-      })"
+      }"
     `);
   });
 
@@ -263,7 +263,7 @@ describe('remove_transition', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'foo',
         states: {
           foo: {
@@ -272,7 +272,7 @@ describe('remove_transition', () => {
             }
           },
         }
-      })"
+      }"
     `);
   });
 
@@ -302,7 +302,7 @@ describe('remove_transition', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'foo',
         states: {
           foo: {
@@ -313,7 +313,7 @@ describe('remove_transition', () => {
             }]
           },
         }
-      })"
+      }"
     `);
   });
 
@@ -343,7 +343,7 @@ describe('remove_transition', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'foo',
         states: {
           foo: {
@@ -354,7 +354,7 @@ describe('remove_transition', () => {
             }]
           },
         }
-      })"
+      }"
     `);
   });
 
@@ -386,7 +386,7 @@ describe('remove_transition', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'foo',
         states: {
           foo: {
@@ -399,7 +399,7 @@ describe('remove_transition', () => {
             }]
           },
         }
-      })"
+      }"
     `);
   });
 });

@@ -29,14 +29,14 @@ describe('remove_guard', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         on: {
           WORK_ON_OSS: '.beHappy'
         },
         states: {
           beHappy: {}
         }
-      })"
+      }"
     `);
   });
 
@@ -65,7 +65,7 @@ describe('remove_guard', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         on: {
           WORK_ON_OSS: {
             target: '.beHappy',
@@ -75,7 +75,7 @@ describe('remove_guard', () => {
         states: {
           beHappy: {}
         }
-      })"
+      }"
     `);
   });
 
@@ -104,7 +104,7 @@ describe('remove_guard', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         on: {
           WORK_ON_OSS: ['.happy', '.unhappy']
         },
@@ -112,7 +112,7 @@ describe('remove_guard', () => {
           happy: {},
           unhappy: {},
         }
-      })"
+      }"
     `);
   });
 
@@ -141,7 +141,7 @@ describe('remove_guard', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         invoke: {
           src: 'workOnOSS',
           onDone: '.happy'
@@ -149,7 +149,7 @@ describe('remove_guard', () => {
         states: {
           happy: {},
         }
-      })"
+      }"
     `);
   });
 });

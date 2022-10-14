@@ -31,7 +31,7 @@ describe('batched edits', () => {
         },
       ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           foo: {
             on: {
@@ -41,7 +41,7 @@ describe('batched edits', () => {
 
           bar: {}
         }
-      })"
+      }"
     `);
   });
 });
