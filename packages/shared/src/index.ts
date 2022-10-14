@@ -1,7 +1,6 @@
 export * from './createIntrospectableMachine';
 export * from './filterOutIgnoredMachines';
 export * from './getInlineImplementations';
-export * from './getNewMachineText';
 export * from './getRangeFromSourceLocation';
 export * from './getRawTextFromNode';
 export * from './getSetOfNames';
