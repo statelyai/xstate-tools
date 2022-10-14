@@ -29,7 +29,7 @@ describe('reanchor_transition', () => {
           newTargetPath: ['c'],
           transitionPath: ['on', 'NEXT', 0],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'a',
@@ -73,7 +73,7 @@ describe('reanchor_transition', () => {
           newTargetPath: ['c'],
           transitionPath: ['on', 'NEXT', 0],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'a',
@@ -119,7 +119,7 @@ describe('reanchor_transition', () => {
           newTargetPath: ['c'],
           transitionPath: ['on', 'NEXT', 0],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'a',
@@ -160,7 +160,7 @@ describe('reanchor_transition', () => {
           newTargetPath: ['c'],
           transitionPath: ['on', 'NEXT', 0],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'a',
@@ -203,7 +203,7 @@ describe('reanchor_transition', () => {
           newTargetPath: ['c'],
           transitionPath: ['on', 'NEXT', 0],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'a',
@@ -247,7 +247,7 @@ describe('reanchor_transition', () => {
           newTargetPath: ['c'],
           transitionPath: ['on', 'NEXT', 0],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'a',
@@ -297,7 +297,7 @@ describe('reanchor_transition', () => {
           newTargetPath: ['c'],
           transitionPath: ['on', 'NEXT', 0],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'a',
@@ -348,7 +348,7 @@ describe('reanchor_transition', () => {
           newTargetPath: ['c'],
           transitionPath: ['on', 'NEXT', 0],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'a',
@@ -400,7 +400,7 @@ describe('reanchor_transition', () => {
           newTargetPath: ['a', 'a2'],
           transitionPath: ['on', 'NEXT', 0],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'a',
@@ -447,7 +447,7 @@ describe('reanchor_transition', () => {
           newTargetPath: ['a'],
           transitionPath: ['on', 'NEXT', 0],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'a',
@@ -488,7 +488,7 @@ describe('reanchor_transition', () => {
           newTargetPath: ['a'],
           transitionPath: ['on', 'NEXT', 0],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'a',
@@ -532,7 +532,7 @@ describe('reanchor_transition', () => {
           newTargetPath: ['a'],
           transitionPath: ['on', 'NEXT', 0],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'a',
@@ -583,7 +583,7 @@ describe('reanchor_transition', () => {
           newTargetPath: ['a'],
           transitionPath: ['on', 'NEXT', 0],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'a',
@@ -624,7 +624,7 @@ describe('reanchor_transition', () => {
           newTargetPath: undefined,
           transitionPath: ['on', 'NEXT', 0],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'a',
@@ -664,7 +664,7 @@ describe('reanchor_transition', () => {
           newTargetPath: undefined,
           transitionPath: ['on', 'NEXT', 0],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'a',
@@ -703,7 +703,7 @@ describe('reanchor_transition', () => {
           newTargetPath: ['a'],
           transitionPath: ['on', 'NEXT', 0],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'a',
@@ -745,7 +745,7 @@ describe('reanchor_transition', () => {
           newTargetPath: ['a'],
           transitionPath: ['on', 'NEXT', 0],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'a',
@@ -790,7 +790,7 @@ describe('reanchor_transition', () => {
           newTargetPath: ['a'],
           transitionPath: ['on', 'NEXT', 0],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'a',
@@ -838,7 +838,7 @@ describe('reanchor_transition', () => {
           newTargetPath: ['a', 'a1'],
           transitionPath: ['on', 'NEXT', 0],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'a',
@@ -881,7 +881,7 @@ describe('reanchor_transition', () => {
           transitionPath: ['on', 'NEXT', 0],
           newSourcePath: ['c'],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'a',
@@ -925,7 +925,7 @@ describe('reanchor_transition', () => {
           transitionPath: ['on', 'NEXT', 0],
           newSourcePath: ['c'],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'a',
@@ -973,7 +973,7 @@ describe('reanchor_transition', () => {
           transitionPath: ['on', 'NEXT', 0],
           newSourcePath: ['a'],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'a',
@@ -1023,7 +1023,7 @@ describe('reanchor_transition', () => {
           transitionPath: ['on', 'NEXT', 0],
           newSourcePath: ['a'],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'a',
@@ -1072,7 +1072,7 @@ describe('reanchor_transition', () => {
           transitionPath: ['on', 'NEXT', 0],
           newSourcePath: ['a', 'a2'],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'a',
@@ -1127,7 +1127,7 @@ describe('reanchor_transition', () => {
           transitionPath: ['on', 'NEXT', 0],
           newSourcePath: ['a', 'a2'],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'a',
@@ -1178,7 +1178,7 @@ describe('reanchor_transition', () => {
           transitionPath: ['on', 'NEXT', 0],
           newSourcePath: ['a', 'a1'],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'a',
@@ -1228,7 +1228,7 @@ describe('reanchor_transition', () => {
           transitionPath: ['on', 'NEXT', 0],
           newSourcePath: ['a'],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'a',
@@ -1275,7 +1275,7 @@ describe('reanchor_transition', () => {
           newSourcePath: ['b'],
           newTargetPath: ['a'],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'a',

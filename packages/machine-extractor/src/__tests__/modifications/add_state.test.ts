@@ -17,7 +17,7 @@ describe('add_state', () => {
           path: [],
           name: 'just_added',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         states: {
@@ -43,7 +43,7 @@ describe('add_state', () => {
           path: [],
           name: 'just_added',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         states: {
@@ -70,7 +70,7 @@ describe('add_state', () => {
           path: ['foo'],
           name: 'just_added',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         states: {
@@ -104,7 +104,7 @@ describe('add_state', () => {
           path: ['foo'],
           name: 'just_added',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         states: {
@@ -131,7 +131,7 @@ describe('add_state', () => {
           path: [],
           name: 'just added',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         states: {

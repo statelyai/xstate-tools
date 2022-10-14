@@ -1,7 +1,3 @@
-/* --------------------------------------------------------------------------------------------
- * Copyright (c) Microsoft Corporation. All rights reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- * ------------------------------------------------------------------------------------------ */
 import {
   MachineParseResult,
   parseMachinesFromFile,
@@ -30,13 +26,11 @@ import {
 } from 'vscode-languageserver/node';
 import { URI, Utils as UriUtils } from 'vscode-uri';
 import { createMachine } from 'xstate';
+import { connection } from './connection';
 import { getCursorHoverType } from './getCursorHoverType';
 import { getDiagnostics } from './getDiagnostics';
 import { getReferences } from './getReferences';
 import { CachedDocument } from './types';
-import { createTypeSafeConnection } from './typeSafeConnection';
-
-const connection = createTypeSafeConnection();
 
 let hasConfigurationCapability = false;
 let hasWorkspaceFolderCapability = false;
@@ -565,12 +559,39 @@ connection.onRequest('getMachineAtCursorPosition', ({ uri, position }) => {
   };
 });
 
+connection.onRequest('applyMachineEdits', ({ machineEdits }) => {
+  if (!displayedMachine) {
+    throw new Error(
+      '`applyMachineEdits` can only be requested when there is a displayed machine',
+    );
+  }
+
+  const modified = documentsCache
+    .get(displayedMachine.uri)!
+    .machineResults[displayedMachine.machineIndex].modify(machineEdits);
+
+  return {
+    textEdits: [
+      {
+        type: 'replace' as const,
+        uri: displayedMachine.uri,
+        range: modified.range,
+        newText: modified.newText,
+      },
+    ],
+  };
+});
+
 connection.onRequest('getTsTypesEdits', ({ uri }) => {
   const cachedDocument = documentsCache.get(uri);
   if (!cachedDocument) {
     return [];
   }
-  return getTsTypesEdits(cachedDocument.types);
+  return getTsTypesEdits(cachedDocument.types).map((edit) => ({
+    type: 'replace',
+    uri,
+    ...edit,
+  }));
 });
 
 connection.onRequest('getNodePosition', ({ path }) => {

@@ -29,7 +29,7 @@ describe('remove_transition', () => {
           sourcePath: ['foo'],
           transitionPath: ['on', 'NEXT', 0],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'foo',
@@ -68,7 +68,7 @@ describe('remove_transition', () => {
           sourcePath: ['foo'],
           transitionPath: ['on', 'NEXT', 0],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'foo',
@@ -103,7 +103,7 @@ describe('remove_transition', () => {
           sourcePath: ['foo'],
           transitionPath: ['on', 'NEXT', 1],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'foo',
@@ -143,7 +143,7 @@ describe('remove_transition', () => {
           sourcePath: ['foo'],
           transitionPath: ['on', 'NEXT', 0],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'foo',
@@ -184,7 +184,7 @@ describe('remove_transition', () => {
           sourcePath: ['foo'],
           transitionPath: ['on', 'NEXT', 1],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'foo',
@@ -224,7 +224,7 @@ describe('remove_transition', () => {
           sourcePath: ['foo'],
           transitionPath: ['invoke', 0, 'onDone', 0],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'foo',
@@ -261,7 +261,7 @@ describe('remove_transition', () => {
           sourcePath: ['foo'],
           transitionPath: ['invoke', 0, 'onError', 0],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'foo',
@@ -300,7 +300,7 @@ describe('remove_transition', () => {
           sourcePath: ['foo'],
           transitionPath: ['invoke', 1, 'onDone', 0],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'foo',
@@ -341,7 +341,7 @@ describe('remove_transition', () => {
           sourcePath: ['foo'],
           transitionPath: ['invoke', 0, 'onDone', 0],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'foo',
@@ -384,7 +384,7 @@ describe('remove_transition', () => {
           sourcePath: ['foo'],
           transitionPath: ['invoke', 1, 'onDone', 0],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'foo',

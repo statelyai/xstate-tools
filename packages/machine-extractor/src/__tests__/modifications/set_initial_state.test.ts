@@ -23,7 +23,7 @@ describe('set_initial_state', () => {
           path: [],
           initialState: 'bar',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: "bar",
@@ -58,7 +58,7 @@ describe('set_initial_state', () => {
           path: ['foo'],
           initialState: 'baz',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'foo',
@@ -92,7 +92,7 @@ describe('set_initial_state', () => {
           path: [],
           initialState: 'bar',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         states: {

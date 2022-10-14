@@ -1,13 +1,13 @@
+import { MachineEdit } from '@xstate/machine-extractor';
 import {
   ImplementationsMetadata,
-  resolveUriToFilePrefix
+  resolveUriToFilePrefix,
 } from '@xstate/tools-shared';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { ColorThemeKind } from 'vscode';
 import { createMachine, interpret, MachineConfig } from 'xstate';
 import { forwardTo } from 'xstate/lib/actions';
-import { handleDefinitionUpdate } from './handleDefinitionUpdate';
 import { TypeSafeLanguageClient } from './typeSafeLanguageClient';
 import * as typeSafeVsCode from './typeSafeVsCode';
 
@@ -23,14 +23,12 @@ type OpenLinkEvent = {
   url: string;
 };
 
-type DefinitionUpdatedEvent = {
-  type: 'DEFINITION_UPDATED';
-  config: MachineConfig<any, any, any>;
-  layoutString: string;
-  implementations: ImplementationsMetadata;
+type MachineChangedEvent = {
+  type: 'MACHINE_CHANGED';
+  edits: MachineEdit[];
 };
 
-type StudioEvent = NodeSelectedEvent | OpenLinkEvent | DefinitionUpdatedEvent;
+type StudioEvent = NodeSelectedEvent | OpenLinkEvent | MachineChangedEvent;
 
 function removeFromMutableArray<T>(array: T[], item: T) {
   const index = array.indexOf(item);
@@ -204,6 +202,15 @@ const machine = createMachine(
   {
     actions: {
       forwardToWebview: forwardTo('webview'),
+      setEditedMachine: ({ languageClient }, { uri, index }) => {
+        languageClient.sendRequest('setDisplayedMachine', {
+          uri,
+          machineIndex: index,
+        });
+      },
+      clearEditedMachine: ({ languageClient }) => {
+        languageClient.sendRequest('clearDisplayedMachine', undefined);
+      },
     },
     services: {
       registerEditAtCursorPositionCommand:
@@ -307,12 +314,36 @@ const machine = createMachine(
           const messageListenerDisposable = registerDisposable(
             extensionContext,
             webviewPanel.webview.onDidReceiveMessage((event: StudioEvent) => {
-              if (event.type === 'DEFINITION_UPDATED') {
-                handleDefinitionUpdate({
-                  ...event,
-                  index,
-                  uri,
-                });
+              if (event.type === 'MACHINE_CHANGED') {
+                languageClient
+                  .sendRequest('applyMachineEdits', {
+                    machineEdits: event.edits,
+                  })
+                  .then(({ textEdits }) => {
+                    const workspaceEdit = new vscode.WorkspaceEdit();
+                    for (const textEdit of textEdits) {
+                      switch (textEdit.type) {
+                        case 'replace': {
+                          workspaceEdit.replace(
+                            vscode.Uri.parse(textEdit.uri),
+                            new vscode.Range(
+                              new vscode.Position(
+                                textEdit.range[0].line,
+                                textEdit.range[0].column,
+                              ),
+                              new vscode.Position(
+                                textEdit.range[1].line,
+                                textEdit.range[1].column,
+                              ),
+                            ),
+                            textEdit.newText,
+                          );
+                          break;
+                        }
+                      }
+                    }
+                    return vscode.workspace.applyEdit(workspaceEdit);
+                  });
               } else if (event.type === 'NODE_SELECTED') {
                 const editor = vscode.window.visibleTextEditors.find(
                   (editor) => String(editor.document.uri) === uri,

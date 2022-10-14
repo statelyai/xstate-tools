@@ -25,7 +25,7 @@ describe('remove_invoke', () => {
           path: [],
           invokeIndex: 0,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         states: {
@@ -57,7 +57,7 @@ describe('remove_invoke', () => {
           path: [],
           invokeIndex: 0,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         invoke: [{

@@ -25,7 +25,7 @@ describe('edit_guard', () => {
           transitionPath: ['on', 'CALL_HIM_MAYBE', 0],
           name: 'isHeAwake',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         on: {
@@ -58,7 +58,7 @@ describe('edit_guard', () => {
           transitionPath: ['on', 'CALL_HIM_MAYBE', 0],
           name: 'isHeAwake',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         on: {

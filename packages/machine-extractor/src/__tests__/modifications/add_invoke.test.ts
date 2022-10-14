@@ -18,7 +18,7 @@ describe('add_invoke', () => {
           invokeIndex: 0,
           source: 'callDavid',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         invoke: {
@@ -48,7 +48,7 @@ describe('add_invoke', () => {
           invokeIndex: 0,
           source: 'callDavid',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         on: {
@@ -79,7 +79,7 @@ describe('add_invoke', () => {
           source: 'callDavid',
           id: 'importantCall',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         invoke: {
@@ -107,7 +107,7 @@ describe('add_invoke', () => {
           invokeIndex: 1,
           source: 'getRaise',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         invoke: [{
@@ -138,7 +138,7 @@ describe('add_invoke', () => {
           invokeIndex: 0,
           source: 'eeny',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         invoke: [{
@@ -171,7 +171,7 @@ describe('add_invoke', () => {
           invokeIndex: 1,
           source: 'miny',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         invoke: [{
@@ -204,7 +204,7 @@ describe('add_invoke', () => {
           invokeIndex: 2,
           source: 'moe',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         invoke: [{

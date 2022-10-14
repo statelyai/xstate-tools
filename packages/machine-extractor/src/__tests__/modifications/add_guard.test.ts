@@ -25,7 +25,7 @@ describe('add_guard', () => {
           transitionPath: ['on', 'FOO', 0],
           name: 'isItTooLate',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         on: {
@@ -63,7 +63,7 @@ describe('add_guard', () => {
           transitionPath: ['on', 'FOO', 0],
           name: 'isItTooLate',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         on: {
@@ -101,7 +101,7 @@ describe('add_guard', () => {
           transitionPath: ['on', 'FOO', 0],
           name: 'isItTooLate',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         on: {
@@ -141,7 +141,7 @@ describe('add_guard', () => {
           transitionPath: ['on', 'FOO', 2],
           name: 'isItTooLate',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         on: {
@@ -181,7 +181,7 @@ describe('add_guard', () => {
           transitionPath: ['on', 'FOO', 1],
           name: 'isItTooLate',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         on: {
@@ -222,7 +222,7 @@ describe('add_guard', () => {
           transitionPath: ['invoke', 0, 'onDone', 0],
           name: 'isHeBusy',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         states: {

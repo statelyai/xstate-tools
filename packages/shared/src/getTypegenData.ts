@@ -40,12 +40,12 @@ export const getTypegenData = (
     typesNode: {
       range: [
         {
-          line: tsTypes.loc!.start.line,
+          line: tsTypes.loc!.start.line - 1,
           column: tsTypes.loc!.start.column,
           index: tsTypes.start!,
         },
         {
-          line: tsTypes.loc!.end.line,
+          line: tsTypes.loc!.end.line - 1,
           column: tsTypes.loc!.end.column,
           index: tsTypes.end!,
         },

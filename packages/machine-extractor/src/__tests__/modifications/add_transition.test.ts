@@ -19,7 +19,7 @@ describe('add_transition', () => {
           transitionPath: ['on', 'FOO', 0],
           external: true,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         on: {
@@ -51,7 +51,7 @@ describe('add_transition', () => {
           transitionPath: ['on', 'FOO', 0],
           external: true,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'foo',
@@ -92,7 +92,7 @@ describe('add_transition', () => {
           transitionPath: ['on', 'FOO', 0],
           external: true,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         id: 'groot',
@@ -125,7 +125,7 @@ describe('add_transition', () => {
           transitionPath: ['on', 'FOO', 0],
           external: true,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         on: {
@@ -149,7 +149,7 @@ describe('add_transition', () => {
           transitionPath: ['on', 'FOO', 0],
           external: true,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         id: 'groot',
@@ -175,7 +175,7 @@ describe('add_transition', () => {
           transitionPath: ['on', 'FOO', 0],
           external: false,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         on: {
@@ -202,7 +202,7 @@ describe('add_transition', () => {
           transitionPath: ['on', 'FOO', 0],
           external: false,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         id: 'groot',
@@ -236,7 +236,7 @@ describe('add_transition', () => {
           transitionPath: ['on', 'FOO', 0],
           external: true,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'foo',
@@ -270,7 +270,7 @@ describe('add_transition', () => {
           transitionPath: ['on', 'FOO', 0],
           external: false,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'foo',
@@ -313,7 +313,7 @@ describe('add_transition', () => {
           transitionPath: ['on', 'OTHER', 0],
           external: true,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'foo',
@@ -356,7 +356,7 @@ describe('add_transition', () => {
           transitionPath: ['on', 'NEXT', 1],
           external: true,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'foo',
@@ -398,7 +398,7 @@ describe('add_transition', () => {
           transitionPath: ['on', 'NEXT', 0],
           external: true,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'foo',
@@ -441,7 +441,7 @@ describe('add_transition', () => {
           transitionPath: ['on', 'NEXT', 1],
           external: true,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'foo',
@@ -484,7 +484,7 @@ describe('add_transition', () => {
           transitionPath: ['on', 'NEXT', 1],
           external: true,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'foo',
@@ -526,7 +526,7 @@ describe('add_transition', () => {
           transitionPath: ['on', 'NEXT', 0],
           external: true,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'foo',
@@ -567,7 +567,7 @@ describe('add_transition', () => {
           transitionPath: ['invoke', 0, 'onDone', 0],
           external: true,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'foo',
@@ -608,7 +608,7 @@ describe('add_transition', () => {
           transitionPath: ['invoke', 0, 'onError', 0],
           external: true,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'foo',
@@ -651,7 +651,7 @@ describe('add_transition', () => {
           transitionPath: ['invoke', 1, 'onDone', 0],
           external: true,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'foo',
@@ -697,7 +697,7 @@ describe('add_transition', () => {
           transitionPath: ['invoke', 0, 'onDone', 0],
           external: true,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'foo',
@@ -745,7 +745,7 @@ describe('add_transition', () => {
           transitionPath: ['invoke', 1, 'onDone', 0],
           external: true,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'foo',
@@ -786,7 +786,7 @@ describe('add_transition', () => {
           transitionPath: ['onDone', 0],
           external: true,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'foo',
@@ -820,7 +820,7 @@ describe('add_transition', () => {
           transitionPath: ['always', 0],
           external: true,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'foo',
@@ -854,7 +854,7 @@ describe('add_transition', () => {
           transitionPath: ['on', 'NEXT', 0],
           external: false,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'foo',
@@ -899,7 +899,7 @@ describe('add_transition', () => {
           transitionPath: ['on', 'NEXT', 0],
           external: false,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'foo',
@@ -952,7 +952,7 @@ describe('add_transition', () => {
           transitionPath: ['on', 'NEXT', 0],
           external: false,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'foo',
@@ -1009,7 +1009,7 @@ describe('add_transition', () => {
           transitionPath: ['on', 'NEXT', 0],
           external: true,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'a',
@@ -1068,7 +1068,7 @@ describe('add_transition', () => {
           transitionPath: ['on', 'NEXT', 0],
           external: true,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'a',
@@ -1125,7 +1125,7 @@ describe('add_transition', () => {
           transitionPath: ['on', 'NEXT', 0],
           external: true,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         id: 'groot',
@@ -1185,7 +1185,7 @@ describe('add_transition', () => {
           transitionPath: ['on', 'NEXT', 0],
           external: true,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         id: 'groot',
@@ -1246,7 +1246,7 @@ describe('add_transition', () => {
           transitionPath: ['on', 'NEXT', 0],
           external: true,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         id: 'groot',
@@ -1295,7 +1295,7 @@ describe('add_transition', () => {
           external: true,
           guard: 'isItTooLate',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'foo',
@@ -1335,7 +1335,7 @@ describe('add_transition', () => {
           external: false,
           guard: 'isItTooLate',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'foo',
@@ -1376,7 +1376,7 @@ describe('add_transition', () => {
           external: true,
           guard: 'isItTooLate',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'foo',
@@ -1417,7 +1417,7 @@ describe('add_transition', () => {
           external: true,
           guard: 'isItTooLate',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
       "createMachine({
         initial: 'foo',
