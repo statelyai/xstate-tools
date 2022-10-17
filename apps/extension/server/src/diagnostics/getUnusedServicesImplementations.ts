@@ -16,9 +16,11 @@ export const getUnusedServicesImplementations: DiagnosticGetter = (
   );
 
   const unusedServices =
-    machineResult.ast?.options?.services?.properties.filter((service) => {
-      return !allServices.has(service.key);
-    });
+    machineResult.machineCallResult?.options?.services?.properties.filter(
+      (service) => {
+        return !allServices.has(service.key);
+      },
+    );
 
   return (
     unusedServices?.map((service) => {

@@ -1,10 +1,12 @@
-import type { ParseResult } from '@xstate/machine-extractor';
+import type { FileExtractResult } from '@xstate/machine-extractor';
 
 export const filterOutIgnoredMachines = (
-  parseResult: ParseResult,
-): ParseResult => {
+  parseResult: FileExtractResult,
+): FileExtractResult => {
   return {
     ...parseResult,
-    machines: parseResult.machines.filter((machine) => !machine.getIsIgnored()),
+    machines: parseResult.machines.filter(
+      (machine) => !!machine && !machine.getIsIgnored(),
+    ),
   };
 };

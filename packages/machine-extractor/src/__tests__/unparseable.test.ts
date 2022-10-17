@@ -1,4 +1,4 @@
-import { parseMachinesFromFile } from '../parseMachinesFromFile';
+import { extractMachinesFromFile } from '../extractMachinesFromFile';
 
 describe('Unparseable nodes', () => {
   describe('When it reaches an object property with the incorrect type', () => {
@@ -9,7 +9,7 @@ describe('Unparseable nodes', () => {
 				})
 			`;
 
-      expect(() => parseMachinesFromFile(input)).not.toThrow();
+      expect(() => extractMachinesFromFile(input)).not.toThrow();
     });
   });
 });

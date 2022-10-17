@@ -1,8 +1,8 @@
 import outdent from 'outdent';
-import { parseMachinesFromFile } from '../../parseMachinesFromFile';
+import { extractMachinesFromFile } from '../../extractMachinesFromFile';
 
 const getModifiableMachine = (code: string) =>
-  parseMachinesFromFile(outdent.string(code)).machines[0];
+  extractMachinesFromFile(outdent.string(code))!.machines[0]!;
 
 // TODO: change *some* targets within the moved state
 // TODO: change some targets targeting the moved state (or its decendants)

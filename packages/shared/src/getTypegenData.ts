@@ -1,4 +1,4 @@
-import { MachineParseResult } from '@xstate/machine-extractor';
+import { MachineExtractResult } from '@xstate/machine-extractor';
 import { createIntrospectableMachine } from './createIntrospectableMachine';
 import { introspectMachine } from './introspectMachine';
 
@@ -9,12 +9,12 @@ const removeExtension = (fileName: string) => fileName.replace(/\.[^/.]+$/, '');
 export const getTypegenData = (
   fileName: string,
   machineIndex: number,
-  machineResult: MachineParseResult,
+  machineResult: MachineExtractResult,
 ) => {
   const introspectResult = introspectMachine(
     createIntrospectableMachine(machineResult) as any,
   );
-  const tsTypes = machineResult.ast.definition?.tsTypes?.node!;
+  const tsTypes = machineResult.machineCallResult.definition?.tsTypes?.node!;
 
   const providedImplementations = getProvidedImplementations(machineResult);
 
@@ -117,23 +117,25 @@ export const getTypegenData = (
   };
 };
 
-const getProvidedImplementations = (machine: MachineParseResult) => {
+const getProvidedImplementations = (machine: MachineExtractResult) => {
   return {
     actions: new Set(
-      machine.ast.options?.actions?.properties.map(
+      machine.machineCallResult.options?.actions?.properties.map(
         (property) => property.key,
       ) || [],
     ),
     delays: new Set(
-      machine.ast.options?.delays?.properties.map((property) => property.key) ||
-        [],
+      machine.machineCallResult.options?.delays?.properties.map(
+        (property) => property.key,
+      ) || [],
     ),
     guards: new Set(
-      machine.ast.options?.guards?.properties.map((property) => property.key) ||
-        [],
+      machine.machineCallResult.options?.guards?.properties.map(
+        (property) => property.key,
+      ) || [],
     ),
     services: new Set(
-      machine.ast.options?.services?.properties.map(
+      machine.machineCallResult.options?.services?.properties.map(
         (property) => property.key,
       ) || [],
     ),

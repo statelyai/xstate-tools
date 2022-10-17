@@ -1,8 +1,8 @@
 import outdent from 'outdent';
-import { parseMachinesFromFile } from '../../parseMachinesFromFile';
+import { extractMachinesFromFile } from '../../extractMachinesFromFile';
 
 const getModifiableMachine = (code: string) =>
-  parseMachinesFromFile(outdent.string(code)).machines[0];
+  extractMachinesFromFile(outdent.string(code))!.machines[0]!;
 
 describe('remove_guard', () => {
   it('should be possible to remove a guard from a transition', () => {

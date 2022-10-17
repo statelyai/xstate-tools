@@ -1,4 +1,4 @@
-import { parseMachinesFromFile } from '../parseMachinesFromFile';
+import { extractMachinesFromFile } from '../extractMachinesFromFile';
 
 describe('Inline implementations', () => {
   it('Should pick up guards declared inline deeper than the root level', () => {
@@ -14,9 +14,9 @@ describe('Inline implementations', () => {
 			})
 		`;
 
-    const result = parseMachinesFromFile(input);
+    const result = extractMachinesFromFile(input)!;
 
-    const machine = result.machines[0];
+    const machine = result!.machines[0]!;
 
     const config = machine.toConfig({ hashInlineImplementations: true });
 

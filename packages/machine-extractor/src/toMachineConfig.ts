@@ -10,7 +10,7 @@ import { StateNodeReturn } from './stateNode';
 import { MaybeTransitionArray } from './transitions';
 import { GetParserResult } from './utils';
 
-export interface ToMachineConfigParseOptions {
+export interface ToMachineConfigOptions {
   /**
    * Whether or not to hash inline implementations, which
    * allow for parsing inline implementations as code.
@@ -18,11 +18,19 @@ export interface ToMachineConfigParseOptions {
    * @default false
    */
   hashInlineImplementations?: boolean;
+
+  /**
+   * Whether to use a static string in place of inline implementations.
+   * This makes it easier to compare two different configs with `deepEqual`
+   *
+   * @default false
+   */
+  anonymizeInlineImplementations?: boolean;
 }
 
 const parseStateNode = (
   astResult: StateNodeReturn,
-  opts: ToMachineConfigParseOptions | undefined,
+  opts: ToMachineConfigOptions | undefined,
 ): StateNodeConfig<any, any, any> => {
   const config: MachineConfig<any, any, any> = {};
 
@@ -121,7 +129,9 @@ const parseStateNode = (
     astResult.invoke.forEach((invoke) => {
       if (!invoke.src) return;
       let src: string;
-      if (opts?.hashInlineImplementations) {
+      if (opts?.anonymizeInlineImplementations) {
+        src = 'anonymous';
+      } else if (opts?.hashInlineImplementations) {
         src =
           invoke.src.declarationType === 'named'
             ? invoke.src.value
@@ -168,7 +178,7 @@ const parseStateNode = (
 
 export const toMachineConfig = (
   result: TMachineCallExpression,
-  opts?: ToMachineConfigParseOptions,
+  opts?: ToMachineConfigOptions,
 ): MachineConfig<any, any, any> | undefined => {
   if (!result?.definition) return undefined;
   return parseStateNode(result?.definition, opts);
@@ -176,12 +186,22 @@ export const toMachineConfig = (
 
 export const getActionConfig = (
   astActions: GetParserResult<typeof MaybeArrayOfActions>,
-  opts: ToMachineConfigParseOptions | undefined,
+  opts: ToMachineConfigOptions | undefined,
 ): Actions<any, any> => {
   const actions: Actions<any, any> = [];
 
   astActions?.forEach((action) => {
-    if (opts?.hashInlineImplementations && action.declarationType !== 'named') {
+    if (
+      opts?.anonymizeInlineImplementations &&
+      action.declarationType !== 'named'
+    ) {
+      actions.push({
+        type: 'anonymous',
+      });
+    } else if (
+      opts?.hashInlineImplementations &&
+      action.declarationType !== 'named'
+    ) {
       actions.push({
         type: action.inlineDeclarationId,
       });
@@ -199,7 +219,7 @@ export const getActionConfig = (
 
 export const getTransitions = (
   astTransitions: GetParserResult<typeof MaybeTransitionArray>,
-  opts: ToMachineConfigParseOptions | undefined,
+  opts: ToMachineConfigOptions | undefined,
 ): TransitionConfigOrTarget<any, any> => {
   const transitions: TransitionConfigOrTarget<any, any> = [];
 
@@ -214,6 +234,11 @@ export const getTransitions = (
     }
     if (transition?.cond) {
       if (
+        opts?.anonymizeInlineImplementations &&
+        transition.cond.declarationType !== 'named'
+      ) {
+        toPush.cond = 'anonymous';
+      } else if (
         opts?.hashInlineImplementations &&
         transition.cond.declarationType !== 'named'
       ) {

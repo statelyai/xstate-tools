@@ -1,17 +1,13 @@
-import { parseMachinesFromFile } from '../parseMachinesFromFile';
+import { extractMachinesFromFile } from '../extractMachinesFromFile';
 
 describe('Validation and failsafes', () => {
   describe('When the code does not contain createMachine or Machine', () => {
-    it('Should return an empty object', () => {
+    it('Should return null', () => {
       expect(
-        parseMachinesFromFile(`
+        extractMachinesFromFile(`
         const hello = 2;
       `),
-      ).toEqual(
-        expect.objectContaining({
-          machines: [],
-        }),
-      );
+      ).toBe(null);
     });
   });
 });

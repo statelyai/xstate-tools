@@ -1,4 +1,4 @@
-import { parseMachinesFromFile } from '@xstate/machine-extractor';
+import { extractMachinesFromFile } from '@xstate/machine-extractor';
 import * as fs from 'fs';
 import * as fsP from 'fs/promises';
 import * as path from 'path';
@@ -15,11 +15,18 @@ describe('getTypegenOutput', () => {
     const runTest = async () => {
       const filePath = path.join(examplesPath, file);
       const content = await fsP.readFile(filePath, 'utf8');
+      const extracted = extractMachinesFromFile(content);
 
-      const types = parseMachinesFromFile(content).machines.map(
-        (parseResult, index) =>
-          getTypegenData(path.basename(filePath), index, parseResult),
-      );
+      if (!extracted) {
+        throw new Error('No machines found in the file');
+      }
+
+      const types = extracted.machines.map((parseResult, index) => {
+        if (!parseResult) {
+          throw new Error(`Machine at index ${index} couldn't be extracted`);
+        }
+        return getTypegenData(path.basename(filePath), index, parseResult);
+      });
 
       expect(
         format(getTypegenOutput(types), { parser: 'typescript' }),

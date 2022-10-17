@@ -1,9 +1,9 @@
 import { groupByUniqueName } from '..';
-import { parseMachinesFromFile } from '../parseMachinesFromFile';
+import { extractMachinesFromFile } from '../extractMachinesFromFile';
 
 describe('MachineParseResult', () => {
   it('Should let you get a state node by path', () => {
-    const result = parseMachinesFromFile(`
+    const result = extractMachinesFromFile(`
       createMachine({
         states: {
           a: {},
@@ -16,7 +16,7 @@ describe('MachineParseResult', () => {
       })
     `);
 
-    const machine = result.machines[0];
+    const machine = result!.machines[0]!;
 
     expect(machine.getAllStateNodes()).toHaveLength(4);
 
@@ -30,7 +30,7 @@ describe('MachineParseResult', () => {
   });
 
   it('Should let you list all of the transition target nodes', () => {
-    const result = parseMachinesFromFile(`
+    const result = extractMachinesFromFile(`
       createMachine({
         onDone: ['state.onDone'],
         invoke: {
@@ -50,7 +50,7 @@ describe('MachineParseResult', () => {
       })
     `);
 
-    const targets = result.machines[0].getTransitionTargets();
+    const targets = result!.machines[0]!.getTransitionTargets();
 
     // Doing a map here to improve the error messaging
     expect(
@@ -59,7 +59,7 @@ describe('MachineParseResult', () => {
   });
 
   it('Should let you list all of the named guards', () => {
-    const result = parseMachinesFromFile(`
+    const result = extractMachinesFromFile(`
     createMachine({
       onDone: [{cond: 'state.onDone'}],
       invoke: {
@@ -81,7 +81,9 @@ describe('MachineParseResult', () => {
     })
     `);
 
-    const conds = groupByUniqueName(result.machines[0].getAllConds(['named']));
+    const conds = groupByUniqueName(
+      result!.machines[0]!.getAllConds(['named']),
+    );
 
     expect(Object.keys(conds)).toHaveLength(5);
 
@@ -89,7 +91,7 @@ describe('MachineParseResult', () => {
   });
 
   it('Should grab all invoke names', () => {
-    const result = parseMachinesFromFile(`
+    const result = extractMachinesFromFile(`
       createMachine({
         invoke: {
           src: 'cool'
@@ -97,13 +99,13 @@ describe('MachineParseResult', () => {
       })
     `);
 
-    const services = result.machines[0].getAllServices(['named']);
+    const services = result!.machines[0]!.getAllServices(['named']);
 
     expect(Object.keys(services)).toHaveLength(1);
   });
 
   it('should grab target defined with a template literal', () => {
-    const result = parseMachinesFromFile(`
+    const result = extractMachinesFromFile(`
       createMachine({
         initial: 'a',
         states: {
@@ -117,7 +119,7 @@ describe('MachineParseResult', () => {
       })
     `);
 
-    const [transition] = result.machines[0].getTransitionTargets();
+    const [transition] = result!.machines[0]!.getTransitionTargets();
 
     expect({
       from: transition.fromPath,

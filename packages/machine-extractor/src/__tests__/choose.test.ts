@@ -1,8 +1,8 @@
-import { groupByUniqueName, parseMachinesFromFile } from '..';
+import { extractMachinesFromFile, groupByUniqueName } from '..';
 
 describe('Choose parsing', () => {
   it('Should be able to grab actions and guardsdeclared inside a choose action', () => {
-    const result = parseMachinesFromFile(`
+    const result = extractMachinesFromFile(`
       createMachine({
         entry: [
           choose([
@@ -20,12 +20,14 @@ describe('Choose parsing', () => {
     `);
 
     expect(
-      Object.keys(groupByUniqueName(result.machines[0].getAllConds(['named']))),
+      Object.keys(
+        groupByUniqueName(result!.machines[0]!.getAllConds(['named'])),
+      ),
     ).toHaveLength(2);
 
     expect(
       Object.keys(
-        groupByUniqueName(result.machines[0].getAllActions(['named'])),
+        groupByUniqueName(result!.machines[0]!.getAllActions(['named'])),
       ),
     ).toHaveLength(4);
   });
@@ -33,7 +35,7 @@ describe('Choose parsing', () => {
 
 describe('Choose in machine options', () => {
   it('Should be able to grab actions and conds declared in a choose in machine options', () => {
-    const result = parseMachinesFromFile(`
+    const result = extractMachinesFromFile(`
       createMachine({
         entry: 'chooseSomething'
       }, {
@@ -53,12 +55,14 @@ describe('Choose in machine options', () => {
     `);
 
     expect(
-      Object.keys(groupByUniqueName(result.machines[0].getAllConds(['named']))),
+      Object.keys(
+        groupByUniqueName(result!.machines[0]!.getAllConds(['named'])),
+      ),
     ).toHaveLength(2);
 
     expect(
       Object.keys(
-        groupByUniqueName(result.machines[0].getAllActions(['named'])),
+        groupByUniqueName(result!.machines[0]!.getAllActions(['named'])),
       ),
     ).toHaveLength(5);
   });

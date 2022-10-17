@@ -26,10 +26,10 @@ export const miscDiagnostics: DiagnosticGetter = (
   } catch (e) {
     let range: Range = {
       start: textDocument.positionAt(
-        machineResult.ast?.definition?.node.start || 0,
+        machineResult.machineCallResult?.definition?.node.start || 0,
       ),
       end: textDocument.positionAt(
-        machineResult.ast?.definition?.node.end || 0,
+        machineResult.machineCallResult?.definition?.node.end || 0,
       ),
     };
     // if (
