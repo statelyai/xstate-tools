@@ -1303,8 +1303,8 @@ describe('add_transition', () => {
           foo: {
             on: {
               NEXT: {
-                target: "bar",
-                cond: "isItTooLate"
+                cond: "isItTooLate",
+                target: "bar"
               }
             }
           },
@@ -1347,8 +1347,8 @@ describe('add_transition', () => {
 
         on: {
           NEXT: {
-            target: ".bar",
-            cond: "isItTooLate"
+            cond: "isItTooLate",
+            target: ".bar"
           }
         }
       }"
@@ -1388,8 +1388,8 @@ describe('add_transition', () => {
 
         on: {
           NEXT: {
-            target: ".bar",
             cond: "isItTooLate",
+            target: ".bar",
             internal: false
           }
         }

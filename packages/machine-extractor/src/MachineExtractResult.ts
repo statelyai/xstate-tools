@@ -12,6 +12,10 @@ import { toMachineConfig, ToMachineConfigOptions } from './toMachineConfig';
 import { TransitionConfigNode } from './transitions';
 import { Comment } from './types';
 
+function last<T extends ReadonlyArray<any>>(
+  arr: T,
+): T extends readonly [...any, infer Last] ? Last : never;
+function last<T>(arr: T[]): T;
 function last<T>(arr: T[]): T {
   return arr[arr.length - 1];
 }
@@ -60,6 +64,13 @@ export type MachineEdit =
   | { type: 'rename_state'; path: string[]; name: string }
   | { type: 'reparent_state'; path: string[]; newParentPath: string[] }
   | { type: 'set_initial_state'; path: string[]; initialState: string }
+  | { type: 'set_state_id'; path: string[]; id?: string }
+  | {
+      type: 'set_state_type';
+      path: string[];
+      stateType: 'normal' | 'parallel' | 'final' | 'history';
+      history?: 'shallow' | 'deep';
+    }
   | {
       type: 'add_transition';
       sourcePath: string[];
@@ -85,6 +96,12 @@ export type MachineEdit =
       sourcePath: string[];
       transitionPath: TransitionPath;
       newTransitionPath: TransitionPath;
+    }
+  | {
+      type: 'mark_transition_as_external';
+      sourcePath: string[];
+      transitionPath: TransitionPath;
+      external: boolean;
     }
   | {
       type: 'add_action';
@@ -138,6 +155,12 @@ export type MachineEdit =
       invokeIndex: number;
       source?: string | undefined;
       id?: string | undefined;
+    }
+  | {
+      type: 'set_description';
+      statePath: string[];
+      transitionPath?: TransitionPath;
+      description?: string;
     };
 
 export interface MachineParseResultStateNode {
@@ -691,23 +714,14 @@ export class MachineExtractResult {
           if (statesProp) {
             const unwrapped = unwrapSimplePropValue(statesProp);
             n.ObjectExpression.assert(unwrapped);
-            unwrapped.properties.push(
-              b.objectProperty(
-                safePropertyKey(edit.name),
-                b.objectExpression([]),
-              ),
-            );
+            setProperty(unwrapped, edit.name, toObjectExpression({}));
           } else {
-            stateObj.properties.push(
-              b.objectProperty(
-                b.identifier('states'),
-                b.objectExpression([
-                  b.objectProperty(
-                    safePropertyKey(edit.name),
-                    b.objectExpression([]),
-                  ),
-                ]),
-              ),
+            setProperty(
+              stateObj,
+              'states',
+              toObjectExpression({
+                [edit.name]: {},
+              }),
             );
           }
           break;
@@ -1011,8 +1025,11 @@ export class MachineExtractResult {
             recastDefinitionNode,
             edit.newParentPath,
           );
-          getStatesObjectInState(newParent).properties.push(
-            b.objectProperty(safePropertyKey(last(edit.path)), state),
+
+          setProperty(
+            getStatesObjectInState(newParent),
+            last(edit.path),
+            state,
           );
 
           targetRecomputeCandidates.forEach((candidate) => {
@@ -1043,7 +1060,7 @@ export class MachineExtractResult {
             unwrapSimplePropValue(oldParent.properties[initialPropIndex])!,
           );
           if (initialValue === last(edit.path)) {
-            oldParent.properties.splice(initialPropIndex, 1);
+            removeProperty(oldParent, 'initial');
           }
           break;
         }
@@ -1053,21 +1070,36 @@ export class MachineExtractResult {
             edit.path,
           );
 
-          const prop = findObjectProperty(stateObj, 'initial');
-          if (prop) {
-            n.ObjectProperty.assert(prop);
-            setPropertyValue(prop, b.stringLiteral(edit.initialState));
+          setProperty(stateObj, 'initial', b.stringLiteral(edit.initialState));
+          break;
+        }
+        case 'set_state_id': {
+          // TODO: implement this, it's not used by the Studio right now though
+          break;
+        }
+        case 'set_state_type': {
+          const stateObj = getStateObjectByPath(
+            recastDefinitionNode,
+            edit.path,
+          );
+
+          if (edit.stateType === 'normal') {
+            removeProperty(stateObj, 'type');
           } else {
-            stateObj.properties.push(
-              b.objectProperty(
-                b.identifier('initial'),
-                b.stringLiteral(edit.initialState),
-              ),
-            );
+            setProperty(stateObj, 'type', b.stringLiteral(edit.stateType));
+          }
+
+          if (edit.stateType === 'history') {
+            if (edit.history === 'deep') {
+              setProperty(stateObj, 'history', b.stringLiteral('deep'));
+            } else {
+              removeProperty(stateObj, 'history');
+            }
+          } else {
+            removeProperty(stateObj, 'history');
           }
           break;
         }
-
         case 'add_transition': {
           const stateObj = getStateObjectByPath(
             recastDefinitionNode,
@@ -1076,14 +1108,22 @@ export class MachineExtractResult {
 
           const target = getBestTargetDescriptor(recastDefinitionNode, edit);
 
-          // TODO: we could avoid adding `internal: true` for external transitions with no ancestor-descendant relationship between source and the target
           const transition = minifyTransitionObjectExpression(
             toObjectExpression({
-              target,
               ...(edit.guard && { cond: edit.guard }),
-              internal: !edit.external,
             }),
+            {
+              ...(typeof target === 'string' && { target }),
+              ...(target?.startsWith('.') && edit.external
+                ? { internal: false }
+                : edit.targetPath &&
+                  arePathsEqual(edit.sourcePath, edit.targetPath) &&
+                  !edit.external
+                ? { internal: true }
+                : null),
+            },
           );
+          //
           insertAtTransitionPath(stateObj, edit.transitionPath, transition);
           break;
         }
@@ -1141,7 +1181,7 @@ export class MachineExtractResult {
             edit.transitionPath.slice(0, -1),
           )!;
 
-          const index = last(edit.transitionPath) as number;
+          const index = last(edit.transitionPath);
 
           const target = getBestTargetDescriptor(recastDefinitionNode, {
             sourcePath: newSourcePath,
@@ -1186,6 +1226,41 @@ export class MachineExtractResult {
             edit.transitionPath,
           );
           insertAtTransitionPath(sourceObj, edit.newTransitionPath, removed);
+          break;
+        }
+        case 'mark_transition_as_external': {
+          const sourceObj = getStateObjectByPath(
+            recastDefinitionNode,
+            edit.sourcePath,
+          );
+
+          const transitionProp = getPropByPath(
+            sourceObj,
+            edit.transitionPath.slice(0, -1),
+          )!;
+
+          const index = last(edit.transitionPath);
+
+          const transitionObject = getTransitionAtIndex(
+            unwrapSimplePropValue(transitionProp)!,
+            index,
+          );
+
+          // TODO: this logic could maybe be somehow merged with `updateTransitionAtPathWith`
+          const minifiedTransition = minifyTransitionObjectExpression(
+            transitionObject,
+            { internal: !edit.external },
+          );
+
+          if (n.ArrayExpression.check(transitionProp.value)) {
+            if (transitionProp.value.elements.length === 1) {
+              transitionProp.value = minifiedTransition as any;
+              break;
+            }
+            transitionProp.value.elements[index] = minifiedTransition as any;
+          } else {
+            transitionProp.value = minifiedTransition as any;
+          }
           break;
         }
         case 'add_action': {
@@ -1288,6 +1363,21 @@ export class MachineExtractResult {
           updateInvoke(unwrapped, edit);
           break;
         }
+        case 'set_description': {
+          const state = getStateObjectByPath(
+            recastDefinitionNode,
+            edit.statePath,
+          );
+          if (!edit.transitionPath) {
+            updateDescription(state, edit.description);
+            break;
+          }
+
+          const transition = getTransitionObject(state, edit.transitionPath);
+          updateDescription(transition, edit.description);
+          updateTransitionAtPathWith(state, edit.transitionPath, transition);
+          break;
+        }
       }
     }
 
@@ -1327,6 +1417,51 @@ export class MachineExtractResult {
   }
 }
 
+function removeProperty(obj: RecastObjectExpression, propName: string) {
+  let propIndex = -1;
+  // ensure that duplicate properties are removed
+  while ((propIndex = findObjectPropertyIndex(obj, propName)) !== -1) {
+    obj.properties.splice(propIndex, 1);
+  }
+}
+
+function setProperty(
+  obj: RecastObjectExpression,
+  propName: string,
+  value: RecastNode,
+) {
+  const prop = findObjectProperty(obj, propName);
+  if (prop) {
+    prop.value = value as any;
+    return;
+  }
+  obj.properties.push(
+    b.objectProperty(safePropertyKey(propName), value as any),
+  );
+}
+
+function updateDescription(
+  obj: RecastObjectExpression,
+  description: string | undefined,
+) {
+  if (typeof description !== 'string') {
+    removeProperty(obj, 'description');
+    return;
+  }
+  setProperty(
+    obj,
+    'description',
+    t.templateLiteral(
+      [
+        t.templateElement({
+          raw: description,
+        }),
+      ],
+      [],
+    ),
+  );
+}
+
 function updateInvoke(
   invoke: RecastObjectExpression,
   data: Pick<Extract<MachineEdit, { type: 'edit_invoke' }>, 'id' | 'source'>,
@@ -1335,10 +1470,7 @@ function updateInvoke(
     const idProp = findObjectProperty(invoke, 'id')!;
     idProp.value = b.stringLiteral(data.id);
   } else if ('id' in data && data.id === undefined) {
-    let propIndex = -1;
-    while ((propIndex = findObjectPropertyIndex(invoke, 'id')!) !== -1) {
-      invoke.properties.splice(propIndex, 1);
-    }
+    removeProperty(invoke, 'id');
   }
 
   if (typeof data.source === 'string') {
@@ -1362,14 +1494,12 @@ function updateTargetAtObjectPath(
     if (!n.ObjectExpression.check(element)) {
       prop.value.elements.splice(index, 1, b.stringLiteral(newTarget));
     } else {
-      const targetProp = findObjectProperty(element, 'target')!;
-      setPropertyValue(targetProp, b.stringLiteral(newTarget));
+      setProperty(element, 'target', b.stringLiteral(newTarget));
     }
   } else if (!n.ObjectExpression.check(prop.value)) {
     setPropertyValue(prop, b.stringLiteral(newTarget));
   } else {
-    const targetProp = findObjectProperty(prop.value, 'target')!;
-    setPropertyValue(targetProp, b.stringLiteral(newTarget));
+    setProperty(prop.value, 'target', b.stringLiteral(newTarget));
   }
 }
 
@@ -1404,7 +1534,7 @@ function findObjectProperty(obj: RecastObjectExpression, key: string) {
   if (index === -1) {
     return;
   }
-  const prop = obj.properties[findObjectPropertyIndex(obj, key)];
+  const prop = obj.properties[index];
 
   if (prop && (n.SpreadElement.check(prop) || n.SpreadProperty.check(prop))) {
     throw new Error('Spread properties are not supported');
@@ -1545,7 +1675,7 @@ function insertAtTransitionPath(
       if (!n.ArrayExpression.check(prop.value)) {
         prop.value = b.arrayExpression([prop.value as any]);
       }
-      prop.value.elements.splice(last(path) as number, 0, value as any);
+      prop.value.elements.splice(last(path), 0, value as any);
       return;
     }
     let unwrapped = unwrapSimplePropValue(prop)!;
@@ -1630,7 +1760,7 @@ function insertAtActionPath(
   insertAtArrayifiableProperty({
     obj: transition,
     property: 'actions',
-    index: last(path) as number,
+    index: last(path),
     value,
   });
 }
@@ -1664,7 +1794,7 @@ function editAtActionPath(
   editAtArrayifiableProperty({
     obj: transition,
     property: 'actions',
-    index: last(path) as number,
+    index: last(path),
     value,
   });
 }
@@ -1688,7 +1818,7 @@ function removeAtActionPath(obj: RecastObjectExpression, path: ActionPath) {
     obj,
     path.slice(0, -1) as TransitionPath,
   );
-  const transitionIndex = last(path) as number;
+  const transitionIndex = last(path);
 
   removeAtArrayifiableProperty({
     obj: transition,
@@ -1739,12 +1869,12 @@ function removeGuardFromTransition(
 ) {
   const transition = getTransitionObject(obj, path);
   const condIndex = findObjectPropertyIndex(transition, 'cond');
+
   if (condIndex === -1) {
     throw new Error(`"cond" should exist before attempting to remove it`);
   }
 
-  transition.properties.splice(condIndex, 1);
-
+  removeProperty(transition, 'cond');
   updateTransitionAtPathWith(obj, path, transition);
 }
 
@@ -1762,7 +1892,7 @@ function updateTransitionAtPathWith(
         transitionProp.value = minified as any;
         return;
       }
-      transitionProp.value.elements[last(path) as number] = minified as any;
+      transitionProp.value.elements[last(path)] = minified as any;
     } else {
       transitionProp.value = minified as any;
     }
@@ -1817,10 +1947,10 @@ function removeAtArrayifiableProperty({
   if (n.ArrayExpression.check(unwrapped)) {
     unwrapped.elements.splice(index, 1);
     if (unwrapped.elements.length === 0) {
-      obj.properties.splice(propIndex, 1);
+      removeProperty(obj, property);
     }
   } else {
-    obj.properties.splice(propIndex, 1);
+    removeProperty(obj, property);
   }
 }
 
@@ -1971,9 +2101,14 @@ function collectAncestorIds(obj: RecastObjectExpression, path: string[]) {
   return ids;
 }
 
-function toObjectExpression(obj: Record<string | number, unknown>) {
+function toObjectExpression(
+  obj: Record<string | number, unknown>,
+): RecastObjectExpression {
   return b.objectExpression(
     Object.entries(obj).map(([key, value]) => {
+      if (Array.isArray(value)) {
+        throw new Error('Converting arrays is not implemented');
+      }
       const valueNode =
         typeof value === 'string'
           ? b.stringLiteral(value)
@@ -1983,6 +2118,10 @@ function toObjectExpression(obj: Record<string | number, unknown>) {
           ? b.numericLiteral(value)
           : typeof value === 'undefined'
           ? b.identifier('undefined')
+          : value === null
+          ? b.nullLiteral()
+          : typeof value === 'object'
+          ? toObjectExpression(value as Record<string | number, unknown>)
           : null;
       if (!valueNode) {
         throw new Error(
@@ -2070,7 +2209,7 @@ function removeTransitionAtPath(
     n.ObjectExpression.assert(unwrapped);
     const removed = removeTransitionAtPath(unwrapped, propPath.slice(1));
     if (unwrapped.properties.length === 0) {
-      obj.properties.splice(index, 1);
+      removeProperty(obj, propPath[0]);
     }
     return removed;
   }
@@ -2082,7 +2221,7 @@ function removeTransitionAtPath(
       const removed = unwrapped.elements.splice(propPath[1], 1);
       switch (unwrapped.elements.length) {
         case 0: {
-          obj.properties.splice(index, 1);
+          removeProperty(obj, propPath[0]);
           return removed as any;
         }
         case 1: {
@@ -2099,7 +2238,7 @@ function removeTransitionAtPath(
       }
     }
 
-    obj.properties.splice(index, 1)[0];
+    removeProperty(obj, propPath[0]);
     return unwrapped!;
   }
 
@@ -2124,7 +2263,7 @@ function getTransitionAtIndex(
     return transition;
   }
 
-  return wrapSimpleTargetIntoObjectExpression(transition);
+  return upgradeSimpleTarget(transition);
 }
 
 function isExternalTransition(transition: RecastObjectExpression): boolean {
@@ -2151,6 +2290,8 @@ function isExternalTransition(transition: RecastObjectExpression): boolean {
 
 // perhaps it's a little bit weird that we operate here on the AST level
 // but this way we minimize what we touch in the preexisting object expression
+// at the same time - this function doesn't fully minify the transition proactively
+// it only minifies based on the `override` and if the transition contains only a target prop etc
 function minifyTransitionObjectExpression(
   transitionObject: RecastObjectExpression,
   override?: { target?: string; internal?: boolean },
@@ -2174,79 +2315,36 @@ function minifyTransitionObjectExpression(
     : undefined;
 
   if (internalProp && typeof internalValue !== 'boolean') {
-    throw new Error('Unexpected transition target');
+    throw new Error(`Unexpected transition's internal value`);
+  }
+
+  if (override && 'target' in override) {
+    if (typeof override.target === 'string') {
+      setProperty(transitionObject, 'target', t.stringLiteral(override.target));
+    } else {
+      removeProperty(transitionObject, 'target');
+    }
   }
 
   const finalTargetValue =
     override && 'target' in override
       ? override.target
       : (targetValue as string | undefined);
-  const finalInternalValue =
-    override?.internal ?? (internalValue as boolean | undefined);
 
-  const seen = new Set<string | number>();
-
-  for (let i = transitionObject.properties.length - 1; i >= 0; i--) {
-    const prop = transitionObject.properties[i];
-
-    if (n.SpreadProperty.check(prop) || n.SpreadElement.check(prop)) {
-      continue;
+  if (finalTargetValue === undefined) {
+    removeProperty(transitionObject, 'internal');
+  } else if (override?.internal === true) {
+    if (finalTargetValue.startsWith('.')) {
+      removeProperty(transitionObject, 'internal');
+    } else {
+      setProperty(transitionObject, 'internal', t.booleanLiteral(true));
     }
-    const key = getPropertyKey(prop);
-    const wasAlreadySeen = seen.has(key);
-    seen.add(key);
-
-    switch (key) {
-      case 'target': {
-        if (wasAlreadySeen || finalTargetValue === undefined) {
-          transitionObject.properties.splice(i, 1);
-          break;
-        }
-        // don't touch the existing defined target if it didn't change
-        if (typeof override?.target === 'string') {
-          n.ObjectProperty.assert(prop);
-          prop.value = b.stringLiteral(override.target);
-          break;
-        }
-        break;
-      }
-      case 'internal': {
-        if (
-          wasAlreadySeen ||
-          finalTargetValue === undefined ||
-          !finalTargetValue.startsWith('.')
-        ) {
-          transitionObject.properties.splice(i, 1);
-          break;
-        }
-        if (finalInternalValue === true) {
-          transitionObject.properties.splice(i, 1);
-          break;
-        }
-        n.ObjectProperty.assert(prop);
-        prop.value = b.booleanLiteral(false);
-        break;
-      }
+  } else if (override?.internal === false) {
+    if (finalTargetValue.startsWith('.')) {
+      setProperty(transitionObject, 'internal', t.booleanLiteral(false));
+    } else {
+      removeProperty(transitionObject, 'internal');
     }
-  }
-
-  if (typeof override?.target === 'string' && !seen.has('target')) {
-    transitionObject.properties.push(
-      b.objectProperty(
-        b.identifier('target'),
-        b.stringLiteral(override.target),
-      ),
-    );
-  }
-
-  if (
-    typeof finalTargetValue === 'string' &&
-    !finalTargetValue.startsWith('.') &&
-    finalInternalValue
-  ) {
-    transitionObject.properties.push(
-      b.objectProperty(b.identifier('internal'), b.booleanLiteral(true)),
-    );
   }
 
   if (transitionObject.properties.length === 0) {
@@ -2259,17 +2357,6 @@ function minifyTransitionObjectExpression(
   }
 
   return transitionObject;
-}
-
-function wrapSimpleTargetIntoObjectExpression(
-  node: RecastNode,
-): RecastObjectExpression {
-  if (n.ObjectExpression.check(node)) {
-    return node;
-  }
-  return b.objectExpression([
-    b.objectProperty(b.identifier('target'), node as any),
-  ]);
 }
 
 function getIndexForTransitionPathAppendant(
