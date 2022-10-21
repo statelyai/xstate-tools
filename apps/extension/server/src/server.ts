@@ -15,6 +15,7 @@ import {
   getTypegenData,
   GlobalSettings,
   isCursorInPosition,
+  TypegenData,
 } from '@xstate/tools-shared';
 import deepEqual from 'fast-deep-equal';
 import { CodeLens, Position } from 'vscode-languageserver';
@@ -32,7 +33,6 @@ import { connection } from './connection';
 import { getCursorHoverType } from './getCursorHoverType';
 import { getDiagnostics } from './getDiagnostics';
 import { getReferences } from './getReferences';
-import { log } from './log';
 import { CachedDocument } from './types';
 
 let hasConfigurationCapability = false;
@@ -179,6 +179,9 @@ connection.onCodeLens(({ textDocument }) => {
   );
 });
 
+const areTypesWritable = (typegenData: TypegenData) =>
+  deepEqual(typegenData.typesNode.value, typegenData.data.tsTypesValue);
+
 async function handleDocumentChange(textDocument: TextDocument): Promise<void> {
   const previouslyCachedDocument = documentsCache.get(textDocument.uri);
   try {
@@ -240,11 +243,14 @@ async function handleDocumentChange(textDocument: TextDocument): Promise<void> {
         settings,
       ),
     });
+    const writableTypes = types.filter(areTypesWritable);
     if (
-      types.some((t) => t.typesNode.value === t.data.tsTypesValue) &&
+      writableTypes.length &&
       !deepEqual(
-        previouslyCachedDocument?.types.map((t) => t.data),
-        types.map((t) => t.data),
+        previouslyCachedDocument?.types
+          .filter(areTypesWritable)
+          .map((t) => t.data),
+        writableTypes.map((t) => t.data),
       )
     ) {
       connection.sendNotification('typesUpdated', {
@@ -643,16 +649,22 @@ connection.onRequest('applyMachineEdits', ({ machineEdits }) => {
   };
 });
 
-connection.onRequest('getTsTypesEdits', ({ uri }) => {
+connection.onRequest('getTsTypesAndEdits', ({ uri }) => {
   const cachedDocument = documentsCache.get(uri);
   if (!cachedDocument) {
-    return [];
+    return {
+      types: [],
+      edits: [],
+    };
   }
-  return getTsTypesEdits(cachedDocument.types).map((edit) => ({
-    type: 'replace',
-    uri,
-    ...edit,
-  }));
+  return {
+    types: cachedDocument.types,
+    edits: getTsTypesEdits(cachedDocument.types).map((edit) => ({
+      type: 'replace',
+      uri,
+      ...edit,
+    })),
+  };
 });
 
 connection.onRequest('getNodePosition', ({ path }) => {

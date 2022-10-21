@@ -7,7 +7,7 @@ type Loggable = LoggableObject | LoggableArray | Primitive;
 interface LoggableObject {
   [key: string]: Loggable;
 }
-type LoggableArray = (Primitive | LoggableObject | LoggableArray)[];
+type LoggableArray = readonly (Primitive | LoggableObject | LoggableArray)[];
 
 export const log = (...args: Loggable[]) => {
   connection.console.log(

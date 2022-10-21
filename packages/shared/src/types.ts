@@ -79,9 +79,12 @@ export interface RequestMap {
     };
     error: any;
   };
-  getTsTypesEdits: {
+  getTsTypesAndEdits: {
     params: { uri: string };
-    result: Array<TextEdit>;
+    result: {
+      types: TypegenData[];
+      edits: Array<TextEdit>;
+    };
     error: never;
   };
   getNodePosition: {
