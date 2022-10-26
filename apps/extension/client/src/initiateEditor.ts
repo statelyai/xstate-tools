@@ -29,7 +29,16 @@ type MachineChangedEvent = {
   edits: MachineEdit[];
 };
 
-type StudioEvent = NodeSelectedEvent | OpenLinkEvent | MachineChangedEvent;
+type LayoutUpdatedEvent = {
+  type: 'LAYOUT_UPDATED';
+  layoutString: string;
+};
+
+type StudioEvent =
+  | NodeSelectedEvent
+  | OpenLinkEvent
+  | MachineChangedEvent
+  | LayoutUpdatedEvent;
 
 function registerCommand<Name extends keyof typeSafeVsCode.XStateCommands>(
   extensionContext: vscode.ExtensionContext,
@@ -290,10 +299,21 @@ const machine = createMachine(
           const messageListenerDisposable = registerDisposable(
             extensionContext,
             webviewPanel.webview.onDidReceiveMessage((event: StudioEvent) => {
-              if (event.type === 'MACHINE_CHANGED') {
+              if (
+                event.type === 'MACHINE_CHANGED' ||
+                event.type === 'LAYOUT_UPDATED'
+              ) {
                 languageClient
                   .sendRequest('applyMachineEdits', {
-                    machineEdits: event.edits,
+                    machineEdits:
+                      event.type === 'LAYOUT_UPDATED'
+                        ? [
+                            {
+                              type: 'update_layout_string',
+                              layoutString: event.layoutString,
+                            },
+                          ]
+                        : event.edits,
                   })
                   .then(({ textEdits }) => {
                     const workspaceEdit = new vscode.WorkspaceEdit();

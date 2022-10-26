@@ -161,6 +161,10 @@ export type MachineEdit =
       statePath: string[];
       transitionPath?: TransitionPath;
       description?: string;
+    }
+  | {
+      type: 'update_layout_string';
+      layoutString: string;
     };
 
 export interface MachineParseResultStateNode {
@@ -686,6 +690,40 @@ export class MachineExtractResult {
   };
 
   modify(edits: Array<MachineEdit>) {
+    // ATM we are always receiving this update in a separate event
+    // we should think about consolidating this somehow
+    if (edits.length === 1 && edits[0].type === 'update_layout_string') {
+      const existingComment = this.getLayoutComment();
+      if (!existingComment) {
+        const calleePosition = {
+          line: this.machineCallResult.callee.loc!.start.line - 1,
+          column: this.machineCallResult.callee.loc!.start.column,
+          index: this.machineCallResult.callee.start!,
+        } as const;
+
+        return {
+          // this is used as a replace but it could be a simpler~ insertion
+          range: [calleePosition, calleePosition] as const,
+          newText: `\n/** @xstate-layout ${edits[0].layoutString} */\n`,
+        };
+      }
+      const oldRange = [
+        {
+          line: existingComment.comment.node.loc!.start.line - 1,
+          column: existingComment.comment.node.loc!.start.column,
+          index: existingComment.comment.node.start!,
+        },
+        {
+          line: existingComment.comment.node.loc!.end.line - 1,
+          column: existingComment.comment.node.loc!.end.column,
+          index: existingComment.comment.node.end!,
+        },
+      ] as const;
+      return {
+        range: oldRange,
+        newText: `/** @xstate-layout ${edits[0].layoutString} */`,
+      };
+    }
     // this ain't ideal because Recast mutates the input AST
     // so there is a risk that modifying multiple machines in a single file would lead to problems
     // however, we never modify multiple machines based on the same file content so this is somewhat safe
