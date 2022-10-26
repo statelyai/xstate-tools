@@ -800,112 +800,54 @@ export class MachineExtractResult {
             ? stateProp.key.value
             : null;
 
+          if (oldName === null) {
+            throw new Error('Could not find the old name of the state');
+          }
+
           stateProp.key = safePropertyKey(edit.name);
 
-          if (oldName) {
-            const initialProp = getPropByPath(recastDefinitionNode, [
-              ...edit.path.slice(0, -1).flatMap((p) => ['states', p]),
-              'initial',
-            ]);
-            if (initialProp) {
-              const unwrapped = unwrapSimplePropValue(initialProp);
-              if (unwrapped && getSimpleStringValue(unwrapped) === oldName) {
-                setPropertyValue(initialProp, b.stringLiteral(edit.name));
-              }
+          const initialProp = getPropByPath(recastDefinitionNode, [
+            ...edit.path.slice(0, -1).flatMap((p) => ['states', p]),
+            'initial',
+          ]);
+          if (initialProp) {
+            const unwrapped = unwrapSimplePropValue(initialProp);
+            if (unwrapped && getSimpleStringValue(unwrapped) === oldName) {
+              setPropertyValue(initialProp, b.stringLiteral(edit.name));
             }
+          }
 
-            const targetableAncestorIds = collectAncestorIds(
-              recastDefinitionNode,
-              edit.path,
-            );
+          const targetableAncestorIds = collectAncestorIds(
+            recastDefinitionNode,
+            edit.path,
+          );
 
-            this.getTransitionTargets().forEach(
-              ({ fromPath, target, transitionPath, targetPath }) => {
-                // TODO: this doesn't support multiple targets, but Studio doesn't support that either
-                target.forEach((t, index) => {
-                  if (t.value.charAt(0) === '#') {
-                    if (!targetPath[0] || !t.value.includes('.')) {
-                      return;
-                    }
-                    const targetedId = t.value.split('.')[0].slice(1);
-
-                    if (
-                      !targetableAncestorIds.has(targetedId) ||
-                      !arePathsEqual(
-                        targetPath[0].slice(0, edit.path.length),
-                        edit.path,
-                      )
-                    ) {
-                      return;
-                    }
-
-                    const idPath = this._idMap.get(targetedId)!;
-
-                    const segmentedValue = t.value.split('.').slice(1);
-                    const affectedSegment =
-                      edit.path.length - idPath.length - 1;
-                    segmentedValue[affectedSegment] = edit.name;
-                    const newValue = `#${targetedId}.${segmentedValue.join(
-                      '.',
-                    )}`;
-
-                    updateTargetAtObjectPath(
-                      recastDefinitionNode,
-                      [
-                        ...fromPath.flatMap((p) => ['states', p]),
-                        ...transitionPath,
-                      ],
-                      newValue,
-                    );
+          this.getTransitionTargets().forEach(
+            ({ fromPath, target, transitionPath, targetPath }) => {
+              // TODO: this doesn't support multiple targets, but Studio doesn't support that either
+              target.forEach((t, index) => {
+                if (t.value.charAt(0) === '#') {
+                  if (!targetPath[0] || !t.value.includes('.')) {
                     return;
                   }
-
-                  if (t.value.charAt(0) === '.') {
-                    if (
-                      !arePathsEqual(
-                        targetPath[index]!.slice(0, edit.path.length),
-                        edit.path,
-                      )
-                    ) {
-                      return;
-                    }
-                    const segmentedValue = t.value.slice(1).split('.');
-                    const affectedSegment =
-                      edit.path.length - fromPath.length - 1;
-                    segmentedValue[affectedSegment] = edit.name;
-                    const newValue = `.${segmentedValue.join('.')}`;
-
-                    updateTargetAtObjectPath(
-                      recastDefinitionNode,
-                      [
-                        ...fromPath.flatMap((p) => ['states', p]),
-                        ...transitionPath,
-                      ],
-                      newValue,
-                    );
-                    return;
-                  }
-
-                  // root has no siblings so for `fromPath: []` we don't need to check for siblings
-                  // `[].slice(0, -1)` gives us `[]` back, so while the intention is to check the parent path...
-                  // for the root we'd just stay at the root
-                  if (!fromPath.length) {
-                    return;
-                  }
+                  const targetedId = t.value.split('.')[0].slice(1);
 
                   if (
+                    !targetableAncestorIds.has(targetedId) ||
                     !arePathsEqual(
-                      targetPath[index]!.slice(0, edit.path.length),
+                      targetPath[0].slice(0, edit.path.length),
                       edit.path,
                     )
                   ) {
                     return;
                   }
 
-                  const segmentedValue = t.value.split('.');
-                  const affectedSegment = edit.path.length - fromPath.length;
+                  const idPath = this._idMap.get(targetedId)!;
+
+                  const segmentedValue = t.value.split('.').slice(1);
+                  const affectedSegment = edit.path.length - idPath.length - 1;
                   segmentedValue[affectedSegment] = edit.name;
-                  const newValue = segmentedValue.join('.');
+                  const newValue = `#${targetedId}.${segmentedValue.join('.')}`;
 
                   updateTargetAtObjectPath(
                     recastDefinitionNode,
@@ -916,12 +858,68 @@ export class MachineExtractResult {
                     newValue,
                   );
                   return;
-                });
-              },
-            );
-          } else {
-            throw new Error('Could not find the old name of the state');
-          }
+                }
+
+                if (t.value.charAt(0) === '.') {
+                  if (
+                    !arePathsEqual(
+                      targetPath[index]!.slice(0, edit.path.length),
+                      edit.path,
+                    )
+                  ) {
+                    return;
+                  }
+                  const segmentedValue = t.value.slice(1).split('.');
+                  const affectedSegment =
+                    edit.path.length - fromPath.length - 1;
+                  segmentedValue[affectedSegment] = edit.name;
+                  const newValue = `.${segmentedValue.join('.')}`;
+
+                  updateTargetAtObjectPath(
+                    recastDefinitionNode,
+                    [
+                      ...fromPath.flatMap((p) => ['states', p]),
+                      ...transitionPath,
+                    ],
+                    newValue,
+                  );
+                  return;
+                }
+
+                // root has no siblings so for `fromPath: []` we don't need to check for siblings
+                // `[].slice(0, -1)` gives us `[]` back, so while the intention is to check the parent path...
+                // for the root we'd just stay at the root
+                if (!fromPath.length) {
+                  return;
+                }
+
+                if (
+                  !arePathsEqual(
+                    targetPath[index]!.slice(0, edit.path.length),
+                    edit.path,
+                  )
+                ) {
+                  return;
+                }
+
+                const segmentedValue = t.value.split('.');
+                const affectedSegment = edit.path.length - fromPath.length;
+                segmentedValue[affectedSegment] = edit.name;
+                const newValue = segmentedValue.join('.');
+
+                updateTargetAtObjectPath(
+                  recastDefinitionNode,
+                  [
+                    ...fromPath.flatMap((p) => ['states', p]),
+                    ...transitionPath,
+                  ],
+                  newValue,
+                );
+                return;
+              });
+            },
+          );
+
           break;
         }
         case 'reparent_state': {
