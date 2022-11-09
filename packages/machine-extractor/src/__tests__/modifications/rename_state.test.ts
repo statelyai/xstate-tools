@@ -1002,4 +1002,44 @@ describe('rename_state', () => {
       }"
     `);
   });
+
+  it(`should successfully rename state that has an empty key`, () => {
+    const modifiableMachine = getModifiableMachine(`
+      createMachine({
+        id: 'branch',
+        initial: '',
+        states: {
+          '': {
+            on: {
+              NEXT: { target: '#(machine).bar' },
+            }
+          },
+          bar: {},
+        },
+      })
+	  `);
+
+    expect(
+      modifiableMachine.modify([
+        {
+          type: 'rename_state',
+          path: [''],
+          name: 'NEW_NAME',
+        },
+      ]).newText,
+    ).toMatchInlineSnapshot(`
+      "{
+        id: 'branch',
+        initial: "NEW_NAME",
+        states: {
+          NEW_NAME: {
+            on: {
+              NEXT: { target: '#(machine).bar' },
+            }
+          },
+          bar: {},
+        },
+      }"
+    `);
+  });
 });
