@@ -25,16 +25,16 @@ describe('edit_guard', () => {
           transitionPath: ['on', 'CALL_HIM_MAYBE', 0],
           name: 'isHeAwake',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         on: {
           CALL_HIM_MAYBE: {
             cond: "isHeAwake",
             actions: 'callDavid'
           }
         }
-      })"
+      }"
     `);
   });
 
@@ -58,16 +58,16 @@ describe('edit_guard', () => {
           transitionPath: ['on', 'CALL_HIM_MAYBE', 0],
           name: 'isHeAwake',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         on: {
           CALL_HIM_MAYBE: {
             cond: { type: "isHeAwake", time: '9am' },
             actions: 'callDavid'
           }
         }
-      })"
+      }"
     `);
   });
 });

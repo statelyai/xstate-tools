@@ -22,13 +22,13 @@ describe('edit_invoke', () => {
           invokeIndex: 0,
           source: 'callAn(d)e(r)s',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         invoke: {
           src: "callAn(d)e(r)s"
         },
-      })"
+      }"
     `);
   });
 
@@ -50,14 +50,14 @@ describe('edit_invoke', () => {
           invokeIndex: 0,
           id: 'veryImportantCall',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         invoke: {
           src: 'callDavid',
           id: "veryImportantCall"
         },
-      })"
+      }"
     `);
   });
 
@@ -80,14 +80,14 @@ describe('edit_invoke', () => {
           source: 'callAn(d)e(r)s',
           id: 'veryImportantCall',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         invoke: {
           src: "callAn(d)e(r)s",
           id: "veryImportantCall"
         },
-      })"
+      }"
     `);
   });
 
@@ -109,13 +109,13 @@ describe('edit_invoke', () => {
           invokeIndex: 0,
           id: undefined,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         invoke: {
           src: 'callDavid'
         },
-      })"
+      }"
     `);
   });
 
@@ -138,13 +138,13 @@ describe('edit_invoke', () => {
           invokeIndex: 0,
           id: undefined,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         invoke: {
           src: 'callDavid'
         },
-      })"
+      }"
     `);
   });
 
@@ -168,16 +168,16 @@ describe('edit_invoke', () => {
           invokeIndex: 0,
           source: 'callAn(d)e(r)s',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         invoke: {
           src: {
             type: "callAn(d)e(r)s",
             at: 'noon'
           }
         },
-      })"
+      }"
     `);
   });
 
@@ -200,15 +200,15 @@ describe('edit_invoke', () => {
           invokeIndex: 1,
           source: 'callAn(d)e(r)s',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         invoke: [{
           src: 'callDavid'
         }, {
           src: "callAn(d)e(r)s"
         }],
-      })"
+      }"
     `);
   });
 });

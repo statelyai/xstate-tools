@@ -17,13 +17,13 @@ describe('add_state', () => {
           path: [],
           name: 'just_added',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           just_added: {}
         }
-      })"
+      }"
     `);
   });
 
@@ -43,14 +43,14 @@ describe('add_state', () => {
           path: [],
           name: 'just_added',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           foo: {},
           just_added: {}
         }
-      })"
+      }"
     `);
   });
 
@@ -70,9 +70,9 @@ describe('add_state', () => {
           path: ['foo'],
           name: 'just_added',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           foo: {
             states: {
@@ -80,7 +80,7 @@ describe('add_state', () => {
             }
           },
         }
-      })"
+      }"
     `);
   });
 
@@ -104,9 +104,9 @@ describe('add_state', () => {
           path: ['foo'],
           name: 'just_added',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           foo: {
             states: {
@@ -115,7 +115,7 @@ describe('add_state', () => {
             }
           },
         }
-      })"
+      }"
     `);
   });
 
@@ -131,13 +131,13 @@ describe('add_state', () => {
           path: [],
           name: 'just added',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           "just added": {}
         }
-      })"
+      }"
     `);
   });
 });

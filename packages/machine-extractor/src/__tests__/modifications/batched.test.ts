@@ -29,9 +29,9 @@ describe('batched edits', () => {
           transitionPath: ['on', 'FOO', 0],
           external: true,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           foo: {
             on: {
@@ -41,7 +41,7 @@ describe('batched edits', () => {
 
           bar: {}
         }
-      })"
+      }"
     `);
   });
 });

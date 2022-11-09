@@ -1,3 +1,4 @@
+import { MachineEdit } from '@xstate/machine-extractor';
 import { MachineConfig } from 'xstate';
 import { TypegenData } from './getTypegenData';
 
@@ -43,6 +44,8 @@ export type Range = readonly [start: Position, end: Position];
 export type CursorPosition = { line: number; column: number };
 
 export type TextEdit = {
+  type: 'replace';
+  uri: string;
   range: Range;
   newText: string;
 };
@@ -66,6 +69,13 @@ export interface RequestMap {
       layoutString: string | undefined;
       implementations: ImplementationsMetadata;
       namedGuards: string[];
+    };
+    error: any;
+  };
+  applyMachineEdits: {
+    params: { machineEdits: MachineEdit[] };
+    result: {
+      textEdits: TextEdit[];
     };
     error: any;
   };

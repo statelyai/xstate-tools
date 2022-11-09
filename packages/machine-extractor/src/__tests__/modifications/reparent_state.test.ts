@@ -30,9 +30,9 @@ describe('reparent_state', () => {
           path: ['a', 'a1'],
           newParentPath: ['b'],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           a: {},
           b: {
@@ -41,7 +41,7 @@ describe('reparent_state', () => {
             }
           }
         }
-      })"
+      }"
     `);
   });
 
@@ -66,9 +66,9 @@ describe('reparent_state', () => {
           path: ['a', 'a1'],
           newParentPath: ['a', 'a2'],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           a: {
             states: {
@@ -80,7 +80,7 @@ describe('reparent_state', () => {
             }
           },
         }
-      })"
+      }"
     `);
   });
 
@@ -109,9 +109,9 @@ describe('reparent_state', () => {
           path: ['a', 'a1'],
           newParentPath: ['b'],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           a: {},
           b: {
@@ -121,7 +121,7 @@ describe('reparent_state', () => {
             }
           }
         }
-      })"
+      }"
     `);
   });
 
@@ -147,9 +147,9 @@ describe('reparent_state', () => {
           path: ['b', 'b1'],
           newParentPath: ['a'],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           a: {
             states: {
@@ -162,7 +162,7 @@ describe('reparent_state', () => {
             }
           }
         }
-      })"
+      }"
     `);
   });
 
@@ -190,9 +190,9 @@ describe('reparent_state', () => {
           path: ['a', 'a1'],
           newParentPath: ['b'],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           a: {
             on: {
@@ -205,7 +205,7 @@ describe('reparent_state', () => {
             }
           }
         }
-      })"
+      }"
     `);
   });
 
@@ -237,9 +237,9 @@ describe('reparent_state', () => {
           path: ['a', 'a1'],
           newParentPath: ['b', 'b1'],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           a: {
             on: {
@@ -256,7 +256,7 @@ describe('reparent_state', () => {
             }
           }
         }
-      })"
+      }"
     `);
   });
 
@@ -288,9 +288,9 @@ describe('reparent_state', () => {
           path: ['a', 'a1', 'a2'],
           newParentPath: ['b'],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           a: {
             states: {
@@ -307,7 +307,7 @@ describe('reparent_state', () => {
             }
           }
         }
-      })"
+      }"
     `);
   });
 
@@ -337,9 +337,9 @@ describe('reparent_state', () => {
           path: ['a', 'a1'],
           newParentPath: ['b'],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           a: {},
           b: {
@@ -353,7 +353,7 @@ describe('reparent_state', () => {
             }
           }
         }
-      })"
+      }"
     `);
   });
 
@@ -385,9 +385,9 @@ describe('reparent_state', () => {
           path: ['a', 'a1'],
           newParentPath: ['b'],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           a: {},
           b: {
@@ -403,7 +403,7 @@ describe('reparent_state', () => {
             id: 'bullseye',
           }
         }
-      })"
+      }"
     `);
   });
 
@@ -433,9 +433,9 @@ describe('reparent_state', () => {
           path: ['a', 'a1'],
           newParentPath: ['b'],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           a: {
             states: {
@@ -452,7 +452,7 @@ describe('reparent_state', () => {
             }
           },
         }
-      })"
+      }"
     `);
   });
 
@@ -482,9 +482,9 @@ describe('reparent_state', () => {
           path: ['a'],
           newParentPath: ['b'],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           b: {
             states: {
@@ -501,7 +501,7 @@ describe('reparent_state', () => {
             }
           }
         }
-      })"
+      }"
     `);
   });
 
@@ -536,9 +536,9 @@ describe('reparent_state', () => {
           path: ['a', 'a1'],
           newParentPath: ['b'],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           a: {
             // if we wouldn't update the target relying on this ID when moving that transition outside of this ancestor
@@ -558,7 +558,7 @@ describe('reparent_state', () => {
             }
           },
         }
-      })"
+      }"
     `);
   });
 
@@ -588,9 +588,9 @@ describe('reparent_state', () => {
           path: ['a', 'a1'],
           newParentPath: ['b'],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           a: {
             states: {
@@ -607,7 +607,7 @@ describe('reparent_state', () => {
             }
           },
         }
-      })"
+      }"
     `);
   });
 
@@ -633,9 +633,9 @@ describe('reparent_state', () => {
           path: ['a', 'a1'],
           newParentPath: ['b'],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           a: {},
           b: {
@@ -644,7 +644,7 @@ describe('reparent_state', () => {
             }
           },
         }
-      })"
+      }"
     `);
   });
 
@@ -671,9 +671,9 @@ describe('reparent_state', () => {
           path: ['a', 'a2'],
           newParentPath: ['b'],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           a: {
             initial: 'a1',
@@ -687,7 +687,7 @@ describe('reparent_state', () => {
             }
           },
         }
-      })"
+      }"
     `);
   });
 });

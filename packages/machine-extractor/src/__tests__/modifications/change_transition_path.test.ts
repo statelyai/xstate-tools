@@ -28,9 +28,9 @@ describe('change_transition_path', () => {
           transitionPath: ['on', 'NEXT', 0],
           newTransitionPath: ['on', 'NEW', 0],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'a',
         states: {
           a: {
@@ -40,7 +40,7 @@ describe('change_transition_path', () => {
           },
           b: {},
         }
-      })"
+      }"
     `);
   });
 
@@ -70,9 +70,9 @@ describe('change_transition_path', () => {
           transitionPath: ['on', 'NEXT', 0],
           newTransitionPath: ['on', 'NEW', 0],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'a',
         states: {
           a: {
@@ -85,7 +85,7 @@ describe('change_transition_path', () => {
           },
           b: {},
         }
-      })"
+      }"
     `);
   });
 
@@ -112,9 +112,9 @@ describe('change_transition_path', () => {
           transitionPath: ['on', 'NEXT', 0],
           newTransitionPath: ['always', 0],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'a',
         states: {
           a: {
@@ -122,7 +122,7 @@ describe('change_transition_path', () => {
           },
           b: {},
         }
-      })"
+      }"
     `);
   });
 
@@ -150,9 +150,9 @@ describe('change_transition_path', () => {
           transitionPath: ['invoke', 0, 'onDone', 0],
           newTransitionPath: ['invoke', 0, 'onError', 0],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'a',
         states: {
           a: {
@@ -163,7 +163,7 @@ describe('change_transition_path', () => {
           },
           b: {},
         }
-      })"
+      }"
     `);
   });
 
@@ -193,9 +193,9 @@ describe('change_transition_path', () => {
           transitionPath: ['invoke', 0, 'onDone', 0],
           newTransitionPath: ['invoke', 1, 'onDone', 0],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'a',
         states: {
           a: {
@@ -208,7 +208,7 @@ describe('change_transition_path', () => {
           },
           b: {},
         }
-      })"
+      }"
     `);
   });
 
@@ -237,9 +237,9 @@ describe('change_transition_path', () => {
           transitionPath: ['on', 'OTHER', 0],
           newTransitionPath: ['on', 'NEXT', 1],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'a',
         states: {
           a: {
@@ -250,7 +250,7 @@ describe('change_transition_path', () => {
           b: {},
           c: {},
         }
-      })"
+      }"
     `);
   });
 
@@ -279,9 +279,9 @@ describe('change_transition_path', () => {
           transitionPath: ['on', 'OTHER', 0],
           newTransitionPath: ['on', 'NEXT', 0],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'a',
         states: {
           a: {
@@ -292,7 +292,7 @@ describe('change_transition_path', () => {
           b: {},
           c: {},
         }
-      })"
+      }"
     `);
   });
 
@@ -322,9 +322,9 @@ describe('change_transition_path', () => {
           transitionPath: ['on', 'OTHER', 0],
           newTransitionPath: ['on', 'NEXT', 1],
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'a',
         states: {
           a: {
@@ -336,7 +336,7 @@ describe('change_transition_path', () => {
           c: {},
           d: {},
         }
-      })"
+      }"
     `);
   });
 });

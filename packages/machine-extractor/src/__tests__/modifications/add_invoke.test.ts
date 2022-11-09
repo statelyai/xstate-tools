@@ -18,13 +18,13 @@ describe('add_invoke', () => {
           invokeIndex: 0,
           source: 'callDavid',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         invoke: {
           src: "callDavid"
         }
-      })"
+      }"
     `);
   });
 
@@ -48,9 +48,9 @@ describe('add_invoke', () => {
           invokeIndex: 0,
           source: 'callDavid',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         on: {
           FOO: 'a'
         },
@@ -61,7 +61,7 @@ describe('add_invoke', () => {
             }
           }
         }
-      })"
+      }"
     `);
   });
 
@@ -79,14 +79,14 @@ describe('add_invoke', () => {
           source: 'callDavid',
           id: 'importantCall',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         invoke: {
           src: "callDavid",
           id: "importantCall"
         }
-      })"
+      }"
     `);
   });
 
@@ -107,15 +107,15 @@ describe('add_invoke', () => {
           invokeIndex: 1,
           source: 'getRaise',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         invoke: [{
           src: 'callDavid'
         }, {
           src: "getRaise"
         }]
-      })"
+      }"
     `);
   });
 
@@ -138,9 +138,9 @@ describe('add_invoke', () => {
           invokeIndex: 0,
           source: 'eeny',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         invoke: [{
           src: "eeny"
         }, {
@@ -148,7 +148,7 @@ describe('add_invoke', () => {
         }, {
           src: 'moe'
         }]
-      })"
+      }"
     `);
   });
 
@@ -171,9 +171,9 @@ describe('add_invoke', () => {
           invokeIndex: 1,
           source: 'miny',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         invoke: [{
           src: 'eeny'
         }, {
@@ -181,7 +181,7 @@ describe('add_invoke', () => {
         }, {
           src: 'moe'
         }]
-      })"
+      }"
     `);
   });
 
@@ -204,9 +204,9 @@ describe('add_invoke', () => {
           invokeIndex: 2,
           source: 'moe',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         invoke: [{
           src: 'eeny'
         }, {
@@ -214,7 +214,7 @@ describe('add_invoke', () => {
         }, {
           src: "moe"
         }]
-      })"
+      }"
     `);
   });
 });

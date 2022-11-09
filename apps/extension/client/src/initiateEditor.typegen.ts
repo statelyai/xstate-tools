@@ -14,6 +14,8 @@ export interface Typegen0 {
   };
   eventsCausingActions: {
     forwardToWebview: 'EDIT_MACHINE' | 'DISPLAYED_MACHINE_UPDATED';
+    setEditedMachine: 'EDIT_MACHINE';
+    clearEditedMachine: 'xstate.stop';
   };
   eventsCausingServices: {
     onDisplayedMachineUpdatedListener: 'EDIT_MACHINE';

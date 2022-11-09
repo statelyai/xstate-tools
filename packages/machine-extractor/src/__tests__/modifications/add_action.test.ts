@@ -18,11 +18,11 @@ describe('add_action', () => {
           actionPath: ['entry', 0],
           name: 'doStuff',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         entry: "doStuff"
-      })"
+      }"
     `);
   });
 
@@ -44,16 +44,16 @@ describe('add_action', () => {
           actionPath: ['entry', 0],
           name: 'doStuff',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'a',
         states: {
           a: {
             entry: "doStuff"
           }
         }
-      })"
+      }"
     `);
   });
 
@@ -70,11 +70,11 @@ describe('add_action', () => {
           actionPath: ['exit', 0],
           name: 'doStuff',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         exit: "doStuff"
-      })"
+      }"
     `);
   });
 
@@ -96,16 +96,16 @@ describe('add_action', () => {
           actionPath: ['exit', 0],
           name: 'doStuff',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'a',
         states: {
           a: {
             exit: "doStuff"
           }
         }
-      })"
+      }"
     `);
   });
 
@@ -124,11 +124,11 @@ describe('add_action', () => {
           actionPath: ['entry', 1],
           name: 'doStuff',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         entry: ['bark', "doStuff"],
-      })"
+      }"
     `);
   });
 
@@ -147,11 +147,11 @@ describe('add_action', () => {
           actionPath: ['exit', 1],
           name: 'doStuff',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         exit: ['bark', "doStuff"],
-      })"
+      }"
     `);
   });
 
@@ -170,11 +170,11 @@ describe('add_action', () => {
           actionPath: ['entry', 0],
           name: 'doStuff',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         entry: ["doStuff", 'bark', 'meow'],
-      })"
+      }"
     `);
   });
 
@@ -193,11 +193,11 @@ describe('add_action', () => {
           actionPath: ['entry', 2],
           name: 'doStuff',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         entry: ['bark', 'meow', "doStuff"],
-      })"
+      }"
     `);
   });
 
@@ -216,11 +216,11 @@ describe('add_action', () => {
           actionPath: ['entry', 1],
           name: 'doStuff',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         entry: ['bark', "doStuff", 'meow'],
-      })"
+      }"
     `);
   });
 
@@ -244,9 +244,9 @@ describe('add_action', () => {
           actionPath: ['on', 'FOO', 0, 0],
           name: 'doStuff',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         on: {
           FOO: {
             target: '.a',
@@ -256,7 +256,7 @@ describe('add_action', () => {
         states: {
           a: {}
         }
-      })"
+      }"
     `);
   });
 
@@ -283,9 +283,9 @@ describe('add_action', () => {
           actionPath: ['invoke', 0, 'onDone', 0, 0],
           name: 'getRaise',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           a: {
             invoke: {
@@ -298,7 +298,7 @@ describe('add_action', () => {
           },
           b: {}
         }
-      })"
+      }"
     `);
   });
 
@@ -325,9 +325,9 @@ describe('add_action', () => {
           actionPath: ['on', 'FOO', 0, 0],
           name: 'doStuff',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         on: {
           FOO: {
             target: '.a',
@@ -338,7 +338,7 @@ describe('add_action', () => {
         states: {
           a: {}
         }
-      })"
+      }"
     `);
   });
 
@@ -365,9 +365,9 @@ describe('add_action', () => {
           actionPath: ['on', 'FOO', 0, 1],
           name: 'getRaise',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         on: {
           FOO: {
             target: '.a',
@@ -377,7 +377,7 @@ describe('add_action', () => {
         states: {
           a: {}
         }
-      })"
+      }"
     `);
   });
 });

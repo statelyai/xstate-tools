@@ -20,11 +20,11 @@ describe('edit_action', () => {
           actionPath: ['entry', 0],
           name: 'getRaise',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         entry: "getRaise",
-      })"
+      }"
     `);
   });
 
@@ -45,13 +45,13 @@ describe('edit_action', () => {
           actionPath: ['entry', 0],
           name: 'getRaise',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         entry: {
           type: "getRaise"
         },
-      })"
+      }"
     `);
   });
 
@@ -70,11 +70,11 @@ describe('edit_action', () => {
           actionPath: ['exit', 0],
           name: 'getRaise',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         exit: "getRaise",
-      })"
+      }"
     `);
   });
 
@@ -95,13 +95,13 @@ describe('edit_action', () => {
           actionPath: ['exit', 0],
           name: 'getRaise',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         exit: {
           type: "getRaise"
         },
-      })"
+      }"
     `);
   });
 
@@ -120,11 +120,11 @@ describe('edit_action', () => {
           actionPath: ['entry', 1],
           name: 'keepTheJob',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         entry: ['callDavid', "keepTheJob"],
-      })"
+      }"
     `);
   });
 
@@ -143,11 +143,11 @@ describe('edit_action', () => {
           actionPath: ['entry', 1],
           name: 'keepTheJob',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         entry: ['callDavid', { type: "keepTheJob" }],
-      })"
+      }"
     `);
   });
 
@@ -166,11 +166,11 @@ describe('edit_action', () => {
           actionPath: ['exit', 1],
           name: 'keepTheJob',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         exit: ['callDavid', "keepTheJob"],
-      })"
+      }"
     `);
   });
 
@@ -189,11 +189,11 @@ describe('edit_action', () => {
           actionPath: ['exit', 1],
           name: 'keepTheJob',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         exit: ['callDavid', { type: "keepTheJob" }],
-      })"
+      }"
     `);
   });
 
@@ -216,15 +216,15 @@ describe('edit_action', () => {
           actionPath: ['on', 'CALL_HIM_MAYBE', 0, 0],
           name: 'getRaise',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         on: {
           CALL_HIM_MAYBE: {
             actions: "getRaise"
           }
         },
-      })"
+      }"
     `);
   });
 
@@ -247,15 +247,15 @@ describe('edit_action', () => {
           actionPath: ['on', 'CALL_HIM_MAYBE', 0, 0],
           name: 'getRaise',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         on: {
           CALL_HIM_MAYBE: {
             actions: { type: "getRaise" }
           }
         },
-      })"
+      }"
     `);
   });
 
@@ -280,9 +280,9 @@ describe('edit_action', () => {
           actionPath: ['on', 'CALL_HIM_MAYBE', 1, 0],
           name: 'getRaise',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         on: {
           CALL_HIM_MAYBE: [{
             cond: 'isItTooLate'
@@ -290,7 +290,7 @@ describe('edit_action', () => {
             actions: "getRaise"
           }]
         },
-      })"
+      }"
     `);
   });
 });

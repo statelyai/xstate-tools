@@ -19,13 +19,13 @@ describe('add_transition', () => {
           transitionPath: ['on', 'FOO', 0],
           external: true,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         on: {
           FOO: undefined
         }
-      })"
+      }"
     `);
   });
 
@@ -51,9 +51,9 @@ describe('add_transition', () => {
           transitionPath: ['on', 'FOO', 0],
           external: true,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'foo',
         states: {
           foo: {
@@ -65,7 +65,7 @@ describe('add_transition', () => {
             }
           }
         }
-      })"
+      }"
     `);
   });
 
@@ -92,9 +92,9 @@ describe('add_transition', () => {
           transitionPath: ['on', 'FOO', 0],
           external: true,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         id: 'groot',
         initial: 'foo',
         states: {
@@ -107,7 +107,7 @@ describe('add_transition', () => {
             }
           }
         }
-      })"
+      }"
     `);
   });
 
@@ -125,13 +125,13 @@ describe('add_transition', () => {
           transitionPath: ['on', 'FOO', 0],
           external: true,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         on: {
           FOO: "#(machine)"
         }
-      })"
+      }"
     `);
   });
 
@@ -149,15 +149,15 @@ describe('add_transition', () => {
           transitionPath: ['on', 'FOO', 0],
           external: true,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         id: 'groot',
 
         on: {
           FOO: "#groot"
         }
-      })"
+      }"
     `);
   });
 
@@ -175,16 +175,16 @@ describe('add_transition', () => {
           transitionPath: ['on', 'FOO', 0],
           external: false,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         on: {
           FOO: {
             target: "#(machine)",
             internal: true
           }
         }
-      })"
+      }"
     `);
   });
 
@@ -202,9 +202,9 @@ describe('add_transition', () => {
           transitionPath: ['on', 'FOO', 0],
           external: false,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         id: 'groot',
 
         on: {
@@ -213,7 +213,7 @@ describe('add_transition', () => {
             internal: true
           }
         }
-      })"
+      }"
     `);
   });
 
@@ -236,9 +236,9 @@ describe('add_transition', () => {
           transitionPath: ['on', 'FOO', 0],
           external: true,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'foo',
         states: {
           foo: {
@@ -247,7 +247,7 @@ describe('add_transition', () => {
             }
           }
         }
-      })"
+      }"
     `);
   });
 
@@ -270,9 +270,9 @@ describe('add_transition', () => {
           transitionPath: ['on', 'FOO', 0],
           external: false,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'foo',
         states: {
           foo: {
@@ -284,7 +284,7 @@ describe('add_transition', () => {
             }
           }
         }
-      })"
+      }"
     `);
   });
 
@@ -313,9 +313,9 @@ describe('add_transition', () => {
           transitionPath: ['on', 'OTHER', 0],
           external: true,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'foo',
         states: {
           foo: {
@@ -327,7 +327,7 @@ describe('add_transition', () => {
           bar: {},
           baz: {}
         }
-      })"
+      }"
     `);
   });
 
@@ -356,9 +356,9 @@ describe('add_transition', () => {
           transitionPath: ['on', 'NEXT', 1],
           external: true,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'foo',
         states: {
           foo: {
@@ -369,7 +369,7 @@ describe('add_transition', () => {
           bar: {},
           baz: {}
         }
-      })"
+      }"
     `);
   });
 
@@ -398,9 +398,9 @@ describe('add_transition', () => {
           transitionPath: ['on', 'NEXT', 0],
           external: true,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'foo',
         states: {
           foo: {
@@ -411,7 +411,7 @@ describe('add_transition', () => {
           bar: {},
           baz: {}
         }
-      })"
+      }"
     `);
   });
 
@@ -441,9 +441,9 @@ describe('add_transition', () => {
           transitionPath: ['on', 'NEXT', 1],
           external: true,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'foo',
         states: {
           foo: {
@@ -455,7 +455,7 @@ describe('add_transition', () => {
           baz: {},
           qwe: {}
         }
-      })"
+      }"
     `);
   });
 
@@ -484,9 +484,9 @@ describe('add_transition', () => {
           transitionPath: ['on', 'NEXT', 1],
           external: true,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'foo',
         states: {
           foo: {
@@ -497,7 +497,7 @@ describe('add_transition', () => {
           bar: {},
           baz: {}
         }
-      })"
+      }"
     `);
   });
 
@@ -526,9 +526,9 @@ describe('add_transition', () => {
           transitionPath: ['on', 'NEXT', 0],
           external: true,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'foo',
         states: {
           foo: {
@@ -539,7 +539,7 @@ describe('add_transition', () => {
           bar: {},
           baz: {}
         }
-      })"
+      }"
     `);
   });
 
@@ -567,9 +567,9 @@ describe('add_transition', () => {
           transitionPath: ['invoke', 0, 'onDone', 0],
           external: true,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'foo',
         states: {
           foo: {
@@ -580,7 +580,7 @@ describe('add_transition', () => {
           },
           bar: {}
         }
-      })"
+      }"
     `);
   });
 
@@ -608,9 +608,9 @@ describe('add_transition', () => {
           transitionPath: ['invoke', 0, 'onError', 0],
           external: true,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'foo',
         states: {
           foo: {
@@ -621,7 +621,7 @@ describe('add_transition', () => {
           },
           bar: {}
         }
-      })"
+      }"
     `);
   });
 
@@ -651,9 +651,9 @@ describe('add_transition', () => {
           transitionPath: ['invoke', 1, 'onDone', 0],
           external: true,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'foo',
         states: {
           foo: {
@@ -666,7 +666,7 @@ describe('add_transition', () => {
           },
           bar: {}
         }
-      })"
+      }"
     `);
   });
 
@@ -697,9 +697,9 @@ describe('add_transition', () => {
           transitionPath: ['invoke', 0, 'onDone', 0],
           external: true,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'foo',
         states: {
           foo: {
@@ -712,7 +712,7 @@ describe('add_transition', () => {
           },
           bar: {}
         }
-      })"
+      }"
     `);
   });
 
@@ -745,9 +745,9 @@ describe('add_transition', () => {
           transitionPath: ['invoke', 1, 'onDone', 0],
           external: true,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'foo',
         states: {
           foo: {
@@ -762,7 +762,7 @@ describe('add_transition', () => {
           },
           bar: {}
         }
-      })"
+      }"
     `);
   });
 
@@ -786,9 +786,9 @@ describe('add_transition', () => {
           transitionPath: ['onDone', 0],
           external: true,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'foo',
         states: {
           foo: {
@@ -796,7 +796,7 @@ describe('add_transition', () => {
           },
           bar: {}
         }
-      })"
+      }"
     `);
   });
 
@@ -820,9 +820,9 @@ describe('add_transition', () => {
           transitionPath: ['always', 0],
           external: true,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'foo',
         states: {
           foo: {
@@ -830,7 +830,7 @@ describe('add_transition', () => {
           },
           bar: {}
         }
-      })"
+      }"
     `);
   });
 
@@ -854,9 +854,9 @@ describe('add_transition', () => {
           transitionPath: ['on', 'NEXT', 0],
           external: false,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'foo',
 
         states: {
@@ -867,7 +867,7 @@ describe('add_transition', () => {
         on: {
           NEXT: ".bar"
         }
-      })"
+      }"
     `);
   });
 
@@ -899,9 +899,9 @@ describe('add_transition', () => {
           transitionPath: ['on', 'NEXT', 0],
           external: false,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'foo',
 
         states: {
@@ -920,7 +920,7 @@ describe('add_transition', () => {
         on: {
           NEXT: ".bar.bar2.bar3"
         }
-      })"
+      }"
     `);
   });
 
@@ -952,9 +952,9 @@ describe('add_transition', () => {
           transitionPath: ['on', 'NEXT', 0],
           external: false,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'foo',
         states: {
           foo: {},
@@ -972,7 +972,7 @@ describe('add_transition', () => {
             }
           }
         }
-      })"
+      }"
     `);
   });
 
@@ -1009,9 +1009,9 @@ describe('add_transition', () => {
           transitionPath: ['on', 'NEXT', 0],
           external: true,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'a',
         states: {
           a: {
@@ -1034,7 +1034,7 @@ describe('add_transition', () => {
             }
           }
         }
-      })"
+      }"
     `);
   });
 
@@ -1068,9 +1068,9 @@ describe('add_transition', () => {
           transitionPath: ['on', 'NEXT', 0],
           external: true,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'a',
         states: {
           a: {
@@ -1090,7 +1090,7 @@ describe('add_transition', () => {
             }
           }
         }
-      })"
+      }"
     `);
   });
 
@@ -1125,9 +1125,9 @@ describe('add_transition', () => {
           transitionPath: ['on', 'NEXT', 0],
           external: true,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         id: 'groot',
         initial: 'a',
         states: {
@@ -1148,7 +1148,7 @@ describe('add_transition', () => {
             }
           }
         }
-      })"
+      }"
     `);
   });
 
@@ -1185,9 +1185,9 @@ describe('add_transition', () => {
           transitionPath: ['on', 'NEXT', 0],
           external: true,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         id: 'groot',
         initial: 'a',
         states: {
@@ -1210,7 +1210,7 @@ describe('add_transition', () => {
             }
           }
         }
-      })"
+      }"
     `);
   });
 
@@ -1246,9 +1246,9 @@ describe('add_transition', () => {
           transitionPath: ['on', 'NEXT', 0],
           external: true,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         id: 'groot',
         initial: 'a',
         states: {
@@ -1270,7 +1270,7 @@ describe('add_transition', () => {
             }
           }
         }
-      })"
+      }"
     `);
   });
 
@@ -1295,9 +1295,9 @@ describe('add_transition', () => {
           external: true,
           guard: 'isItTooLate',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'foo',
         states: {
           foo: {
@@ -1310,7 +1310,7 @@ describe('add_transition', () => {
           },
           bar: {}
         }
-      })"
+      }"
     `);
   });
 
@@ -1335,9 +1335,9 @@ describe('add_transition', () => {
           external: false,
           guard: 'isItTooLate',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'foo',
 
         states: {
@@ -1351,7 +1351,7 @@ describe('add_transition', () => {
             cond: "isItTooLate"
           }
         }
-      })"
+      }"
     `);
   });
 
@@ -1376,9 +1376,9 @@ describe('add_transition', () => {
           external: true,
           guard: 'isItTooLate',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'foo',
 
         states: {
@@ -1393,7 +1393,7 @@ describe('add_transition', () => {
             internal: false
           }
         }
-      })"
+      }"
     `);
   });
 
@@ -1417,9 +1417,9 @@ describe('add_transition', () => {
           external: true,
           guard: 'isItTooLate',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'foo',
         states: {
           foo: {
@@ -1430,7 +1430,7 @@ describe('add_transition', () => {
             }
           },
         }
-      })"
+      }"
     `);
   });
 });

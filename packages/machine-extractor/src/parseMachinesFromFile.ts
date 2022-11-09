@@ -1,6 +1,5 @@
-import { parse } from '@babel/parser';
-import traverse from '@babel/traverse';
 import * as t from '@babel/types';
+import { getMachineNodesFromFile } from './getMachineNodesFromFile';
 import {
   ALLOWED_CALL_EXPRESSION_NAMES,
   MachineCallExpression,
@@ -20,61 +19,50 @@ export const parseMachinesFromFile = (fileContent: string): ParseResult => {
     };
   }
 
-  const parseResult = parse(fileContent, {
-    sourceType: 'module',
-    plugins: [
-      'typescript',
-      'jsx',
-      ['decorators', { decoratorsBeforeExport: false }],
-    ],
-    // required by recast
-    tokens: true,
-  });
+  const { file, machineNodes } = getMachineNodesFromFile(fileContent);
+
+  const comments = (file.comments || [])
+    .map((comment) => {
+      if (comment.value.includes('xstate-ignore-next-line')) {
+        return {
+          type: 'xstate-ignore-next-line',
+          node: comment,
+        } as const;
+      }
+
+      if (comment.value.includes('@xstate-layout')) {
+        return {
+          type: 'xstate-layout',
+          node: comment,
+        } as const;
+      }
+    })
+    .filter((comment): comment is NonNullable<typeof comment> => !!comment);
 
   let result: ParseResult = {
-    machines: [],
-    comments: [],
-    file: parseResult,
-  };
-
-  parseResult.comments?.forEach((comment) => {
-    if (comment.value.includes('xstate-ignore-next-line')) {
-      result.comments.push({
-        node: comment,
-        type: 'xstate-ignore-next-line',
-      });
-    } else if (comment.value.includes('@xstate-layout')) {
-      result.comments.push({
-        node: comment,
-        type: 'xstate-layout',
-      });
-    }
-  });
-
-  const getNodeHash = (node: t.Node): string => {
-    const fileText = fileContent.substring(node.start!, node.end!);
-    return hashedId(fileText);
-  };
-
-  traverse(parseResult as any, {
-    CallExpression(path) {
-      const ast = MachineCallExpression.parse(path.node as any, {
-        file: parseResult,
-        getNodeHash: getNodeHash,
-      });
-      if (ast) {
-        result.machines.push(
+    machines: machineNodes
+      .map((node) => {
+        const extractResult = MachineCallExpression.parse(node, {
+          file,
+          getNodeHash: (node: t.Node): string => {
+            const fileText = fileContent.substring(node.start!, node.end!);
+            return hashedId(fileText);
+          },
+        });
+        return (
+          extractResult &&
           new MachineParseResult({
-            fileAst: parseResult,
+            fileAst: file,
             fileContent,
-            ast,
-            fileComments: result.comments,
-            scope: path.scope,
-          }),
+            ast: extractResult,
+            fileComments: comments,
+          })
         );
-      }
-    },
-  });
+      })
+      .filter((result): result is NonNullable<typeof result> => !!result),
+    comments,
+    file,
+  };
 
   return result;
 };

@@ -23,15 +23,15 @@ describe('rename_state', () => {
           path: ['foo'],
           name: 'NEW_NAME',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         type: 'parallel',
         states: {
           NEW_NAME: {},
           bar: {},
         },
-      })"
+      }"
     `);
   });
 
@@ -53,15 +53,15 @@ describe('rename_state', () => {
           path: ['foo'],
           name: 'NOT A VALID IDENTIFIER',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         type: 'parallel',
         states: {
           "NOT A VALID IDENTIFIER": {},
           bar: {},
         },
-      })"
+      }"
     `);
   });
 
@@ -83,15 +83,15 @@ describe('rename_state', () => {
           path: ['foo'],
           name: `'oh my', "what's this?"`,
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         type: 'parallel',
         states: {
           "'oh my', \\"what's this?\\"": {},
           bar: {},
         },
-      })"
+      }"
     `);
   });
 
@@ -113,15 +113,15 @@ describe('rename_state', () => {
           path: ['foo'],
           name: 'NEW_NAME',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: "NEW_NAME",
         states: {
           NEW_NAME: {},
           bar: {},
         },
-      })"
+      }"
     `);
   });
 
@@ -147,9 +147,9 @@ describe('rename_state', () => {
           path: ['bar'],
           name: 'NEW_NAME',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'foo',
         states: {
           foo: {
@@ -159,7 +159,7 @@ describe('rename_state', () => {
           },
           NEW_NAME: {},
         },
-      })"
+      }"
     `);
   });
 
@@ -185,9 +185,9 @@ describe('rename_state', () => {
           path: ['bar'],
           name: 'NEW_NAME',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'foo',
         states: {
           foo: {
@@ -197,7 +197,7 @@ describe('rename_state', () => {
           },
           NEW_NAME: {},
         },
-      })"
+      }"
     `);
   });
 
@@ -224,9 +224,9 @@ describe('rename_state', () => {
           path: ['bar'],
           name: 'NEW_NAME',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'foo',
         states: {
           foo: {
@@ -237,7 +237,7 @@ describe('rename_state', () => {
           NEW_NAME: {},
           baz: {},
         },
-      })"
+      }"
     `);
   });
 
@@ -264,9 +264,9 @@ describe('rename_state', () => {
           path: ['baz'],
           name: 'NEW_NAME',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'foo',
         states: {
           foo: {
@@ -277,7 +277,7 @@ describe('rename_state', () => {
           bar: {},
           NEW_NAME: {},
         },
-      })"
+      }"
     `);
   });
 
@@ -303,9 +303,9 @@ describe('rename_state', () => {
           path: ['baz'],
           name: 'NEW_NAME',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'foo',
         on: {
           NEXT: ".NEW_NAME",
@@ -315,7 +315,7 @@ describe('rename_state', () => {
           bar: {},
           NEW_NAME: {},
         },
-      })"
+      }"
     `);
   });
 
@@ -341,9 +341,9 @@ describe('rename_state', () => {
           path: ['baz'],
           name: 'NEW_NAME',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'foo',
         on: {
           NEXT: 'baz',
@@ -353,7 +353,7 @@ describe('rename_state', () => {
           bar: {},
           NEW_NAME: {},
         },
-      })"
+      }"
     `);
   });
 
@@ -385,9 +385,9 @@ describe('rename_state', () => {
           path: ['bar', 'bar2'],
           name: 'NEW_NAME',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'foo',
         states: {
           foo: {
@@ -403,7 +403,7 @@ describe('rename_state', () => {
             }
           },
         },
-      })"
+      }"
     `);
   });
 
@@ -435,9 +435,9 @@ describe('rename_state', () => {
           path: ['bar'],
           name: 'NEW_NAME',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'foo',
         states: {
           foo: {
@@ -453,7 +453,7 @@ describe('rename_state', () => {
             }
           },
         },
-      })"
+      }"
     `);
   });
 
@@ -489,9 +489,9 @@ describe('rename_state', () => {
           path: ['bar', 'bar2'],
           name: 'NEW_NAME',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'foo',
         states: {
           foo: {
@@ -511,7 +511,7 @@ describe('rename_state', () => {
             }
           },
         },
-      })"
+      }"
     `);
   });
 
@@ -541,9 +541,9 @@ describe('rename_state', () => {
           path: ['bar', 'bar2'],
           name: 'NEW_NAME',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'foo',
         on: {
           NEXT: { target: ".bar.NEW_NAME" },
@@ -557,7 +557,7 @@ describe('rename_state', () => {
             }
           },
         },
-      })"
+      }"
     `);
   });
 
@@ -587,9 +587,9 @@ describe('rename_state', () => {
           path: ['bar'],
           name: 'NEW_NAME',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'foo',
         on: {
           NEXT: { target: ".NEW_NAME.bar2" },
@@ -603,7 +603,7 @@ describe('rename_state', () => {
             }
           },
         },
-      })"
+      }"
     `);
   });
 
@@ -637,9 +637,9 @@ describe('rename_state', () => {
           path: ['bar', 'bar2'],
           name: 'NEW_NAME',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'foo',
         on: {
           NEXT: { target: ".bar.NEW_NAME.bar4" },
@@ -657,7 +657,7 @@ describe('rename_state', () => {
             }
           },
         },
-      })"
+      }"
     `);
   });
 
@@ -690,9 +690,9 @@ describe('rename_state', () => {
           path: ['bar', 'bar2'],
           name: 'NEW_NAME',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'foo',
         states: {
           foo: {
@@ -709,7 +709,7 @@ describe('rename_state', () => {
             }
           },
         },
-      })"
+      }"
     `);
   });
 
@@ -746,9 +746,9 @@ describe('rename_state', () => {
           path: ['bar', 'bar2'],
           name: 'NEW_NAME',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'foo',
         states: {
           foo: {
@@ -769,7 +769,7 @@ describe('rename_state', () => {
             }
           },
         },
-      })"
+      }"
     `);
   });
 
@@ -804,9 +804,9 @@ describe('rename_state', () => {
           path: ['bar', 'bar2'],
           name: 'NEW_NAME',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'foo',
         states: {
           foo: {
@@ -825,7 +825,7 @@ describe('rename_state', () => {
             id: 'bar'
           }
         },
-      })"
+      }"
     `);
   });
 
@@ -860,9 +860,9 @@ describe('rename_state', () => {
           path: ['bar', 'bar2'],
           name: 'NEW_NAME',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'foo',
         states: {
           foo: {
@@ -881,7 +881,7 @@ describe('rename_state', () => {
             id: 'bar'
           }
         },
-      })"
+      }"
     `);
   });
 
@@ -908,9 +908,9 @@ describe('rename_state', () => {
           path: ['bar'],
           name: 'NEW_NAME',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         id: 'branch',
         initial: 'foo',
         states: {
@@ -921,7 +921,7 @@ describe('rename_state', () => {
           },
           NEW_NAME: {},
         },
-      })"
+      }"
     `);
   });
 
@@ -947,9 +947,9 @@ describe('rename_state', () => {
           path: ['bar'],
           name: 'NEW_NAME',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         initial: 'foo',
         states: {
           foo: {
@@ -959,7 +959,7 @@ describe('rename_state', () => {
           },
           NEW_NAME: {},
         },
-      })"
+      }"
     `);
   });
 
@@ -986,9 +986,9 @@ describe('rename_state', () => {
           path: ['bar'],
           name: 'NEW_NAME',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         id: 'branch',
         initial: 'foo',
         states: {
@@ -999,7 +999,7 @@ describe('rename_state', () => {
           },
           NEW_NAME: {},
         },
-      })"
+      }"
     `);
   });
 });

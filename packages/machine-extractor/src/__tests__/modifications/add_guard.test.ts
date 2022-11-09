@@ -25,9 +25,9 @@ describe('add_guard', () => {
           transitionPath: ['on', 'FOO', 0],
           name: 'isItTooLate',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         on: {
           FOO: {
             target: 'a',
@@ -37,7 +37,7 @@ describe('add_guard', () => {
         states: {
           a: {}
         }
-      })"
+      }"
     `);
   });
 
@@ -63,9 +63,9 @@ describe('add_guard', () => {
           transitionPath: ['on', 'FOO', 0],
           name: 'isItTooLate',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         on: {
           FOO: {
             target: 'a',
@@ -75,7 +75,7 @@ describe('add_guard', () => {
         states: {
           a: {}
         }
-      })"
+      }"
     `);
   });
 
@@ -101,9 +101,9 @@ describe('add_guard', () => {
           transitionPath: ['on', 'FOO', 0],
           name: 'isItTooLate',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         on: {
           FOO: [{
             target: 'a',
@@ -115,7 +115,7 @@ describe('add_guard', () => {
           b: {},
           c: {},
         }
-      })"
+      }"
     `);
   });
 
@@ -141,9 +141,9 @@ describe('add_guard', () => {
           transitionPath: ['on', 'FOO', 2],
           name: 'isItTooLate',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         on: {
           FOO: ['a', 'b', {
             target: 'c',
@@ -155,7 +155,7 @@ describe('add_guard', () => {
           b: {},
           c: {},
         }
-      })"
+      }"
     `);
   });
 
@@ -181,9 +181,9 @@ describe('add_guard', () => {
           transitionPath: ['on', 'FOO', 1],
           name: 'isItTooLate',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         on: {
           FOO: ['a', {
             target: 'b',
@@ -195,7 +195,7 @@ describe('add_guard', () => {
           b: {},
           c: {},
         }
-      })"
+      }"
     `);
   });
 
@@ -222,9 +222,9 @@ describe('add_guard', () => {
           transitionPath: ['invoke', 0, 'onDone', 0],
           name: 'isHeBusy',
         },
-      ]),
+      ]).newText,
     ).toMatchInlineSnapshot(`
-      "createMachine({
+      "{
         states: {
           a: {
             invoke: {
@@ -237,7 +237,7 @@ describe('add_guard', () => {
           },
           b: {}
         }
-      })"
+      }"
     `);
   });
 });

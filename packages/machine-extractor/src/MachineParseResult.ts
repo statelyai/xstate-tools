@@ -1,10 +1,10 @@
-import { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import * as recast from 'recast';
 import { Action, Condition, MachineOptions } from 'xstate';
 import { choose } from 'xstate/lib/actions';
 import { DeclarationType } from '.';
 import { ActionNode, ParsedChooseCondition } from './actions';
+import { getMachineNodesFromFile } from './getMachineNodesFromFile';
 import { TMachineCallExpression } from './machineCallExpression';
 import { RecordOfArrays } from './RecordOfArrays';
 import { StateNodeReturn } from './stateNode';
@@ -57,7 +57,7 @@ type ActionPath =
   | [type: 'entry', actionIndex: number]
   | [type: 'exit', actionIndex: number];
 
-type MachineEdit =
+export type MachineEdit =
   | { type: 'add_state'; path: string[]; name: string }
   | { type: 'remove_state'; path: string[] }
   | { type: 'rename_state'; path: string[]; name: string }
@@ -169,18 +169,15 @@ export class MachineParseResult {
   private _fileContent: string;
   private _fileAst: t.File;
   private _idMap: Map<string, string[]> = new Map();
-  public scope: NodePath['scope'];
 
   constructor(props: {
     fileAst: t.File;
     fileContent: string;
     ast: TMachineCallExpression;
     fileComments: Comment[];
-    scope: NodePath['scope'];
   }) {
     this.ast = props.ast;
     this.fileComments = props.fileComments;
-    this.scope = props.scope;
     this._fileAst = props.fileAst;
     this._fileContent = props.fileContent;
 
@@ -1279,7 +1276,37 @@ export class MachineParseResult {
       }
     }
 
-    return recast.print(ast).code;
+    const oldRange = [
+      {
+        line: this.ast.definition!.node.loc!.start.line - 1,
+        column: this.ast.definition!.node.loc!.start.column,
+        index: this.ast.definition!.node.start!,
+      },
+      {
+        line: this.ast.definition!.node.loc!.end.line - 1,
+        column: this.ast.definition!.node.loc!.end.column,
+        index: this.ast.definition!.node.end!,
+      },
+    ] as const;
+
+    const reprinted = recast.print(ast).code;
+
+    // find the matching machine node in the new text of the whole file
+    // it's wasteful to parse the whole new file here
+    // it's the best way we have right now to keep the formatting intact as much as possible though
+    const machineNode = getMachineNodesFromFile(reprinted).machineNodes.find(
+      (machineNode) =>
+        machineNode.loc!.start.line === this.ast.node.loc!.start.line &&
+        machineNode.loc!.start.column === this.ast.node.loc!.start.column,
+    )!;
+
+    return {
+      range: oldRange,
+      newText: reprinted.slice(
+        machineNode.arguments[0].start!,
+        machineNode.arguments[0].end!,
+      ),
+    };
   }
 }
 
