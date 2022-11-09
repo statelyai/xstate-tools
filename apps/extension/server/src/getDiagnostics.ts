@@ -1,7 +1,5 @@
-import {
-  DocumentValidationsResult,
-  GlobalSettings,
-} from '@xstate/tools-shared';
+import { MachineParseResult } from '@xstate/machine-extractor';
+import { GlobalSettings } from '@xstate/tools-shared';
 import { Diagnostic } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { getMetaWarnings } from './diagnostics/getMetaWarnings';
@@ -12,7 +10,7 @@ import { getUnusedServicesImplementations } from './diagnostics/getUnusedService
 import { miscDiagnostics } from './diagnostics/misc';
 
 export type DiagnosticGetter = (
-  result: DocumentValidationsResult,
+  machineResult: MachineParseResult,
   textDocument: TextDocument,
   settings: GlobalSettings,
 ) => Diagnostic[];
@@ -27,17 +25,11 @@ const getters: DiagnosticGetter[] = [
 ];
 
 export const getDiagnostics = (
-  validations: DocumentValidationsResult[],
+  machineResults: MachineParseResult[],
   textDocument: TextDocument,
   settings: GlobalSettings,
 ): Diagnostic[] => {
-  const diagnostics: Diagnostic[] = [];
-
-  validations.forEach((validation) => {
-    getters.forEach((getter) => {
-      diagnostics.push(...getter(validation, textDocument, settings));
-    });
-  });
-
-  return diagnostics;
+  return machineResults.flatMap((machineResult) =>
+    getters.flatMap((getter) => getter(machineResult, textDocument, settings)),
+  );
 };

@@ -1,254 +1,409 @@
-import { parseMachinesFromFile } from '@xstate/machine-extractor';
 import {
-  filterOutIgnoredMachines,
-  getInlineImplementations,
   ImplementationsMetadata,
-  isCursorInPosition,
   resolveUriToFilePrefix
 } from '@xstate/tools-shared';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { ColorThemeKind } from 'vscode';
-import { MachineConfig } from 'xstate';
-import { getBaseUrl } from './constants';
-import { EditorWebviewScriptEvent } from './editorWebviewScript';
+import { createMachine, interpret, MachineConfig } from 'xstate';
+import { forwardTo } from 'xstate/lib/actions';
 import { handleDefinitionUpdate } from './handleDefinitionUpdate';
-import { handleNodeSelected } from './handleNodeSelected';
+import { TypeSafeLanguageClient } from './typeSafeLanguageClient';
+import * as typeSafeVsCode from './typeSafeVsCode';
 
-export const initiateEditor = (context: vscode.ExtensionContext) => {
-  const baseUrl = getBaseUrl();
+type NodeSelectedEvent = {
+  type: 'NODE_SELECTED';
+  path: string[];
+  uri: string;
+  index: number;
+};
 
-  let currentPanel: vscode.WebviewPanel | undefined = undefined;
+type OpenLinkEvent = {
+  type: 'OPEN_LINK';
+  url: string;
+};
 
-  const sendMessage = (event: EditorWebviewScriptEvent) => {
-    currentPanel?.webview.postMessage(JSON.stringify(event));
+type DefinitionUpdatedEvent = {
+  type: 'DEFINITION_UPDATED';
+  config: MachineConfig<any, any, any>;
+  layoutString: string;
+  implementations: ImplementationsMetadata;
+};
+
+type StudioEvent = NodeSelectedEvent | OpenLinkEvent | DefinitionUpdatedEvent;
+
+function removeFromMutableArray<T>(array: T[], item: T) {
+  const index = array.indexOf(item);
+  if (index !== -1) {
+    array.splice(index, 1);
+  }
+}
+
+function registerDisposable(
+  extensionContext: vscode.ExtensionContext,
+  disposable: vscode.Disposable,
+) {
+  extensionContext.subscriptions.push(disposable);
+  return () => {
+    removeFromMutableArray(extensionContext.subscriptions, disposable);
+    disposable.dispose();
   };
+}
 
-  const startService = async (
-    config: MachineConfig<any, any, any>,
-    machineIndex: number,
-    uri: string,
-    layoutString: string | undefined,
-    implementations: ImplementationsMetadata,
-  ) => {
-    const settingsTheme =
-      vscode.workspace
-        .getConfiguration('xstate')
-        .get<'auto' | 'dark' | 'light'>('theme') ?? 'auto';
-    const themeKind =
+function registerCommand<Name extends keyof typeSafeVsCode.XStateCommands>(
+  extensionContext: vscode.ExtensionContext,
+  ...[name, handler]: Parameters<typeof typeSafeVsCode.registerCommand<Name>>
+) {
+  return registerDisposable(
+    extensionContext,
+    typeSafeVsCode.registerCommand(name, handler),
+  );
+}
+
+async function getWebviewHtml(
+  extensionContext: vscode.ExtensionContext,
+  webviewPanel: vscode.WebviewPanel,
+  {
+    config,
+    implementations,
+    layoutString,
+  }: {
+    config: MachineConfig<any, any, any>;
+    layoutString: string | undefined;
+    implementations: ImplementationsMetadata;
+  },
+) {
+  const bundledEditorRootUri = vscode.Uri.file(
+    path.join(extensionContext.extensionPath, 'bundled-editor'),
+  );
+  const htmlContent = new TextDecoder().decode(
+    await vscode.workspace.fs.readFile(
+      vscode.Uri.joinPath(bundledEditorRootUri, 'index.html'),
+    ),
+  );
+
+  const baseTag = `<base href="${webviewPanel.webview.asWebviewUri(
+    bundledEditorRootUri,
+  )}/">`;
+
+  // TODO: atm this is not refreshed with the theme changes
+  const settingsTheme = typeSafeVsCode.getConfiguration('theme') ?? 'auto';
+
+  const initialDataScript = `<script>window.__params = ${JSON.stringify({
+    themeKind:
       settingsTheme === 'auto'
         ? vscode.window.activeColorTheme.kind === ColorThemeKind.Dark
           ? 'dark'
           : 'light'
-        : settingsTheme;
-    if (currentPanel) {
-      currentPanel.reveal(vscode.ViewColumn.Beside);
+        : settingsTheme,
+    config,
+    layoutString,
+    implementations,
+  })}</script>`;
 
-      sendMessage({
-        type: 'RECEIVE_SERVICE',
-        config,
-        index: machineIndex,
-        uri: resolveUriToFilePrefix(uri),
-        layoutString,
-        implementations,
-        baseUrl,
-        themeKind,
-      });
-    } else {
-      const bundledEditorRootUri = vscode.Uri.file(
-        path.join(context.extensionPath, 'bundled-editor'),
-      );
-      const htmlContent = new TextDecoder().decode(
-        await vscode.workspace.fs.readFile(
-          vscode.Uri.joinPath(bundledEditorRootUri, 'index.html'),
-        ),
-      );
+  return htmlContent.replace('<head>', `<head>${baseTag}${initialDataScript}`);
+}
 
-      currentPanel = vscode.window.createWebviewPanel(
-        'editor',
-        'XState Editor',
-        vscode.ViewColumn.Beside,
-        {
-          enableScripts: true,
-          retainContextWhenHidden: true,
-        },
-      );
-
-      const baseTag = `<base href="${currentPanel.webview.asWebviewUri(
-        bundledEditorRootUri,
-      )}/">`;
-
-      const initialDataScript = `<script>window.__params = ${JSON.stringify({
-        themeKind,
-        config,
-        layoutString,
-        implementations,
-      })}</script>`;
-
-      currentPanel.webview.html = htmlContent.replace(
-        '<head>',
-        `<head>${baseTag}${initialDataScript}`,
-      );
-
-      sendMessage({
-        type: 'RECEIVE_SERVICE',
-        config,
-        index: machineIndex,
-        uri: resolveUriToFilePrefix(uri),
-        layoutString,
-        implementations,
-        baseUrl,
-        themeKind,
-      });
-
-      currentPanel.webview.onDidReceiveMessage(
-        async (event: EditorWebviewScriptEvent) => {
-          if (event.type === 'vscode.updateDefinition') {
-            await handleDefinitionUpdate(event);
-          } else if (event.type === 'vscode.selectNode') {
-            await handleNodeSelected(event);
-          } else if (event.type === 'vscode.openLink') {
-            vscode.env.openExternal(vscode.Uri.parse(event.url));
-          }
-        },
-        undefined,
-        context.subscriptions,
-      );
-
-      // Handle disposing the current XState Editor
-      currentPanel.onDidDispose(
-        () => {
-          currentPanel = undefined;
-        },
-        undefined,
-        context.subscriptions,
-      );
-    }
-  };
-
-  let lastSentPathAndText: string | undefined;
-  context.subscriptions.push(
-    // We use onDidChange over onDidSave to catch changes made to the document outside of VS Code
-    vscode.workspace.onDidChangeTextDocument(({ document }) => {
-      // Only send the text if it isn't dirty, which should be the case after a save
-      if (document.isDirty) return;
-
-      const text = document.getText();
-
-      /*
-       * If we already sent the text, don't send it again.
-       * We need this because onDidChangeTextDocument gets called multiple times on a save.
-       * In theory multiple documents could have the same text content, so we prepend the path to the text to make it unique.
-       */
-      if (document.uri.path + text === lastSentPathAndText) return;
-
-      const parsed = parseMachinesFromFile(text);
-      if (parsed.machines.length > 0) {
-        lastSentPathAndText = document.uri.path + text;
-
-        parsed.machines.forEach((machine, index) => {
-          sendMessage({
-            type: 'RECEIVE_CONFIG_UPDATE_FROM_VSCODE',
-            config: machine.toConfig({ hashInlineImplementations: true })!,
-            index: index,
-            uri: resolveUriToFilePrefix(document.uri.path),
-            layoutString: machine.getLayoutComment()?.value || '',
-            implementations: getInlineImplementations(machine, text),
-          });
-        });
-      }
-    }),
+// this should not be an async function, it should return `webviewPanel` synchronously
+// to allow the consumer to start listening to events from the webview immediately
+function createWebviewPanel() {
+  // TODO: this should have more strict CSP rules
+  return vscode.window.createWebviewPanel(
+    'editor',
+    'XState Editor',
+    vscode.ViewColumn.Beside,
+    {
+      enableScripts: true,
+      retainContextWhenHidden: true,
+    },
   );
+}
 
-  context.subscriptions.push(
-    vscode.commands.registerCommand(
-      'stately-xstate.edit-code-lens',
-      async (
-        config: MachineConfig<any, any, any>,
-        machineIndex: number,
-        uri: string,
-        layoutString?: string,
-      ) => {
-        const activeTextEditor = vscode.window.activeTextEditor!;
-        const currentText = activeTextEditor.document.getText();
+type WebviewClosed = { type: 'WEBVIEW_CLOSED' };
 
-        const result = filterOutIgnoredMachines(
-          parseMachinesFromFile(currentText),
-        );
+type EditMachine = {
+  type: 'EDIT_MACHINE';
+  config: MachineConfig<any, any, any>;
+  index: number;
+  uri: string;
+  layoutString: string | undefined;
+  implementations: ImplementationsMetadata;
+};
 
-        const machine = result.machines[machineIndex];
+type DisplayedMachineUpdated = {
+  type: 'DISPLAYED_MACHINE_UPDATED';
+  config: MachineConfig<any, any, any>;
+  layoutString: string | undefined;
+  implementations: ImplementationsMetadata;
+};
 
-        const implementations = getInlineImplementations(machine, currentText);
-
-        startService(
-          config,
-          machineIndex,
-          resolveUriToFilePrefix(activeTextEditor.document.uri.path),
-          layoutString,
-          implementations,
-        );
+const machine = createMachine(
+  {
+    predictableActionArguments: true,
+    tsTypes: {} as import('./initiateEditor.typegen').Typegen0,
+    schema: {
+      events: {} as WebviewClosed | EditMachine | DisplayedMachineUpdated,
+    },
+    context: {
+      extensionContext: null! as vscode.ExtensionContext,
+      languageClient: null! as TypeSafeLanguageClient,
+    },
+    invoke: [
+      {
+        src: 'registerEditAtCursorPositionCommand',
       },
-    ),
-  );
-
-  context.subscriptions.push(
-    vscode.commands.registerCommand('stately-xstate.edit', () => {
-      try {
-        const activeTextEditor = vscode.window.activeTextEditor!;
-        const currentSelection = activeTextEditor.selection;
-        const currentText = activeTextEditor.document.getText();
-
-        const result = filterOutIgnoredMachines(
-          parseMachinesFromFile(currentText),
-        );
-
-        let foundIndex: number | null = null;
-
-        const machine = result.machines.find((machine, index) => {
-          if (
-            machine?.ast?.definition?.node?.loc ||
-            machine?.ast?.options?.node?.loc
-          ) {
-            const isInPosition =
-              isCursorInPosition(
-                machine?.ast?.definition?.node?.loc!,
-                currentSelection.start,
-              ) ||
-              isCursorInPosition(
-                machine?.ast?.options?.node?.loc!,
-                currentSelection.start,
+      {
+        src: 'registerEditOnCodeLensClickCommand',
+      },
+    ],
+    initial: 'idle',
+    states: {
+      idle: {
+        on: {
+          EDIT_MACHINE: 'openWebview',
+        },
+      },
+      // this is somewhat weirdly nested but it allows us to isolate a state in which the webview is open
+      // and the one in which we are editing a concrete machine
+      // thanks to that we can reenter the editing state without having to re-open the webview
+      openWebview: {
+        invoke: [
+          {
+            id: 'webview',
+            src: 'webviewActor',
+          },
+        ],
+        on: {
+          WEBVIEW_CLOSED: 'idle',
+        },
+        initial: 'editing',
+        states: {
+          editing: {
+            entry: 'setEditedMachine',
+            exit: 'clearEditedMachine',
+            invoke: {
+              src: 'onDisplayedMachineUpdatedListener',
+            },
+            on: {
+              EDIT_MACHINE: {
+                target: 'editing',
+                // we want to reload~ the content of the webview when somebody starts editing potentially a completely different machine
+                // we gonna reenter the editing state with the new machine
+                internal: false,
+                actions: 'forwardToWebview',
+              },
+              DISPLAYED_MACHINE_UPDATED: {
+                actions: 'forwardToWebview',
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  {
+    actions: {
+      forwardToWebview: forwardTo('webview'),
+    },
+    services: {
+      registerEditAtCursorPositionCommand:
+        ({ extensionContext, languageClient }) =>
+        (sendBack) =>
+          registerCommand(extensionContext, 'stately-xstate.edit', async () => {
+            try {
+              const activeTextEditor = vscode.window.activeTextEditor!;
+              const uri = resolveUriToFilePrefix(
+                activeTextEditor.document.uri.path,
               );
-
-            if (isInPosition) {
-              foundIndex = index;
-              return true;
+              const tokenSource = new vscode.CancellationTokenSource();
+              const { config, layoutString, implementations, machineIndex } =
+                await languageClient.sendRequest(
+                  'getMachineAtCursorPosition',
+                  {
+                    uri,
+                    position: {
+                      line: activeTextEditor.selection.start.line,
+                      column: activeTextEditor.selection.start.character,
+                    },
+                  },
+                  tokenSource.token,
+                );
+              sendBack({
+                type: 'EDIT_MACHINE',
+                config,
+                index: machineIndex,
+                uri,
+                layoutString,
+                implementations,
+              });
+            } catch {
+              vscode.window.showErrorMessage(
+                'Could not find a machine at the current cursor.',
+              );
             }
-          }
-          return false;
-        });
-        if (!machine) {
-          vscode.window.showErrorMessage(
-            'Could not find a machine at the current cursor.',
-          );
-          return;
-        }
+          }),
+      registerEditOnCodeLensClickCommand:
+        ({ extensionContext, languageClient }) =>
+        (sendBack) =>
+          registerCommand(
+            extensionContext,
+            'stately-xstate.edit-code-lens',
+            (uri, machineIndex) => {
+              const tokenSource = new vscode.CancellationTokenSource();
 
-        const implementations = getInlineImplementations(machine, currentText);
-
-        startService(
-          machine.toConfig({ hashInlineImplementations: true })!,
-          foundIndex!,
-          resolveUriToFilePrefix(
-            vscode.window.activeTextEditor!.document.uri.path,
+              languageClient
+                .sendRequest(
+                  'getMachineAtIndex',
+                  { uri, machineIndex },
+                  tokenSource.token,
+                )
+                .then(({ config, layoutString, implementations }) => {
+                  sendBack({
+                    type: 'EDIT_MACHINE',
+                    config,
+                    index: machineIndex,
+                    uri,
+                    layoutString,
+                    implementations,
+                  });
+                });
+            },
           ),
-          machine.getLayoutComment()?.value,
-          implementations,
-        );
-      } catch (e) {
-        vscode.window.showErrorMessage(
-          'Could not find a machine at the current cursor.',
-        );
-      }
-    }),
-  );
+      onDisplayedMachineUpdatedListener:
+        ({ extensionContext, languageClient }) =>
+        (sendBack) =>
+          registerDisposable(
+            extensionContext,
+            languageClient.onNotification(
+              'displayedMachineUpdated',
+              ({ config, layoutString, implementations }) => {
+                sendBack({
+                  type: 'DISPLAYED_MACHINE_UPDATED',
+                  config,
+                  layoutString,
+                  implementations,
+                });
+              },
+            ),
+          ),
+      webviewActor:
+        (
+          { extensionContext, languageClient },
+          {
+            config,
+            implementations,
+            layoutString,
+            uri: initialUri,
+            index: initialIndex,
+          },
+        ) =>
+        (sendBack, onReceive) => {
+          let canceled = false;
+          let uri = initialUri;
+          let index = initialIndex;
+
+          const webviewPanel = createWebviewPanel();
+
+          const messageListenerDisposable = registerDisposable(
+            extensionContext,
+            webviewPanel.webview.onDidReceiveMessage((event: StudioEvent) => {
+              if (event.type === 'DEFINITION_UPDATED') {
+                handleDefinitionUpdate({
+                  ...event,
+                  index,
+                  uri,
+                });
+              } else if (event.type === 'NODE_SELECTED') {
+                const editor = vscode.window.visibleTextEditors.find(
+                  (editor) => String(editor.document.uri) === uri,
+                );
+                if (!editor) {
+                  return;
+                }
+                languageClient
+                  .sendRequest('getNodePosition', { path: event.path })
+                  .then((range) => {
+                    if (!range) {
+                      return;
+                    }
+
+                    editor.revealRange(
+                      new vscode.Range(
+                        new vscode.Position(range[0].line - 1, range[0].column),
+                        new vscode.Position(range[1].line - 1, range[1].column),
+                      ),
+                      vscode.TextEditorRevealType.InCenter,
+                    );
+                  });
+              } else if (event.type === 'OPEN_LINK') {
+                // TODO: test out if this is even needed now
+                vscode.env.openExternal(vscode.Uri.parse(event.url));
+              }
+            }),
+          );
+
+          const panelDisposedListenerDisposable = registerDisposable(
+            extensionContext,
+            webviewPanel.onDidDispose(() => {
+              sendBack({ type: 'WEBVIEW_CLOSED' });
+            }),
+          );
+
+          onReceive((event: EditMachine | DisplayedMachineUpdated) => {
+            switch (event.type) {
+              case 'EDIT_MACHINE': {
+                uri = event.uri;
+                index = event.index;
+
+                webviewPanel.reveal(vscode.ViewColumn.Beside);
+                webviewPanel.webview.postMessage({
+                  type: 'UPDATE_CONFIG',
+                  config: event.config,
+                  layoutString: event.layoutString,
+                  implementations: event.implementations,
+                });
+                return;
+              }
+              case 'DISPLAYED_MACHINE_UPDATED': {
+                webviewPanel.webview.postMessage({
+                  type: 'UPDATE_CONFIG',
+                  config: event.config,
+                  layoutString: event.layoutString,
+                  implementations: event.implementations,
+                });
+                return;
+              }
+            }
+          });
+
+          (async () => {
+            const html = await getWebviewHtml(extensionContext, webviewPanel, {
+              config,
+              implementations,
+              layoutString,
+            });
+            if (canceled) {
+              return;
+            }
+            webviewPanel.webview.html = html;
+          })();
+
+          return () => {
+            canceled = true;
+            messageListenerDisposable();
+            panelDisposedListenerDisposable();
+          };
+        },
+    },
+  },
+);
+
+export const initiateEditor = (
+  extensionContext: vscode.ExtensionContext,
+  languageClient: TypeSafeLanguageClient,
+) => {
+  const service = interpret(
+    machine.withContext({ extensionContext, languageClient }),
+  ).start();
+  extensionContext.subscriptions.push({ dispose: () => service.stop() });
 };

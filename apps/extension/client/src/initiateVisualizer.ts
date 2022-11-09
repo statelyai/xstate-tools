@@ -1,25 +1,17 @@
-import { parseMachinesFromFile } from '@xstate/machine-extractor';
-import {
-  filterOutIgnoredMachines,
-  getSetOfNames,
-  isCursorInPosition,
-  XStateUpdateEvent,
-} from '@xstate/tools-shared';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { LanguageClient } from 'vscode-languageclient/node';
 import { MachineConfig } from 'xstate';
 import { getWebviewContent } from './getWebviewContent';
+import { TypeSafeLanguageClient } from './typeSafeLanguageClient';
+import * as typeSafeVsCode from './typeSafeVsCode';
 import { VizWebviewMachineEvent } from './vizWebviewScript';
 
 export const initiateVisualizer = (
   context: vscode.ExtensionContext,
-  client: LanguageClient,
-  registerXStateUpdateListener: (
-    listener: (event: XStateUpdateEvent) => void,
-  ) => vscode.Disposable,
+  languageClient: TypeSafeLanguageClient,
 ) => {
-  let currentPanel: vscode.WebviewPanel | undefined = undefined;
+  let currentPanel: vscode.WebviewPanel | undefined;
+  let lastTokenSource: vscode.CancellationTokenSource | undefined;
 
   const sendMessage = (event: VizWebviewMachineEvent) => {
     currentPanel?.webview.postMessage(event);
@@ -31,14 +23,16 @@ export const initiateVisualizer = (
     uri: string,
     guardsToMock: string[],
   ) => {
+    languageClient.sendRequest('setDisplayedMachine', {
+      uri,
+      machineIndex,
+    });
     if (currentPanel) {
       currentPanel.reveal(vscode.ViewColumn.Beside);
 
       sendMessage({
         type: 'RECEIVE_SERVICE',
         config,
-        index: machineIndex,
-        uri,
         guardsToMock,
       });
     } else {
@@ -60,14 +54,13 @@ export const initiateVisualizer = (
       sendMessage({
         type: 'RECEIVE_SERVICE',
         config,
-        index: machineIndex,
-        uri,
         guardsToMock,
       });
 
       // Handle disposing the current XState Visualizer
       currentPanel.onDidDispose(
         () => {
+          languageClient.sendRequest('clearDisplayedMachine', undefined);
           currentPanel = undefined;
         },
         undefined,
@@ -77,56 +70,26 @@ export const initiateVisualizer = (
   };
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('stately-xstate.visualize', () => {
+    typeSafeVsCode.registerCommand('stately-xstate.visualize', async () => {
+      lastTokenSource?.cancel();
+      lastTokenSource = new vscode.CancellationTokenSource();
       try {
         const activeTextEditor = vscode.window.activeTextEditor!;
-        const currentSelection = activeTextEditor.selection;
-        const currentText = activeTextEditor.document.getText();
-
-        const result = filterOutIgnoredMachines(
-          parseMachinesFromFile(currentText),
-        );
-
-        let foundIndex: number | null = null;
-
-        const machine = result.machines.find((machine, index) => {
-          if (
-            machine?.ast?.definition?.node?.loc ||
-            machine?.ast?.options?.node?.loc
-          ) {
-            const isInPosition =
-              isCursorInPosition(
-                machine?.ast?.definition?.node?.loc!,
-                currentSelection.start,
-              ) ||
-              isCursorInPosition(
-                machine?.ast?.options?.node?.loc!,
-                currentSelection.start,
-              );
-
-            if (isInPosition) {
-              foundIndex = index;
-              return true;
-            }
-          }
-          return false;
-        });
-
-        if (machine) {
-          startService(
-            machine.toConfig() as any,
-            foundIndex!,
-            resolveUriToFilePrefix(
-              vscode.window.activeTextEditor!.document.uri.path,
-            ),
-            Array.from(getSetOfNames(machine.getAllConds(['named']))),
+        const uri = resolveUriToFilePrefix(activeTextEditor.document.uri.path);
+        const { config, machineIndex, namedGuards } =
+          await languageClient.sendRequest(
+            'getMachineAtCursorPosition',
+            {
+              uri,
+              position: {
+                line: activeTextEditor.selection.start.line,
+                column: activeTextEditor.selection.start.character,
+              },
+            },
+            lastTokenSource.token,
           );
-        } else {
-          vscode.window.showErrorMessage(
-            'Could not find a machine at the current cursor.',
-          );
-        }
-      } catch (e) {
+        startService(config, machineIndex, uri, namedGuards);
+      } catch {
         vscode.window.showErrorMessage(
           'Could not find a machine at the current cursor.',
         );
@@ -135,28 +98,33 @@ export const initiateVisualizer = (
   );
 
   context.subscriptions.push(
-    registerXStateUpdateListener((event) => {
-      event.machines.forEach((machine, index) => {
+    languageClient.onNotification(
+      'displayedMachineUpdated',
+      ({ config, namedGuards }) => {
         sendMessage({
           type: 'UPDATE',
-          config: machine.config,
-          index,
-          uri: event.uri,
-          guardsToMock: machine.namedGuards,
+          config,
+          guardsToMock: namedGuards,
         });
-      });
-    }),
+      },
+    ),
   );
+
   context.subscriptions.push(
-    vscode.commands.registerCommand(
+    typeSafeVsCode.registerCommand(
       'stately-xstate.inspect',
-      async (
-        config: MachineConfig<any, any, any>,
-        machineIndex: number,
-        uri: string,
-        guardsToMock: string[],
-      ) => {
-        startService(config, machineIndex, uri, guardsToMock);
+      (uri, machineIndex) => {
+        lastTokenSource?.cancel();
+        lastTokenSource = new vscode.CancellationTokenSource();
+        languageClient
+          .sendRequest(
+            'getMachineAtIndex',
+            { uri, machineIndex },
+            lastTokenSource.token,
+          )
+          .then(({ config, namedGuards }) => {
+            startService(config, machineIndex, uri, namedGuards);
+          });
       },
     ),
   );

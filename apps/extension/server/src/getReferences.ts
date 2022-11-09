@@ -1,21 +1,21 @@
-import {
-  DocumentValidationsResult,
-  getRangeFromSourceLocation,
-} from '@xstate/tools-shared';
+import { getRangeFromSourceLocation } from '@xstate/tools-shared';
 import { TextDocumentIdentifier } from 'vscode-languageserver';
 import { Position, Range } from 'vscode-languageserver-textdocument';
 import { createMachine } from 'xstate';
 import { getCursorHoverType } from './getCursorHoverType';
+import { CachedDocument } from './types';
 
-export const getReferences = (params: {
-  textDocument: TextDocumentIdentifier;
-  position: Position;
-  machinesParseResult: DocumentValidationsResult[];
-}): { uri: string; range: Range }[] => {
-  const cursorHover = getCursorHoverType(
-    params.machinesParseResult,
-    params.position,
-  );
+export const getReferences = (
+  {
+    position,
+    textDocument,
+  }: {
+    position: Position;
+    textDocument: TextDocumentIdentifier;
+  },
+  { machineResults }: CachedDocument,
+): { uri: string; range: Range }[] => {
+  const cursorHover = getCursorHoverType(machineResults, position);
 
   try {
     if (cursorHover?.type === 'TARGET') {
@@ -47,7 +47,7 @@ export const getReferences = (params: {
 
       return [
         {
-          uri: params.textDocument.uri,
+          uri: textDocument.uri,
           range: getRangeFromSourceLocation(node.ast.node.loc),
         },
       ];
@@ -73,7 +73,7 @@ export const getReferences = (params: {
 
       return [
         {
-          uri: params.textDocument.uri,
+          uri: textDocument.uri,
           range: getRangeFromSourceLocation(node.ast.node.loc),
         },
       ];
@@ -86,7 +86,7 @@ export const getReferences = (params: {
       if (node?.keyNode.loc) {
         return [
           {
-            uri: params.textDocument.uri,
+            uri: textDocument.uri,
             range: getRangeFromSourceLocation(node.keyNode.loc),
           },
         ];
@@ -98,7 +98,7 @@ export const getReferences = (params: {
 
       return actions.map((action) => {
         return {
-          uri: params.textDocument.uri,
+          uri: textDocument.uri,
           range: getRangeFromSourceLocation(action.node.loc!),
         };
       });
@@ -110,7 +110,7 @@ export const getReferences = (params: {
       if (node?.keyNode.loc) {
         return [
           {
-            uri: params.textDocument.uri,
+            uri: textDocument.uri,
             range: getRangeFromSourceLocation(node.keyNode.loc),
           },
         ];
@@ -122,7 +122,7 @@ export const getReferences = (params: {
 
       return guards.map((guard) => {
         return {
-          uri: params.textDocument.uri,
+          uri: textDocument.uri,
           range: getRangeFromSourceLocation(guard.node.loc!),
         };
       });
@@ -135,7 +135,7 @@ export const getReferences = (params: {
       if (node?.keyNode.loc) {
         return [
           {
-            uri: params.textDocument.uri,
+            uri: textDocument.uri,
             range: getRangeFromSourceLocation(node.keyNode.loc),
           },
         ];
@@ -147,7 +147,7 @@ export const getReferences = (params: {
 
       return services.map((service) => {
         return {
-          uri: params.textDocument.uri,
+          uri: textDocument.uri,
           range: getRangeFromSourceLocation(
             service.srcNode?.loc || service.node.loc!,
           ),

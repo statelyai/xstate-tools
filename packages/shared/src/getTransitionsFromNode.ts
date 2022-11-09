@@ -40,7 +40,7 @@ export const getTransitionsFromNode = (node: StateNode): string[] => {
     });
   });
 
-  const rootNode = getRootNode(node);
+  const rootNode = node.machine;
 
   const nodesWithId = rootNode.stateIds
     .filter((id) => !/(\.|\(machine\))/.test(id))
@@ -68,26 +68,10 @@ export const getTransitionsFromNode = (node: StateNode): string[] => {
   return Array.from(transitions);
 };
 
-export const getMatchesStates = (machine: StateNode) => {
-  const allStateNodes = machine.stateIds.map((id) =>
-    machine.getStateNodeById(id),
+export const getMatchesStates = (node: StateNode) => {
+  return node.stateIds.flatMap((id) =>
+    toStatePaths(pathToStateValue(node.getStateNodeById(id).path)).map((path) =>
+      path.join('.'),
+    ),
   );
-
-  const states = allStateNodes.reduce((arr: string[], node) => {
-    return [
-      ...arr,
-      ...toStatePaths(pathToStateValue(node.path)).map((path) =>
-        path.join('.'),
-      ),
-    ];
-  }, [] as string[]);
-
-  return states;
-};
-
-export const getRootNode = (node: StateNode): StateNode => {
-  if (!node.parent) {
-    return node;
-  }
-  return getRootNode(node.parent);
 };

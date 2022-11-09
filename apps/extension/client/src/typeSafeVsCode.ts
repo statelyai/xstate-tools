@@ -1,0 +1,27 @@
+import * as vscode from 'vscode';
+
+export interface XStateCommands {
+  // those are related to the editor
+  'stately-xstate.edit': [];
+  'stately-xstate.edit-code-lens': [uri: string, machineIndex: number];
+  // those are related to the visualizer
+  'stately-xstate.visualize': [];
+  'stately-xstate.inspect': [uri: string, machineIndex: number];
+}
+
+export function registerCommand<Name extends keyof XStateCommands>(
+  name: Name,
+  handler: (...args: XStateCommands[Name]) => void,
+) {
+  return vscode.commands.registerCommand(name, handler);
+}
+
+interface XStateConfiguration {
+  theme?: 'auto' | 'dark' | 'light';
+}
+
+export function getConfiguration<Name extends keyof XStateConfiguration>(
+  name: Name,
+): XStateConfiguration[Name] {
+  return vscode.workspace.getConfiguration('xstate').get(name);
+}

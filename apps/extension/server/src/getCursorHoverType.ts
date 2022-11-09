@@ -4,14 +4,11 @@ import {
   StateNodeReturn,
   StringLiteralNode,
 } from '@xstate/machine-extractor';
-import {
-  DocumentValidationsResult,
-  isCursorInPosition,
-} from '@xstate/tools-shared';
+import { isCursorInPosition } from '@xstate/tools-shared';
 import { Position } from 'vscode-languageserver-textdocument';
 
 export const getCursorHoverType = (
-  validationResult: DocumentValidationsResult[],
+  machineResults: MachineParseResult[],
   position: Position,
 ):
   | {
@@ -59,13 +56,13 @@ export const getCursorHoverType = (
       machine: MachineParseResult;
     }
   | void => {
-  for (const machine of validationResult) {
-    for (const state of machine.parseResult?.getAllStateNodes() || []) {
-      const target = getTargetMatchingCursor(machine.parseResult, position);
+  for (const machineResult of machineResults) {
+    for (const state of machineResult.getAllStateNodes() || []) {
+      const target = getTargetMatchingCursor(machineResult, position);
       if (target) {
         return {
           type: 'TARGET',
-          machine: machine.parseResult!,
+          machine: machineResult,
           state,
           target,
         };
@@ -74,21 +71,21 @@ export const getCursorHoverType = (
         return {
           type: 'INITIAL',
           state,
-          machine: machine.parseResult!,
+          machine: machineResult,
           target: state.ast.initial!,
         };
       }
-      const action = getActionMatchingCursor(machine.parseResult, position);
+      const action = getActionMatchingCursor(machineResult, position);
       if (action) {
         return {
           type: 'ACTION',
           node: action.node,
           name: action.name,
-          machine: machine.parseResult!,
+          machine: machineResult,
         };
       }
       const actionImplementation = getActionImplementationMatchingCursor(
-        machine.parseResult,
+        machineResult,
         position,
       );
 
@@ -97,21 +94,21 @@ export const getCursorHoverType = (
           type: 'ACTION_IMPLEMENTATION',
           node: actionImplementation.keyNode,
           name: actionImplementation.key,
-          machine: machine.parseResult!,
+          machine: machineResult,
         };
       }
 
-      const guard = getGuardMatchingCursor(machine.parseResult, position);
+      const guard = getGuardMatchingCursor(machineResult, position);
       if (guard) {
         return {
           type: 'COND',
           node: guard.node,
           name: guard.name,
-          machine: machine.parseResult!,
+          machine: machineResult,
         };
       }
       const guardImplementation = getGuardImplementationMatchingCursor(
-        machine.parseResult,
+        machineResult,
         position,
       );
 
@@ -120,21 +117,21 @@ export const getCursorHoverType = (
           type: 'COND_IMPLEMENTATION',
           node: guardImplementation.keyNode,
           name: guardImplementation.key,
-          machine: machine.parseResult!,
+          machine: machineResult,
         };
       }
 
-      const service = getServiceMatchingCursor(machine.parseResult, position);
+      const service = getServiceMatchingCursor(machineResult, position);
       if (service) {
         return {
           type: 'SERVICE',
           node: service.node,
           name: service.src,
-          machine: machine.parseResult!,
+          machine: machineResult,
         };
       }
       const serviceImplementation = getServiceImplementationMatchingCursor(
-        machine.parseResult,
+        machineResult,
         position,
       );
 
@@ -143,7 +140,7 @@ export const getCursorHoverType = (
           type: 'SERVICE_IMPLEMENTATION',
           node: serviceImplementation.keyNode,
           name: serviceImplementation.key,
-          machine: machine.parseResult!,
+          machine: machineResult,
         };
       }
     }

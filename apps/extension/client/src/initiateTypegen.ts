@@ -1,94 +1,57 @@
-import { parseMachinesFromFile } from '@xstate/machine-extractor';
-import {
-  doesTsTypesRequireUpdate,
-  getRangeFromSourceLocation,
-  XStateUpdateEvent,
-} from '@xstate/tools-shared';
-import * as path from 'path';
+import { writeToTypegenFile } from '@xstate/tools-shared';
+import * as os from 'os';
 import * as vscode from 'vscode';
-import { LanguageClient } from 'vscode-languageclient/node';
-import { startTypegenService } from './typegenService';
+import { TypeSafeLanguageClient } from './typeSafeLanguageClient';
 
 export const initiateTypegen = (
   context: vscode.ExtensionContext,
-  client: LanguageClient,
-  registerXStateUpdateListener: (
-    listener: (event: XStateUpdateEvent) => void,
-  ) => vscode.Disposable,
+  languageClient: TypeSafeLanguageClient,
 ) => {
-  const typegenService = startTypegenService();
-
-  // Stops the typegen service
-  context.subscriptions.push({
-    dispose: () => {
-      typegenService.stop();
-    },
-  });
-
   context.subscriptions.push(
-    vscode.workspace.onWillSaveTextDocument(async (event) => {
-      const text = event.document.getText();
-      const result = parseMachinesFromFile(text);
-      if (result.machines.length > 0) {
-        event.waitUntil(
-          new Promise((resolve) => {
-            const fileEdits: vscode.TextEdit[] = [];
-            const relativePath = removeExtension(
-              path.basename(event.document.uri.path),
-            );
-            let machineIndex = 0;
-            result.machines.forEach((machine, index) => {
-              if (machine.ast?.definition?.tsTypes) {
-                const requiresUpdate = doesTsTypesRequireUpdate({
-                  fileText: text,
-                  machineIndex,
-                  node: machine.ast.definition.tsTypes.node,
-                  relativePath,
-                });
+    vscode.workspace.onWillSaveTextDocument((event) => {
+      // const relativePath = removeExtension(
+      //         path.basename(event.document.uri.path),
+      //       );
 
-                if (requiresUpdate) {
-                  const position = getRangeFromSourceLocation(
-                    machine.ast.definition.tsTypes?.node?.loc!,
-                  );
+      // const removeExtension = (input: string) =>
+      //   input.slice(0, input.lastIndexOf('.'));
 
-                  fileEdits.push(
-                    new vscode.TextEdit(
-                      new vscode.Range(
-                        new vscode.Position(
-                          position.start.line,
-                          position.start.character,
-                        ),
-                        new vscode.Position(
-                          position.end.line,
-                          position.end.character,
-                        ),
-                      ),
-                      `{} as import("./${relativePath}.typegen").Typegen${machineIndex}`,
+      event.document.uri;
+
+      event.waitUntil(
+        languageClient
+          .sendRequest('getTsTypesEdits', { uri: String(event.document.uri) })
+          .then((edits) =>
+            edits.map(
+              (edit) =>
+                new vscode.TextEdit(
+                  new vscode.Range(
+                    new vscode.Position(
+                      edit.range[0].line,
+                      edit.range[0].column,
                     ),
-                  );
-                }
-
-                machineIndex++;
-              }
-            });
-            resolve(fileEdits);
-          }),
-        );
-      }
+                    new vscode.Position(
+                      edit.range[1].line,
+                      edit.range[1].column,
+                    ),
+                  ),
+                  edit.newText,
+                ),
+            ),
+          ),
+      );
     }),
   );
 
   context.subscriptions.push(
-    registerXStateUpdateListener((event) => {
-      if (event.machines.length === 0) return;
-      typegenService.send({
-        type: 'RECEIVE_NEW_EVENT',
-        event,
-      });
+    languageClient.onNotification('typesUpdated', ({ uri, types }) => {
+      // TODO: figure out a way to decouple ourselves from the file system and the OS
+      const pathFromUri = vscode.Uri.parse(uri, true).path;
+
+      writeToTypegenFile(
+        os.platform() === 'win32' ? pathFromUri.slice(1) : pathFromUri,
+        types,
+      ).catch(() => {});
     }),
   );
-};
-
-const removeExtension = (input: string) => {
-  return input.substr(0, input.lastIndexOf('.'));
 };

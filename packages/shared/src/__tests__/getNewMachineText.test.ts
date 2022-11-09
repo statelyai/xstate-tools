@@ -14,7 +14,6 @@ const runTest = (
   implementations: ImplementationsMetadata = defaultImplementations,
 ) => {
   return getNewMachineText({
-    fileName: __filename,
     implementations,
     machine: parseMachinesFromFile(input).machines[0],
     text: input,
@@ -51,10 +50,10 @@ describe('getNewMachineText', () => {
 	tsTypes: {},
 	meta: { cool: true },
 	data: () => {},
-	delimiter: '/',
+	delimiter: "/",
 	preserveActionOrder: true,
 	predictableActionArguments: true,
-	id: 'wow',
+	id: "wow",
 }`,
     );
   });
@@ -73,7 +72,7 @@ describe('getNewMachineText', () => {
     expect(newText).toEqual(
       `{
 	schema: {} as {},
-	id: 'wow',
+	id: "wow",
 }`,
     );
   });
@@ -95,7 +94,7 @@ describe('getNewMachineText', () => {
 
     expect(newText).toEqual(
       `{
-	id: 'wow',
+	id: "wow",
 	on: {},
 	states: {},
 }`,
@@ -257,7 +256,7 @@ describe('getNewMachineText', () => {
 
     expect(newText).toEqual(
       `{
-	description: 'Hello, world!',
+	description: "Hello, world!",
 }`,
     );
   });
