@@ -1,11 +1,11 @@
-import { parseMachinesFromFile } from '../parseMachinesFromFile';
+import { extractMachinesFromFile } from '../extractMachinesFromFile';
 
 it('Should handle createTestMachine', () => {
-  const machines = parseMachinesFromFile(`
+  const machines = extractMachinesFromFile(`
   	createTestMachine({});
   `);
 
-  const result = machines.machines[0];
+  const result = machines!.machines[0];
 
   expect(result).toBeTruthy();
 });

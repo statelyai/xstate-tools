@@ -1,15 +1,13 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import * as XStateParser from './index';
+import { extractMachinesFromFile } from './index';
 
 const parseFileFromExamplesDir = (filename: string) => {
   const asString = fs
     .readFileSync(path.resolve(__dirname, '../examples', filename))
     .toString();
 
-  const result = XStateParser.parseMachinesFromFile(asString);
-
-  return result;
+  return extractMachinesFromFile(asString);
 };
 
 const withoutContext = <T extends { context?: any }>(

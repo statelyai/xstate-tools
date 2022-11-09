@@ -1,6 +1,8 @@
 import {
-  MachineParseResult,
-  parseMachinesFromFile,
+  extractMachinesFromFile,
+  getMachineExtractResult,
+  getMachineNodesFromFile,
+  MachineExtractResult,
 } from '@xstate/machine-extractor';
 import {
   filterOutIgnoredMachines,
@@ -30,6 +32,7 @@ import { connection } from './connection';
 import { getCursorHoverType } from './getCursorHoverType';
 import { getDiagnostics } from './getDiagnostics';
 import { getReferences } from './getReferences';
+import { log } from './log';
 import { CachedDocument } from './types';
 
 let hasConfigurationCapability = false;
@@ -150,7 +153,10 @@ connection.onCodeLens(({ textDocument }) => {
 
   return cachedDocument.machineResults.flatMap(
     (machineResult, index): CodeLens[] => {
-      const callee = machineResult.ast.callee;
+      const callee = machineResult?.machineCallResult.callee;
+      if (!callee) {
+        return [];
+      }
       return [
         {
           range: getRangeFromSourceLocation(callee.loc!),
@@ -177,13 +183,20 @@ async function handleDocumentChange(textDocument: TextDocument): Promise<void> {
   const previouslyCachedDocument = documentsCache.get(textDocument.uri);
   try {
     const text = textDocument.getText();
+    const extracted = extractMachinesFromFile(text);
+    if (!extracted) {
+      return;
+    }
     const [settings, machineResults] = await Promise.all([
       getDocumentSettings(textDocument.uri),
-      filterOutIgnoredMachines(parseMachinesFromFile(text)).machines,
+      filterOutIgnoredMachines(extracted).machines,
     ]);
 
     const types = machineResults
-      .filter((machineResult) => !!machineResult.ast.definition?.tsTypes?.node)
+      .filter(
+        (machineResult): machineResult is NonNullable<typeof machineResult> =>
+          !!machineResult?.machineCallResult.definition?.tsTypes?.node,
+      )
       .map((machineResult, index) =>
         getTypegenData(
           UriUtils.basename(URI.parse(textDocument.uri)),
@@ -199,18 +212,33 @@ async function handleDocumentChange(textDocument: TextDocument): Promise<void> {
     });
 
     if (displayedMachine?.uri === textDocument.uri) {
-      const machineResult = machineResults[displayedMachine.machineIndex];
-      connection.sendNotification('displayedMachineUpdated', {
-        config: machineResult.toConfig()!,
-        layoutString: machineResult.getLayoutComment()?.value,
-        implementations: getInlineImplementations(machineResult, text),
-        namedGuards:
-          machineResult.getAllConds(['named']).map((elem) => elem.name) || [],
-      });
+      const machineResult = machineResults[displayedMachine.machineIndex]!;
+      if (
+        !deepEqual(
+          previouslyCachedDocument!.machineResults[
+            displayedMachine.machineIndex
+          ]!.toConfig({ anonymizeInlineImplementations: true }),
+          machineResult.toConfig({ anonymizeInlineImplementations: true }),
+        )
+      ) {
+        connection.sendNotification('displayedMachineUpdated', {
+          config: machineResult.toConfig()!,
+          layoutString: machineResult.getLayoutComment()?.value,
+          implementations: getInlineImplementations(machineResult, text),
+          namedGuards: machineResult
+            .getAllConds(['named'])
+            .map((elem) => elem.name),
+        });
+      }
     }
+
     connection.sendDiagnostics({
       uri: textDocument.uri,
-      diagnostics: getDiagnostics(machineResults, textDocument, settings),
+      diagnostics: getDiagnostics(
+        machineResults.filter((res): res is NonNullable<typeof res> => !!res),
+        textDocument,
+        settings,
+      ),
     });
     if (
       types.some((t) => t.typesNode.value === t.data.tsTypesValue) &&
@@ -230,7 +258,6 @@ async function handleDocumentChange(textDocument: TextDocument): Promise<void> {
 }
 
 connection.documents.onDidChangeContent(({ document }) => {
-  documentsCache.delete(document.uri);
   handleDocumentChange(document);
 });
 
@@ -287,9 +314,11 @@ connection.onCompletion(({ textDocument, position }): CompletionItem[] => {
   if (cursor?.type === 'ACTION') {
     const actions = getSetOfNames(cursor.machine.getAllActions(['named']));
 
-    cursor.machine.ast.options?.actions?.properties.forEach((action) => {
-      actions.add(action.key);
-    });
+    cursor.machine.machineCallResult.options?.actions?.properties.forEach(
+      (action) => {
+        actions.add(action.key);
+      },
+    );
     return Array.from(actions).map((actionName) => {
       return {
         label: actionName,
@@ -302,9 +331,11 @@ connection.onCompletion(({ textDocument, position }): CompletionItem[] => {
   if (cursor?.type === 'COND') {
     const conds = getSetOfNames(cursor.machine.getAllConds(['named']));
 
-    cursor.machine.ast.options?.guards?.properties.forEach((cond) => {
-      conds.add(cond.key);
-    });
+    cursor.machine.machineCallResult.options?.guards?.properties.forEach(
+      (cond) => {
+        conds.add(cond.key);
+      },
+    );
     return Array.from(conds).map((condName) => {
       return {
         label: condName,
@@ -321,9 +352,11 @@ connection.onCompletion(({ textDocument, position }): CompletionItem[] => {
         .map((invoke) => ({ ...invoke, name: invoke.src })),
     );
 
-    cursor.machine.ast.options?.services?.properties.forEach((service) => {
-      services.add(service.key);
-    });
+    cursor.machine.machineCallResult.options?.services?.properties.forEach(
+      (service) => {
+        services.add(service.key);
+      },
+    );
     return Array.from(services).map((serviceName) => {
       return {
         label: serviceName,
@@ -407,16 +440,16 @@ connection.onCodeAction((params) => {
 });
 
 const getTextEditsForImplementation = (
-  machine: MachineParseResult,
+  machine: MachineExtractResult,
   type: 'services' | 'actions' | 'guards',
   name: string,
   text: string,
 ): TextEdit[] => {
-  const machineDefinitionLoc = machine.ast.definition?.node.loc;
+  const machineDefinitionLoc = machine.machineCallResult.definition?.node.loc;
 
   if (!machineDefinitionLoc) return [];
 
-  const machineOptionsLoc = machine.ast.options?.node.loc;
+  const machineOptionsLoc = machine.machineCallResult.options?.node.loc;
 
   // There is no options object, so add it after the definition
   if (!machineOptionsLoc) {
@@ -434,9 +467,14 @@ const getTextEditsForImplementation = (
   }
 
   // There is an options object, but it doesn't contain an actions object
-  if (!machine.ast.options?.[type]?.node.loc) {
-    const rawText = getRawTextFromNode(text, machine.ast.options?.node!);
-    const range = getRangeFromSourceLocation(machine.ast.options?.node.loc!);
+  if (!machine.machineCallResult.options?.[type]?.node.loc) {
+    const rawText = getRawTextFromNode(
+      text,
+      machine.machineCallResult.options?.node!,
+    );
+    const range = getRangeFromSourceLocation(
+      machine.machineCallResult.options?.node.loc!,
+    );
 
     return [
       {
@@ -449,23 +487,23 @@ const getTextEditsForImplementation = (
     ];
   }
 
-  const existingImplementation = machine.ast.options?.[type]?.properties.find(
-    (property) => {
-      return property.key === name;
-    },
-  );
+  const existingImplementation = machine.machineCallResult.options?.[
+    type
+  ]?.properties.find((property) => {
+    return property.key === name;
+  });
 
   // If the action already exists in the object, don't do anything
   if (existingImplementation) return [];
 
   // There is an actions object which does not contain the action
-  if (machine.ast.options?.[type]?.node) {
+  if (machine.machineCallResult.options?.[type]?.node) {
     const rawText = getRawTextFromNode(
       text,
-      machine.ast.options?.[type]?.node!,
+      machine.machineCallResult.options?.[type]?.node!,
     );
     const range = getRangeFromSourceLocation(
-      machine.ast.options?.[type]?.node.loc!,
+      machine.machineCallResult.options?.[type]?.node.loc!,
     );
 
     return [
@@ -522,13 +560,16 @@ connection.onRequest('getMachineAtCursorPosition', ({ uri, position }) => {
 
   const machineResultIndex = cachedDocument.machineResults.findIndex(
     (machineResult) => {
+      if (!machineResult) {
+        return false;
+      }
       return (
         isCursorInPosition(
-          machineResult.ast.definition?.node?.loc!,
+          machineResult.machineCallResult.definition?.node?.loc!,
           vsCodePosition,
         ) ||
         isCursorInPosition(
-          machineResult.ast.options?.node?.loc!,
+          machineResult.machineCallResult.options?.node?.loc!,
           vsCodePosition,
         )
       );
@@ -541,7 +582,7 @@ connection.onRequest('getMachineAtCursorPosition', ({ uri, position }) => {
     );
   }
 
-  const machineResult = cachedDocument.machineResults[machineResultIndex];
+  const machineResult = cachedDocument.machineResults[machineResultIndex]!;
 
   return {
     config: machineResult.toConfig({
@@ -566,9 +607,29 @@ connection.onRequest('applyMachineEdits', ({ machineEdits }) => {
     );
   }
 
-  const modified = documentsCache
-    .get(displayedMachine.uri)!
-    .machineResults[displayedMachine.machineIndex].modify(machineEdits);
+  const cachedDocument = documentsCache.get(displayedMachine.uri)!;
+
+  const modified =
+    cachedDocument.machineResults[displayedMachine.machineIndex]!.modify(
+      machineEdits,
+    );
+
+  // TODO: figure out a better solution, the extraction that happens here is kinda wasteful
+  const newDocumentText =
+    cachedDocument.documentText.slice(0, modified.range[0].index) +
+    modified.newText +
+    cachedDocument.documentText.slice(modified.range[1].index);
+
+  const { file, machineNodes } = getMachineNodesFromFile(newDocumentText);
+
+  // this kinda also should update types, but at the moment we don't need it
+  // and the whole thing will be refactored anyway
+  cachedDocument.machineResults[displayedMachine.machineIndex] =
+    getMachineExtractResult({
+      file,
+      fileContent: newDocumentText,
+      node: machineNodes[displayedMachine.machineIndex],
+    })!;
 
   return {
     textEdits: [
@@ -606,7 +667,7 @@ connection.onRequest('getNodePosition', ({ path }) => {
   }
 
   const machineResult =
-    cachedDocument.machineResults[displayedMachine.machineIndex];
+    cachedDocument.machineResults[displayedMachine.machineIndex]!;
 
   const node = machineResult.getStateNodeByPath(path);
 
@@ -616,12 +677,12 @@ connection.onRequest('getNodePosition', ({ path }) => {
 
   return [
     {
-      line: node.ast.node.loc!.start.line,
+      line: node.ast.node.loc!.start.line - 1,
       column: node.ast.node.loc!.start.column,
       index: node.ast.node.start!,
     },
     {
-      line: node.ast.node.loc!.end.line,
+      line: node.ast.node.loc!.end.line - 1,
       column: node.ast.node.loc!.end.column,
       index: node.ast.node.end!,
     },

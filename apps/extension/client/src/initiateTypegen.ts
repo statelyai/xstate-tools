@@ -9,15 +9,6 @@ export const initiateTypegen = (
 ) => {
   context.subscriptions.push(
     vscode.workspace.onWillSaveTextDocument((event) => {
-      // const relativePath = removeExtension(
-      //         path.basename(event.document.uri.path),
-      //       );
-
-      // const removeExtension = (input: string) =>
-      //   input.slice(0, input.lastIndexOf('.'));
-
-      event.document.uri;
-
       event.waitUntil(
         languageClient
           .sendRequest('getTsTypesEdits', { uri: String(event.document.uri) })

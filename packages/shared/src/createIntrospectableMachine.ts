@@ -1,4 +1,4 @@
-import { MachineParseResult } from '@xstate/machine-extractor';
+import { MachineExtractResult } from '@xstate/machine-extractor';
 import { AnyStateMachine, createMachine } from 'xstate';
 
 function stubAllWith<T>(value: T): Record<string, T> {
@@ -11,7 +11,7 @@ function stubAllWith<T>(value: T): Record<string, T> {
 }
 
 export function createIntrospectableMachine(
-  machineResult: MachineParseResult,
+  machineResult: MachineExtractResult,
 ): AnyStateMachine {
   // xstate-ignore-next-line
   return createMachine(

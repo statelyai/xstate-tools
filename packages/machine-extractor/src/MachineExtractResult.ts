@@ -8,10 +8,7 @@ import { getMachineNodesFromFile } from './getMachineNodesFromFile';
 import { TMachineCallExpression } from './machineCallExpression';
 import { RecordOfArrays } from './RecordOfArrays';
 import { StateNodeReturn } from './stateNode';
-import {
-  toMachineConfig,
-  ToMachineConfigParseOptions,
-} from './toMachineConfig';
+import { toMachineConfig, ToMachineConfigOptions } from './toMachineConfig';
 import { TransitionConfigNode } from './transitions';
 import { Comment } from './types';
 
@@ -162,9 +159,8 @@ const getLayoutString = (commentString: string): string | undefined => {
 /**
  * Gives some helpers to the user of the lib
  */
-export class MachineParseResult {
-  ast: TMachineCallExpression;
-  public fileComments: Comment[];
+export class MachineExtractResult {
+  machineCallResult: TMachineCallExpression;
   private stateNodes: MachineParseResultStateNode[];
   private _fileContent: string;
   private _fileAst: t.File;
@@ -173,11 +169,9 @@ export class MachineParseResult {
   constructor(props: {
     fileAst: t.File;
     fileContent: string;
-    ast: TMachineCallExpression;
-    fileComments: Comment[];
+    machineCallResult: TMachineCallExpression;
   }) {
-    this.ast = props.ast;
-    this.fileComments = props.fileComments;
+    this.machineCallResult = props.machineCallResult;
     this._fileAst = props.fileAst;
     this._fileContent = props.fileContent;
 
@@ -214,17 +208,22 @@ export class MachineParseResult {
       });
     };
 
-    getSubNodes(this.ast.definition, []);
+    getSubNodes(this.machineCallResult.definition, []);
 
     return nodes;
   };
 
   getIsIgnored = () => {
-    if (!this.ast.callee?.loc) return false;
-    const isIgnored = this.fileComments.some((comment) => {
-      if (comment.type !== 'xstate-ignore-next-line') return false;
+    if (!this.machineCallResult.callee?.loc) return false;
+    const isIgnored = (this._fileAst.comments || []).some((comment) => {
+      if (!comment.value.includes('xstate-ignore-next-line')) {
+        return false;
+      }
 
-      return comment.node.loc!.end.line === this.ast.callee.loc!.start.line - 1;
+      return (
+        comment.loc!.end.line ===
+        this.machineCallResult.callee.loc!.start.line - 1
+      );
     });
 
     return isIgnored;
@@ -256,29 +255,31 @@ export class MachineParseResult {
     const chooseActions: { node: ActionNode; statePath: string[] }[] = [];
     const allActionsInConfig = this.getAllActionsInConfig();
 
-    this.ast.options?.actions?.properties.forEach((actionProperty) => {
-      if (
-        actionProperty.result &&
-        'action' in actionProperty.result &&
-        actionProperty.result.chooseConditions
-      ) {
-        const actionInConfig = allActionsInConfig.find(
-          (a) => a.node.name === actionProperty.key,
-        );
+    this.machineCallResult.options?.actions?.properties.forEach(
+      (actionProperty) => {
+        if (
+          actionProperty.result &&
+          'action' in actionProperty.result &&
+          actionProperty.result.chooseConditions
+        ) {
+          const actionInConfig = allActionsInConfig.find(
+            (a) => a.node.name === actionProperty.key,
+          );
 
-        if (actionInConfig) {
-          chooseActions.push({
-            node: Object.assign(actionProperty.result, {
-              /**
-               * Give it the name of the action in the config
-               */
-              name: actionInConfig.node.name,
-            }),
-            statePath: actionInConfig.statePath,
-          });
+          if (actionInConfig) {
+            chooseActions.push({
+              node: Object.assign(actionProperty.result, {
+                /**
+                 * Give it the name of the action in the config
+                 */
+                name: actionInConfig.node.name,
+              }),
+              statePath: actionInConfig.statePath,
+            });
+          }
         }
-      }
-    });
+      },
+    );
 
     return chooseActions;
   };
@@ -289,22 +290,30 @@ export class MachineParseResult {
    * For instance: '@xstate-layout 1234' will return '1234'
    */
   getLayoutComment = (): { value: string; comment: Comment } | undefined => {
-    if (!this.ast.callee?.loc) return undefined;
-    const layoutComment = this.fileComments.find((comment) => {
-      if (comment.type !== 'xstate-layout') return false;
+    if (!this.machineCallResult.callee?.loc) return undefined;
+    const layoutComment = (this._fileAst.comments || []).find((comment) => {
+      if (!comment.value.includes('xstate-layout')) {
+        return false;
+      }
 
-      return comment.node.loc!.end.line === this.ast.callee.loc!.start.line - 1;
+      return (
+        comment.loc!.end.line ===
+        this.machineCallResult.callee.loc!.start.line - 1
+      );
     });
 
     if (!layoutComment) return undefined;
 
-    const comment = layoutComment?.node.value || '';
+    const comment = layoutComment.value;
 
     const value = getLayoutString(comment);
 
     if (!value) return undefined;
 
-    return { comment: layoutComment, value };
+    return {
+      comment: { type: 'xstate-layout', node: layoutComment },
+      value,
+    };
   };
 
   getTransitions = () => {
@@ -411,8 +420,8 @@ export class MachineParseResult {
 
   getAllStateNodes = () => this.stateNodes;
 
-  toConfig = (opts?: ToMachineConfigParseOptions) => {
-    return toMachineConfig(this.ast, opts);
+  toConfig = (opts?: ToMachineConfigOptions) => {
+    return toMachineConfig(this.machineCallResult, opts);
   };
 
   getAllConds = (
@@ -624,25 +633,31 @@ export class MachineParseResult {
   };
 
   getActionImplementation = (name: string) => {
-    const node = this.ast.options?.actions?.properties.find((property) => {
-      return property.key === name;
-    });
+    const node = this.machineCallResult.options?.actions?.properties.find(
+      (property) => {
+        return property.key === name;
+      },
+    );
 
     return node;
   };
 
   getServiceImplementation = (name: string) => {
-    const node = this.ast.options?.services?.properties.find((property) => {
-      return property.key === name;
-    });
+    const node = this.machineCallResult.options?.services?.properties.find(
+      (property) => {
+        return property.key === name;
+      },
+    );
 
     return node;
   };
 
   getGuardImplementation = (name: string) => {
-    const node = this.ast.options?.guards?.properties.find((property) => {
-      return property.key === name;
-    });
+    const node = this.machineCallResult.options?.guards?.properties.find(
+      (property) => {
+        return property.key === name;
+      },
+    );
 
     return node;
   };
@@ -662,7 +677,7 @@ export class MachineParseResult {
 
     const recastDefinitionNode = findRecastDefinitionNode(
       ast,
-      this.ast.definition!.node,
+      this.machineCallResult.definition!.node,
     );
 
     for (const edit of edits) {
@@ -1278,14 +1293,14 @@ export class MachineParseResult {
 
     const oldRange = [
       {
-        line: this.ast.definition!.node.loc!.start.line - 1,
-        column: this.ast.definition!.node.loc!.start.column,
-        index: this.ast.definition!.node.start!,
+        line: this.machineCallResult.definition!.node.loc!.start.line - 1,
+        column: this.machineCallResult.definition!.node.loc!.start.column,
+        index: this.machineCallResult.definition!.node.start!,
       },
       {
-        line: this.ast.definition!.node.loc!.end.line - 1,
-        column: this.ast.definition!.node.loc!.end.column,
-        index: this.ast.definition!.node.end!,
+        line: this.machineCallResult.definition!.node.loc!.end.line - 1,
+        column: this.machineCallResult.definition!.node.loc!.end.column,
+        index: this.machineCallResult.definition!.node.end!,
       },
     ] as const;
 
@@ -1296,8 +1311,10 @@ export class MachineParseResult {
     // it's the best way we have right now to keep the formatting intact as much as possible though
     const machineNode = getMachineNodesFromFile(reprinted).machineNodes.find(
       (machineNode) =>
-        machineNode.loc!.start.line === this.ast.node.loc!.start.line &&
-        machineNode.loc!.start.column === this.ast.node.loc!.start.column,
+        machineNode.loc!.start.line ===
+          this.machineCallResult.node.loc!.start.line &&
+        machineNode.loc!.start.column ===
+          this.machineCallResult.node.loc!.start.column,
     )!;
 
     return {

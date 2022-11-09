@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { parseMachinesFromFile } from '@xstate/machine-extractor';
+import { extractMachinesFromFile } from '@xstate/machine-extractor';
 import {
   getTsTypesEdits,
   getTypegenData,
@@ -37,9 +37,18 @@ const writeToFiles = async (uriArray: string[]) => {
       try {
         const fileContents = await fs.readFile(uri, 'utf8');
 
-        const types = parseMachinesFromFile(fileContents)
-          .machines.filter(
-            (machineResult) => !!machineResult?.ast.definition?.tsTypes?.node,
+        const extracted = extractMachinesFromFile(fileContents);
+
+        if (!extracted) {
+          return;
+        }
+
+        const types = extracted.machines
+          .filter(
+            (
+              machineResult,
+            ): machineResult is NonNullable<typeof machineResult> =>
+              !!machineResult?.machineCallResult.definition?.tsTypes?.node,
           )
           .map((machineResult, index) =>
             getTypegenData(path.basename(uri), index, machineResult),

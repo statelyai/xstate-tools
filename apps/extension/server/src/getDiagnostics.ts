@@ -1,4 +1,4 @@
-import { MachineParseResult } from '@xstate/machine-extractor';
+import { MachineExtractResult } from '@xstate/machine-extractor';
 import { GlobalSettings } from '@xstate/tools-shared';
 import { Diagnostic } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
@@ -10,7 +10,7 @@ import { getUnusedServicesImplementations } from './diagnostics/getUnusedService
 import { miscDiagnostics } from './diagnostics/misc';
 
 export type DiagnosticGetter = (
-  machineResult: MachineParseResult,
+  machineResult: MachineExtractResult,
   textDocument: TextDocument,
   settings: GlobalSettings,
 ) => Diagnostic[];
@@ -25,7 +25,7 @@ const getters: DiagnosticGetter[] = [
 ];
 
 export const getDiagnostics = (
-  machineResults: MachineParseResult[],
+  machineResults: MachineExtractResult[],
   textDocument: TextDocument,
   settings: GlobalSettings,
 ): Diagnostic[] => {

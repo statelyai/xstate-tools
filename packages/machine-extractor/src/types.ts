@@ -1,5 +1,5 @@
 import * as t from '@babel/types';
-import { MachineParseResult } from './MachineParseResult';
+import { MachineExtractResult } from './MachineExtractResult';
 
 export type Location = t.SourceLocation | null;
 
@@ -31,10 +31,9 @@ export interface Comment {
   type: 'xstate-ignore-next-line' | 'xstate-layout';
 }
 
-export interface ParseResult {
-  machines: MachineParseResult[];
-  comments: Comment[];
-  file: t.File | undefined;
+export interface FileExtractResult {
+  machines: (MachineExtractResult | undefined)[];
+  file: t.File;
 }
 
 export type DeclarationType = 'named' | 'inline' | 'identifier' | 'unknown';

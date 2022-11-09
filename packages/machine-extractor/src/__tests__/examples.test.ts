@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { StateMachine } from 'xstate';
-import { parseMachinesFromFile } from '../parseMachinesFromFile';
+import { extractMachinesFromFile } from '../extractMachinesFromFile';
 import { testUtils } from '../testUtils';
 
 const examples = fs.readdirSync(path.resolve(__dirname, '../../examples'));
@@ -19,7 +19,7 @@ describe('Examples', () => {
         .readFileSync(path.resolve(__dirname, '../../examples', example))
         .toString();
 
-      const { machines } = parseMachinesFromFile(fileAsString);
+      const { machines } = extractMachinesFromFile(fileAsString)!;
 
       exampleMachines.forEach((machine, index) => {
         try {
@@ -27,7 +27,7 @@ describe('Examples', () => {
             machine.config as any,
           );
 
-          const machineConfigUnderTest = machines[index].toConfig();
+          const machineConfigUnderTest = machines[index]!.toConfig();
 
           expect(machineConfigUnderTest).toEqual(sourceMachineConfig);
         } catch (e: any) {

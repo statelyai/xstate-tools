@@ -12,11 +12,12 @@ export const getUnusedActionImplementations: DiagnosticGetter = (
     machineResult.getAllActions(['named']) || [],
   );
 
-  const unusedActions = machineResult.ast?.options?.actions?.properties.filter(
-    (action) => {
-      return !allActions.has(action.key);
-    },
-  );
+  const unusedActions =
+    machineResult.machineCallResult?.options?.actions?.properties.filter(
+      (action) => {
+        return !allActions.has(action.key);
+      },
+    );
 
   return (
     unusedActions?.map((action) => {

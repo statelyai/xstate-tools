@@ -1,6 +1,6 @@
 import * as t from '@babel/types';
 import {
-  MachineParseResult,
+  MachineExtractResult,
   StateNodeReturn,
   StringLiteralNode,
 } from '@xstate/machine-extractor';
@@ -8,12 +8,12 @@ import { isCursorInPosition } from '@xstate/tools-shared';
 import { Position } from 'vscode-languageserver-textdocument';
 
 export const getCursorHoverType = (
-  machineResults: MachineParseResult[],
+  machineResults: (MachineExtractResult | undefined)[],
   position: Position,
 ):
   | {
       type: 'TARGET';
-      machine: MachineParseResult;
+      machine: MachineExtractResult;
       state: {
         path: string[];
         ast: StateNodeReturn;
@@ -22,7 +22,7 @@ export const getCursorHoverType = (
     }
   | {
       type: 'INITIAL';
-      machine: MachineParseResult;
+      machine: MachineExtractResult;
       state: {
         path: string[];
         ast: StateNodeReturn;
@@ -33,30 +33,38 @@ export const getCursorHoverType = (
       type: 'ACTION';
       node: t.Node;
       name: string;
-      machine: MachineParseResult;
+      machine: MachineExtractResult;
     }
   | {
       type: 'ACTION_IMPLEMENTATION';
       node: t.Node;
       name: string;
-      machine: MachineParseResult;
+      machine: MachineExtractResult;
     }
-  | { type: 'COND'; node: t.Node; name: string; machine: MachineParseResult }
+  | { type: 'COND'; node: t.Node; name: string; machine: MachineExtractResult }
   | {
       type: 'COND_IMPLEMENTATION';
       node: t.Node;
       name: string;
-      machine: MachineParseResult;
+      machine: MachineExtractResult;
     }
-  | { type: 'SERVICE'; node: t.Node; name: string; machine: MachineParseResult }
+  | {
+      type: 'SERVICE';
+      node: t.Node;
+      name: string;
+      machine: MachineExtractResult;
+    }
   | {
       type: 'SERVICE_IMPLEMENTATION';
       node: t.Node;
       name: string;
-      machine: MachineParseResult;
+      machine: MachineExtractResult;
     }
   | void => {
   for (const machineResult of machineResults) {
+    if (!machineResult) {
+      continue;
+    }
     for (const state of machineResult.getAllStateNodes() || []) {
       const target = getTargetMatchingCursor(machineResult, position);
       if (target) {
@@ -148,7 +156,7 @@ export const getCursorHoverType = (
 };
 
 const getTargetMatchingCursor = (
-  parseResult: MachineParseResult | undefined,
+  parseResult: MachineExtractResult | undefined,
   position: Position,
 ) => {
   for (const target of parseResult?.getTransitionTargets() || []) {
@@ -169,7 +177,7 @@ const getInitialMatchingCursor = (
 };
 
 const getActionMatchingCursor = (
-  parseResult: MachineParseResult | undefined,
+  parseResult: MachineExtractResult | undefined,
   position: Position,
 ) => {
   return parseResult?.getAllActions(['named']).find((action) => {
@@ -178,7 +186,7 @@ const getActionMatchingCursor = (
 };
 
 const getGuardMatchingCursor = (
-  parseResult: MachineParseResult | undefined,
+  parseResult: MachineExtractResult | undefined,
   position: Position,
 ) => {
   return parseResult?.getAllConds(['named']).find((cond) => {
@@ -187,7 +195,7 @@ const getGuardMatchingCursor = (
 };
 
 const getServiceMatchingCursor = (
-  parseResult: MachineParseResult | undefined,
+  parseResult: MachineExtractResult | undefined,
   position: Position,
 ) => {
   return parseResult?.getAllServices(['named']).find((service) => {
@@ -196,13 +204,15 @@ const getServiceMatchingCursor = (
 };
 
 const getActionImplementationMatchingCursor = (
-  parseResult: MachineParseResult | undefined,
+  parseResult: MachineExtractResult | undefined,
   position: Position,
 ) => {
   const actionImplementations =
-    parseResult?.ast?.options?.actions?.properties.map((property) => {
-      return property;
-    });
+    parseResult?.machineCallResult?.options?.actions?.properties.map(
+      (property) => {
+        return property;
+      },
+    );
 
   return actionImplementations?.find((implementation) => {
     return isCursorInPosition(implementation.keyNode.loc!, position);
@@ -210,13 +220,15 @@ const getActionImplementationMatchingCursor = (
 };
 
 const getGuardImplementationMatchingCursor = (
-  parseResult: MachineParseResult | undefined,
+  parseResult: MachineExtractResult | undefined,
   position: Position,
 ) => {
   const guardImplementations =
-    parseResult?.ast?.options?.guards?.properties.map((property) => {
-      return property;
-    });
+    parseResult?.machineCallResult?.options?.guards?.properties.map(
+      (property) => {
+        return property;
+      },
+    );
 
   return guardImplementations?.find((implementation) => {
     return isCursorInPosition(implementation.keyNode.loc!, position);
@@ -224,13 +236,15 @@ const getGuardImplementationMatchingCursor = (
 };
 
 const getServiceImplementationMatchingCursor = (
-  parseResult: MachineParseResult | undefined,
+  parseResult: MachineExtractResult | undefined,
   position: Position,
 ) => {
   const serviceImplementations =
-    parseResult?.ast?.options?.services?.properties.map((property) => {
-      return property;
-    });
+    parseResult?.machineCallResult?.options?.services?.properties.map(
+      (property) => {
+        return property;
+      },
+    );
 
   return serviceImplementations?.find((implementation) => {
     return isCursorInPosition(implementation.keyNode.loc!, position);

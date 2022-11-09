@@ -10,11 +10,12 @@ export const getUnusedGuardsImplementations: DiagnosticGetter = (
 ) => {
   const allGuards = getSetOfNames(machineResult.getAllConds(['named']) || []);
 
-  const unusedGuards = machineResult.ast?.options?.guards?.properties.filter(
-    (guard) => {
-      return !allGuards.has(guard.key);
-    },
-  );
+  const unusedGuards =
+    machineResult.machineCallResult?.options?.guards?.properties.filter(
+      (guard) => {
+        return !allGuards.has(guard.key);
+      },
+    );
 
   return (
     unusedGuards?.map((guard) => {

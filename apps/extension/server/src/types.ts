@@ -1,8 +1,8 @@
-import { MachineParseResult } from '@xstate/machine-extractor';
+import { MachineExtractResult } from '@xstate/machine-extractor';
 import { TypegenData } from '@xstate/tools-shared';
 
 export interface CachedDocument {
   documentText: string;
-  machineResults: MachineParseResult[];
+  machineResults: (MachineExtractResult | undefined)[];
   types: TypegenData[];
 }

@@ -1,8 +1,8 @@
 import outdent from 'outdent';
-import { parseMachinesFromFile } from '../../parseMachinesFromFile';
+import { extractMachinesFromFile } from '../../extractMachinesFromFile';
 
 const getModifiableMachine = (code: string) =>
-  parseMachinesFromFile(outdent.string(code)).machines[0];
+  extractMachinesFromFile(outdent.string(code))!.machines[0]!;
 
 describe('reanchor_transition', () => {
   it('should be possible to change a simple target', () => {

@@ -1,4 +1,4 @@
-import type { MachineParseResult } from '@xstate/machine-extractor';
+import type { MachineExtractResult } from '@xstate/machine-extractor';
 import { getRawTextFromNode, ImplementationsMetadata } from '.';
 
 /**
@@ -9,7 +9,7 @@ import { getRawTextFromNode, ImplementationsMetadata } from '.';
  * and stores the raw text of its node.
  */
 export const getInlineImplementations = (
-  parseResult: MachineParseResult | undefined,
+  parseResult: MachineExtractResult | undefined,
   fileText: string,
 ): ImplementationsMetadata => {
   const allGuards =
