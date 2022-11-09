@@ -1,4 +1,4 @@
-import { types as t } from '@babel/core';
+import * as t from '@babel/types';
 import { Range } from 'vscode-languageserver-textdocument';
 
 export const getRangeFromSourceLocation = (

@@ -1,4 +1,4 @@
-import { types as t } from '@babel/core';
+import * as t from '@babel/types';
 import {
   MachineParseResult,
   StateNodeReturn,
@@ -153,7 +153,7 @@ const getTargetMatchingCursor = (
 ) => {
   for (const target of parseResult?.getTransitionTargets() || []) {
     for (const targetNode of target.target) {
-      if (isCursorInPosition(targetNode.node.loc, position)) {
+      if (isCursorInPosition(targetNode.node.loc!, position)) {
         return targetNode;
       }
     }
@@ -165,7 +165,7 @@ const getInitialMatchingCursor = (
   position: Position,
 ) => {
   if (!state.initial) return;
-  return isCursorInPosition(state.initial.node.loc, position);
+  return isCursorInPosition(state.initial.node.loc!, position);
 };
 
 const getActionMatchingCursor = (
@@ -173,7 +173,7 @@ const getActionMatchingCursor = (
   position: Position,
 ) => {
   return parseResult?.getAllActions(['named']).find((action) => {
-    return isCursorInPosition(action.node.loc, position);
+    return isCursorInPosition(action.node.loc!, position);
   });
 };
 
@@ -182,7 +182,7 @@ const getGuardMatchingCursor = (
   position: Position,
 ) => {
   return parseResult?.getAllConds(['named']).find((cond) => {
-    return isCursorInPosition(cond.node.loc, position);
+    return isCursorInPosition(cond.node.loc!, position);
   });
 };
 
@@ -205,7 +205,7 @@ const getActionImplementationMatchingCursor = (
     });
 
   return actionImplementations?.find((implementation) => {
-    return isCursorInPosition(implementation.keyNode.loc, position);
+    return isCursorInPosition(implementation.keyNode.loc!, position);
   });
 };
 
@@ -219,7 +219,7 @@ const getGuardImplementationMatchingCursor = (
     });
 
   return guardImplementations?.find((implementation) => {
-    return isCursorInPosition(implementation.keyNode.loc, position);
+    return isCursorInPosition(implementation.keyNode.loc!, position);
   });
 };
 
@@ -233,6 +233,6 @@ const getServiceImplementationMatchingCursor = (
     });
 
   return serviceImplementations?.find((implementation) => {
-    return isCursorInPosition(implementation.keyNode.loc, position);
+    return isCursorInPosition(implementation.keyNode.loc!, position);
   });
 };

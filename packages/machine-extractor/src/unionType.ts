@@ -12,10 +12,14 @@ export const unionType = <Result>(
     return parsers.some((parser) => parser.matches(node));
   };
   const parse = (node: any, context: ParserContext): Result | undefined => {
-    const possibleParsers = parsers.filter((parser) => parser.matches(node));
-    for (const parser of possibleParsers) {
+    for (const parser of parsers) {
+      if (!parser.matches(node)) {
+        continue;
+      }
       const result = parser.parse(node, context);
-      if (result) return result;
+      if (result) {
+        return result;
+      }
     }
   };
 

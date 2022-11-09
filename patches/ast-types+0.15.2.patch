@@ -1,0 +1,13 @@
+diff --git a/node_modules/ast-types/lib/types.d.ts b/node_modules/ast-types/lib/types.d.ts
+index c573902..5c2ba90 100644
+--- a/node_modules/ast-types/lib/types.d.ts
++++ b/node_modules/ast-types/lib/types.d.ts
+@@ -10,7 +10,7 @@ export interface AnyType {
+ declare abstract class BaseType<T> {
+     abstract toString(): string;
+     abstract check(value: any, deep?: Deep): value is T;
+-    assert(value: any, deep?: Deep): value is T;
++    assert(value: any, deep?: Deep): asserts value is T;
+     arrayOf(): Type<T[]>;
+ }
+ declare class ArrayType<T> extends BaseType<T> {

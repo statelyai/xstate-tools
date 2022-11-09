@@ -1,4 +1,6 @@
-import { Node, parse, traverse, types as t } from '@babel/core';
+import { parse } from '@babel/parser';
+import traverse from '@babel/traverse';
+import * as t from '@babel/types';
 import {
   ALLOWED_CALL_EXPRESSION_NAMES,
   MachineCallExpression,
@@ -7,9 +9,9 @@ import { MachineParseResult } from './MachineParseResult';
 import { ParseResult } from './types';
 import { hashedId } from './utils';
 
-export const parseMachinesFromFile = (fileContents: string): ParseResult => {
+export const parseMachinesFromFile = (fileContent: string): ParseResult => {
   if (
-    !ALLOWED_CALL_EXPRESSION_NAMES.some((name) => fileContents.includes(name))
+    !ALLOWED_CALL_EXPRESSION_NAMES.some((name) => fileContent.includes(name))
   ) {
     return {
       machines: [],
@@ -18,18 +20,16 @@ export const parseMachinesFromFile = (fileContents: string): ParseResult => {
     };
   }
 
-  const parseResult = parse(fileContents, {
+  const parseResult = parse(fileContent, {
     sourceType: 'module',
-    configFile: false,
-    babelrc: false,
-    parserOpts: {
-      plugins: [
-        'typescript',
-        'jsx',
-        ['decorators', { decoratorsBeforeExport: false }],
-      ],
-    },
-  }) as t.File;
+    plugins: [
+      'typescript',
+      'jsx',
+      ['decorators', { decoratorsBeforeExport: false }],
+    ],
+    // required by recast
+    tokens: true,
+  });
 
   let result: ParseResult = {
     machines: [],
@@ -51,8 +51,8 @@ export const parseMachinesFromFile = (fileContents: string): ParseResult => {
     }
   });
 
-  const getNodeHash = (node: Node): string => {
-    const fileText = fileContents.substring(node.start!, node.end!);
+  const getNodeHash = (node: t.Node): string => {
+    const fileText = fileContent.substring(node.start!, node.end!);
     return hashedId(fileText);
   };
 
@@ -65,6 +65,8 @@ export const parseMachinesFromFile = (fileContents: string): ParseResult => {
       if (ast) {
         result.machines.push(
           new MachineParseResult({
+            fileAst: parseResult,
+            fileContent,
             ast,
             fileComments: result.comments,
             scope: path.scope,

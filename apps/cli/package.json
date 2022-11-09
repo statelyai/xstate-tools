@@ -17,7 +17,7 @@
     "jest": "^27.4.7"
   },
   "dependencies": {
-    "@babel/core": "^7.12.10",
+    "@babel/core": "^7.19.3",
     "@xstate/machine-extractor": "0.7.1",
     "@xstate/tools-shared": "1.2.3",
     "chokidar": "^3.5.3",
