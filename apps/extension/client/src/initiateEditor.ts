@@ -8,6 +8,7 @@ import * as vscode from 'vscode';
 import { ColorThemeKind } from 'vscode';
 import { createMachine, interpret, MachineConfig } from 'xstate';
 import { forwardTo } from 'xstate/lib/actions';
+import { registerDisposable } from './registerDisposable';
 import { TypeSafeLanguageClient } from './typeSafeLanguageClient';
 import * as typeSafeVsCode from './typeSafeVsCode';
 
@@ -29,24 +30,6 @@ type MachineChangedEvent = {
 };
 
 type StudioEvent = NodeSelectedEvent | OpenLinkEvent | MachineChangedEvent;
-
-function removeFromMutableArray<T>(array: T[], item: T) {
-  const index = array.indexOf(item);
-  if (index !== -1) {
-    array.splice(index, 1);
-  }
-}
-
-function registerDisposable(
-  extensionContext: vscode.ExtensionContext,
-  disposable: vscode.Disposable,
-) {
-  extensionContext.subscriptions.push(disposable);
-  return () => {
-    removeFromMutableArray(extensionContext.subscriptions, disposable);
-    disposable.dispose();
-  };
-}
 
 function registerCommand<Name extends keyof typeSafeVsCode.XStateCommands>(
   extensionContext: vscode.ExtensionContext,
