@@ -2,6 +2,7 @@ import {
   extractMachinesFromFile,
   getMachineExtractResult,
   getMachineNodesFromFile,
+  isErrorWithMessage,
   MachineExtractResult,
 } from '@xstate/machine-extractor';
 import {
@@ -216,6 +217,11 @@ async function handleDocumentChange(textDocument: TextDocument): Promise<void> {
 
     if (displayedMachine?.uri === textDocument.uri) {
       const machineResult = machineResults[displayedMachine.machineIndex]!;
+      // If we got this far we can safely assume that the machine config is valid and we can clear any potential errors
+      connection.sendNotification('extensionError', {
+        message: undefined,
+      });
+
       if (
         !deepEqual(
           previouslyCachedDocument!.machineResults[
@@ -259,6 +265,11 @@ async function handleDocumentChange(textDocument: TextDocument): Promise<void> {
       });
     }
   } catch (e) {
+    if (isErrorWithMessage(e)) {
+      connection.sendNotification('extensionError', {
+        message: e.message,
+      });
+    }
     connection.sendDiagnostics({ uri: textDocument.uri, diagnostics: [] });
   }
 }

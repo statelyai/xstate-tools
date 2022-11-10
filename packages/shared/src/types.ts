@@ -115,4 +115,7 @@ export interface NotificationMap {
     uri: string;
     types: TypegenData[];
   };
+  extensionError: {
+    message: string | undefined;
+  };
 }

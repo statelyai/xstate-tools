@@ -127,12 +127,21 @@ type DisplayedMachineUpdated = {
   implementations: ImplementationsMetadata;
 };
 
+type ExtensionError = {
+  type: 'EXTENSION_ERROR';
+  message: string | undefined;
+};
+
 const machine = createMachine(
   {
     predictableActionArguments: true,
     tsTypes: {} as import('./initiateEditor.typegen').Typegen0,
     schema: {
-      events: {} as WebviewClosed | EditMachine | DisplayedMachineUpdated,
+      events: {} as
+        | WebviewClosed
+        | EditMachine
+        | DisplayedMachineUpdated
+        | ExtensionError,
     },
     context: {
       extensionContext: null! as vscode.ExtensionContext,
@@ -183,6 +192,9 @@ const machine = createMachine(
                 actions: 'forwardToWebview',
               },
               DISPLAYED_MACHINE_UPDATED: {
+                actions: 'forwardToWebview',
+              },
+              EXTENSION_ERROR: {
                 actions: 'forwardToWebview',
               },
             },
@@ -270,7 +282,7 @@ const machine = createMachine(
           ),
       onDisplayedMachineUpdatedListener:
         ({ extensionContext, languageClient }) =>
-        (sendBack) =>
+        (sendBack) => {
           registerDisposable(
             extensionContext,
             languageClient.onNotification(
@@ -284,7 +296,18 @@ const machine = createMachine(
                 });
               },
             ),
-          ),
+          );
+
+          registerDisposable(
+            extensionContext,
+            languageClient.onNotification('extensionError', ({ message }) => {
+              sendBack({
+                type: 'EXTENSION_ERROR',
+                message,
+              });
+            }),
+          );
+        },
       webviewActor:
         (
           { extensionContext, languageClient },
@@ -376,31 +399,40 @@ const machine = createMachine(
             }),
           );
 
-          onReceive((event: EditMachine | DisplayedMachineUpdated) => {
-            switch (event.type) {
-              case 'EDIT_MACHINE': {
-                uri = event.uri;
+          onReceive(
+            (event: EditMachine | DisplayedMachineUpdated | ExtensionError) => {
+              switch (event.type) {
+                case 'EDIT_MACHINE': {
+                  uri = event.uri;
 
-                webviewPanel.reveal(vscode.ViewColumn.Beside);
-                webviewPanel.webview.postMessage({
-                  type: 'UPDATE_CONFIG',
-                  config: event.config,
-                  layoutString: event.layoutString,
-                  implementations: event.implementations,
-                });
-                return;
+                  webviewPanel.reveal(vscode.ViewColumn.Beside);
+                  webviewPanel.webview.postMessage({
+                    type: 'UPDATE_CONFIG',
+                    config: event.config,
+                    layoutString: event.layoutString,
+                    implementations: event.implementations,
+                  });
+                  return;
+                }
+                case 'DISPLAYED_MACHINE_UPDATED': {
+                  webviewPanel.webview.postMessage({
+                    type: 'UPDATE_CONFIG',
+                    config: event.config,
+                    layoutString: event.layoutString,
+                    implementations: event.implementations,
+                  });
+                  return;
+                }
+                case 'EXTENSION_ERROR': {
+                  webviewPanel.webview.postMessage({
+                    type: 'SEND_ERROR',
+                    message: event.message,
+                  });
+                  return;
+                }
               }
-              case 'DISPLAYED_MACHINE_UPDATED': {
-                webviewPanel.webview.postMessage({
-                  type: 'UPDATE_CONFIG',
-                  config: event.config,
-                  layoutString: event.layoutString,
-                  implementations: event.implementations,
-                });
-                return;
-              }
-            }
-          });
+            },
+          );
 
           (async () => {
             const html = await getWebviewHtml(extensionContext, webviewPanel, {
