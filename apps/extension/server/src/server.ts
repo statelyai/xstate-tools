@@ -285,10 +285,12 @@ async function handleDocumentChange(textDocument: TextDocument): Promise<void> {
       });
     }
   } catch (e) {
-    hasActiveError = true;
-    connection.sendNotification('extractionError', {
-      message: isErrorWithMessage(e) ? e.message : 'Unknown error',
-    });
+    if (displayedMachine?.uri === textDocument.uri) {
+      hasActiveError = true;
+      connection.sendNotification('extractionError', {
+        message: isErrorWithMessage(e) ? e.message : 'Unknown error',
+      });
+    }
     connection.sendDiagnostics({ uri: textDocument.uri, diagnostics: [] });
   }
 }
