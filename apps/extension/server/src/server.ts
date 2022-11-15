@@ -2,10 +2,10 @@ import {
   extractMachinesFromFile,
   getMachineExtractResult,
   getMachineNodesFromFile,
-  isErrorWithMessage,
   MachineExtractResult,
 } from '@xstate/machine-extractor';
 import {
+  createIntrospectableMachine,
   filterOutIgnoredMachines,
   getInlineImplementations,
   getRangeFromSourceLocation,
@@ -15,6 +15,7 @@ import {
   getTsTypesEdits,
   getTypegenData,
   GlobalSettings,
+  introspectMachine,
   isCursorInPosition,
   TypegenData,
 } from '@xstate/tools-shared';
@@ -35,9 +36,11 @@ import { getCursorHoverType } from './getCursorHoverType';
 import { getDiagnostics } from './getDiagnostics';
 import { getReferences } from './getReferences';
 import { CachedDocument } from './types';
+import { isErrorWithMessage } from './utils';
 
 let hasConfigurationCapability = false;
 let hasWorkspaceFolderCapability = false;
+let hasActiveError = false;
 
 const defaultSettings: GlobalSettings = {
   showVisualEditorWarnings: true,
@@ -196,17 +199,30 @@ async function handleDocumentChange(textDocument: TextDocument): Promise<void> {
       filterOutIgnoredMachines(extracted).machines,
     ]);
 
+    // Create typegen data for typed machines. This will throw if there are any errors.
     const types = machineResults
       .filter(
         (machineResult): machineResult is NonNullable<typeof machineResult> =>
-          !!machineResult?.machineCallResult.definition?.tsTypes?.node,
+          machineResult?.machineCallResult.definition?.tsTypes?.node !==
+          undefined,
       )
-      .map((machineResult, index) =>
-        getTypegenData(
+      .map((machineResult, index) => {
+        return getTypegenData(
           UriUtils.basename(URI.parse(textDocument.uri)),
           index,
           machineResult,
-        ),
+        );
+      });
+
+    // Iterate non-typed machines and throw if there are any errors.
+    machineResults
+      .filter(
+        (machineResult): machineResult is NonNullable<typeof machineResult> =>
+          machineResult?.machineCallResult.definition?.tsTypes?.node ===
+          undefined,
+      )
+      .forEach((machineResult) =>
+        introspectMachine(createIntrospectableMachine(machineResult) as any),
       );
 
     documentsCache.set(textDocument.uri, {
@@ -217,6 +233,15 @@ async function handleDocumentChange(textDocument: TextDocument): Promise<void> {
 
     if (displayedMachine?.uri === textDocument.uri) {
       const machineResult = machineResults[displayedMachine.machineIndex]!;
+
+      if (hasActiveError) {
+        // If we got this far we can safely assume that the machine config is valid and we can clear any potential errors
+        connection.sendNotification('extractionError', {
+          message: undefined,
+        });
+        hasActiveError = false;
+      }
+
       if (
         !deepEqual(
           previouslyCachedDocument!.machineResults[
@@ -260,7 +285,8 @@ async function handleDocumentChange(textDocument: TextDocument): Promise<void> {
       });
     }
   } catch (e) {
-    connection.sendNotification('extensionError', {
+    hasActiveError = true;
+    connection.sendNotification('extractionError', {
       message: isErrorWithMessage(e) ? e.message : 'Unknown error',
     });
     connection.sendDiagnostics({ uri: textDocument.uri, diagnostics: [] });

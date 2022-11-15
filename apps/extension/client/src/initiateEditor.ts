@@ -129,7 +129,7 @@ type DisplayedMachineUpdated = {
 
 type ExtensionError = {
   type: 'EXTENSION_ERROR';
-  message: string;
+  message: string | undefined;
 };
 
 const machine = createMachine(
@@ -300,7 +300,7 @@ const machine = createMachine(
 
           const extensionErrorDisposable = registerDisposable(
             extensionContext,
-            languageClient.onNotification('extensionError', ({ message }) => {
+            languageClient.onNotification('extractionError', ({ message }) => {
               sendBack({
                 type: 'EXTENSION_ERROR',
                 message,
@@ -430,8 +430,8 @@ const machine = createMachine(
                 }
                 case 'EXTENSION_ERROR': {
                   webviewPanel.webview.postMessage({
-                    type: 'SEND_ERROR',
-                    message: event.message,
+                    type: 'DISPLAY_ERROR',
+                    error: event.message,
                   });
                   return;
                 }
