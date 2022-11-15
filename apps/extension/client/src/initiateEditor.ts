@@ -129,7 +129,7 @@ type DisplayedMachineUpdated = {
 
 type ExtensionError = {
   type: 'EXTENSION_ERROR';
-  message: string | undefined;
+  message: string;
 };
 
 const machine = createMachine(
@@ -181,7 +181,7 @@ const machine = createMachine(
             entry: 'setEditedMachine',
             exit: 'clearEditedMachine',
             invoke: {
-              src: 'onDisplayedMachineUpdatedListener',
+              src: 'onServerNotificationListener',
             },
             on: {
               EDIT_MACHINE: {
@@ -280,10 +280,10 @@ const machine = createMachine(
                 });
             },
           ),
-      onDisplayedMachineUpdatedListener:
+      onServerNotificationListener:
         ({ extensionContext, languageClient }) =>
         (sendBack) => {
-          registerDisposable(
+          const machineUpdatedDisposable = registerDisposable(
             extensionContext,
             languageClient.onNotification(
               'displayedMachineUpdated',
@@ -298,7 +298,7 @@ const machine = createMachine(
             ),
           );
 
-          registerDisposable(
+          const extensionErrorDisposable = registerDisposable(
             extensionContext,
             languageClient.onNotification('extensionError', ({ message }) => {
               sendBack({
@@ -307,6 +307,11 @@ const machine = createMachine(
               });
             }),
           );
+
+          return () => {
+            machineUpdatedDisposable();
+            extensionErrorDisposable();
+          };
         },
       webviewActor:
         (
