@@ -260,11 +260,9 @@ async function handleDocumentChange(textDocument: TextDocument): Promise<void> {
       });
     }
   } catch (e) {
-    if (isErrorWithMessage(e)) {
-      connection.sendNotification('extensionError', {
-        message: e.message,
-      });
-    }
+    connection.sendNotification('extensionError', {
+      message: isErrorWithMessage(e) ? e.message : 'Unknown error',
+    });
     connection.sendDiagnostics({ uri: textDocument.uri, diagnostics: [] });
   }
 }
