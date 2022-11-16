@@ -222,6 +222,7 @@ async function handleDocumentChange(textDocument: TextDocument): Promise<void> {
           undefined,
       )
       .forEach((machineResult) =>
+        // for the time being we are piggy-backing on the fact that `createMachine` called in `instrospectMachine` might throw for invalid configs
         introspectMachine(createIntrospectableMachine(machineResult) as any),
       );
 
