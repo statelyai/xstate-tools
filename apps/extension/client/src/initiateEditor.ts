@@ -128,7 +128,7 @@ type DisplayedMachineUpdated = {
 };
 
 type ExtensionError = {
-  type: 'EXTENSION_ERROR';
+  type: 'EXTRACTION_ERROR';
   message: string | undefined;
 };
 
@@ -194,7 +194,7 @@ const machine = createMachine(
               DISPLAYED_MACHINE_UPDATED: {
                 actions: 'forwardToWebview',
               },
-              EXTENSION_ERROR: {
+              EXTRACTION_ERROR: {
                 actions: 'forwardToWebview',
               },
             },
@@ -298,11 +298,11 @@ const machine = createMachine(
             ),
           );
 
-          const extensionErrorDisposable = registerDisposable(
+          const extractionErrorDisposable = registerDisposable(
             extensionContext,
             languageClient.onNotification('extractionError', ({ message }) => {
               sendBack({
-                type: 'EXTENSION_ERROR',
+                type: 'EXTRACTION_ERROR',
                 message,
               });
             }),
@@ -310,7 +310,7 @@ const machine = createMachine(
 
           return () => {
             machineUpdatedDisposable();
-            extensionErrorDisposable();
+            extractionErrorDisposable();
           };
         },
       webviewActor:
@@ -428,7 +428,7 @@ const machine = createMachine(
                   });
                   return;
                 }
-                case 'EXTENSION_ERROR': {
+                case 'EXTRACTION_ERROR': {
                   webviewPanel.webview.postMessage({
                     type: 'DISPLAY_ERROR',
                     error: event.message,
