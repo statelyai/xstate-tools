@@ -203,7 +203,6 @@ async function handleDocumentChange(textDocument: TextDocument): Promise<void> {
       filterOutIgnoredMachines(extracted).machines.filter(isMachineResult),
     ]);
 
-    // Iterate over the machine results and add possible typegen data plus config errors
     const machinesWithPossibleTypesAndErrors = machineResults.map(
       (machineResult, index) => {
         try {
