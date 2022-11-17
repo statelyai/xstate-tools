@@ -1,4 +1,3 @@
-import { MachineExtractResult } from '.';
 import { getMachineExtractResult } from './getMachineExtractResult';
 import { getMachineNodesFromFile } from './getMachineNodesFromFile';
 import { ALLOWED_CALL_EXPRESSION_NAMES } from './machineCallExpression';
@@ -6,7 +5,7 @@ import { FileExtractResult } from './types';
 
 export const extractMachinesFromFile = (
   fileContent: string,
-): FileExtractResult<MachineExtractResult | undefined> | null => {
+): FileExtractResult | null => {
   if (
     !ALLOWED_CALL_EXPRESSION_NAMES.some((name) => fileContent.includes(name))
   ) {

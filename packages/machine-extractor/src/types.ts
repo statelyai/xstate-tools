@@ -1,4 +1,5 @@
 import * as t from '@babel/types';
+import { MachineExtractResult } from './MachineExtractResult';
 
 export type Location = t.SourceLocation | null;
 
@@ -30,7 +31,9 @@ export interface Comment {
   type: 'xstate-ignore-next-line' | 'xstate-layout';
 }
 
-export interface FileExtractResult<T extends MachineExtractResult | undefined = MachineExtractResult | undefined> {
+export interface FileExtractResult<
+  T extends MachineExtractResult | undefined = MachineExtractResult | undefined,
+> {
   machines: T[];
   file: t.File;
 }

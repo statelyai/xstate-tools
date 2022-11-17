@@ -8,7 +8,7 @@ export const isMachineResult = (
 ): machineResult is MachineExtractResult => machineResult !== undefined;
 
 export const filterOutIgnoredMachines = (
-  parseResult: FileExtractResult<MachineExtractResult | undefined>,
+  parseResult: FileExtractResult,
 ): FileExtractResult<MachineExtractResult> => {
   return {
     ...parseResult,
