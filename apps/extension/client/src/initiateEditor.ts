@@ -127,7 +127,7 @@ type DisplayedMachineUpdated = {
   implementations: ImplementationsMetadata;
 };
 
-type ExtensionError = {
+type ExtractionError = {
   type: 'EXTRACTION_ERROR';
   message: string | undefined;
 };
