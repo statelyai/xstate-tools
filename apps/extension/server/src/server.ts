@@ -202,36 +202,32 @@ async function handleDocumentChange(textDocument: TextDocument): Promise<void> {
       filterOutIgnoredMachines(extracted).machines,
     ]);
 
-    const machinesWithPossibleTypesAndErrors = machineResults.map(
-      (machineResult, index) => {
-        try {
-          if (isTypedMachineResult(machineResult)) {
-            // Create typegen data for typed machines. This will throw if there are any errors.
-            return {
-              machineResult,
-              types: getTypegenData(
-                UriUtils.basename(URI.parse(textDocument.uri)),
-                index,
-                machineResult,
-              ),
-            };
-          } else {
-            // for the time being we are piggy-backing on the fact that `createMachine` called in `instrospectMachine` might throw for invalid configs
-            introspectMachine(
-              createIntrospectableMachine(machineResult) as any,
-            );
-            return { machineResult };
-          }
-        } catch (e) {
+    const extractionResults = machineResults.map((machineResult, index) => {
+      try {
+        if (isTypedMachineResult(machineResult)) {
+          // Create typegen data for typed machines. This will throw if there are any errors.
           return {
             machineResult,
-            configError: isErrorWithMessage(e) ? e.message : 'Unknown error',
+            types: getTypegenData(
+              UriUtils.basename(URI.parse(textDocument.uri)),
+              index,
+              machineResult,
+            ),
           };
+        } else {
+          // for the time being we are piggy-backing on the fact that `createMachine` called in `instrospectMachine` might throw for invalid configs
+          introspectMachine(createIntrospectableMachine(machineResult) as any);
+          return { machineResult };
         }
-      },
-    );
+      } catch (e) {
+        return {
+          machineResult,
+          configError: isErrorWithMessage(e) ? e.message : 'Unknown error',
+        };
+      }
+    });
 
-    const types = machinesWithPossibleTypesAndErrors
+    const types = extractionResults
       .map((machine) => machine.types)
       .filter(isTypegenData);
 
@@ -243,7 +239,7 @@ async function handleDocumentChange(textDocument: TextDocument): Promise<void> {
 
     if (displayedMachine?.uri === textDocument.uri) {
       const { configError, machineResult } =
-        machinesWithPossibleTypesAndErrors[displayedMachine.machineIndex];
+        extractionResults[displayedMachine.machineIndex];
 
       if (configError) {
         connection.sendNotification('extractionError', {
