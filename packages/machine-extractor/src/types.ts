@@ -32,7 +32,7 @@ export interface Comment {
 }
 
 export interface FileExtractResult {
-  machines: (MachineExtractResult | undefined)[];
+  machines: MachineExtractResult[];
   file: t.File;
 }
 

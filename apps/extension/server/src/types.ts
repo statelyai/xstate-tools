@@ -3,6 +3,6 @@ import { TypegenData } from '@xstate/tools-shared';
 
 export interface CachedDocument {
   documentText: string;
-  machineResults: (MachineExtractResult | undefined)[];
+  machineResults: MachineExtractResult[];
   types: TypegenData[];
 }

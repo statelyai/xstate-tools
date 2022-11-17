@@ -36,11 +36,14 @@ import { getCursorHoverType } from './getCursorHoverType';
 import { getDiagnostics } from './getDiagnostics';
 import { getReferences } from './getReferences';
 import { CachedDocument } from './types';
-import { isErrorWithMessage } from './utils';
+import {
+  isErrorWithMessage,
+  isTypedMachineResult,
+  isTypegenData,
+} from './utils';
 
 let hasConfigurationCapability = false;
 let hasWorkspaceFolderCapability = false;
-let hasActiveError = false;
 
 const defaultSettings: GlobalSettings = {
   showVisualEditorWarnings: true,
@@ -199,32 +202,39 @@ async function handleDocumentChange(textDocument: TextDocument): Promise<void> {
       filterOutIgnoredMachines(extracted).machines,
     ]);
 
-    // Create typegen data for typed machines. This will throw if there are any errors.
-    const types = machineResults
-      .filter(
-        (machineResult): machineResult is NonNullable<typeof machineResult> =>
-          machineResult?.machineCallResult.definition?.tsTypes?.node !==
-          undefined,
-      )
-      .map((machineResult, index) => {
-        return getTypegenData(
-          UriUtils.basename(URI.parse(textDocument.uri)),
-          index,
-          machineResult,
-        );
-      });
+    // Iterate over the machine results and add possible typegen data plus config errors
+    const machinesWithPossibleTypesAndErrors = machineResults.map(
+      (machineResult, index) => {
+        try {
+          if (isTypedMachineResult(machineResult)) {
+            // Create typegen data for typed machines. This will throw if there are any errors.
+            return {
+              machineResult,
+              types: getTypegenData(
+                UriUtils.basename(URI.parse(textDocument.uri)),
+                index,
+                machineResult,
+              ),
+            };
+          } else {
+            // for the time being we are piggy-backing on the fact that `createMachine` called in `instrospectMachine` might throw for invalid configs
+            introspectMachine(
+              createIntrospectableMachine(machineResult) as any,
+            );
+            return { machineResult };
+          }
+        } catch (e) {
+          return {
+            machineResult,
+            configError: isErrorWithMessage(e) ? e.message : 'Unknown error',
+          };
+        }
+      },
+    );
 
-    // Iterate non-typed machines and throw if there are any errors.
-    machineResults
-      .filter(
-        (machineResult): machineResult is NonNullable<typeof machineResult> =>
-          machineResult?.machineCallResult.definition?.tsTypes?.node ===
-          undefined,
-      )
-      .forEach((machineResult) =>
-        // for the time being we are piggy-backing on the fact that `createMachine` called in `instrospectMachine` might throw for invalid configs
-        introspectMachine(createIntrospectableMachine(machineResult) as any),
-      );
+    const types = machinesWithPossibleTypesAndErrors
+      .map((machine) => machine.types)
+      .filter(isTypegenData);
 
     documentsCache.set(textDocument.uri, {
       documentText: text,
@@ -233,32 +243,43 @@ async function handleDocumentChange(textDocument: TextDocument): Promise<void> {
     });
 
     if (displayedMachine?.uri === textDocument.uri) {
-      const machineResult = machineResults[displayedMachine.machineIndex]!;
+      const { configError, machineResult } =
+        machinesWithPossibleTypesAndErrors[displayedMachine.machineIndex];
 
-      if (hasActiveError) {
+      if (configError) {
+        connection.sendNotification('extractionError', {
+          message: configError,
+        });
+      } else {
         // If we got this far we can safely assume that the machine config is valid and we can clear any potential errors
         connection.sendNotification('extractionError', {
           message: undefined,
         });
-        hasActiveError = false;
-      }
 
-      if (
-        !deepEqual(
-          previouslyCachedDocument!.machineResults[
+        const updatedConfig = machineResult.toConfig();
+        const previousMachineResult =
+          previouslyCachedDocument?.machineResults[
             displayedMachine.machineIndex
-          ]!.toConfig({ anonymizeInlineImplementations: true }),
-          machineResult.toConfig({ anonymizeInlineImplementations: true }),
-        )
-      ) {
-        connection.sendNotification('displayedMachineUpdated', {
-          config: machineResult.toConfig()!,
-          layoutString: machineResult.getLayoutComment()?.value,
-          implementations: getInlineImplementations(machineResult, text),
-          namedGuards: machineResult
-            .getAllConds(['named'])
-            .map((elem) => elem.name),
-        });
+          ];
+        if (
+          updatedConfig &&
+          previousMachineResult &&
+          !deepEqual(
+            previousMachineResult.toConfig({
+              anonymizeInlineImplementations: true,
+            }),
+            machineResult.toConfig({ anonymizeInlineImplementations: true }),
+          )
+        ) {
+          connection.sendNotification('displayedMachineUpdated', {
+            config: updatedConfig,
+            layoutString: machineResult.getLayoutComment()?.value,
+            implementations: getInlineImplementations(machineResult, text),
+            namedGuards: machineResult
+              .getAllConds(['named'])
+              .map((elem) => elem.name),
+          });
+        }
       }
     }
 
@@ -287,7 +308,6 @@ async function handleDocumentChange(textDocument: TextDocument): Promise<void> {
     }
   } catch (e) {
     if (displayedMachine?.uri === textDocument.uri) {
-      hasActiveError = true;
       connection.sendNotification('extractionError', {
         message: isErrorWithMessage(e) ? e.message : 'Unknown error',
       });
