@@ -141,7 +141,7 @@ const machine = createMachine(
         | WebviewClosed
         | EditMachine
         | DisplayedMachineUpdated
-        | ExtensionError,
+        | ExtractionError,
     },
     context: {
       extensionContext: null! as vscode.ExtensionContext,
@@ -405,7 +405,9 @@ const machine = createMachine(
           );
 
           onReceive(
-            (event: EditMachine | DisplayedMachineUpdated | ExtensionError) => {
+            (
+              event: EditMachine | DisplayedMachineUpdated | ExtractionError,
+            ) => {
               switch (event.type) {
                 case 'EDIT_MACHINE': {
                   uri = event.uri;

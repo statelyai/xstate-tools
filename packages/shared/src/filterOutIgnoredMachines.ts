@@ -3,7 +3,7 @@ import type {
   MachineExtractResult,
 } from '@xstate/machine-extractor';
 
-const isMachineResult = (
+export const isMachineResult = (
   machineResult: MachineExtractResult | undefined,
 ): machineResult is MachineExtractResult => machineResult !== undefined;
 
