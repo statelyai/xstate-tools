@@ -17,7 +17,6 @@ import {
   GlobalSettings,
   introspectMachine,
   isCursorInPosition,
-  isMachineResult,
   TypegenData,
 } from '@xstate/tools-shared';
 import deepEqual from 'fast-deep-equal';
@@ -200,7 +199,7 @@ async function handleDocumentChange(textDocument: TextDocument): Promise<void> {
     }
     const [settings, machineResults] = await Promise.all([
       getDocumentSettings(textDocument.uri),
-      filterOutIgnoredMachines(extracted).machines.filter(isMachineResult),
+      filterOutIgnoredMachines(extracted).machines,
     ]);
 
     const machinesWithPossibleTypesAndErrors = machineResults.map(
