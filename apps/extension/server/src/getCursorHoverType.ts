@@ -6,9 +6,10 @@ import {
 } from '@xstate/machine-extractor';
 import { isCursorInPosition } from '@xstate/tools-shared';
 import { Position } from 'vscode-languageserver-textdocument';
+import { ExtractionResult } from './types';
 
 export const getCursorHoverType = (
-  machineResults: (MachineExtractResult | undefined)[],
+  extractionResults: ExtractionResult[],
   position: Position,
 ):
   | {
@@ -61,7 +62,9 @@ export const getCursorHoverType = (
       machine: MachineExtractResult;
     }
   | void => {
-  for (const machineResult of machineResults) {
+  for (const machineResult of extractionResults.map(
+    (extractResult) => extractResult.machineResult,
+  )) {
     if (!machineResult) {
       continue;
     }

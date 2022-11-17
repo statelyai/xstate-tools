@@ -13,9 +13,9 @@ export const getReferences = (
     position: Position;
     textDocument: TextDocumentIdentifier;
   },
-  { machineResults }: CachedDocument,
+  { extractionResults }: CachedDocument,
 ): { uri: string; range: Range }[] => {
-  const cursorHover = getCursorHoverType(machineResults, position);
+  const cursorHover = getCursorHoverType(extractionResults, position);
 
   try {
     if (cursorHover?.type === 'TARGET') {

@@ -158,8 +158,8 @@ connection.onCodeLens(({ textDocument }) => {
     return [];
   }
 
-  return cachedDocument.machineResults.flatMap(
-    (machineResult, index): CodeLens[] => {
+  return cachedDocument.extractionResults.flatMap(
+    ({ machineResult }, index): CodeLens[] => {
       const callee = machineResult?.machineCallResult.callee;
       if (!callee) {
         return [];
@@ -233,8 +233,7 @@ async function handleDocumentChange(textDocument: TextDocument): Promise<void> {
 
     documentsCache.set(textDocument.uri, {
       documentText: text,
-      machineResults,
-      types,
+      extractionResults,
     });
 
     if (displayedMachine?.uri === textDocument.uri) {
@@ -245,36 +244,41 @@ async function handleDocumentChange(textDocument: TextDocument): Promise<void> {
         connection.sendNotification('extractionError', {
           message: configError,
         });
-      } else {
+        return;
+      } else if (
+        previouslyCachedDocument?.extractionResults[
+          displayedMachine.machineIndex
+        ].configError
+      ) {
         // If we got this far we can safely assume that the machine config is valid and we can clear any potential errors
         connection.sendNotification('extractionError', {
           message: undefined,
         });
+      }
 
-        const updatedConfig = machineResult.toConfig();
-        const previousMachineResult =
-          previouslyCachedDocument?.machineResults[
-            displayedMachine.machineIndex
-          ];
-        if (
-          updatedConfig &&
-          previousMachineResult &&
-          !deepEqual(
-            previousMachineResult.toConfig({
-              anonymizeInlineImplementations: true,
-            }),
-            machineResult.toConfig({ anonymizeInlineImplementations: true }),
-          )
-        ) {
-          connection.sendNotification('displayedMachineUpdated', {
-            config: updatedConfig,
-            layoutString: machineResult.getLayoutComment()?.value,
-            implementations: getInlineImplementations(machineResult, text),
-            namedGuards: machineResult
-              .getAllConds(['named'])
-              .map((elem) => elem.name),
-          });
-        }
+      const updatedConfig = machineResult.toConfig();
+      const previousMachineResult =
+        previouslyCachedDocument?.extractionResults[
+          displayedMachine.machineIndex
+        ].machineResult;
+      if (
+        updatedConfig &&
+        previousMachineResult &&
+        !deepEqual(
+          previousMachineResult.toConfig({
+            anonymizeInlineImplementations: true,
+          }),
+          machineResult.toConfig({ anonymizeInlineImplementations: true }),
+        )
+      ) {
+        connection.sendNotification('displayedMachineUpdated', {
+          config: updatedConfig,
+          layoutString: machineResult.getLayoutComment()?.value,
+          implementations: getInlineImplementations(machineResult, text),
+          namedGuards: machineResult
+            .getAllConds(['named'])
+            .map((elem) => elem.name),
+        });
       }
     }
 
@@ -290,7 +294,9 @@ async function handleDocumentChange(textDocument: TextDocument): Promise<void> {
     if (
       writableTypes.length &&
       !deepEqual(
-        previouslyCachedDocument?.types
+        previouslyCachedDocument?.extractionResults
+          .map((extractionResult) => extractionResult.types)
+          .filter(isTypegenData)
           .filter(areTypesWritable)
           .map((t) => t.data),
         writableTypes.map((t) => t.data),
@@ -334,7 +340,7 @@ connection.onCompletion(({ textDocument, position }): CompletionItem[] => {
     return [];
   }
 
-  const cursor = getCursorHoverType(cachedDocument.machineResults, position);
+  const cursor = getCursorHoverType(cachedDocument.extractionResults, position);
 
   if (cursor?.type === 'TARGET') {
     const possibleTransitions = getTransitionsFromNode(
@@ -435,7 +441,7 @@ connection.onCodeAction((params) => {
     return [];
   }
   const result = getCursorHoverType(
-    cachedDocument.machineResults,
+    cachedDocument.extractionResults,
     params.range.start,
   );
 
@@ -576,15 +582,16 @@ const getTextEditsForImplementation = (
 connection.onRequest('getMachineAtIndex', ({ uri, machineIndex }) => {
   const cachedDocument = documentsCache.get(uri);
 
-  if (!cachedDocument || !cachedDocument.machineResults.length) {
+  if (!cachedDocument || !cachedDocument.extractionResults.length) {
     throw new Error('There were no machines recognized in this document');
   }
 
-  const machineResult = cachedDocument.machineResults[machineIndex];
+  const machineResult =
+    cachedDocument.extractionResults[machineIndex].machineResult;
 
   if (!machineResult) {
     throw new Error(
-      `Machine ${machineIndex} was not found. This document has only ${cachedDocument.machineResults.length} machine(s)`,
+      `Machine ${machineIndex} was not found. This document has only ${cachedDocument.extractionResults.length} machine(s)`,
     );
   }
 
@@ -606,14 +613,14 @@ connection.onRequest('getMachineAtIndex', ({ uri, machineIndex }) => {
 connection.onRequest('getMachineAtCursorPosition', ({ uri, position }) => {
   const cachedDocument = documentsCache.get(uri);
 
-  if (!cachedDocument || !cachedDocument.machineResults.length) {
+  if (!cachedDocument || !cachedDocument.extractionResults.length) {
     throw new Error('There were no machines recognized in this document');
   }
 
   const vsCodePosition = Position.create(position.line, position.column);
 
-  const machineResultIndex = cachedDocument.machineResults.findIndex(
-    (machineResult) => {
+  const machineResultIndex = cachedDocument.extractionResults.findIndex(
+    ({ machineResult }) => {
       if (!machineResult) {
         return false;
       }
@@ -636,7 +643,8 @@ connection.onRequest('getMachineAtCursorPosition', ({ uri, position }) => {
     );
   }
 
-  const machineResult = cachedDocument.machineResults[machineResultIndex]!;
+  const machineResult =
+    cachedDocument.extractionResults[machineResultIndex].machineResult;
 
   return {
     config: machineResult.toConfig({
@@ -664,9 +672,9 @@ connection.onRequest('applyMachineEdits', ({ machineEdits }) => {
   const cachedDocument = documentsCache.get(displayedMachine.uri)!;
 
   const modified =
-    cachedDocument.machineResults[displayedMachine.machineIndex]!.modify(
-      machineEdits,
-    );
+    cachedDocument.extractionResults[
+      displayedMachine.machineIndex
+    ].machineResult.modify(machineEdits);
 
   // TODO: figure out a better solution, the extraction that happens here is kinda wasteful
   const newDocumentText =
@@ -678,12 +686,13 @@ connection.onRequest('applyMachineEdits', ({ machineEdits }) => {
 
   // this kinda also should update types, but at the moment we don't need it
   // and the whole thing will be refactored anyway
-  cachedDocument.machineResults[displayedMachine.machineIndex] =
-    getMachineExtractResult({
-      file,
-      fileContent: newDocumentText,
-      node: machineNodes[displayedMachine.machineIndex],
-    })!;
+  cachedDocument.extractionResults[
+    displayedMachine.machineIndex
+  ].machineResult = getMachineExtractResult({
+    file,
+    fileContent: newDocumentText,
+    node: machineNodes[displayedMachine.machineIndex],
+  })!;
 
   return {
     textEdits: [
@@ -705,9 +714,12 @@ connection.onRequest('getTsTypesAndEdits', ({ uri }) => {
       edits: [],
     };
   }
+  const types = cachedDocument.extractionResults
+    .map((extractionResult) => extractionResult.types)
+    .filter(isTypegenData);
   return {
-    types: cachedDocument.types,
-    edits: getTsTypesEdits(cachedDocument.types).map((edit) => ({
+    types,
+    edits: getTsTypesEdits(types).map((edit) => ({
       type: 'replace',
       uri,
       ...edit,
@@ -727,7 +739,8 @@ connection.onRequest('getNodePosition', ({ path }) => {
   }
 
   const machineResult =
-    cachedDocument.machineResults[displayedMachine.machineIndex]!;
+    cachedDocument.extractionResults[displayedMachine.machineIndex]
+      .machineResult;
 
   const node = machineResult.getStateNodeByPath(path);
 
