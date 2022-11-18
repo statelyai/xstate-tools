@@ -62,9 +62,7 @@ export const getCursorHoverType = (
       machine: MachineExtractResult;
     }
   | void => {
-  for (const machineResult of extractionResults.map(
-    (extractResult) => extractResult.machineResult,
-  )) {
+  for (const { machineResult } of extractionResults) {
     if (!machineResult) {
       continue;
     }
