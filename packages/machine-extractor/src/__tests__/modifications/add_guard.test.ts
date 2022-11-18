@@ -240,4 +240,46 @@ describe('add_guard', () => {
       }"
     `);
   });
+
+  it('should be possible to add a guard to a transition defined for an empty event', () => {
+    const modifiableMachine = getModifiableMachine(`
+      createMachine({
+        initial: 'a',
+        states: {
+          a: {
+            on: {
+              '': "b",
+            }
+          },
+          b: {},
+        }
+      })
+    `);
+
+    expect(
+      modifiableMachine.modify([
+        {
+          type: 'add_guard',
+          path: ['a'],
+          transitionPath: ['on', '', 0],
+          name: 'isItHalfEmpty',
+        },
+      ]).newText,
+    ).toMatchInlineSnapshot(`
+      "{
+        initial: 'a',
+        states: {
+          a: {
+            on: {
+              '': {
+                target: "b",
+                cond: "isItHalfEmpty"
+              },
+            }
+          },
+          b: {},
+        }
+      }"
+    `);
+  });
 });

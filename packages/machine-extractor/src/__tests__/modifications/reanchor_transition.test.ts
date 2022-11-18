@@ -1290,4 +1290,103 @@ describe('reanchor_transition', () => {
       }"
     `);
   });
+
+  it('should be possible to append invoke.onDone transition to existing invoke on another state when changing source', () => {
+    const modifiableMachine = getModifiableMachine(`
+      createMachine({
+        initial: 'a',
+        states: {
+          a: {
+            invoke: {
+              src: 'callDavid',
+              onDone: 'c'
+            },
+          },
+          b: {
+            invoke: {
+              src: 'callDavid',
+              onDone: 'd'
+            },
+          },
+          c: {},
+          d: {}
+        }
+      })
+    `);
+
+    expect(
+      modifiableMachine.modify([
+        {
+          type: 'reanchor_transition',
+          sourcePath: ['a'],
+          transitionPath: ['invoke', 0, 'onDone', 0],
+          newSourcePath: ['b'],
+        },
+      ]).newText,
+    ).toMatchInlineSnapshot(`
+      "{
+        initial: 'a',
+        states: {
+          a: {
+            invoke: {
+              src: 'callDavid'
+            },
+          },
+          b: {
+            invoke: {
+              src: 'callDavid',
+              onDone: ['d', "c"]
+            },
+          },
+          c: {},
+          d: {}
+        }
+      }"
+    `);
+  });
+
+  it('should be possible to append a transition to existing `on` for an event with an empty name when changing source', () => {
+    const modifiableMachine = getModifiableMachine(`
+      createMachine({
+        states: {
+          a: {
+            on: {
+              '': 'c'
+            }
+          },
+          b: {
+            on: {
+              '': 'd'
+            }
+          },
+          c: {},
+          d: {},
+        }
+      })
+    `);
+
+    expect(
+      modifiableMachine.modify([
+        {
+          type: 'reanchor_transition',
+          sourcePath: ['a'],
+          transitionPath: ['on', '', 0],
+          newSourcePath: ['b'],
+        },
+      ]).newText,
+    ).toMatchInlineSnapshot(`
+      "{
+        states: {
+          a: {},
+          b: {
+            on: {
+              '': ['d', "c"]
+            }
+          },
+          c: {},
+          d: {},
+        }
+      }"
+    `);
+  });
 });
