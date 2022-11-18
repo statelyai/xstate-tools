@@ -308,9 +308,17 @@ async function handleDocumentChange(textDocument: TextDocument): Promise<void> {
       });
     }
   } catch (e) {
-    if (displayedMachine?.uri === textDocument.uri) {
+    if (displayedMachine?.uri === textDocument.uri && isErrorWithMessage(e)) {
+      const previousExtractionResult =
+        previouslyCachedDocument?.extractionResults[
+          displayedMachine.machineIndex
+        ];
+
+      if (previousExtractionResult)
+        previousExtractionResult.configError = e.message;
+
       connection.sendNotification('extractionError', {
-        message: isErrorWithMessage(e) ? e.message : 'Unknown error',
+        message: e.message,
       });
     }
     connection.sendDiagnostics({ uri: textDocument.uri, diagnostics: [] });
