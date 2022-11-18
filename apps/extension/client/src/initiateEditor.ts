@@ -127,12 +127,21 @@ type DisplayedMachineUpdated = {
   implementations: ImplementationsMetadata;
 };
 
+type ExtractionError = {
+  type: 'EXTRACTION_ERROR';
+  message: string | undefined;
+};
+
 const machine = createMachine(
   {
     predictableActionArguments: true,
     tsTypes: {} as import('./initiateEditor.typegen').Typegen0,
     schema: {
-      events: {} as WebviewClosed | EditMachine | DisplayedMachineUpdated,
+      events: {} as
+        | WebviewClosed
+        | EditMachine
+        | DisplayedMachineUpdated
+        | ExtractionError,
     },
     context: {
       extensionContext: null! as vscode.ExtensionContext,
@@ -172,7 +181,7 @@ const machine = createMachine(
             entry: 'setEditedMachine',
             exit: 'clearEditedMachine',
             invoke: {
-              src: 'onDisplayedMachineUpdatedListener',
+              src: 'onServerNotificationListener',
             },
             on: {
               EDIT_MACHINE: {
@@ -183,6 +192,9 @@ const machine = createMachine(
                 actions: 'forwardToWebview',
               },
               DISPLAYED_MACHINE_UPDATED: {
+                actions: 'forwardToWebview',
+              },
+              EXTRACTION_ERROR: {
                 actions: 'forwardToWebview',
               },
             },
@@ -268,10 +280,10 @@ const machine = createMachine(
                 });
             },
           ),
-      onDisplayedMachineUpdatedListener:
+      onServerNotificationListener:
         ({ extensionContext, languageClient }) =>
-        (sendBack) =>
-          registerDisposable(
+        (sendBack) => {
+          const machineUpdatedDisposable = registerDisposable(
             extensionContext,
             languageClient.onNotification(
               'displayedMachineUpdated',
@@ -284,7 +296,23 @@ const machine = createMachine(
                 });
               },
             ),
-          ),
+          );
+
+          const extractionErrorDisposable = registerDisposable(
+            extensionContext,
+            languageClient.onNotification('extractionError', ({ message }) => {
+              sendBack({
+                type: 'EXTRACTION_ERROR',
+                message,
+              });
+            }),
+          );
+
+          return () => {
+            machineUpdatedDisposable();
+            extractionErrorDisposable();
+          };
+        },
       webviewActor:
         (
           { extensionContext, languageClient },
@@ -376,31 +404,42 @@ const machine = createMachine(
             }),
           );
 
-          onReceive((event: EditMachine | DisplayedMachineUpdated) => {
-            switch (event.type) {
-              case 'EDIT_MACHINE': {
-                uri = event.uri;
+          onReceive(
+            (
+              event: EditMachine | DisplayedMachineUpdated | ExtractionError,
+            ) => {
+              switch (event.type) {
+                case 'EDIT_MACHINE': {
+                  uri = event.uri;
 
-                webviewPanel.reveal(vscode.ViewColumn.Beside);
-                webviewPanel.webview.postMessage({
-                  type: 'UPDATE_CONFIG',
-                  config: event.config,
-                  layoutString: event.layoutString,
-                  implementations: event.implementations,
-                });
-                return;
+                  webviewPanel.reveal(vscode.ViewColumn.Beside);
+                  webviewPanel.webview.postMessage({
+                    type: 'UPDATE_CONFIG',
+                    config: event.config,
+                    layoutString: event.layoutString,
+                    implementations: event.implementations,
+                  });
+                  return;
+                }
+                case 'DISPLAYED_MACHINE_UPDATED': {
+                  webviewPanel.webview.postMessage({
+                    type: 'UPDATE_CONFIG',
+                    config: event.config,
+                    layoutString: event.layoutString,
+                    implementations: event.implementations,
+                  });
+                  return;
+                }
+                case 'EXTRACTION_ERROR': {
+                  webviewPanel.webview.postMessage({
+                    type: 'DISPLAY_ERROR',
+                    error: event.message,
+                  });
+                  return;
+                }
               }
-              case 'DISPLAYED_MACHINE_UPDATED': {
-                webviewPanel.webview.postMessage({
-                  type: 'UPDATE_CONFIG',
-                  config: event.config,
-                  layoutString: event.layoutString,
-                  implementations: event.implementations,
-                });
-                return;
-              }
-            }
-          });
+            },
+          );
 
           (async () => {
             const html = await getWebviewHtml(extensionContext, webviewPanel, {

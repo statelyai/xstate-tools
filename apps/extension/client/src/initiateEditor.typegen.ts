@@ -18,7 +18,7 @@ export interface Typegen0 {
     clearEditedMachine: 'xstate.stop';
   };
   eventsCausingServices: {
-    onDisplayedMachineUpdatedListener: 'EDIT_MACHINE';
+    onServerNotificationListener: 'EDIT_MACHINE';
     registerEditAtCursorPositionCommand: 'xstate.init';
     registerEditOnCodeLensClickCommand: 'xstate.init';
     webviewActor: 'EDIT_MACHINE';

@@ -31,8 +31,10 @@ export interface Comment {
   type: 'xstate-ignore-next-line' | 'xstate-layout';
 }
 
-export interface FileExtractResult {
-  machines: (MachineExtractResult | undefined)[];
+export interface FileExtractResult<
+  T extends MachineExtractResult | undefined = MachineExtractResult | undefined,
+> {
+  machines: T[];
   file: t.File;
 }
 
