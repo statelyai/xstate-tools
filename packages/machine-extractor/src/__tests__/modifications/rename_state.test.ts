@@ -1042,4 +1042,172 @@ describe('rename_state', () => {
       }"
     `);
   });
+
+  it(`should successfully rename a targeted state to an empty key`, () => {
+    const modifiableMachine = getModifiableMachine(`
+      createMachine({
+        initial: 'foo',
+        states: {
+          foo: {
+            on: {
+              NEXT: { target: 'bar' },
+            }
+          },
+          bar: {},
+        },
+      })
+	  `);
+
+    expect(
+      modifiableMachine.modify([
+        {
+          type: 'rename_state',
+          path: ['bar'],
+          name: '',
+        },
+      ]).newText,
+    ).toMatchInlineSnapshot(`
+      "{
+        initial: 'foo',
+        states: {
+          foo: {
+            on: {
+              NEXT: { target: "#(machine)." },
+            }
+          },
+          "": {},
+        },
+      }"
+    `);
+  });
+
+  it(`should successfully rename a targeted state with an empty key`, () => {
+    const modifiableMachine = getModifiableMachine(`
+      createMachine({
+        initial: 'foo',
+        states: {
+          foo: {
+            on: {
+              NEXT: { target: '' },
+            }
+          },
+          '': {},
+        },
+      })
+	  `);
+
+    expect(
+      modifiableMachine.modify([
+        {
+          type: 'rename_state',
+          path: [''],
+          name: 'bar',
+        },
+      ]).newText,
+    ).toMatchInlineSnapshot(`
+      "{
+        initial: 'foo',
+        states: {
+          foo: {
+            on: {
+              NEXT: { target: "bar" },
+            }
+          },
+          bar: {},
+        },
+      }"
+    `);
+  });
+
+  it(`should successfully rename a state with a targeted child to an empty key`, () => {
+    const modifiableMachine = getModifiableMachine(`
+      createMachine({
+        initial: 'foo',
+        states: {
+          foo: {
+            on: {
+              NEXT: { target: 'bar.child' },
+            }
+          },
+          bar: {
+            states: {
+              child: {}
+            }
+          },
+        },
+      })
+	  `);
+
+    expect(
+      modifiableMachine.modify([
+        {
+          type: 'rename_state',
+          path: ['bar'],
+          name: '',
+        },
+      ]).newText,
+    ).toMatchInlineSnapshot(`
+      "{
+        initial: 'foo',
+        states: {
+          foo: {
+            on: {
+              NEXT: { target: "#(machine)..child" },
+            }
+          },
+          "": {
+            states: {
+              child: {}
+            }
+          },
+        },
+      }"
+    `);
+  });
+
+  it(`should successfully rename a targeted state within a state with an empty key`, () => {
+    const modifiableMachine = getModifiableMachine(`
+      createMachine({
+        initial: 'foo',
+        states: {
+          foo: {
+            on: {
+              NEXT: { target: "#(machine)..child" },
+            }
+          },
+          "": {
+            states: {
+              child: {}
+            }
+          },
+        },
+      })
+	  `);
+
+    expect(
+      modifiableMachine.modify([
+        {
+          type: 'rename_state',
+          path: [''],
+          name: 'bar',
+        },
+      ]).newText,
+    ).toMatchInlineSnapshot(`
+      "{
+        initial: 'foo',
+        states: {
+          foo: {
+            on: {
+              NEXT: { target: "#(machine).bar.child" },
+            }
+          },
+          bar: {
+            states: {
+              child: {}
+            }
+          },
+        },
+      }"
+    `);
+  });
 });

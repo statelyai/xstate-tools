@@ -905,6 +905,24 @@ export class MachineExtractResult {
                 const segmentedValue = t.value.split('.');
                 const affectedSegment = edit.path.length - fromPath.length;
                 segmentedValue[affectedSegment] = edit.name;
+
+                // this transition targets a state within the renamed sibling
+                // we can't just update the segment to the empty string as that would result in targeting own descendant
+                if (edit.name === '') {
+                  updateTargetAtObjectPath(
+                    recastDefinitionNode,
+                    [
+                      ...fromPath.flatMap((p) => ['states', p]),
+                      ...transitionPath,
+                    ],
+                    getBestTargetDescriptor(recastDefinitionNode, {
+                      sourcePath: fromPath,
+                      targetPath: segmentedValue,
+                    })!,
+                  );
+                  return;
+                }
+
                 const newValue = segmentedValue.join('.');
 
                 updateTargetAtObjectPath(
@@ -1192,6 +1210,8 @@ export class MachineExtractResult {
           // TODO: this doesn't handle multiple targets but Studio doesnt either
           const oldTargetPath = oldTransition?.targetPath[0];
 
+          let transitionPath = edit.transitionPath;
+
           if (edit.newSourcePath) {
             const removed = removeTransitionAtPath(
               sourceObj,
@@ -1203,17 +1223,15 @@ export class MachineExtractResult {
               edit.newSourcePath,
             );
 
-            insertAtTransitionPath(
-              sourceObj,
-              [
-                ...edit.transitionPath.slice(0, -1),
-                getIndexForTransitionPathAppendant(
-                  sourceObj,
-                  edit.transitionPath,
-                ),
-              ] as TransitionPath,
-              removed,
-            );
+            transitionPath = [
+              ...edit.transitionPath.slice(0, -1),
+              getIndexForTransitionPathAppendant(
+                sourceObj,
+                edit.transitionPath,
+              ),
+            ] as TransitionPath;
+
+            insertAtTransitionPath(sourceObj, transitionPath, removed);
           }
 
           const newTargetPath =
@@ -1222,10 +1240,10 @@ export class MachineExtractResult {
 
           const transitionProp = getPropByPath(
             sourceObj,
-            edit.transitionPath.slice(0, -1),
+            transitionPath.slice(0, -1),
           )!;
 
-          const index = last(edit.transitionPath);
+          const index = last(transitionPath);
 
           const target = getBestTargetDescriptor(recastDefinitionNode, {
             sourcePath: newSourcePath,
@@ -1687,7 +1705,7 @@ function insertAtTransitionPath(
   let segment: typeof path[number] | undefined;
   let current: RecastNode = ast;
 
-  while ((segment = pathCopy.shift())) {
+  while ((segment = pathCopy.shift()) !== undefined) {
     const prop =
       typeof segment === 'string'
         ? findObjectProperty(current as RecastObjectExpression, segment)
@@ -1742,7 +1760,7 @@ function getTransitionObject(
   let segment: typeof path[number] | undefined;
   let current: RecastNode = obj;
 
-  while ((segment = pathCopy.shift())) {
+  while ((segment = pathCopy.shift()) !== undefined) {
     const prop =
       typeof segment === 'string'
         ? findObjectProperty(current as RecastObjectExpression, segment)!
@@ -2201,6 +2219,9 @@ function getBestTargetDescriptor(
   }
 
   if (
+    // this transition targets a state within the renamed sibling
+    // we can't just update the segment to the empty string as that would result in targeting own descendant
+    targetPath[0] !== '' &&
     arePathsEqual(
       sourcePath.slice(0, -1),
       targetPath.slice(0, sourcePath.length - 1),
@@ -2220,7 +2241,7 @@ function getBestTargetDescriptor(
   let current = root;
   let segment: string | undefined;
 
-  while ((segment = targetPathCopy.shift())) {
+  while ((segment = targetPathCopy.shift()) !== undefined) {
     current = getStateObjectByPath(current, [segment]);
     const id = getIdValue(current);
 
@@ -2413,7 +2434,7 @@ function getIndexForTransitionPathAppendant(
   let segment: typeof path[number] | undefined;
   let current: RecastNode = ast;
 
-  while ((segment = pathCopy.shift())) {
+  while ((segment = pathCopy.shift()) !== undefined) {
     const prop =
       typeof segment === 'string'
         ? findObjectProperty(current as RecastObjectExpression, segment)

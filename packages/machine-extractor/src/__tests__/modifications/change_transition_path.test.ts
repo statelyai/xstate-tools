@@ -381,4 +381,43 @@ describe('change_transition_path', () => {
       }"
     `);
   });
+
+  it('should keep the transition when renaming the event to an empty string', () => {
+    const modifiableMachine = getModifiableMachine(`
+      createMachine({
+        initial: 'a',
+        states: {
+          a: {
+            on: {
+              NEXT: "b",
+            }
+          },
+          b: {},
+        }
+      })
+    `);
+
+    expect(
+      modifiableMachine.modify([
+        {
+          type: 'change_transition_path',
+          sourcePath: ['a'],
+          transitionPath: ['on', 'NEXT', 0],
+          newTransitionPath: ['on', '', 0],
+        },
+      ]).newText,
+    ).toMatchInlineSnapshot(`
+      "{
+        initial: 'a',
+        states: {
+          a: {
+            on: {
+              "": "b"
+            }
+          },
+          b: {},
+        }
+      }"
+    `);
+  });
 });
