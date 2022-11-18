@@ -2,4 +2,4 @@
 'stately-vscode': patch
 ---
 
-Show parsing errors in the visual editor.
+Show source parsing errors and invalid config errors (that prevent the visualization) in the visual editor.
