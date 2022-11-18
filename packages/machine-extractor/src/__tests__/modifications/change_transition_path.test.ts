@@ -339,4 +339,46 @@ describe('change_transition_path', () => {
       }"
     `);
   });
+
+  it('should be able to move transition out of an array group to a new event', () => {
+    const modifiableMachine = getModifiableMachine(`
+      createMachine({
+        initial: 'a',
+        states: {
+          a: {
+            on: {
+              NEXT: ['b', 'c'],
+            }
+          },
+          b: {},
+          c: {},
+        }
+      })
+    `);
+
+    expect(
+      modifiableMachine.modify([
+        {
+          type: 'change_transition_path',
+          sourcePath: ['a'],
+          transitionPath: ['on', 'NEXT', 0],
+          newTransitionPath: ['on', 'OTHER', 0],
+        },
+      ]).newText,
+    ).toMatchInlineSnapshot(`
+      "{
+        initial: 'a',
+        states: {
+          a: {
+            on: {
+              NEXT: 'c',
+              OTHER: 'b'
+            }
+          },
+          b: {},
+          c: {},
+        }
+      }"
+    `);
+  });
 });

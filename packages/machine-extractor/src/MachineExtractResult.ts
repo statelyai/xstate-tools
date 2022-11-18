@@ -1110,7 +1110,15 @@ export class MachineExtractResult {
           break;
         }
         case 'set_state_id': {
-          // TODO: implement this, it's not used by the Studio right now though
+          const stateObj = getStateObjectByPath(
+            recastDefinitionNode,
+            edit.path,
+          );
+          if (typeof edit.id === 'string') {
+            setProperty(stateObj, 'id', b.stringLiteral(edit.id));
+          } else {
+            removeProperty(stateObj, 'id');
+          }
           break;
         }
         case 'set_state_type': {
@@ -2254,7 +2262,7 @@ function removeTransitionAtPath(
   // we are at the moment at the segment before it
   if (propPath.length === 2) {
     if (n.ArrayExpression.check(unwrapped)) {
-      const removed = unwrapped.elements.splice(propPath[1], 1);
+      const [removed] = unwrapped.elements.splice(propPath[1], 1);
       switch (unwrapped.elements.length) {
         case 0: {
           removeProperty(obj, propPath[0]);
