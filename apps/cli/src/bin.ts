@@ -24,7 +24,7 @@ const handleError = (uri: string, e: any) => {
   }
 };
 
-const writeToFiles = async (uriArray: string[]) => {
+const writeToFiles = async (uriArray: string[], silent = false) => {
   /**
    * TODO - implement pretty readout
    */
@@ -74,7 +74,9 @@ const writeToFiles = async (uriArray: string[]) => {
           filePath: uri,
           event,
         });
-        console.log(`${uri} - success`);
+        if(!silent){
+          console.log(`${uri} - success`);
+        }
       } catch (e) {
         handleError(uri, e);
       }
@@ -87,14 +89,15 @@ program
   .description("Generate TypeScript types from XState machines")
   .argument("<files>", "The files to target, expressed as a glob pattern")
   .option("-w, --watch", "Run the typegen in watch mode")
-  .action(async (filesPattern: string, opts: { watch?: boolean }) => {
+  .option("-s, --silent", "Run the typegen in silent mode")
+  .action(async (filesPattern: string, opts: { watch?: boolean; silent?: boolean }) => {
     if (opts.watch) {
       // TODO: implement per path queuing to avoid tasks related to the same file from overlapping their execution
       const processFile = (path: string) => {
         if (path.endsWith(".typegen.ts")) {
           return;
         }
-        writeToFiles([path]);
+        writeToFiles([path], opts.silent);
       };
       // TODO: handle removals
       watch(filesPattern, { awaitWriteFinish: true })
@@ -108,7 +111,7 @@ program
           if (path.endsWith(".typegen.ts")) {
             return;
           }
-          tasks.push(writeToFiles([path]));
+          tasks.push(writeToFiles([path], opts.silent));
         })
         .on("ready", async () => {
           await Promise.all(tasks);
