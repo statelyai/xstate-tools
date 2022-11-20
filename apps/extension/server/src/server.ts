@@ -248,7 +248,8 @@ async function handleDocumentChange(textDocument: TextDocument): Promise<void> {
       } else if (
         previouslyCachedDocument?.extractionResults[
           displayedMachine.machineIndex
-        ].configError
+        ].configError ||
+        previouslyCachedDocument?.syntaxError
       ) {
         // If we got this far we can safely assume that the machine config is valid and we can clear any potential errors
         connection.sendNotification('extractionError', {
@@ -309,13 +310,8 @@ async function handleDocumentChange(textDocument: TextDocument): Promise<void> {
     }
   } catch (e) {
     if (displayedMachine?.uri === textDocument.uri && isErrorWithMessage(e)) {
-      const previousExtractionResult =
-        previouslyCachedDocument?.extractionResults[
-          displayedMachine.machineIndex
-        ];
-
-      if (previousExtractionResult)
-        previousExtractionResult.configError = e.message;
+      if (previouslyCachedDocument)
+        previouslyCachedDocument.syntaxError = e.message;
 
       connection.sendNotification('extractionError', {
         message: e.message,
