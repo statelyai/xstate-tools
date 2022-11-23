@@ -27,6 +27,7 @@ type OpenLinkEvent = {
 type MachineChangedEvent = {
   type: 'MACHINE_CHANGED';
   edits: MachineEdit[];
+  reason?: 'undo' | 'redo';
 };
 
 type LayoutUpdatedEvent = {
@@ -332,17 +333,19 @@ const machine = createMachine(
                 event.type === 'LAYOUT_UPDATED'
               ) {
                 languageClient
-                  .sendRequest('applyMachineEdits', {
-                    machineEdits:
-                      event.type === 'LAYOUT_UPDATED'
-                        ? [
+                  .sendRequest(
+                    'applyMachineEdits',
+                    event.type === 'LAYOUT_UPDATED'
+                      ? {
+                          machineEdits: [
                             {
                               type: 'update_layout_string',
                               layoutString: event.layoutString,
                             },
-                          ]
-                        : event.edits,
-                  })
+                          ],
+                        }
+                      : { machineEdits: event.edits, reason: event.reason },
+                  )
                   .then(({ textEdits }) => {
                     const workspaceEdit = new vscode.WorkspaceEdit();
                     for (const textEdit of textEdits) {
