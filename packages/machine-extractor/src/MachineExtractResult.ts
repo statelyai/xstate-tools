@@ -35,6 +35,15 @@ type RecastProperty = ReturnType<typeof b.property>;
 type RecastObjectMethod = ReturnType<typeof b.objectMethod>;
 type RecastNode = InstanceType<typeof recast.types.NodePath>['node'];
 
+type DeletedEntity =
+  | { type: 'state'; statePath: string[]; state: RecastObjectExpression }
+  | {
+      type: 'transition';
+      sourcePath: string[];
+      transitionPath: TransitionPath;
+      transition: RecastNode;
+    };
+
 type TransitionPath =
   | [type: 'always', transitionIndex: number]
   | [type: 'after', delay: string | number, transitionIndex: number]
@@ -741,6 +750,8 @@ export class MachineExtractResult {
       this.machineCallResult.definition!.node,
     );
 
+    const deleted: Array<DeletedEntity> = [];
+
     for (const edit of edits) {
       switch (edit.type) {
         case 'add_state': {
@@ -765,7 +776,13 @@ export class MachineExtractResult {
           break;
         }
         case 'remove_state': {
-          removeState(recastDefinitionNode, edit.path);
+          const removed = removeState(recastDefinitionNode, edit.path);
+
+          deleted.push({
+            type: 'state',
+            statePath: edit.path,
+            state: removed,
+          });
 
           this.getTransitionTargets().forEach(
             ({ target, targetPath, fromPath, transitionPath }) => {
@@ -1185,15 +1202,23 @@ export class MachineExtractResult {
                 : null),
             },
           );
-          //
           insertAtTransitionPath(stateObj, edit.transitionPath, transition);
           break;
         }
         case 'remove_transition': {
-          removeTransitionAtPath(
+          const removed = removeTransitionAtPath(
             getStateObjectByPath(recastDefinitionNode, edit.sourcePath),
             edit.transitionPath,
           );
+          if (!removed) {
+            break;
+          }
+          deleted.push({
+            type: 'transition',
+            sourcePath: edit.sourcePath,
+            transitionPath: edit.transitionPath,
+            transition: removed,
+          });
           break;
         }
         case 'reanchor_transition': {
@@ -1217,6 +1242,16 @@ export class MachineExtractResult {
               sourceObj,
               edit.transitionPath,
             );
+
+            if (!removed) {
+              throw new Error(
+                `Reanchoring requires the transitionPath ([${transitionPath.join(
+                  ', ',
+                )}]) to exist on the source state ([${edit.sourcePath.join(
+                  ', ',
+                )}])`,
+              );
+            }
 
             sourceObj = getStateObjectByPath(
               recastDefinitionNode,
@@ -1287,6 +1322,15 @@ export class MachineExtractResult {
             sourceObj,
             edit.transitionPath,
           );
+          if (!removed) {
+            throw new Error(
+              `Changing transition path requires the transitionPath ([${edit.transitionPath.join(
+                ', ',
+              )}]) to exist on the source state ([${edit.sourcePath.join(
+                ', ',
+              )}])`,
+            );
+          }
           insertAtTransitionPath(sourceObj, edit.newTransitionPath, removed);
           break;
         }
@@ -1440,6 +1484,95 @@ export class MachineExtractResult {
           updateTransitionAtPathWith(state, edit.transitionPath, transition);
           break;
         }
+      }
+    }
+
+    const oldRange = [
+      {
+        line: this.machineCallResult.definition!.node.loc!.start.line - 1,
+        column: this.machineCallResult.definition!.node.loc!.start.column,
+        index: this.machineCallResult.definition!.node.start!,
+      },
+      {
+        line: this.machineCallResult.definition!.node.loc!.end.line - 1,
+        column: this.machineCallResult.definition!.node.loc!.end.column,
+        index: this.machineCallResult.definition!.node.end!,
+      },
+    ] as const;
+
+    const reprinted = recast.print(ast).code;
+
+    // find the matching machine node in the new text of the whole file
+    // it's wasteful to parse the whole new file here
+    // it's the best way we have right now to keep the formatting intact as much as possible though
+    const machineNode = getMachineNodesFromFile(reprinted).machineNodes.find(
+      (machineNode) =>
+        machineNode.loc!.start.line ===
+          this.machineCallResult.node.loc!.start.line &&
+        machineNode.loc!.start.column ===
+          this.machineCallResult.node.loc!.start.column,
+    )!;
+
+    return {
+      range: oldRange,
+      newText: reprinted.slice(
+        machineNode.arguments[0].start!,
+        machineNode.arguments[0].end!,
+      ),
+      deleted: deleted.length ? deleted : undefined,
+    };
+  }
+
+  restore({ deleted }: { deleted: DeletedEntity[] }) {
+    // TODO deduplicate pre and post loop stuff
+
+    // this ain't ideal because Recast mutates the input AST
+    // so there is a risk that modifying multiple machines in a single file would lead to problems
+    // however, we never modify multiple machines based on the same file content so this is somewhat safe
+    // each modification updates the AST, that is printed and the file is re-parsed, so the next modification sees the next AST
+    const ast: RecastFile = recast.parse(this._fileContent, {
+      parser: {
+        // this is a slight hack to defer the work done by `recast.parse`
+        // we don't need to re-parse the file though, as we already have the AST
+        parse: () => this._fileAst,
+      },
+    });
+
+    const recastDefinitionNode = findRecastDefinitionNode(
+      ast,
+      this.machineCallResult.definition!.node,
+    );
+
+    for (const entity of [...deleted].reverse()) {
+      if (entity.type === 'state') {
+        const stateObj = getStateObjectByPath(
+          recastDefinitionNode,
+          entity.statePath.slice(0, -1),
+        );
+        const statesProp = findObjectProperty(stateObj, 'states');
+        if (statesProp) {
+          const unwrapped = unwrapSimplePropValue(statesProp);
+          n.ObjectExpression.assert(unwrapped);
+          setProperty(unwrapped, last(entity.statePath), entity.state);
+        } else {
+          setProperty(
+            stateObj,
+            'states',
+            toObjectExpression({
+              [last(entity.statePath)]: entity.state,
+            }),
+          );
+        }
+      } else {
+        const sourceObj = getStateObjectByPath(
+          recastDefinitionNode,
+          entity.sourcePath,
+        );
+        insertAtTransitionPath(
+          sourceObj,
+          entity.transitionPath,
+          entity.transition,
+        );
       }
     }
 
@@ -2171,20 +2304,21 @@ function toObjectExpression(
       if (Array.isArray(value)) {
         throw new Error('Converting arrays is not implemented');
       }
-      const valueNode =
-        typeof value === 'string'
-          ? b.stringLiteral(value)
-          : typeof value === 'boolean'
-          ? b.booleanLiteral(value)
-          : typeof value === 'number'
-          ? b.numericLiteral(value)
-          : typeof value === 'undefined'
-          ? b.identifier('undefined')
-          : value === null
-          ? b.nullLiteral()
-          : typeof value === 'object'
-          ? toObjectExpression(value as Record<string | number, unknown>)
-          : null;
+      const valueNode = n.Node.check(value)
+        ? (value as any)
+        : typeof value === 'string'
+        ? b.stringLiteral(value)
+        : typeof value === 'boolean'
+        ? b.booleanLiteral(value)
+        : typeof value === 'number'
+        ? b.numericLiteral(value)
+        : typeof value === 'undefined'
+        ? b.identifier('undefined')
+        : value === null
+        ? b.nullLiteral()
+        : typeof value === 'object'
+        ? toObjectExpression(value as Record<string | number, unknown>)
+        : null;
       if (!valueNode) {
         throw new Error(
           'Converting this type of a value to a node has not been implemented',
@@ -2259,7 +2393,7 @@ function getBestTargetDescriptor(
 function removeTransitionAtPath(
   obj: RecastObjectExpression,
   propPath: (string | number)[],
-): RecastNode {
+): RecastNode | undefined {
   if (typeof propPath[0] !== 'string') {
     throw new Error(
       '`removeTransitionAtPath` expected the first segmented of the path to be a string. Unwrapping arrays happens inside it',
@@ -2267,6 +2401,9 @@ function removeTransitionAtPath(
   }
 
   const index = findObjectPropertyIndex(obj, propPath[0]);
+  if (index === -1) {
+    return;
+  }
   const prop = obj.properties[index];
   const unwrapped = unwrapSimplePropValue(prop);
 

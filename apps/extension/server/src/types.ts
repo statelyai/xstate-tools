@@ -10,4 +10,5 @@ export interface ExtractionResult {
 export interface CachedDocument {
   documentText: string;
   extractionResults: ExtractionResult[];
+  undoStack: Array<{ deleted: any[] } | undefined>;
 }
