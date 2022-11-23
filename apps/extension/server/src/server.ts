@@ -126,11 +126,9 @@ function getDocumentSettings(resource: string): Thenable<GlobalSettings> {
   return configurationPromise;
 }
 
-connection.documents.onDidClose(({ document }) => {
-  documentsCache.delete(document.uri);
-  documentSettings.delete(document.uri);
-});
-
+// TODO: rethink if the cached document can ever be reliably cleared
+// we can't clear this in `connection.documents.onDidClose`
+// because a machine from the closed document might be displayed
 const documentsCache: Map<string, CachedDocument> = new Map();
 
 connection.onReferences((params) => {
