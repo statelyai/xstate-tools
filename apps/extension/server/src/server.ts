@@ -126,11 +126,9 @@ function getDocumentSettings(resource: string): Thenable<GlobalSettings> {
   return configurationPromise;
 }
 
-connection.documents.onDidClose(({ document }) => {
-  documentsCache.delete(document.uri);
-  documentSettings.delete(document.uri);
-});
-
+// TODO: rethink if the cached document can ever be reliably cleared
+// we can't clear this in `connection.documents.onDidClose`
+// because a machine from the closed document might be displayed
 const documentsCache: Map<string, CachedDocument> = new Map();
 
 connection.onReferences((params) => {
@@ -234,6 +232,7 @@ async function handleDocumentChange(textDocument: TextDocument): Promise<void> {
     documentsCache.set(textDocument.uri, {
       documentText: text,
       extractionResults,
+      undoStack: previouslyCachedDocument?.undoStack ?? [],
     });
 
     if (displayedMachine?.uri === textDocument.uri) {
@@ -670,7 +669,7 @@ connection.onRequest('getMachineAtCursorPosition', ({ uri, position }) => {
   };
 });
 
-connection.onRequest('applyMachineEdits', ({ machineEdits }) => {
+connection.onRequest('applyMachineEdits', ({ machineEdits, reason }) => {
   if (!displayedMachine) {
     throw new Error(
       '`applyMachineEdits` can only be requested when there is a displayed machine',
@@ -679,11 +678,31 @@ connection.onRequest('applyMachineEdits', ({ machineEdits }) => {
 
   const cachedDocument = documentsCache.get(displayedMachine.uri)!;
 
-  const modified =
-    cachedDocument.extractionResults[
-      displayedMachine.machineIndex
-    ].machineResult.modify(machineEdits);
+  let modified;
 
+  if (reason === 'undo') {
+    const item = cachedDocument.undoStack.pop();
+    if (item) {
+      modified =
+        cachedDocument.extractionResults[
+          displayedMachine.machineIndex
+        ].machineResult.restore(item);
+    } else {
+      modified =
+        cachedDocument.extractionResults[
+          displayedMachine.machineIndex
+        ].machineResult.modify(machineEdits);
+    }
+  } else {
+    modified =
+      cachedDocument.extractionResults[
+        displayedMachine.machineIndex
+      ].machineResult.modify(machineEdits);
+
+    cachedDocument.undoStack.push(
+      modified.deleted ? { deleted: modified.deleted } : undefined,
+    );
+  }
   // TODO: figure out a better solution, the extraction that happens here is kinda wasteful
   const newDocumentText =
     cachedDocument.documentText.slice(0, modified.range[0].index) +

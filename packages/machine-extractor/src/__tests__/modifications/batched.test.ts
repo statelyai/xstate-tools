@@ -44,4 +44,80 @@ describe('batched edits', () => {
       }"
     `);
   });
+
+  it('should be possible to remove a transition targeting a state that is being removed as well', () => {
+    const modifiableMachine = getModifiableMachine(`
+      createMachine({
+        initial: 'idle',
+        states: {
+          idle: {
+            on: {
+              NEXT: 'active',
+            }
+          },
+          active: {}
+        }
+      })
+    `);
+
+    expect(
+      modifiableMachine.modify([
+        {
+          type: 'remove_transition',
+          sourcePath: ['idle'],
+          transitionPath: ['on', 'NEXT', 0],
+        },
+
+        {
+          type: 'remove_state',
+          path: ['active'],
+        },
+      ]).newText,
+    ).toMatchInlineSnapshot(`
+      "{
+        initial: 'idle',
+        states: {
+          idle: {}
+        }
+      }"
+    `);
+  });
+
+  it('should be possible to remove a transition with a source that is being removed as well', () => {
+    const modifiableMachine = getModifiableMachine(`
+      createMachine({
+        initial: 'idle',
+        states: {
+          idle: {
+            on: {
+              NEXT: 'active',
+            }
+          },
+          active: {}
+        }
+      })
+    `);
+
+    expect(
+      modifiableMachine.modify([
+        {
+          type: 'remove_transition',
+          sourcePath: ['idle'],
+          transitionPath: ['on', 'NEXT', 0],
+        },
+
+        {
+          type: 'remove_state',
+          path: ['idle'],
+        },
+      ]).newText,
+    ).toMatchInlineSnapshot(`
+      "{
+        initial: 'idle',
+        states: {
+          active: {}
+        }
+      }"
+    `);
+  });
 });
