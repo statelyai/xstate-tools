@@ -310,8 +310,9 @@ async function handleDocumentChange(textDocument: TextDocument): Promise<void> {
     }
   } catch (e) {
     if (displayedMachine?.uri === textDocument.uri && isErrorWithMessage(e)) {
-      if (previouslyCachedDocument)
+      if (previouslyCachedDocument) {
         previouslyCachedDocument.syntaxError = e.message;
+      }
 
       connection.sendNotification('extractionError', {
         message: e.message,
