@@ -309,15 +309,18 @@ async function handleDocumentChange(textDocument: TextDocument): Promise<void> {
       });
     }
   } catch (e) {
-    if (displayedMachine?.uri === textDocument.uri && isErrorWithMessage(e)) {
-      if (previouslyCachedDocument) {
-        previouslyCachedDocument.syntaxError = e.message;
-      }
+    const message = isErrorWithMessage(e) ? e.message : 'Unknown error';
 
+    if (previouslyCachedDocument) {
+      previouslyCachedDocument.syntaxError = message;
+    }
+
+    if (displayedMachine?.uri === textDocument.uri) {
       connection.sendNotification('extractionError', {
-        message: e.message,
+        message,
       });
     }
+
     connection.sendDiagnostics({ uri: textDocument.uri, diagnostics: [] });
   }
 }
