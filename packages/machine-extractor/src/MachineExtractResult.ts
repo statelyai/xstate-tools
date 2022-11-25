@@ -99,6 +99,7 @@ export type MachineEdit =
       newSourcePath?: string[] | undefined;
       newTargetPath?: string[] | undefined;
       transitionPath: TransitionPath;
+      newTransitionPath?: TransitionPath;
     }
   | {
       type: 'change_transition_path';
@@ -1235,7 +1236,7 @@ export class MachineExtractResult {
           // TODO: this doesn't handle multiple targets but Studio doesnt either
           const oldTargetPath = oldTransition?.targetPath[0];
 
-          let transitionPath = edit.transitionPath;
+          let newTransitionPath = edit.newTransitionPath || edit.transitionPath;
 
           if (edit.newSourcePath) {
             const removed = removeTransitionAtPath(
@@ -1245,7 +1246,7 @@ export class MachineExtractResult {
 
             if (!removed) {
               throw new Error(
-                `Reanchoring requires the transitionPath ([${transitionPath.join(
+                `Reanchoring requires the transitionPath ([${edit.transitionPath.join(
                   ', ',
                 )}]) to exist on the source state ([${edit.sourcePath.join(
                   ', ',
@@ -1258,15 +1259,17 @@ export class MachineExtractResult {
               edit.newSourcePath,
             );
 
-            transitionPath = [
-              ...edit.transitionPath.slice(0, -1),
-              getIndexForTransitionPathAppendant(
-                sourceObj,
-                edit.transitionPath,
-              ),
-            ] as TransitionPath;
+            newTransitionPath =
+              edit.newTransitionPath ||
+              ([
+                ...edit.transitionPath.slice(0, -1),
+                getIndexForTransitionPathAppendant(
+                  sourceObj,
+                  edit.transitionPath,
+                ),
+              ] as TransitionPath);
 
-            insertAtTransitionPath(sourceObj, transitionPath, removed);
+            insertAtTransitionPath(sourceObj, newTransitionPath, removed);
           }
 
           const newTargetPath =
@@ -1275,10 +1278,10 @@ export class MachineExtractResult {
 
           const transitionProp = getPropByPath(
             sourceObj,
-            transitionPath.slice(0, -1),
+            newTransitionPath.slice(0, -1),
           )!;
 
-          const index = last(transitionPath);
+          const index = last(newTransitionPath);
 
           const target = getBestTargetDescriptor(recastDefinitionNode, {
             sourcePath: newSourcePath,
