@@ -1389,4 +1389,144 @@ describe('reanchor_transition', () => {
       }"
     `);
   });
+
+  it('should be possible to insert a transition at the desired transition path within a target group', () => {
+    const modifiableMachine = getModifiableMachine(`
+      createMachine({
+        states: {
+          a: {
+            on: {
+              NEXT: 'c'
+            }
+          },
+          b: {
+            on: {
+              NEXT: ['d', 'e']
+            }
+          },
+          c: {},
+          d: {},
+          e: {},
+        }
+      })
+    `);
+
+    expect(
+      modifiableMachine.modify([
+        {
+          type: 'reanchor_transition',
+          sourcePath: ['a'],
+          transitionPath: ['on', 'NEXT', 0],
+          newSourcePath: ['b'],
+          newTransitionPath: ['on', 'NEXT', 1],
+        },
+      ]).newText,
+    ).toMatchInlineSnapshot(`
+      "{
+        states: {
+          a: {},
+          b: {
+            on: {
+              NEXT: ['d', "c", 'e']
+            }
+          },
+          c: {},
+          d: {},
+          e: {},
+        }
+      }"
+    `);
+  });
+
+  it('should be possible to append a transition at the desired transition path in a simplified group', () => {
+    const modifiableMachine = getModifiableMachine(`
+      createMachine({
+        states: {
+          a: {
+            on: {
+              NEXT: 'c'
+            }
+          },
+          b: {
+            on: {
+              NEXT: 'd'
+            }
+          },
+          c: {},
+          d: {},
+        }
+      })
+    `);
+
+    expect(
+      modifiableMachine.modify([
+        {
+          type: 'reanchor_transition',
+          sourcePath: ['a'],
+          transitionPath: ['on', 'NEXT', 0],
+          newSourcePath: ['b'],
+          newTransitionPath: ['on', 'NEXT', 1],
+        },
+      ]).newText,
+    ).toMatchInlineSnapshot(`
+      "{
+        states: {
+          a: {},
+          b: {
+            on: {
+              NEXT: ['d', "c"]
+            }
+          },
+          c: {},
+          d: {},
+        }
+      }"
+    `);
+  });
+
+  it('should be possible to prepend a transition at the desired transition path in a simplified group', () => {
+    const modifiableMachine = getModifiableMachine(`
+      createMachine({
+        states: {
+          a: {
+            on: {
+              NEXT: 'c'
+            }
+          },
+          b: {
+            on: {
+              NEXT: 'd'
+            }
+          },
+          c: {},
+          d: {},
+        }
+      })
+    `);
+
+    expect(
+      modifiableMachine.modify([
+        {
+          type: 'reanchor_transition',
+          sourcePath: ['a'],
+          transitionPath: ['on', 'NEXT', 0],
+          newSourcePath: ['b'],
+          newTransitionPath: ['on', 'NEXT', 0],
+        },
+      ]).newText,
+    ).toMatchInlineSnapshot(`
+      "{
+        states: {
+          a: {},
+          b: {
+            on: {
+              NEXT: ["c", 'd']
+            }
+          },
+          c: {},
+          d: {},
+        }
+      }"
+    `);
+  });
 });
