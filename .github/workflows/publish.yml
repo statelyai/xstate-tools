@@ -17,7 +17,9 @@ jobs:
           cache: 'yarn'
 
       - run: yarn
-      - run: yarn deps:build && yarn extension:compile
+      - run: yarn deps:build
+      - run: yarn turbo run build
+      - run: yarn vscode:prod
       - name: Create Release Pull Request or Publish
         id: changesets
         uses: changesets/action@v1

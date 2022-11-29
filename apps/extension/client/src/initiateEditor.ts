@@ -218,6 +218,9 @@ const machine = createMachine(
         languageClient.sendRequest('clearDisplayedMachine', undefined);
       },
       trackEditorUsage: () => {
+        if (process.env.NODE_ENV !== 'production') {
+          return;
+        }
         fetch('https://stately.ai/registry/api/analyze', {
           method: 'POST',
           body: JSON.stringify([
