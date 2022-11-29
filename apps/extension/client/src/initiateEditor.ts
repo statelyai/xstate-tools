@@ -91,6 +91,7 @@ async function getWebviewHtml(
     config,
     layoutString,
     implementations,
+    machineId: `vscode:${vscode.env.machineId}`,
   })}</script>`;
 
   return htmlContent.replace('<head>', `<head>${baseTag}${initialDataScript}`);
@@ -180,7 +181,7 @@ const machine = createMachine(
         initial: 'editing',
         states: {
           editing: {
-            entry: ['setEditedMachine', 'trackEditorUsage'],
+            entry: ['setEditedMachine'],
             exit: 'clearEditedMachine',
             invoke: {
               src: 'onServerNotificationListener',
@@ -216,23 +217,6 @@ const machine = createMachine(
       },
       clearEditedMachine: ({ languageClient }) => {
         languageClient.sendRequest('clearDisplayedMachine', undefined);
-      },
-      trackEditorUsage: () => {
-        if (process.env.NODE_ENV !== 'production') {
-          return;
-        }
-        fetch('https://stately.ai/registry/api/analyze', {
-          method: 'POST',
-          body: JSON.stringify([
-            {
-              event: 'Opening Editor From VS Code',
-              properties: {
-                time: Math.floor(Date.now() / 1000),
-                distinct_id: `vscode:${vscode.env.machineId}`,
-              },
-            },
-          ]),
-        }).catch(() => {});
       },
     },
     services: {
@@ -488,7 +472,6 @@ export const initiateEditor = (
   extensionContext: vscode.ExtensionContext,
   languageClient: TypeSafeLanguageClient,
 ) => {
-  const machineId = vscode.env.machineId;
   const service = interpret(
     machine.withContext({ extensionContext, languageClient }),
   ).start();
