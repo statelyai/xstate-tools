@@ -96,11 +96,13 @@
     "@types/lz-string": "^1.3.34",
     "@xstate/inspect": "^0.4.1",
     "@xstate/tools-shared": "1.2.3",
+    "isomorphic-fetch": "^3.0.0",
     "lz-string": "^1.4.4",
     "vscode-languageclient": "^7.0.0",
     "xstate": "^4.33.4"
   },
   "devDependencies": {
+    "@types/isomorphic-fetch": "^0.0.36",
     "@types/vscode": "^1.52.0",
     "vscode-test": "^1.3.0"
   }

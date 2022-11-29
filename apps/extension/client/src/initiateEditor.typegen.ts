@@ -13,9 +13,10 @@ export interface Typegen0 {
     delays: never;
   };
   eventsCausingActions: {
+    clearEditedMachine: 'xstate.stop';
     forwardToWebview: 'EDIT_MACHINE' | 'DISPLAYED_MACHINE_UPDATED';
     setEditedMachine: 'EDIT_MACHINE';
-    clearEditedMachine: 'xstate.stop';
+    trackEditorUsage: 'EDIT_MACHINE';
   };
   eventsCausingServices: {
     onServerNotificationListener: 'EDIT_MACHINE';

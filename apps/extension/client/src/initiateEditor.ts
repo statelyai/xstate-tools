@@ -3,6 +3,7 @@ import {
   ImplementationsMetadata,
   resolveUriToFilePrefix,
 } from '@xstate/tools-shared';
+import fetch from 'isomorphic-fetch';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { ColorThemeKind } from 'vscode';
@@ -179,7 +180,7 @@ const machine = createMachine(
         initial: 'editing',
         states: {
           editing: {
-            entry: 'setEditedMachine',
+            entry: ['setEditedMachine', 'trackEditorUsage'],
             exit: 'clearEditedMachine',
             invoke: {
               src: 'onServerNotificationListener',
@@ -215,6 +216,20 @@ const machine = createMachine(
       },
       clearEditedMachine: ({ languageClient }) => {
         languageClient.sendRequest('clearDisplayedMachine', undefined);
+      },
+      trackEditorUsage: () => {
+        fetch('https://stately.ai/registry/api/analyze', {
+          method: 'POST',
+          body: JSON.stringify([
+            {
+              event: 'Opening Editor From VS Code',
+              properties: {
+                time: Math.floor(Date.now() / 1000),
+                distinct_id: `vscode:${vscode.env.machineId}`,
+              },
+            },
+          ]),
+        }).catch(() => {});
       },
     },
     services: {
@@ -470,6 +485,7 @@ export const initiateEditor = (
   extensionContext: vscode.ExtensionContext,
   languageClient: TypeSafeLanguageClient,
 ) => {
+  const machineId = vscode.env.machineId;
   const service = interpret(
     machine.withContext({ extensionContext, languageClient }),
   ).start();
