@@ -91,7 +91,7 @@ async function getWebviewHtml(
     config,
     layoutString,
     implementations,
-    machineId: `vscode:${vscode.env.machineId}`,
+    distinctId: `vscode:${vscode.env.machineId}`,
   })}</script>`;
 
   return htmlContent.replace('<head>', `<head>${baseTag}${initialDataScript}`);
