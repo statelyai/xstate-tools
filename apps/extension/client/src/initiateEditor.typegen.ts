@@ -16,7 +16,6 @@ export interface Typegen0 {
     clearEditedMachine: 'xstate.stop';
     forwardToWebview: 'EDIT_MACHINE' | 'DISPLAYED_MACHINE_UPDATED';
     setEditedMachine: 'EDIT_MACHINE';
-    trackEditorUsage: 'EDIT_MACHINE';
   };
   eventsCausingServices: {
     onServerNotificationListener: 'EDIT_MACHINE';
