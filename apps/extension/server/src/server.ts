@@ -675,12 +675,18 @@ connection.onRequest('applyMachineEdits', ({ machineEdits, reason }) => {
       '`applyMachineEdits` can only be requested when there is a displayed machine',
     );
   }
+  const displayedUri = displayedMachine.uri;
 
-  const cachedDocument = documentsCache.get(displayedMachine.uri)!;
+  const cachedDocument = documentsCache.get(displayedUri)!;
+  const isLayoutStringOnlyUpdate =
+    machineEdits.length === 1 &&
+    machineEdits[0].type === 'update_layout_string';
 
-  let modified;
+  let modified: ReturnType<
+    MachineExtractResult['modify'] | MachineExtractResult['restore']
+  >;
 
-  if (reason === 'undo') {
+  if (!isLayoutStringOnlyUpdate && reason === 'undo') {
     const item = cachedDocument.undoStack.pop();
     if (item) {
       modified =
@@ -694,21 +700,35 @@ connection.onRequest('applyMachineEdits', ({ machineEdits, reason }) => {
         ].machineResult.modify(machineEdits);
     }
   } else {
-    modified =
+    const modifyResult =
       cachedDocument.extractionResults[
         displayedMachine.machineIndex
       ].machineResult.modify(machineEdits);
 
-    cachedDocument.undoStack.push(
-      modified.deleted ? { deleted: modified.deleted } : undefined,
-    );
-  }
-  // TODO: figure out a better solution, the extraction that happens here is kinda wasteful
-  const newDocumentText =
-    cachedDocument.documentText.slice(0, modified.range[0].index) +
-    modified.newText +
-    cachedDocument.documentText.slice(modified.range[1].index);
+    modified = modifyResult;
 
+    if (!isLayoutStringOnlyUpdate) {
+      cachedDocument.undoStack.push(
+        modifyResult.deleted ? { deleted: modifyResult.deleted } : undefined,
+      );
+    }
+  }
+
+  const edits = [
+    modified.configEdit,
+    'layoutEdit' in modified ? modified.layoutEdit : undefined,
+  ].filter((edit): edit is NonNullable<typeof edit> => !!edit);
+
+  let newDocumentText = cachedDocument.documentText;
+
+  for (const edit of edits) {
+    newDocumentText =
+      newDocumentText.slice(0, edit.range[0].index) +
+      edit.newText +
+      newDocumentText.slice(edit.range[1].index);
+  }
+
+  // TODO: figure out a better solution, the extraction that happens here is kinda wasteful
   const { file, machineNodes } = getMachineNodesFromFile(newDocumentText);
 
   // this kinda also should update types, but at the moment we don't need it
@@ -722,14 +742,10 @@ connection.onRequest('applyMachineEdits', ({ machineEdits, reason }) => {
   })!;
 
   return {
-    textEdits: [
-      {
-        type: 'replace' as const,
-        uri: displayedMachine.uri,
-        range: modified.range,
-        newText: modified.newText,
-      },
-    ],
+    textEdits: edits.map((textEdit) => ({
+      uri: displayedUri,
+      ...textEdit,
+    })),
   };
 });
 

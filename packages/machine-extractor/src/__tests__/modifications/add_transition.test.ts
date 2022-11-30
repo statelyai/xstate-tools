@@ -671,7 +671,6 @@ describe('add_transition', () => {
   });
 
   it("should be possible to add a transition to the first invoke's onDone", () => {
-    debugger;
     const modifiableMachine = getModifiableMachine(`
       createMachine({
         initial: 'foo',
@@ -717,7 +716,6 @@ describe('add_transition', () => {
   });
 
   it("should be possible to add a transition to a middle invoke's onDone", () => {
-    debugger;
     const modifiableMachine = getModifiableMachine(`
       createMachine({
         initial: 'foo',

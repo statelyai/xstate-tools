@@ -43,12 +43,15 @@ export type Range = readonly [start: Position, end: Position];
 
 export type CursorPosition = { line: number; column: number };
 
-export type TextEdit = {
+export interface TextEdit {
   type: 'replace';
-  uri: string;
   range: Range;
   newText: string;
-};
+}
+
+export interface FileTextEdit extends TextEdit {
+  uri: string;
+}
 
 export interface RequestMap {
   getMachineAtIndex: {
@@ -75,7 +78,7 @@ export interface RequestMap {
   applyMachineEdits: {
     params: { machineEdits: MachineEdit[]; reason?: 'undo' | 'redo' };
     result: {
-      textEdits: TextEdit[];
+      textEdits: FileTextEdit[];
     };
     error: any;
   };
@@ -83,7 +86,7 @@ export interface RequestMap {
     params: { uri: string };
     result: {
       types: TypegenData[];
-      edits: Array<TextEdit>;
+      edits: Array<FileTextEdit>;
     };
     error: never;
   };

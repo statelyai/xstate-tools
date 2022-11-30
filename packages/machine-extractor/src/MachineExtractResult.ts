@@ -1,4 +1,5 @@
 import * as t from '@babel/types';
+import { TextEdit } from '@xstate/tools-shared';
 import * as recast from 'recast';
 import { Action, Condition, MachineOptions } from 'xstate';
 import { choose } from 'xstate/lib/actions';
@@ -700,40 +701,9 @@ export class MachineExtractResult {
   };
 
   modify(edits: Array<MachineEdit>) {
-    // ATM we are always receiving this update in a separate event
-    // we should think about consolidating this somehow
-    if (edits.length === 1 && edits[0].type === 'update_layout_string') {
-      const existingComment = this.getLayoutComment();
-      if (!existingComment) {
-        const calleePosition = {
-          line: this.machineCallResult.callee.loc!.start.line - 1,
-          column: this.machineCallResult.callee.loc!.start.column,
-          index: this.machineCallResult.callee.start!,
-        } as const;
+    // we need to read it before calling `recast.parse` as that mutates the AST and removes comments
+    const existingLayoutComment = this.getLayoutComment();
 
-        return {
-          // this is used as a replace but it could be a simpler~ insertion
-          range: [calleePosition, calleePosition] as const,
-          newText: `\n/** @xstate-layout ${edits[0].layoutString} */\n`,
-        };
-      }
-      const oldRange = [
-        {
-          line: existingComment.comment.node.loc!.start.line - 1,
-          column: existingComment.comment.node.loc!.start.column,
-          index: existingComment.comment.node.start!,
-        },
-        {
-          line: existingComment.comment.node.loc!.end.line - 1,
-          column: existingComment.comment.node.loc!.end.column,
-          index: existingComment.comment.node.end!,
-        },
-      ] as const;
-      return {
-        range: oldRange,
-        newText: `/** @xstate-layout ${edits[0].layoutString} */`,
-      };
-    }
     // this ain't ideal because Recast mutates the input AST
     // so there is a risk that modifying multiple machines in a single file would lead to problems
     // however, we never modify multiple machines based on the same file content so this is somewhat safe
@@ -752,6 +722,7 @@ export class MachineExtractResult {
     );
 
     const deleted: Array<DeletedEntity> = [];
+    let layoutEdit: TextEdit | undefined;
 
     for (const edit of edits) {
       switch (edit.type) {
@@ -1487,9 +1458,48 @@ export class MachineExtractResult {
           updateTransitionAtPathWith(state, edit.transitionPath, transition);
           break;
         }
+        case 'update_layout_string':
+          if (layoutEdit) {
+            throw new Error(
+              'Receiving multiple `update_layout_string` edits in a single batch is not supported',
+            );
+          }
+          if (!existingLayoutComment) {
+            const calleePosition = {
+              line: this.machineCallResult.callee.loc!.start.line - 1,
+              column: this.machineCallResult.callee.loc!.start.column,
+              index: this.machineCallResult.callee.start!,
+            } as const;
+
+            layoutEdit = {
+              // this is used as a replace but it could be a simpler~ insertion
+              type: 'replace',
+              range: [calleePosition, calleePosition],
+              newText: `\n/** @xstate-layout ${edit.layoutString} */\n`,
+            };
+            break;
+          }
+
+          layoutEdit = {
+            type: 'replace',
+            range: [
+              {
+                line: existingLayoutComment.comment.node.loc!.start.line - 1,
+                column: existingLayoutComment.comment.node.loc!.start.column,
+                index: existingLayoutComment.comment.node.start!,
+              },
+              {
+                line: existingLayoutComment.comment.node.loc!.end.line - 1,
+                column: existingLayoutComment.comment.node.loc!.end.column,
+                index: existingLayoutComment.comment.node.end!,
+              },
+            ],
+            newText: `/** @xstate-layout ${edit.layoutString} */`,
+          };
       }
     }
 
+    // as an extra safety measure we grab `oldRange` before reprinting the `ast`
     const oldRange = [
       {
         line: this.machineCallResult.definition!.node.loc!.start.line - 1,
@@ -1516,12 +1526,18 @@ export class MachineExtractResult {
           this.machineCallResult.node.loc!.start.column,
     )!;
 
-    return {
+    const configEdit: TextEdit = {
+      type: 'replace',
       range: oldRange,
       newText: reprinted.slice(
         machineNode.arguments[0].start!,
         machineNode.arguments[0].end!,
       ),
+    };
+
+    return {
+      layoutEdit,
+      configEdit,
       deleted: deleted.length ? deleted : undefined,
     };
   }
@@ -1606,11 +1622,14 @@ export class MachineExtractResult {
     )!;
 
     return {
-      range: oldRange,
-      newText: reprinted.slice(
-        machineNode.arguments[0].start!,
-        machineNode.arguments[0].end!,
-      ),
+      configEdit: {
+        type: 'replace' as const,
+        range: oldRange,
+        newText: reprinted.slice(
+          machineNode.arguments[0].start!,
+          machineNode.arguments[0].end!,
+        ),
+      },
     };
   }
 }
