@@ -458,7 +458,10 @@ export class MachineExtractResult {
   getAllStateNodes = () => this.stateNodes;
 
   toConfig = (opts?: ToMachineConfigOptions) => {
-    return toMachineConfig(this.machineCallResult, opts);
+    return toMachineConfig(this.machineCallResult, {
+      ...opts,
+      fileContent: this._fileContent,
+    });
   };
 
   getAllConds = (

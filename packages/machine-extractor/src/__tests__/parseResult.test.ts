@@ -1,4 +1,4 @@
-import { groupByUniqueName } from '..';
+import { groupByUniqueName, MachineExtractResult } from '..';
 import { extractMachinesFromFile } from '../extractMachinesFromFile';
 
 describe('MachineParseResult', () => {
@@ -127,6 +127,106 @@ describe('MachineParseResult', () => {
     }).toEqual({
       from: ['a'],
       to: ['b'],
+    });
+  });
+
+  describe('Assign actions as expression', () => {
+    const assignActions = [
+      'assign({count: 1})',
+      `assign((ctx, e) => {
+        const val = e.data;
+        return {
+          count: val + ctx.count
+        }
+      })`,
+      'assign({count: ctx => ctx.count + 1})',
+    ];
+    const config = `
+      createMachine({
+        initial: 'a',
+        context: {count: 0},
+        entry: [${assignActions}],
+        exit: [${assignActions}],
+        states: {
+          a: {
+            exit: [${assignActions}],
+            on: {
+              GO: {
+                target: 'b',
+                actions: ${assignActions[0]}
+              }
+            }
+          },
+          b: {
+            entry: [${assignActions}]
+          }
+        }
+      })
+    `;
+    const result = extractMachinesFromFile(config);
+    const machine = result!.machines[0];
+
+    it('should extract entry assignment', () => {
+      expect(machine?.toConfig({ asExpressions: true })?.entry)
+        .toMatchInlineSnapshot(`
+        [
+          "assign({count: 1})",
+          "assign((ctx, e) => {
+                const val = e.data;
+                return {
+                  count: val + ctx.count
+                }
+              })",
+          "assign({count: ctx => ctx.count + 1})",
+        ]
+      `);
+      expect(machine?.toConfig({ asExpressions: true })?.states?.b.entry)
+        .toMatchInlineSnapshot(`
+        [
+          "assign({count: 1})",
+          "assign((ctx, e) => {
+                const val = e.data;
+                return {
+                  count: val + ctx.count
+                }
+              })",
+          "assign({count: ctx => ctx.count + 1})",
+        ]
+      `);
+    });
+    it('should extract exit assignment', () => {
+      expect(machine?.toConfig({ asExpressions: true })?.exit)
+        .toMatchInlineSnapshot(`
+        [
+          "assign({count: 1})",
+          "assign((ctx, e) => {
+                const val = e.data;
+                return {
+                  count: val + ctx.count
+                }
+              })",
+          "assign({count: ctx => ctx.count + 1})",
+        ]
+      `);
+      expect(machine?.toConfig({ asExpressions: true })?.states?.a.exit)
+        .toMatchInlineSnapshot(`
+        [
+          "assign({count: 1})",
+          "assign((ctx, e) => {
+                const val = e.data;
+                return {
+                  count: val + ctx.count
+                }
+              })",
+          "assign({count: ctx => ctx.count + 1})",
+        ]
+      `);
+    });
+    it('should extract assignment from transitions actions', () => {
+      expect(
+        (machine?.toConfig({ asExpressions: true })?.states?.a.on as any).GO
+          .actions,
+      ).toMatchInlineSnapshot(`"assign({count: 1})"`);
     });
   });
 });

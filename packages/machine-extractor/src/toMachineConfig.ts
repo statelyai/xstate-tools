@@ -10,6 +10,11 @@ import { StateNodeReturn } from './stateNode';
 import { MaybeTransitionArray } from './transitions';
 import { GetParserResult } from './utils';
 
+/**
+ * Original source code text
+ */
+export type WithFileContent<T> = T & { fileContent: string };
+
 export interface ToMachineConfigOptions {
   /**
    * Whether or not to hash inline implementations, which
@@ -26,11 +31,15 @@ export interface ToMachineConfigOptions {
    * @default false
    */
   anonymizeInlineImplementations?: boolean;
+  /**
+   * If true, actions will be extracted as expressions
+   */
+  asExpressions?: boolean;
 }
 
 const parseStateNode = (
   astResult: StateNodeReturn,
-  opts: ToMachineConfigOptions | undefined,
+  opts: WithFileContent<ToMachineConfigOptions> | undefined,
 ): StateNodeConfig<any, any, any> => {
   const config: MachineConfig<any, any, any> = {};
 
@@ -178,7 +187,7 @@ const parseStateNode = (
 
 export const toMachineConfig = (
   result: TMachineCallExpression,
-  opts?: ToMachineConfigOptions,
+  opts?: WithFileContent<ToMachineConfigOptions>,
 ): MachineConfig<any, any, any> | undefined => {
   if (!result?.definition) return undefined;
   return parseStateNode(result?.definition, opts);
@@ -186,7 +195,7 @@ export const toMachineConfig = (
 
 export const getActionConfig = (
   astActions: GetParserResult<typeof MaybeArrayOfActions>,
-  opts: ToMachineConfigOptions | undefined,
+  opts: WithFileContent<ToMachineConfigOptions> | undefined,
 ): Actions<any, any> => {
   const actions: Actions<any, any> = [];
 
@@ -206,7 +215,13 @@ export const getActionConfig = (
         type: action.inlineDeclarationId,
       });
     } else {
-      actions.push(action.action);
+      if (opts?.asExpressions) {
+        actions.push(
+          opts.fileContent.slice(action.node.start!, action.node.end!),
+        );
+      } else {
+        actions.push(action.action);
+      }
     }
   });
 
@@ -219,7 +234,7 @@ export const getActionConfig = (
 
 export const getTransitions = (
   astTransitions: GetParserResult<typeof MaybeTransitionArray>,
-  opts: ToMachineConfigOptions | undefined,
+  opts: WithFileContent<ToMachineConfigOptions> | undefined,
 ): TransitionConfigOrTarget<any, any> => {
   const transitions: TransitionConfigOrTarget<any, any> = [];
 
