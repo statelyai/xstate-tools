@@ -21,7 +21,7 @@ describe('remove_state', () => {
           type: 'remove_state',
           path: ['foo'],
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         states: {
@@ -46,7 +46,7 @@ describe('remove_state', () => {
           type: 'remove_state',
           path: ['foo'],
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`"{}"`);
   });
 
@@ -72,7 +72,7 @@ describe('remove_state', () => {
           type: 'remove_state',
           path: ['foo'],
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         states: {
@@ -109,7 +109,7 @@ describe('remove_state', () => {
           type: 'remove_state',
           path: ['foo'],
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         on: {
@@ -147,7 +147,7 @@ describe('remove_state', () => {
           type: 'remove_state',
           path: ['bar'],
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         states: {
@@ -183,7 +183,7 @@ describe('remove_state', () => {
           type: 'remove_state',
           path: ['foo'],
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         states: {
@@ -215,7 +215,7 @@ describe('remove_state', () => {
           type: 'remove_state',
           path: ['foo'],
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         states: {
@@ -247,7 +247,7 @@ describe('remove_state', () => {
           type: 'remove_state',
           path: ['foo'],
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         states: {
@@ -279,7 +279,7 @@ describe('remove_state', () => {
           type: 'remove_state',
           path: ['foo'],
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         states: {
@@ -311,7 +311,7 @@ describe('remove_state', () => {
           type: 'remove_state',
           path: ['foo'],
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         states: {
@@ -348,7 +348,7 @@ describe('remove_state', () => {
           type: 'remove_state',
           path: ['foo'],
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         states: {
@@ -382,7 +382,7 @@ describe('remove_state', () => {
           type: 'remove_state',
           path: ['foo'],
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         states: {
@@ -410,7 +410,7 @@ describe('remove_state', () => {
           type: 'remove_state',
           path: ['foo'],
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         states: {
@@ -441,7 +441,7 @@ describe('remove_state', () => {
           type: 'remove_state',
           path: ['foo'],
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         states: {
@@ -475,7 +475,7 @@ describe('remove_state', () => {
           type: 'remove_state',
           path: ['foo'],
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         states: {
@@ -512,7 +512,7 @@ describe('remove_state', () => {
           type: 'remove_state',
           path: ['foo'],
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         states: {

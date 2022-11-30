@@ -18,7 +18,7 @@ describe('add_invoke', () => {
           invokeIndex: 0,
           source: 'callDavid',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         invoke: {
@@ -48,7 +48,7 @@ describe('add_invoke', () => {
           invokeIndex: 0,
           source: 'callDavid',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         on: {
@@ -79,7 +79,7 @@ describe('add_invoke', () => {
           source: 'callDavid',
           id: 'importantCall',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         invoke: {
@@ -107,7 +107,7 @@ describe('add_invoke', () => {
           invokeIndex: 1,
           source: 'getRaise',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         invoke: [{
@@ -138,7 +138,7 @@ describe('add_invoke', () => {
           invokeIndex: 0,
           source: 'eeny',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         invoke: [{
@@ -171,7 +171,7 @@ describe('add_invoke', () => {
           invokeIndex: 1,
           source: 'miny',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         invoke: [{
@@ -204,7 +204,7 @@ describe('add_invoke', () => {
           invokeIndex: 2,
           source: 'moe',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         invoke: [{

@@ -23,7 +23,7 @@ describe('set_initial_state', () => {
           path: [],
           initialState: 'bar',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: "bar",
@@ -58,7 +58,7 @@ describe('set_initial_state', () => {
           path: ['foo'],
           initialState: 'baz',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'foo',
@@ -92,7 +92,7 @@ describe('set_initial_state', () => {
           path: [],
           initialState: 'bar',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         states: {

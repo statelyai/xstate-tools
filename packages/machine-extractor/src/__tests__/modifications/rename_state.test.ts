@@ -23,7 +23,7 @@ describe('rename_state', () => {
           path: ['foo'],
           name: 'NEW_NAME',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         type: 'parallel',
@@ -53,7 +53,7 @@ describe('rename_state', () => {
           path: ['foo'],
           name: 'NOT A VALID IDENTIFIER',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         type: 'parallel',
@@ -83,7 +83,7 @@ describe('rename_state', () => {
           path: ['foo'],
           name: `'oh my', "what's this?"`,
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         type: 'parallel',
@@ -113,7 +113,7 @@ describe('rename_state', () => {
           path: ['foo'],
           name: 'NEW_NAME',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: "NEW_NAME",
@@ -147,7 +147,7 @@ describe('rename_state', () => {
           path: ['bar'],
           name: 'NEW_NAME',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'foo',
@@ -185,7 +185,7 @@ describe('rename_state', () => {
           path: ['bar'],
           name: 'NEW_NAME',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'foo',
@@ -224,7 +224,7 @@ describe('rename_state', () => {
           path: ['bar'],
           name: 'NEW_NAME',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'foo',
@@ -264,7 +264,7 @@ describe('rename_state', () => {
           path: ['baz'],
           name: 'NEW_NAME',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'foo',
@@ -303,7 +303,7 @@ describe('rename_state', () => {
           path: ['baz'],
           name: 'NEW_NAME',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'foo',
@@ -341,7 +341,7 @@ describe('rename_state', () => {
           path: ['baz'],
           name: 'NEW_NAME',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'foo',
@@ -385,7 +385,7 @@ describe('rename_state', () => {
           path: ['bar', 'bar2'],
           name: 'NEW_NAME',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'foo',
@@ -435,7 +435,7 @@ describe('rename_state', () => {
           path: ['bar'],
           name: 'NEW_NAME',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'foo',
@@ -489,7 +489,7 @@ describe('rename_state', () => {
           path: ['bar', 'bar2'],
           name: 'NEW_NAME',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'foo',
@@ -541,7 +541,7 @@ describe('rename_state', () => {
           path: ['bar', 'bar2'],
           name: 'NEW_NAME',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'foo',
@@ -587,7 +587,7 @@ describe('rename_state', () => {
           path: ['bar'],
           name: 'NEW_NAME',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'foo',
@@ -637,7 +637,7 @@ describe('rename_state', () => {
           path: ['bar', 'bar2'],
           name: 'NEW_NAME',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'foo',
@@ -690,7 +690,7 @@ describe('rename_state', () => {
           path: ['bar', 'bar2'],
           name: 'NEW_NAME',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'foo',
@@ -746,7 +746,7 @@ describe('rename_state', () => {
           path: ['bar', 'bar2'],
           name: 'NEW_NAME',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'foo',
@@ -804,7 +804,7 @@ describe('rename_state', () => {
           path: ['bar', 'bar2'],
           name: 'NEW_NAME',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'foo',
@@ -860,7 +860,7 @@ describe('rename_state', () => {
           path: ['bar', 'bar2'],
           name: 'NEW_NAME',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'foo',
@@ -908,7 +908,7 @@ describe('rename_state', () => {
           path: ['bar'],
           name: 'NEW_NAME',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         id: 'branch',
@@ -947,7 +947,7 @@ describe('rename_state', () => {
           path: ['bar'],
           name: 'NEW_NAME',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'foo',
@@ -986,7 +986,7 @@ describe('rename_state', () => {
           path: ['bar'],
           name: 'NEW_NAME',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         id: 'branch',
@@ -1026,7 +1026,7 @@ describe('rename_state', () => {
           path: [''],
           name: 'NEW_NAME',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         id: 'branch',
@@ -1065,7 +1065,7 @@ describe('rename_state', () => {
           path: ['bar'],
           name: '',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'foo',
@@ -1103,7 +1103,7 @@ describe('rename_state', () => {
           path: [''],
           name: 'bar',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'foo',
@@ -1145,7 +1145,7 @@ describe('rename_state', () => {
           path: ['bar'],
           name: '',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'foo',
@@ -1191,7 +1191,7 @@ describe('rename_state', () => {
           path: [''],
           name: 'bar',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'foo',

@@ -19,7 +19,7 @@ describe('remove_action', () => {
           path: [],
           actionPath: ['entry', 0],
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`"{}"`);
   });
 
@@ -37,7 +37,7 @@ describe('remove_action', () => {
           path: [],
           actionPath: ['exit', 0],
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`"{}"`);
   });
 
@@ -55,7 +55,7 @@ describe('remove_action', () => {
           path: [],
           actionPath: ['entry', 0],
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         entry: ['getRaise']
@@ -77,7 +77,7 @@ describe('remove_action', () => {
           path: [],
           actionPath: ['entry', 1],
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         entry: ['callDavid']
@@ -99,7 +99,7 @@ describe('remove_action', () => {
           path: [],
           actionPath: ['entry', 1],
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         entry: ['callDavid', 'getRaise']
@@ -129,7 +129,7 @@ describe('remove_action', () => {
           path: [],
           actionPath: ['on', 'CALL_HIM_MAYBE', 0, 0],
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         on: {
@@ -165,7 +165,7 @@ describe('remove_action', () => {
           path: [],
           actionPath: ['invoke', 0, 'onDone', 0, 0],
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         invoke: {
@@ -197,7 +197,7 @@ describe('remove_action', () => {
           path: [],
           actionPath: ['on', 'CALL_HIM_MAYBE', 0, 0],
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         on: {

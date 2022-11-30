@@ -17,7 +17,7 @@ describe('set_description', () => {
           statePath: [],
           description: 'Wow, so much wow',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         description: \`Wow, so much wow\`
@@ -41,7 +41,7 @@ describe('set_description', () => {
           statePath: ['a'],
           description: 'Wow, so much wow',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         states: {
@@ -67,7 +67,7 @@ describe('set_description', () => {
           statePath: [],
           description: 'Wow, so much wow',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         description: \`Wow, so much wow\`
@@ -88,7 +88,7 @@ describe('set_description', () => {
           type: 'set_description',
           statePath: [],
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`"{}"`);
   });
 
@@ -114,7 +114,7 @@ describe('set_description', () => {
           transitionPath: ['on', 'NEXT', 0],
           description: 'Wow, so much wow',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         states: {
@@ -157,7 +157,7 @@ describe('set_description', () => {
           transitionPath: ['on', 'NEXT', 0],
           description: 'Wow, so much wow',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         states: {
@@ -199,7 +199,7 @@ describe('set_description', () => {
           statePath: ['a'],
           transitionPath: ['on', 'NEXT', 0],
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         states: {

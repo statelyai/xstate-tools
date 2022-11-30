@@ -19,7 +19,7 @@ describe('add_transition', () => {
           transitionPath: ['on', 'FOO', 0],
           external: true,
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         on: {
@@ -51,7 +51,7 @@ describe('add_transition', () => {
           transitionPath: ['on', 'FOO', 0],
           external: true,
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'foo',
@@ -92,7 +92,7 @@ describe('add_transition', () => {
           transitionPath: ['on', 'FOO', 0],
           external: true,
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         id: 'groot',
@@ -125,7 +125,7 @@ describe('add_transition', () => {
           transitionPath: ['on', 'FOO', 0],
           external: true,
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         on: {
@@ -149,7 +149,7 @@ describe('add_transition', () => {
           transitionPath: ['on', 'FOO', 0],
           external: true,
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         id: 'groot',
@@ -175,7 +175,7 @@ describe('add_transition', () => {
           transitionPath: ['on', 'FOO', 0],
           external: false,
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         on: {
@@ -202,7 +202,7 @@ describe('add_transition', () => {
           transitionPath: ['on', 'FOO', 0],
           external: false,
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         id: 'groot',
@@ -236,7 +236,7 @@ describe('add_transition', () => {
           transitionPath: ['on', 'FOO', 0],
           external: true,
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'foo',
@@ -270,7 +270,7 @@ describe('add_transition', () => {
           transitionPath: ['on', 'FOO', 0],
           external: false,
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'foo',
@@ -313,7 +313,7 @@ describe('add_transition', () => {
           transitionPath: ['on', 'OTHER', 0],
           external: true,
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'foo',
@@ -356,7 +356,7 @@ describe('add_transition', () => {
           transitionPath: ['on', 'NEXT', 1],
           external: true,
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'foo',
@@ -398,7 +398,7 @@ describe('add_transition', () => {
           transitionPath: ['on', 'NEXT', 0],
           external: true,
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'foo',
@@ -441,7 +441,7 @@ describe('add_transition', () => {
           transitionPath: ['on', 'NEXT', 1],
           external: true,
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'foo',
@@ -484,7 +484,7 @@ describe('add_transition', () => {
           transitionPath: ['on', 'NEXT', 1],
           external: true,
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'foo',
@@ -526,7 +526,7 @@ describe('add_transition', () => {
           transitionPath: ['on', 'NEXT', 0],
           external: true,
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'foo',
@@ -567,7 +567,7 @@ describe('add_transition', () => {
           transitionPath: ['invoke', 0, 'onDone', 0],
           external: true,
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'foo',
@@ -608,7 +608,7 @@ describe('add_transition', () => {
           transitionPath: ['invoke', 0, 'onError', 0],
           external: true,
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'foo',
@@ -651,7 +651,7 @@ describe('add_transition', () => {
           transitionPath: ['invoke', 1, 'onDone', 0],
           external: true,
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'foo',
@@ -696,7 +696,7 @@ describe('add_transition', () => {
           transitionPath: ['invoke', 0, 'onDone', 0],
           external: true,
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'foo',
@@ -743,7 +743,7 @@ describe('add_transition', () => {
           transitionPath: ['invoke', 1, 'onDone', 0],
           external: true,
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'foo',
@@ -784,7 +784,7 @@ describe('add_transition', () => {
           transitionPath: ['onDone', 0],
           external: true,
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'foo',
@@ -818,7 +818,7 @@ describe('add_transition', () => {
           transitionPath: ['always', 0],
           external: true,
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'foo',
@@ -852,7 +852,7 @@ describe('add_transition', () => {
           transitionPath: ['on', 'NEXT', 0],
           external: false,
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'foo',
@@ -897,7 +897,7 @@ describe('add_transition', () => {
           transitionPath: ['on', 'NEXT', 0],
           external: false,
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'foo',
@@ -950,7 +950,7 @@ describe('add_transition', () => {
           transitionPath: ['on', 'NEXT', 0],
           external: false,
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'foo',
@@ -1007,7 +1007,7 @@ describe('add_transition', () => {
           transitionPath: ['on', 'NEXT', 0],
           external: true,
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'a',
@@ -1066,7 +1066,7 @@ describe('add_transition', () => {
           transitionPath: ['on', 'NEXT', 0],
           external: true,
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'a',
@@ -1123,7 +1123,7 @@ describe('add_transition', () => {
           transitionPath: ['on', 'NEXT', 0],
           external: true,
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         id: 'groot',
@@ -1183,7 +1183,7 @@ describe('add_transition', () => {
           transitionPath: ['on', 'NEXT', 0],
           external: true,
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         id: 'groot',
@@ -1244,7 +1244,7 @@ describe('add_transition', () => {
           transitionPath: ['on', 'NEXT', 0],
           external: true,
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         id: 'groot',
@@ -1293,7 +1293,7 @@ describe('add_transition', () => {
           external: true,
           guard: 'isItTooLate',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'foo',
@@ -1333,7 +1333,7 @@ describe('add_transition', () => {
           external: false,
           guard: 'isItTooLate',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'foo',
@@ -1374,7 +1374,7 @@ describe('add_transition', () => {
           external: true,
           guard: 'isItTooLate',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'foo',
@@ -1415,7 +1415,7 @@ describe('add_transition', () => {
           external: true,
           guard: 'isItTooLate',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'foo',

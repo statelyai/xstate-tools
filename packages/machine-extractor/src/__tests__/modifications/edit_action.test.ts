@@ -20,7 +20,7 @@ describe('edit_action', () => {
           actionPath: ['entry', 0],
           name: 'getRaise',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         entry: "getRaise",
@@ -45,7 +45,7 @@ describe('edit_action', () => {
           actionPath: ['entry', 0],
           name: 'getRaise',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         entry: {
@@ -70,7 +70,7 @@ describe('edit_action', () => {
           actionPath: ['exit', 0],
           name: 'getRaise',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         exit: "getRaise",
@@ -95,7 +95,7 @@ describe('edit_action', () => {
           actionPath: ['exit', 0],
           name: 'getRaise',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         exit: {
@@ -120,7 +120,7 @@ describe('edit_action', () => {
           actionPath: ['entry', 1],
           name: 'keepTheJob',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         entry: ['callDavid', "keepTheJob"],
@@ -143,7 +143,7 @@ describe('edit_action', () => {
           actionPath: ['entry', 1],
           name: 'keepTheJob',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         entry: ['callDavid', { type: "keepTheJob" }],
@@ -166,7 +166,7 @@ describe('edit_action', () => {
           actionPath: ['exit', 1],
           name: 'keepTheJob',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         exit: ['callDavid', "keepTheJob"],
@@ -189,7 +189,7 @@ describe('edit_action', () => {
           actionPath: ['exit', 1],
           name: 'keepTheJob',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         exit: ['callDavid', { type: "keepTheJob" }],
@@ -216,7 +216,7 @@ describe('edit_action', () => {
           actionPath: ['on', 'CALL_HIM_MAYBE', 0, 0],
           name: 'getRaise',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         on: {
@@ -247,7 +247,7 @@ describe('edit_action', () => {
           actionPath: ['on', 'CALL_HIM_MAYBE', 0, 0],
           name: 'getRaise',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         on: {
@@ -280,7 +280,7 @@ describe('edit_action', () => {
           actionPath: ['on', 'CALL_HIM_MAYBE', 1, 0],
           name: 'getRaise',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         on: {
