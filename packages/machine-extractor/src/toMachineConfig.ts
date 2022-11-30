@@ -34,7 +34,7 @@ export interface ToMachineConfigOptions {
   /**
    * If true, actions will be extracted as expressions
    */
-  asExpressions?: boolean;
+  stringifyInlineImplementations?: boolean;
 }
 
 const parseStateNode = (
@@ -215,7 +215,7 @@ export const getActionConfig = (
         type: action.inlineDeclarationId,
       });
     } else {
-      if (opts?.asExpressions) {
+      if (opts?.stringifyInlineImplementations) {
         actions.push(
           opts.fileContent.slice(action.node.start!, action.node.end!),
         );

@@ -167,7 +167,7 @@ describe('MachineParseResult', () => {
     const machine = result!.machines[0];
 
     it('should extract entry assignment', () => {
-      expect(machine?.toConfig({ asExpressions: true })?.entry)
+      expect(machine?.toConfig({ stringifyInlineImplementations: true })?.entry)
         .toMatchInlineSnapshot(`
         [
           "assign({count: 1})",
@@ -180,8 +180,10 @@ describe('MachineParseResult', () => {
           "assign({count: ctx => ctx.count + 1})",
         ]
       `);
-      expect(machine?.toConfig({ asExpressions: true })?.states?.b.entry)
-        .toMatchInlineSnapshot(`
+      expect(
+        machine?.toConfig({ stringifyInlineImplementations: true })?.states?.b
+          .entry,
+      ).toMatchInlineSnapshot(`
         [
           "assign({count: 1})",
           "assign((ctx, e) => {
@@ -195,7 +197,7 @@ describe('MachineParseResult', () => {
       `);
     });
     it('should extract exit assignment', () => {
-      expect(machine?.toConfig({ asExpressions: true })?.exit)
+      expect(machine?.toConfig({ stringifyInlineImplementations: true })?.exit)
         .toMatchInlineSnapshot(`
         [
           "assign({count: 1})",
@@ -208,8 +210,10 @@ describe('MachineParseResult', () => {
           "assign({count: ctx => ctx.count + 1})",
         ]
       `);
-      expect(machine?.toConfig({ asExpressions: true })?.states?.a.exit)
-        .toMatchInlineSnapshot(`
+      expect(
+        machine?.toConfig({ stringifyInlineImplementations: true })?.states?.a
+          .exit,
+      ).toMatchInlineSnapshot(`
         [
           "assign({count: 1})",
           "assign((ctx, e) => {
@@ -224,8 +228,10 @@ describe('MachineParseResult', () => {
     });
     it('should extract assignment from transitions actions', () => {
       expect(
-        (machine?.toConfig({ asExpressions: true })?.states?.a.on as any).GO
-          .actions,
+        (
+          machine?.toConfig({ stringifyInlineImplementations: true })?.states?.a
+            .on as any
+        ).GO.actions,
       ).toMatchInlineSnapshot(`"assign({count: 1})"`);
     });
   });
