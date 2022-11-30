@@ -10,11 +10,6 @@ import { StateNodeReturn } from './stateNode';
 import { MaybeTransitionArray } from './transitions';
 import { GetParserResult } from './utils';
 
-/**
- * Original source code text
- */
-export type WithFileContent<T> = T & { fileContent: string };
-
 export interface ToMachineConfigOptions {
   /**
    * Whether or not to hash inline implementations, which
@@ -35,11 +30,15 @@ export interface ToMachineConfigOptions {
    * If true, actions will be extracted as expressions
    */
   stringifyInlineImplementations?: boolean;
+  /**
+   * Original source code text
+   */
+  fileContent: string;
 }
 
 const parseStateNode = (
   astResult: StateNodeReturn,
-  opts: WithFileContent<ToMachineConfigOptions> | undefined,
+  opts: ToMachineConfigOptions | undefined,
 ): StateNodeConfig<any, any, any> => {
   const config: MachineConfig<any, any, any> = {};
 
@@ -187,7 +186,7 @@ const parseStateNode = (
 
 export const toMachineConfig = (
   result: TMachineCallExpression,
-  opts?: WithFileContent<ToMachineConfigOptions>,
+  opts?: ToMachineConfigOptions,
 ): MachineConfig<any, any, any> | undefined => {
   if (!result?.definition) return undefined;
   return parseStateNode(result?.definition, opts);
@@ -195,7 +194,7 @@ export const toMachineConfig = (
 
 export const getActionConfig = (
   astActions: GetParserResult<typeof MaybeArrayOfActions>,
-  opts: WithFileContent<ToMachineConfigOptions> | undefined,
+  opts: ToMachineConfigOptions | undefined,
 ): Actions<any, any> => {
   const actions: Actions<any, any> = [];
 
@@ -234,7 +233,7 @@ export const getActionConfig = (
 
 export const getTransitions = (
   astTransitions: GetParserResult<typeof MaybeTransitionArray>,
-  opts: WithFileContent<ToMachineConfigOptions> | undefined,
+  opts: ToMachineConfigOptions | undefined,
 ): TransitionConfigOrTarget<any, any> => {
   const transitions: TransitionConfigOrTarget<any, any> = [];
 
