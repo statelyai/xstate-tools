@@ -805,11 +805,21 @@ connection.onRequest('getNodePosition', ({ path }) => {
   ];
 });
 
+// TODO: editor and visualizer should have separate states for this
+// they can be opened for different machines at the same time
 connection.onRequest('setDisplayedMachine', ({ uri, machineIndex }) => {
   displayedMachine = { uri, machineIndex };
 });
 
 connection.onRequest('clearDisplayedMachine', () => {
+  if (!displayedMachine) {
+    throw new Error('There is no displayed machine to clear');
+  }
+  const cachedDocument = documentsCache.get(displayedMachine.uri);
+  if (!cachedDocument) {
+    throw new Error(`Document for the displayed machine couldn't be found`);
+  }
+  cachedDocument.undoStack = [];
   displayedMachine = undefined;
 });
 
