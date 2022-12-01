@@ -26,6 +26,14 @@ export interface ToMachineConfigOptions {
    * @default false
    */
   anonymizeInlineImplementations?: boolean;
+  /**
+   * If true, actions will be extracted as expressions
+   */
+  stringifyInlineImplementations?: boolean;
+  /**
+   * Original source code text
+   */
+  fileContent: string;
 }
 
 const parseStateNode = (
@@ -206,7 +214,13 @@ export const getActionConfig = (
         type: action.inlineDeclarationId,
       });
     } else {
-      actions.push(action.action);
+      if (opts?.stringifyInlineImplementations) {
+        actions.push(
+          opts.fileContent.slice(action.node.start!, action.node.end!),
+        );
+      } else {
+        actions.push(action.action);
+      }
     }
   });
 
