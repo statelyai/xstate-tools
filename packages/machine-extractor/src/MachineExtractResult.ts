@@ -796,8 +796,6 @@ export class MachineExtractResult {
             throw new Error('Could not find the old name of the state');
           }
 
-          stateProp.key = safePropertyKey(edit.name);
-
           const initialProp = getPropByPath(recastDefinitionNode, [
             ...edit.path.slice(0, -1).flatMap((p) => ['states', p]),
             'initial',
@@ -901,16 +899,27 @@ export class MachineExtractResult {
                 // this transition targets a state within the renamed sibling
                 // we can't just update the segment to the empty string as that would result in targeting own descendant
                 if (edit.name === '') {
+                  // TODO: figure out a better solution
+                  // we should not rename this key temporarily and rename it back
+                  // unfortunately, `getBestTargetDescriptor` relies on the updated key
+                  const oldKey = stateProp.key;
+                  stateProp.key = safePropertyKey(edit.name);
+                  const targetDescriptor = getBestTargetDescriptor(
+                    recastDefinitionNode,
+                    {
+                      sourcePath: fromPath,
+                      targetPath: segmentedValue,
+                    },
+                  )!;
+                  stateProp.key = oldKey;
+
                   updateTargetAtObjectPath(
                     recastDefinitionNode,
                     [
                       ...fromPath.flatMap((p) => ['states', p]),
                       ...transitionPath,
                     ],
-                    getBestTargetDescriptor(recastDefinitionNode, {
-                      sourcePath: fromPath,
-                      targetPath: segmentedValue,
-                    })!,
+                    targetDescriptor,
                   );
                   return;
                 }
@@ -929,6 +938,8 @@ export class MachineExtractResult {
               });
             },
           );
+
+          stateProp.key = safePropertyKey(edit.name);
 
           break;
         }
