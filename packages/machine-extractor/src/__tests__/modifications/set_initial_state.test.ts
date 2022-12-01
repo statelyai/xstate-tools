@@ -104,4 +104,70 @@ describe('set_initial_state', () => {
       }"
     `);
   });
+
+  it('should be able to remove an initial state from a root', () => {
+    const modifiableMachine = getModifiableMachine(`
+      createMachine({
+        initial: 'foo',
+        states: {
+          foo: {},
+          bar: {},
+        },
+      })
+    `);
+
+    expect(
+      modifiableMachine.modify([
+        {
+          type: 'set_initial_state',
+          path: [],
+          initialState: undefined,
+        },
+      ]).configEdit.newText,
+    ).toMatchInlineSnapshot(`
+      "{
+        states: {
+          foo: {},
+          bar: {},
+        }
+      }"
+    `);
+  });
+
+  it('should be able to remove an initial state from a nested state', () => {
+    const modifiableMachine = getModifiableMachine(`
+      createMachine({
+        initial: 'foo',
+        states: {
+          foo: {
+            initial: 'bar',
+            states: {
+              bar: {},
+            }
+          },
+        },
+      })
+    `);
+
+    expect(
+      modifiableMachine.modify([
+        {
+          type: 'set_initial_state',
+          path: ['foo'],
+          initialState: undefined,
+        },
+      ]).configEdit.newText,
+    ).toMatchInlineSnapshot(`
+      "{
+        initial: 'foo',
+        states: {
+          foo: {
+            states: {
+              bar: {},
+            }
+          },
+        },
+      }"
+    `);
+  });
 });

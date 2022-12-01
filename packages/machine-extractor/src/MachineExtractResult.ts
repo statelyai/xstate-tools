@@ -73,7 +73,11 @@ export type MachineEdit =
   | { type: 'remove_state'; path: string[] }
   | { type: 'rename_state'; path: string[]; name: string }
   | { type: 'reparent_state'; path: string[]; newParentPath: string[] }
-  | { type: 'set_initial_state'; path: string[]; initialState: string }
+  | {
+      type: 'set_initial_state';
+      path: string[];
+      initialState?: string | undefined;
+    }
   | { type: 'set_state_id'; path: string[]; id?: string }
   | {
       type: 'set_state_type';
@@ -1127,7 +1131,16 @@ export class MachineExtractResult {
             edit.path,
           );
 
-          setProperty(stateObj, 'initial', b.stringLiteral(edit.initialState));
+          if (typeof edit.initialState === 'string') {
+            setProperty(
+              stateObj,
+              'initial',
+              b.stringLiteral(edit.initialState),
+            );
+          } else {
+            removeProperty(stateObj, 'initial');
+          }
+
           break;
         }
         case 'set_state_id': {
