@@ -27,7 +27,7 @@ describe('set_state_type', () => {
           path: ['b'],
           stateType: 'final',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'a',
@@ -67,7 +67,7 @@ describe('set_state_type', () => {
           path: ['b'],
           stateType: 'parallel',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'a',
@@ -107,7 +107,7 @@ describe('set_state_type', () => {
           path: ['b'],
           stateType: 'history',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'a',
@@ -148,7 +148,7 @@ describe('set_state_type', () => {
           stateType: 'history',
           history: 'shallow',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'a',
@@ -189,7 +189,7 @@ describe('set_state_type', () => {
           stateType: 'history',
           history: 'deep',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'a',
@@ -225,7 +225,7 @@ describe('set_state_type', () => {
           path: ['a'],
           stateType: 'normal',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'a',
@@ -260,7 +260,7 @@ describe('set_state_type', () => {
           path: ['b'],
           stateType: 'normal',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'a',
@@ -301,7 +301,7 @@ describe('set_state_type', () => {
           path: ['b'],
           stateType: 'normal',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'a',
@@ -342,7 +342,7 @@ describe('set_state_type', () => {
           path: ['b'],
           stateType: 'parallel',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'a',
@@ -385,7 +385,7 @@ describe('set_state_type', () => {
           path: ['b'],
           stateType: 'final',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'a',

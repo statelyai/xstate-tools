@@ -27,7 +27,7 @@ describe('remove_guard', () => {
           path: [],
           transitionPath: ['on', 'WORK_ON_OSS', 0],
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         on: {
@@ -63,7 +63,7 @@ describe('remove_guard', () => {
           path: [],
           transitionPath: ['on', 'WORK_ON_OSS', 0],
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         on: {
@@ -102,7 +102,7 @@ describe('remove_guard', () => {
           path: [],
           transitionPath: ['on', 'WORK_ON_OSS', 0],
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         on: {
@@ -139,7 +139,7 @@ describe('remove_guard', () => {
           path: [],
           transitionPath: ['invoke', 0, 'onDone', 0],
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         invoke: {

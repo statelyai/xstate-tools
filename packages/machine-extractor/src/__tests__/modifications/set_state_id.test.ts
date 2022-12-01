@@ -22,7 +22,7 @@ describe('set_state_id', () => {
           path: ['a'],
           id: 'TEST_ID',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'a',
@@ -52,7 +52,7 @@ describe('set_state_id', () => {
           path: [],
           id: 'TEST_ID',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'a',
@@ -85,7 +85,7 @@ describe('set_state_id', () => {
           path: ['a'],
           id: 'TEST_ID',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'a',
@@ -116,7 +116,7 @@ describe('set_state_id', () => {
           path: [],
           id: 'TEST_ID',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         id: "TEST_ID",
@@ -146,7 +146,7 @@ describe('set_state_id', () => {
           type: 'set_state_id',
           path: ['a'],
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'a',
@@ -174,7 +174,7 @@ describe('set_state_id', () => {
           type: 'set_state_id',
           path: [],
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'a',

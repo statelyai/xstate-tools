@@ -330,24 +330,12 @@ const machine = createMachine(
           const messageListenerDisposable = registerDisposable(
             extensionContext,
             webviewPanel.webview.onDidReceiveMessage((event: StudioEvent) => {
-              if (
-                event.type === 'MACHINE_CHANGED' ||
-                event.type === 'LAYOUT_UPDATED'
-              ) {
+              if (event.type === 'MACHINE_CHANGED') {
                 languageClient
-                  .sendRequest(
-                    'applyMachineEdits',
-                    event.type === 'LAYOUT_UPDATED'
-                      ? {
-                          machineEdits: [
-                            {
-                              type: 'update_layout_string',
-                              layoutString: event.layoutString,
-                            },
-                          ],
-                        }
-                      : { machineEdits: event.edits, reason: event.reason },
-                  )
+                  .sendRequest('applyMachineEdits', {
+                    machineEdits: event.edits,
+                    reason: event.reason,
+                  })
                   .then(({ textEdits }) => {
                     const workspaceEdit = new vscode.WorkspaceEdit();
                     for (const textEdit of textEdits) {

@@ -22,7 +22,7 @@ describe('edit_invoke', () => {
           invokeIndex: 0,
           source: 'callAn(d)e(r)s',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         invoke: {
@@ -50,7 +50,7 @@ describe('edit_invoke', () => {
           invokeIndex: 0,
           id: 'veryImportantCall',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         invoke: {
@@ -80,7 +80,7 @@ describe('edit_invoke', () => {
           source: 'callAn(d)e(r)s',
           id: 'veryImportantCall',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         invoke: {
@@ -109,7 +109,7 @@ describe('edit_invoke', () => {
           invokeIndex: 0,
           id: undefined,
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         invoke: {
@@ -138,7 +138,7 @@ describe('edit_invoke', () => {
           invokeIndex: 0,
           id: undefined,
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         invoke: {
@@ -168,7 +168,7 @@ describe('edit_invoke', () => {
           invokeIndex: 0,
           source: 'callAn(d)e(r)s',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         invoke: {
@@ -200,7 +200,7 @@ describe('edit_invoke', () => {
           invokeIndex: 1,
           source: 'callAn(d)e(r)s',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         invoke: [{

@@ -18,7 +18,7 @@ describe('add_action', () => {
           actionPath: ['entry', 0],
           name: 'doStuff',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         entry: "doStuff"
@@ -44,7 +44,7 @@ describe('add_action', () => {
           actionPath: ['entry', 0],
           name: 'doStuff',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'a',
@@ -70,7 +70,7 @@ describe('add_action', () => {
           actionPath: ['exit', 0],
           name: 'doStuff',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         exit: "doStuff"
@@ -96,7 +96,7 @@ describe('add_action', () => {
           actionPath: ['exit', 0],
           name: 'doStuff',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'a',
@@ -124,7 +124,7 @@ describe('add_action', () => {
           actionPath: ['entry', 1],
           name: 'doStuff',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         entry: ['bark', "doStuff"],
@@ -147,7 +147,7 @@ describe('add_action', () => {
           actionPath: ['exit', 1],
           name: 'doStuff',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         exit: ['bark', "doStuff"],
@@ -170,7 +170,7 @@ describe('add_action', () => {
           actionPath: ['entry', 0],
           name: 'doStuff',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         entry: ["doStuff", 'bark', 'meow'],
@@ -193,7 +193,7 @@ describe('add_action', () => {
           actionPath: ['entry', 2],
           name: 'doStuff',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         entry: ['bark', 'meow', "doStuff"],
@@ -216,7 +216,7 @@ describe('add_action', () => {
           actionPath: ['entry', 1],
           name: 'doStuff',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         entry: ['bark', "doStuff", 'meow'],
@@ -244,7 +244,7 @@ describe('add_action', () => {
           actionPath: ['on', 'FOO', 0, 0],
           name: 'doStuff',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         on: {
@@ -283,7 +283,7 @@ describe('add_action', () => {
           actionPath: ['invoke', 0, 'onDone', 0, 0],
           name: 'getRaise',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         states: {
@@ -325,7 +325,7 @@ describe('add_action', () => {
           actionPath: ['on', 'FOO', 0, 0],
           name: 'doStuff',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         on: {
@@ -365,7 +365,7 @@ describe('add_action', () => {
           actionPath: ['on', 'FOO', 0, 1],
           name: 'getRaise',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         on: {

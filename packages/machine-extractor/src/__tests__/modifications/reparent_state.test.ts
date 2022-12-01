@@ -30,7 +30,7 @@ describe('reparent_state', () => {
           path: ['a', 'a1'],
           newParentPath: ['b'],
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         states: {
@@ -66,7 +66,7 @@ describe('reparent_state', () => {
           path: ['a', 'a1'],
           newParentPath: ['a', 'a2'],
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         states: {
@@ -109,7 +109,7 @@ describe('reparent_state', () => {
           path: ['a', 'a1'],
           newParentPath: ['b'],
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         states: {
@@ -147,7 +147,7 @@ describe('reparent_state', () => {
           path: ['b', 'b1'],
           newParentPath: ['a'],
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         states: {
@@ -190,7 +190,7 @@ describe('reparent_state', () => {
           path: ['a', 'a1'],
           newParentPath: ['b'],
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         states: {
@@ -237,7 +237,7 @@ describe('reparent_state', () => {
           path: ['a', 'a1'],
           newParentPath: ['b', 'b1'],
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         states: {
@@ -288,7 +288,7 @@ describe('reparent_state', () => {
           path: ['a', 'a1', 'a2'],
           newParentPath: ['b'],
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         states: {
@@ -337,7 +337,7 @@ describe('reparent_state', () => {
           path: ['a', 'a1'],
           newParentPath: ['b'],
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         states: {
@@ -385,7 +385,7 @@ describe('reparent_state', () => {
           path: ['a', 'a1'],
           newParentPath: ['b'],
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         states: {
@@ -433,7 +433,7 @@ describe('reparent_state', () => {
           path: ['a', 'a1'],
           newParentPath: ['b'],
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         states: {
@@ -482,7 +482,7 @@ describe('reparent_state', () => {
           path: ['a'],
           newParentPath: ['b'],
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         states: {
@@ -536,7 +536,7 @@ describe('reparent_state', () => {
           path: ['a', 'a1'],
           newParentPath: ['b'],
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         states: {
@@ -588,7 +588,7 @@ describe('reparent_state', () => {
           path: ['a', 'a1'],
           newParentPath: ['b'],
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         states: {
@@ -633,7 +633,7 @@ describe('reparent_state', () => {
           path: ['a', 'a1'],
           newParentPath: ['b'],
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         states: {
@@ -671,7 +671,7 @@ describe('reparent_state', () => {
           path: ['a', 'a2'],
           newParentPath: ['b'],
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         states: {

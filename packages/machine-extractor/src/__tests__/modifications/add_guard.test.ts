@@ -25,7 +25,7 @@ describe('add_guard', () => {
           transitionPath: ['on', 'FOO', 0],
           name: 'isItTooLate',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         on: {
@@ -63,7 +63,7 @@ describe('add_guard', () => {
           transitionPath: ['on', 'FOO', 0],
           name: 'isItTooLate',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         on: {
@@ -101,7 +101,7 @@ describe('add_guard', () => {
           transitionPath: ['on', 'FOO', 0],
           name: 'isItTooLate',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         on: {
@@ -141,7 +141,7 @@ describe('add_guard', () => {
           transitionPath: ['on', 'FOO', 2],
           name: 'isItTooLate',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         on: {
@@ -181,7 +181,7 @@ describe('add_guard', () => {
           transitionPath: ['on', 'FOO', 1],
           name: 'isItTooLate',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         on: {
@@ -222,7 +222,7 @@ describe('add_guard', () => {
           transitionPath: ['invoke', 0, 'onDone', 0],
           name: 'isHeBusy',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         states: {
@@ -264,7 +264,7 @@ describe('add_guard', () => {
           transitionPath: ['on', '', 0],
           name: 'isItHalfEmpty',
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'a',

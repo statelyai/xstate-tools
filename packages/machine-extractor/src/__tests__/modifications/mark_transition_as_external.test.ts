@@ -29,7 +29,7 @@ describe('mark_transition_as_external', () => {
           transitionPath: ['on', 'NEXT', 0],
           external: true,
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         states: {
@@ -76,7 +76,7 @@ describe('mark_transition_as_external', () => {
           transitionPath: ['on', 'NEXT', 0],
           external: false,
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         states: {

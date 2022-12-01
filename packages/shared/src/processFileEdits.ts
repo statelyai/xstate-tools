@@ -1,8 +1,8 @@
-import { TextEdit } from './types';
+import { FileTextEdit } from './types';
 
 export const processFileEdits = (
   oldText: string,
-  textEdits: Pick<TextEdit, 'range' | 'newText'>[],
+  textEdits: Pick<FileTextEdit, 'range' | 'newText'>[],
 ): string => {
   const sortedEdits = [...textEdits].sort(
     (a, b) => b.range[0].index - a.range[0].index,

@@ -25,7 +25,7 @@ describe('remove_invoke', () => {
           path: [],
           invokeIndex: 0,
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         states: {
@@ -57,7 +57,7 @@ describe('remove_invoke', () => {
           path: [],
           invokeIndex: 0,
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         invoke: [{

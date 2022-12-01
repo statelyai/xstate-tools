@@ -29,7 +29,7 @@ describe('batched edits', () => {
           transitionPath: ['on', 'FOO', 0],
           external: true,
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         states: {
@@ -72,7 +72,7 @@ describe('batched edits', () => {
           type: 'remove_state',
           path: ['active'],
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'idle',
@@ -110,7 +110,7 @@ describe('batched edits', () => {
           type: 'remove_state',
           path: ['idle'],
         },
-      ]).newText,
+      ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
       "{
         initial: 'idle',
