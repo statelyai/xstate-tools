@@ -1210,4 +1210,41 @@ describe('rename_state', () => {
       }"
     `);
   });
+
+  it(`should successfully update the target descriptor of a self-transition of the renamed state`, () => {
+    const modifiableMachine = getModifiableMachine(`
+      createMachine({
+        initial: 'foo',
+        states: {
+          foo: {
+            on: {
+              NEXT: "foo"
+            }
+          },
+        },
+      })
+	  `);
+
+    debugger;
+    expect(
+      modifiableMachine.modify([
+        {
+          type: 'rename_state',
+          path: ['foo'],
+          name: 'wow',
+        },
+      ]).configEdit.newText,
+    ).toMatchInlineSnapshot(`
+      "{
+        initial: "wow",
+        states: {
+          wow: {
+            on: {
+              NEXT: "wow"
+            }
+          },
+        },
+      }"
+    `);
+  });
 });
