@@ -951,9 +951,6 @@ export class MachineExtractResult {
           if (edit.path.length === 0) {
             throw new Error(`Root state can't be moved.`);
           }
-          if (edit.newParentPath.length === 0) {
-            throw new Error(`State can't be moved to the root.`);
-          }
           if (
             arePathsEqual(
               edit.path,
