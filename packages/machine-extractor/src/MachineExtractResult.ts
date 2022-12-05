@@ -2398,8 +2398,14 @@ function getBestTargetDescriptor(
     return `.${targetPath.slice(sourcePath.length).join('.')}`;
   }
 
+  const isTargetingAncestor = arePathsEqual(
+    sourcePath.slice(0, targetPath.length),
+    targetPath,
+  );
+
   if (
-    // this transition targets a state within the renamed sibling
+    !isTargetingAncestor &&
+    // this transition might target a state within the renamed sibling
     // we can't just update the segment to the empty string as that would result in targeting own descendant
     targetPath[0] !== '' &&
     arePathsEqual(

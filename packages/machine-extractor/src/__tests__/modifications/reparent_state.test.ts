@@ -717,4 +717,43 @@ describe('reparent_state', () => {
       }"
     `);
   });
+
+  it(`should update the target descriptor correctly when moving a state to lie within the target`, () => {
+    const modifiableMachine = getModifiableMachine(`
+      createMachine({
+        states: {
+          a: {
+            on: {
+              FOO: 'b'
+            }
+          },
+          b: {}
+        }
+      })
+    `);
+
+    expect(
+      modifiableMachine.modify([
+        {
+          type: 'reparent_state',
+          path: ['a'],
+          newParentPath: ['b'],
+        },
+      ]).configEdit.newText,
+    ).toMatchInlineSnapshot(`
+      "{
+        states: {
+          b: {
+            states: {
+              a: {
+                on: {
+                  FOO: "#(machine).b"
+                }
+              }
+            }
+          }
+        }
+      }"
+    `);
+  });
 });
