@@ -73,7 +73,11 @@ export type MachineEdit =
   | { type: 'remove_state'; path: string[] }
   | { type: 'rename_state'; path: string[]; name: string }
   | { type: 'reparent_state'; path: string[]; newParentPath: string[] }
-  | { type: 'set_initial_state'; path: string[]; initialState: string }
+  | {
+      type: 'set_initial_state';
+      path: string[];
+      initialState?: string | undefined;
+    }
   | { type: 'set_state_id'; path: string[]; id?: string }
   | {
       type: 'set_state_type';
@@ -947,9 +951,6 @@ export class MachineExtractResult {
           if (edit.path.length === 0) {
             throw new Error(`Root state can't be moved.`);
           }
-          if (edit.newParentPath.length === 0) {
-            throw new Error(`State can't be moved to the root.`);
-          }
           if (
             arePathsEqual(
               edit.path,
@@ -1127,7 +1128,16 @@ export class MachineExtractResult {
             edit.path,
           );
 
-          setProperty(stateObj, 'initial', b.stringLiteral(edit.initialState));
+          if (typeof edit.initialState === 'string') {
+            setProperty(
+              stateObj,
+              'initial',
+              b.stringLiteral(edit.initialState),
+            );
+          } else {
+            removeProperty(stateObj, 'initial');
+          }
+
           break;
         }
         case 'set_state_id': {
@@ -2388,8 +2398,14 @@ function getBestTargetDescriptor(
     return `.${targetPath.slice(sourcePath.length).join('.')}`;
   }
 
+  const isTargetingAncestor = arePathsEqual(
+    sourcePath.slice(0, targetPath.length),
+    targetPath,
+  );
+
   if (
-    // this transition targets a state within the renamed sibling
+    !isTargetingAncestor &&
+    // this transition might target a state within the renamed sibling
     // we can't just update the segment to the empty string as that would result in targeting own descendant
     targetPath[0] !== '' &&
     arePathsEqual(

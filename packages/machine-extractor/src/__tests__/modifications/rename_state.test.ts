@@ -1225,7 +1225,6 @@ describe('rename_state', () => {
       })
 	  `);
 
-    debugger;
     expect(
       modifiableMachine.modify([
         {

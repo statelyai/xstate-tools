@@ -4,10 +4,6 @@ import { extractMachinesFromFile } from '../../extractMachinesFromFile';
 const getModifiableMachine = (code: string) =>
   extractMachinesFromFile(outdent.string(code))!.machines[0]!;
 
-// TODO: change *some* targets within the moved state
-// TODO: change some targets targeting the moved state (or its decendants)
-// TODO: remove initial if it got moved?
-
 describe('reparent_state', () => {
   it('should be possible to move a state to a sibling of the parent', () => {
     const modifiableMachine = getModifiableMachine(`
@@ -686,6 +682,76 @@ describe('reparent_state', () => {
               a2: {}
             }
           },
+        }
+      }"
+    `);
+  });
+
+  it(`should be possible to move a state to the root`, () => {
+    const modifiableMachine = getModifiableMachine(`
+      createMachine({
+        states: {
+          a: {
+            states: {
+              a1: {},
+            }
+          },
+        }
+      })
+    `);
+
+    expect(
+      modifiableMachine.modify([
+        {
+          type: 'reparent_state',
+          path: ['a', 'a1'],
+          newParentPath: [],
+        },
+      ]).configEdit.newText,
+    ).toMatchInlineSnapshot(`
+      "{
+        states: {
+          a: {},
+          a1: {}
+        }
+      }"
+    `);
+  });
+
+  it(`should update the target descriptor correctly when moving a state to lie within the target`, () => {
+    const modifiableMachine = getModifiableMachine(`
+      createMachine({
+        states: {
+          a: {
+            on: {
+              FOO: 'b'
+            }
+          },
+          b: {}
+        }
+      })
+    `);
+
+    expect(
+      modifiableMachine.modify([
+        {
+          type: 'reparent_state',
+          path: ['a'],
+          newParentPath: ['b'],
+        },
+      ]).configEdit.newText,
+    ).toMatchInlineSnapshot(`
+      "{
+        states: {
+          b: {
+            states: {
+              a: {
+                on: {
+                  FOO: "#(machine).b"
+                }
+              }
+            }
+          }
         }
       }"
     `);
