@@ -1,5 +1,11 @@
 # @xstate/cli
 
+## 0.3.4
+
+### Patch Changes
+
+- [#220](https://github.com/statelyai/xstate-tools/pull/220) [`39f6393`](https://github.com/statelyai/xstate-tools/commit/39f639321b2291d7f309f39b7184bd2bff1676be) Thanks [@Andarist](https://github.com/Andarist)! - Fixed a bug that caused the path to the typegen file not always being correctly updated in the machine definition when the basename of the file didn't change but its relative location did.
+
 ## 0.3.3
 
 ### Patch Changes

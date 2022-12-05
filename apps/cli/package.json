@@ -1,6 +1,6 @@
 {
   "name": "@xstate/cli",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "bin": {
     "xstate": "./bin/bin.js"
   },
