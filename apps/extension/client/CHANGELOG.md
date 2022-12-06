@@ -1,5 +1,31 @@
 # stately-vscode
 
+## 1.11.0
+
+### Minor Changes
+
+- [#229](https://github.com/statelyai/xstate-tools/pull/229) [`5be7962`](https://github.com/statelyai/xstate-tools/commit/5be7962759267aae606d690bf22390c02a0ff4b0) Thanks [@Andarist](https://github.com/Andarist)! - Revamped the bidirectional-editing implementation. When syncing edits made in the Editor we should no longer remove parts of the config that don't relate to the performed change.
+
+* [#208](https://github.com/statelyai/xstate-tools/pull/208) [`600d1ef`](https://github.com/statelyai/xstate-tools/commit/600d1ef771cb360974fc1d0da389d163ffa45d2e) Thanks [@Andarist](https://github.com/Andarist)! - The Editor is now bundled together with the extension. This allows you to use the extension offline.
+
+### Patch Changes
+
+- [#242](https://github.com/statelyai/xstate-tools/pull/242) [`921586e`](https://github.com/statelyai/xstate-tools/commit/921586e76dff653364db61fbca5dbb548a882e92) Thanks [@mellson](https://github.com/mellson)! - Show source parsing errors and invalid config errors (that prevent the visualization) in the visual editor.
+
+* [#232](https://github.com/statelyai/xstate-tools/pull/232) [`e38318e`](https://github.com/statelyai/xstate-tools/commit/e38318e549ed3346ffb120e9f01150b29200d0aa) Thanks [@Andarist](https://github.com/Andarist)! - The Editor and the Visualizer should no longer blink when typing into parts of the source code unrelated to the currently displayed machine.
+
+- [#208](https://github.com/statelyai/xstate-tools/pull/208) [`600d1ef`](https://github.com/statelyai/xstate-tools/commit/600d1ef771cb360974fc1d0da389d163ffa45d2e) Thanks [@Andarist](https://github.com/Andarist)! - Keyboard events should now propagate to the VS Code correctly from within the open Editor. This means that you will now be able to properly close the tab, open the command palette, and more
+
+* [#220](https://github.com/statelyai/xstate-tools/pull/220) [`39f6393`](https://github.com/statelyai/xstate-tools/commit/39f639321b2291d7f309f39b7184bd2bff1676be) Thanks [@Andarist](https://github.com/Andarist)! - Code-related processing has been centralized in the source code. Thanks to that it should be way less likely to end up with stale data being returned by code lenses, commands, etc.
+
+- [#220](https://github.com/statelyai/xstate-tools/pull/220) [`39f6393`](https://github.com/statelyai/xstate-tools/commit/39f639321b2291d7f309f39b7184bd2bff1676be) Thanks [@Andarist](https://github.com/Andarist)! - Fixed an issue with updating the generated typegen files even if there was no actual change in their output. This reduces the amount of the file system notifications triggered by updating the typegen files.
+
+* [#234](https://github.com/statelyai/xstate-tools/pull/234) [`911964a`](https://github.com/statelyai/xstate-tools/commit/911964ad6b5a96fc3826400c8ce4b6316a2ce1dd) Thanks [@Andarist](https://github.com/Andarist)! - The method for updating typegen files in the background has been changed. The TS language server shouldn't miss any updates made to those files now.
+
+- [#220](https://github.com/statelyai/xstate-tools/pull/220) [`39f6393`](https://github.com/statelyai/xstate-tools/commit/39f639321b2291d7f309f39b7184bd2bff1676be) Thanks [@Andarist](https://github.com/Andarist)! - Fixed a bug that caused the path to the typegen file not always being correctly updated in the machine definition when the basename of the file didn't change but its relative location did.
+
+* [#229](https://github.com/statelyai/xstate-tools/pull/229) [`5be7962`](https://github.com/statelyai/xstate-tools/commit/5be7962759267aae606d690bf22390c02a0ff4b0) Thanks [@Andarist](https://github.com/Andarist)! - Fixed an issue with not being able to apply changes coming from an open Editor when the corresponding text editor has been closed.
+
 ## 1.10.0
 
 ### Minor Changes
