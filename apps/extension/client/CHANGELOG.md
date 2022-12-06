@@ -24,7 +24,7 @@
 
 - [#220](https://github.com/statelyai/xstate-tools/pull/220) [`39f6393`](https://github.com/statelyai/xstate-tools/commit/39f639321b2291d7f309f39b7184bd2bff1676be) Thanks [@Andarist](https://github.com/Andarist)! - Fixed a bug that caused the path to the typegen file not always being correctly updated in the machine definition when the basename of the file didn't change but its relative location did.
 
-* [#229](https://github.com/statelyai/xstate-tools/pull/229) [`5be7962`](https://github.com/statelyai/xstate-tools/commit/5be7962759267aae606d690bf22390c02a0ff4b0) Thanks [@Andarist](https://github.com/Andarist)! - Fixed an issue with not being able to apply changes coming from an open Editor when the corresponding text editor has been closed.
+- [#256](https://github.com/statelyai/xstate-tools/pull/256) [`4d0cfc1`](https://github.com/statelyai/xstate-tools/commit/4d0cfc18977788e45111da508d7615d07aa3ac0d) Thanks [@Andarist](https://github.com/Andarist)! - Fixed an issue with not being able to apply changes coming from an open Editor when the corresponding text editor has been closed.
 
 ## 1.10.0
 
