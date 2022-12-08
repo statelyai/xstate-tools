@@ -966,6 +966,193 @@ export interface Typegen0 {
 "
 `;
 
+exports[`getTypegenOutput inline-action-function-expression 1`] = `
+"// This file was automatically generated. Edits will be overwritten
+
+export interface Typegen0 {
+  "@@xstate/typegen": true;
+  internalEvents: {
+    "xstate.init": { type: "xstate.init" };
+  };
+  invokeSrcNameMap: {};
+  missingImplementations: {
+    actions: never;
+    delays: never;
+    guards: never;
+    services: never;
+  };
+  eventsCausingActions: {};
+  eventsCausingDelays: {};
+  eventsCausingGuards: {};
+  eventsCausingServices: {};
+  matchesStates: undefined;
+  tags: never;
+}
+"
+`;
+
+exports[`getTypegenOutput inline-action-identifier 1`] = `
+"// This file was automatically generated. Edits will be overwritten
+
+export interface Typegen0 {
+  "@@xstate/typegen": true;
+  internalEvents: {
+    "xstate.init": { type: "xstate.init" };
+  };
+  invokeSrcNameMap: {};
+  missingImplementations: {
+    actions: never;
+    delays: never;
+    guards: never;
+    services: never;
+  };
+  eventsCausingActions: {};
+  eventsCausingDelays: {};
+  eventsCausingGuards: {};
+  eventsCausingServices: {};
+  matchesStates: undefined;
+  tags: never;
+}
+"
+`;
+
+exports[`getTypegenOutput inline-guard-function-expression 1`] = `
+"// This file was automatically generated. Edits will be overwritten
+
+export interface Typegen0 {
+  "@@xstate/typegen": true;
+  internalEvents: {
+    "xstate.init": { type: "xstate.init" };
+  };
+  invokeSrcNameMap: {};
+  missingImplementations: {
+    actions: "logSmth";
+    delays: never;
+    guards: never;
+    services: never;
+  };
+  eventsCausingActions: {
+    logSmth: "FOO";
+  };
+  eventsCausingDelays: {};
+  eventsCausingGuards: {};
+  eventsCausingServices: {};
+  matchesStates: undefined;
+  tags: never;
+}
+"
+`;
+
+exports[`getTypegenOutput inline-guard-identifier 1`] = `
+"// This file was automatically generated. Edits will be overwritten
+
+export interface Typegen0 {
+  "@@xstate/typegen": true;
+  internalEvents: {
+    "xstate.init": { type: "xstate.init" };
+  };
+  invokeSrcNameMap: {};
+  missingImplementations: {
+    actions: "logSmth";
+    delays: never;
+    guards: never;
+    services: never;
+  };
+  eventsCausingActions: {
+    logSmth: "FOO";
+  };
+  eventsCausingDelays: {};
+  eventsCausingGuards: {};
+  eventsCausingServices: {};
+  matchesStates: undefined;
+  tags: never;
+}
+"
+`;
+
+exports[`getTypegenOutput inline-service-done-event-causing-actions 1`] = `
+"// This file was automatically generated. Edits will be overwritten
+
+export interface Typegen0 {
+  "@@xstate/typegen": true;
+  internalEvents: {
+    "done.invoke.(machine).a:invocation[0]": {
+      type: "done.invoke.(machine).a:invocation[0]";
+      data: unknown;
+      __tip: "See the XState TS docs to learn how to strongly type this.";
+    };
+    "xstate.init": { type: "xstate.init" };
+  };
+  invokeSrcNameMap: {};
+  missingImplementations: {
+    actions: "entryB" | "invokeOnDoneAction";
+    delays: never;
+    guards: never;
+    services: never;
+  };
+  eventsCausingActions: {
+    entryB: "done.invoke.(machine).a:invocation[0]";
+    invokeOnDoneAction: "done.invoke.(machine).a:invocation[0]";
+  };
+  eventsCausingDelays: {};
+  eventsCausingGuards: {};
+  eventsCausingServices: {};
+  matchesStates: "a" | "b";
+  tags: never;
+}
+"
+`;
+
+exports[`getTypegenOutput inline-service-src-function-expression 1`] = `
+"// This file was automatically generated. Edits will be overwritten
+
+export interface Typegen0 {
+  "@@xstate/typegen": true;
+  internalEvents: {
+    "xstate.init": { type: "xstate.init" };
+  };
+  invokeSrcNameMap: {};
+  missingImplementations: {
+    actions: never;
+    delays: never;
+    guards: never;
+    services: never;
+  };
+  eventsCausingActions: {};
+  eventsCausingDelays: {};
+  eventsCausingGuards: {};
+  eventsCausingServices: {};
+  matchesStates: undefined;
+  tags: never;
+}
+"
+`;
+
+exports[`getTypegenOutput inline-service-src-identifier 1`] = `
+"// This file was automatically generated. Edits will be overwritten
+
+export interface Typegen0 {
+  "@@xstate/typegen": true;
+  internalEvents: {
+    "xstate.init": { type: "xstate.init" };
+  };
+  invokeSrcNameMap: {};
+  missingImplementations: {
+    actions: never;
+    delays: never;
+    guards: never;
+    services: never;
+  };
+  eventsCausingActions: {};
+  eventsCausingDelays: {};
+  eventsCausingGuards: {};
+  eventsCausingServices: {};
+  matchesStates: undefined;
+  tags: never;
+}
+"
+`;
+
 exports[`getTypegenOutput invoke-within-targeted-parallel 1`] = `
 "// This file was automatically generated. Edits will be overwritten
 

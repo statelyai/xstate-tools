@@ -135,20 +135,23 @@ const parseStateNode = (
     const invokes: typeof config.invoke = [];
 
     astResult.invoke.forEach((invoke) => {
-      if (!invoke.src) return;
-      let src: string;
-      if (opts?.anonymizeInlineImplementations) {
-        src = 'anonymous';
-      } else if (opts?.hashInlineImplementations) {
-        src =
-          invoke.src.declarationType === 'named'
-            ? invoke.src.value
-            : invoke.src.inlineDeclarationId;
-      } else {
-        src = invoke.src.value;
+      if (!invoke.src) {
+        return;
       }
+      let src: string | undefined;
+
+      switch (true) {
+        case invoke.src.declarationType === 'named':
+          src = invoke.src.value;
+          break;
+        case opts?.anonymizeInlineImplementations:
+          src = 'anonymous';
+        case opts?.hashInlineImplementations:
+          src = invoke.src.inlineDeclarationId;
+      }
+
       const toPush: typeof invokes[number] = {
-        src,
+        src: src || (() => () => {}),
       };
 
       if (invoke.id) {
@@ -199,28 +202,25 @@ export const getActionConfig = (
   const actions: Actions<any, any> = [];
 
   astActions?.forEach((action) => {
-    if (
-      opts?.anonymizeInlineImplementations &&
-      action.declarationType !== 'named'
-    ) {
-      actions.push({
-        type: 'anonymous',
-      });
-    } else if (
-      opts?.hashInlineImplementations &&
-      action.declarationType !== 'named'
-    ) {
-      actions.push({
-        type: action.inlineDeclarationId,
-      });
-    } else {
-      if (opts?.stringifyInlineImplementations) {
+    switch (true) {
+      case action.declarationType === 'named':
+        actions.push(action.name);
+        return;
+      case opts?.anonymizeInlineImplementations:
+        actions.push({
+          type: 'anonymous',
+        });
+        return;
+      case opts?.hashInlineImplementations:
+        actions.push({
+          type: action.inlineDeclarationId,
+        });
+        return;
+      case opts?.stringifyInlineImplementations:
         actions.push(
-          opts.fileContent.slice(action.node.start!, action.node.end!),
+          opts!.fileContent.slice(action.node.start!, action.node.end!),
         );
-      } else {
-        actions.push(action.action);
-      }
+        return;
     }
   });
 
@@ -247,18 +247,16 @@ export const getTransitions = (
       }
     }
     if (transition?.cond) {
-      if (
-        opts?.anonymizeInlineImplementations &&
-        transition.cond.declarationType !== 'named'
-      ) {
-        toPush.cond = 'anonymous';
-      } else if (
-        opts?.hashInlineImplementations &&
-        transition.cond.declarationType !== 'named'
-      ) {
-        toPush.cond = transition.cond.inlineDeclarationId;
-      } else {
-        toPush.cond = transition?.cond.cond;
+      switch (true) {
+        case transition.cond.declarationType === 'named':
+          toPush.cond = transition.cond.name;
+          break;
+        case opts?.anonymizeInlineImplementations:
+          toPush.cond = 'anonymous';
+          break;
+        case opts?.hashInlineImplementations:
+          toPush.cond = transition.cond.inlineDeclarationId;
+          break;
       }
     }
     if (transition?.actions) {
