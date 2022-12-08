@@ -1708,8 +1708,14 @@ function updateInvoke(
   data: Pick<Extract<MachineEdit, { type: 'edit_invoke' }>, 'id' | 'source'>,
 ) {
   if (typeof data.id === 'string') {
-    const idProp = findObjectProperty(invoke, 'id')!;
-    idProp.value = b.stringLiteral(data.id);
+    const idProp = findObjectProperty(invoke, 'id');
+    if (idProp) {
+      idProp.value = b.stringLiteral(data.id);
+    } else {
+      invoke.properties.push(
+        b.objectProperty(b.identifier('id'), b.stringLiteral(data.id)),
+      );
+    }
   } else if ('id' in data && data.id === undefined) {
     removeProperty(invoke, 'id');
   }
