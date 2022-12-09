@@ -36,12 +36,7 @@ import { getCursorHoverType } from './getCursorHoverType';
 import { getDiagnostics } from './getDiagnostics';
 import { getReferences } from './getReferences';
 import { CachedDocument } from './types';
-import {
-  getErrorMessage,
-  isErrorWithMessage,
-  isTypedMachineResult,
-  isTypegenData,
-} from './utils';
+import { getErrorMessage, isTypedMachineResult, isTypegenData } from './utils';
 
 let hasConfigurationCapability = false;
 let hasWorkspaceFolderCapability = false;
