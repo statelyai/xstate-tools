@@ -58,7 +58,7 @@ export interface RequestMap {
     params: { uri: string; machineIndex: number };
     result: {
       config: MachineConfig<any, any, any>;
-      layoutString: string | undefined;
+      layoutString: string | null;
       implementations: ImplementationsMetadata;
       namedGuards: string[];
     };
@@ -69,7 +69,7 @@ export interface RequestMap {
     result: {
       config: MachineConfig<any, any, any>;
       machineIndex: number;
-      layoutString: string | undefined;
+      layoutString: string | null;
       implementations: ImplementationsMetadata;
       namedGuards: string[];
     };
@@ -113,7 +113,7 @@ export interface RequestMap {
 export interface NotificationMap {
   displayedMachineUpdated: {
     config: MachineConfig<any, any, any>;
-    layoutString: string | undefined;
+    layoutString: string | null;
     implementations: ImplementationsMetadata;
     namedGuards: string[];
   };
@@ -122,6 +122,6 @@ export interface NotificationMap {
     types: TypegenData[];
   };
   extractionError: {
-    message: string | undefined;
+    message: string | null;
   };
 }

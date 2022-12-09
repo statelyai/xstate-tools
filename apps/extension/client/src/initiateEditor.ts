@@ -60,7 +60,7 @@ async function getWebviewHtml(
     layoutString,
   }: {
     config: MachineConfig<any, any, any>;
-    layoutString: string | undefined;
+    layoutString: string | null;
     implementations: ImplementationsMetadata;
   },
 ) {
@@ -118,20 +118,20 @@ type EditMachine = {
   config: MachineConfig<any, any, any>;
   index: number;
   uri: string;
-  layoutString: string | undefined;
+  layoutString: string | null;
   implementations: ImplementationsMetadata;
 };
 
 type DisplayedMachineUpdated = {
   type: 'DISPLAYED_MACHINE_UPDATED';
   config: MachineConfig<any, any, any>;
-  layoutString: string | undefined;
+  layoutString: string | null;
   implementations: ImplementationsMetadata;
 };
 
 type ExtractionError = {
   type: 'EXTRACTION_ERROR';
-  message: string | undefined;
+  message: string | null;
 };
 
 const machine = createMachine(

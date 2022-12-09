@@ -10,6 +10,6 @@ export interface ExtractionResult {
 export interface CachedDocument {
   documentText: string;
   extractionResults: ExtractionResult[];
-  syntaxError?: string;
+  error?: { type: 'syntax' | 'unknown'; message: string } | undefined;
   undoStack: Array<{ deleted: any[] } | undefined>;
 }
