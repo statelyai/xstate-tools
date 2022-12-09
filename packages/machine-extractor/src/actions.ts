@@ -247,9 +247,15 @@ export const SendAction = wrapParserResult(
             };
           }),
         {
-          id: result.argument2Result?.id?.value,
-          to: result.argument2Result?.to?.value,
-          delay: result.argument2Result?.delay?.value,
+          ...(result.argument2Result?.id?.value && {
+            id: result.argument2Result.id.value,
+          }),
+          ...(result.argument2Result?.to?.value && {
+            to: result.argument2Result.to.value,
+          }),
+          ...(result.argument2Result?.delay?.value && {
+            delay: result.argument2Result.delay.value,
+          }),
         },
       ),
       declarationType: 'inline',
@@ -268,7 +274,9 @@ export const ForwardToAction = wrapParserResult(
     return {
       node: result.node,
       action: forwardTo(result.argument1Result?.value || '', {
-        to: result.argument2Result?.to?.value,
+        ...(result.argument2Result?.to?.value && {
+          to: result.argument2Result.to.value,
+        }),
       }),
       name: '',
       declarationType: 'inline',

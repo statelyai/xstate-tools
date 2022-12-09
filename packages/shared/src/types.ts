@@ -76,7 +76,10 @@ export interface RequestMap {
     error: any;
   };
   applyMachineEdits: {
-    params: { machineEdits: MachineEdit[]; reason?: 'undo' | 'redo' };
+    params: {
+      machineEdits: MachineEdit[];
+      reason?: 'undo' | 'redo' | undefined;
+    };
     result: {
       textEdits: FileTextEdit[];
     };

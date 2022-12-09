@@ -621,7 +621,7 @@ describe('reanchor_transition', () => {
         {
           type: 'reanchor_transition',
           sourcePath: ['a'],
-          newTargetPath: undefined,
+          newTargetPath: null,
           transitionPath: ['on', 'NEXT', 0],
         },
       ]).configEdit.newText,
@@ -661,7 +661,7 @@ describe('reanchor_transition', () => {
         {
           type: 'reanchor_transition',
           sourcePath: ['a'],
-          newTargetPath: undefined,
+          newTargetPath: null,
           transitionPath: ['on', 'NEXT', 0],
         },
       ]).configEdit.newText,
