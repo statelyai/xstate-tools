@@ -101,7 +101,7 @@ export const staticObjectProperty = <KeyResult>(
     t.ObjectProperty,
     {
       node: t.ObjectProperty;
-      key?: KeyResult;
+      key: KeyResult | undefined;
     }
   >({
     babelMatcher: (node): node is t.ObjectProperty => {
@@ -142,7 +142,7 @@ export const dynamicObjectProperty = <KeyResult>(
     t.ObjectProperty,
     {
       node: t.ObjectProperty;
-      key?: KeyResult;
+      key: KeyResult | undefined;
     }
   >({
     babelMatcher: (node): node is t.ObjectProperty => {
@@ -183,10 +183,12 @@ const dynamicPropertyWithKey = dynamicObjectProperty(
 
 const propertyKey = unionType<{
   node: t.ObjectMethod | t.ObjectProperty;
-  key?: {
-    node: t.Node;
-    value: string | number | undefined;
-  };
+  key:
+    | {
+        node: t.Node;
+        value: string | number | undefined;
+      }
+    | undefined;
 }>([objectMethod, staticPropertyWithKey, dynamicPropertyWithKey]);
 
 /**

@@ -4,7 +4,8 @@
     "target": "es2019",
     "lib": ["ES2019"],
     "strict": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "exactOptionalPropertyTypes": true
   },
   "exclude": ["node_modules", ".vscode-test"]
 }

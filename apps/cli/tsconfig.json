@@ -6,7 +6,8 @@
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
-    "target": "es2015"
+    "target": "es2015",
+    "exactOptionalPropertyTypes": true
   },
   "include": ["src"],
   "exclude": ["src/__tests__/__examples__"]

@@ -72,7 +72,7 @@ export const findTSEnumDeclarationWithName = (
 };
 
 interface DeepMemberExpression {
-  child?: DeepMemberExpression;
+  child: DeepMemberExpression | undefined;
   node: t.MemberExpression | t.Identifier;
 }
 
