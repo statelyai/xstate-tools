@@ -3,7 +3,6 @@ import {
   ImplementationsMetadata,
   resolveUriToFilePrefix,
 } from '@xstate/tools-shared';
-import fetch from 'isomorphic-fetch';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { ColorThemeKind } from 'vscode';

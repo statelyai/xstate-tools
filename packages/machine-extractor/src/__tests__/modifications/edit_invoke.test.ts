@@ -135,7 +135,7 @@ describe('edit_invoke', () => {
           type: 'edit_invoke',
           path: [],
           invokeIndex: 0,
-          id: undefined,
+          id: null,
         },
       ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
@@ -164,7 +164,7 @@ describe('edit_invoke', () => {
           type: 'edit_invoke',
           path: [],
           invokeIndex: 0,
-          id: undefined,
+          id: null,
         },
       ]).configEdit.newText,
     ).toMatchInlineSnapshot(`

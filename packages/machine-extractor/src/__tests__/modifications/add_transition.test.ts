@@ -15,7 +15,7 @@ describe('add_transition', () => {
         {
           type: 'add_transition',
           sourcePath: [],
-          targetPath: undefined,
+          targetPath: null,
           transitionPath: ['on', 'FOO', 0],
           external: true,
         },
@@ -1410,7 +1410,7 @@ describe('add_transition', () => {
         {
           type: 'add_transition',
           sourcePath: ['foo'],
-          targetPath: undefined,
+          targetPath: null,
           transitionPath: ['on', 'NEXT', 0],
           external: true,
           guard: 'isItTooLate',
