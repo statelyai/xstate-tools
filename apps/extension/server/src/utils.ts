@@ -11,6 +11,18 @@ export const isErrorWithMessage = (
   'message' in error &&
   typeof (error as Record<string, unknown>).message === 'string';
 
+export const getErrorMessage = (error: unknown): string => {
+  if (
+    !error ||
+    typeof error !== 'object' ||
+    !('message' in error) ||
+    typeof error.message !== 'string'
+  ) {
+    return 'Unknown error';
+  }
+  return error.message;
+};
+
 export const isTypegenData = (
   typegenData: TypegenData | undefined,
 ): typegenData is TypegenData => typegenData !== undefined;
