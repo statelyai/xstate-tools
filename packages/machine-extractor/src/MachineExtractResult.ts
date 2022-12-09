@@ -708,8 +708,9 @@ export class MachineExtractResult {
   };
 
   modify(edits: Array<MachineEdit>) {
-    // we need to read it before calling `recast.parse` as that mutates the AST and removes comments
+    // we need to read it before calling `recast.parse` as that mutates the AST and removes comments and sometimes also locations
     const existingLayoutComment = this.getLayoutComment();
+    const existingMachineNodeLoc = this.machineCallResult.node.loc!;
 
     // this ain't ideal because Recast mutates the input AST
     // so there is a risk that modifying multiple machines in a single file would lead to problems
@@ -1544,10 +1545,8 @@ export class MachineExtractResult {
     // it's the best way we have right now to keep the formatting intact as much as possible though
     const machineNode = getMachineNodesFromFile(reprinted).machineNodes.find(
       (machineNode) =>
-        machineNode.loc!.start.line ===
-          this.machineCallResult.node.loc!.start.line &&
-        machineNode.loc!.start.column ===
-          this.machineCallResult.node.loc!.start.column,
+        machineNode.loc!.start.line === existingMachineNodeLoc.start.line &&
+        machineNode.loc!.start.column === existingMachineNodeLoc.start.column,
     )!;
 
     const configEdit: TextEdit = {
