@@ -756,14 +756,6 @@ export class MachineExtractResult {
           break;
         }
         case 'remove_state': {
-          const removed = removeState(recastDefinitionNode, edit.path);
-
-          deleted.push({
-            type: 'state',
-            statePath: edit.path,
-            state: removed,
-          });
-
           this.getTransitionTargets().forEach(
             ({ target, targetPath, fromPath, transitionPath }) => {
               target.forEach((_, index) => {
@@ -786,6 +778,14 @@ export class MachineExtractResult {
               });
             },
           );
+
+          const removed = removeState(recastDefinitionNode, edit.path);
+
+          deleted.push({
+            type: 'state',
+            statePath: edit.path,
+            state: removed,
+          });
           break;
         }
         case 'rename_state': {
