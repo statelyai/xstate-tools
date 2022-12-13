@@ -527,4 +527,36 @@ describe('remove_state', () => {
       }"
     `);
   });
+
+  it(`should remove a state with a self-transition`, () => {
+    const modifiableMachine = getModifiableMachine(`
+      createMachine({
+        initial: 'sad',
+        states: {
+          happy: {
+            on: {
+              SOUP: 'happy'
+            }
+          },
+          sad: {}
+        }
+      })
+    `);
+
+    expect(
+      modifiableMachine.modify([
+        {
+          type: 'remove_state',
+          path: ['happy'],
+        },
+      ]).configEdit.newText,
+    ).toMatchInlineSnapshot(`
+      "{
+        initial: 'sad',
+        states: {
+          sad: {}
+        }
+      }"
+    `);
+  });
 });
