@@ -4,11 +4,17 @@ import { Context } from './context';
 import { History } from './history';
 import { Invoke } from './invoke';
 import { StateMeta } from './meta';
-import { AnyNode, BooleanLiteral, StringLiteral } from './scalars';
+import {
+  AnyNode,
+  BooleanLiteral,
+  StringLiteral,
+  TemplateLiteral,
+} from './scalars';
 import { Schema } from './schema';
 import { MaybeTransitionArray } from './transitions';
 import { TsTypes } from './tsTypes';
 import { AnyParser } from './types';
+import { unionType } from './unionType';
 import {
   GetParserResult,
   maybeArrayOf,
@@ -91,7 +97,7 @@ const StateNodeObject: AnyParser<StateNodeReturn> = objectTypeWithKnownKeys(
     meta: StateMeta,
     data: AnyNode,
     parallel: BooleanLiteral,
-    description: StringLiteral,
+    description: unionType([StringLiteral, TemplateLiteral]),
     activities: AnyNode,
 
     // those should only be allowed at the root level
