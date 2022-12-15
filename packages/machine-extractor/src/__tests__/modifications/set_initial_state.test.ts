@@ -121,7 +121,7 @@ describe('set_initial_state', () => {
         {
           type: 'set_initial_state',
           path: [],
-          initialState: undefined,
+          initialState: null,
         },
       ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
@@ -154,7 +154,7 @@ describe('set_initial_state', () => {
         {
           type: 'set_initial_state',
           path: ['foo'],
-          initialState: undefined,
+          initialState: null,
         },
       ]).configEdit.newText,
     ).toMatchInlineSnapshot(`

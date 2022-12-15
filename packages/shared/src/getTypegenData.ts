@@ -150,7 +150,7 @@ const getProvidedImplementations = (machine: MachineExtractResult) => {
 
 const collectPotentialInternalEvents = (
   lineArrays: { events: string[] }[][],
-  services: Array<{ id?: string }>,
+  services: Array<{ id: string | undefined }>,
 ) =>
   unique(
     lineArrays

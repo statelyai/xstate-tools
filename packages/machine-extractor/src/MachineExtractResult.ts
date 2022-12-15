@@ -76,9 +76,9 @@ export type MachineEdit =
   | {
       type: 'set_initial_state';
       path: string[];
-      initialState?: string | undefined;
+      initialState: string | null;
     }
-  | { type: 'set_state_id'; path: string[]; id?: string }
+  | { type: 'set_state_id'; path: string[]; id: string | null }
   | {
       type: 'set_state_type';
       path: string[];
@@ -88,7 +88,7 @@ export type MachineEdit =
   | {
       type: 'add_transition';
       sourcePath: string[];
-      targetPath: string[] | undefined;
+      targetPath: string[] | null;
       transitionPath: TransitionPath;
       external: boolean;
       guard?: string;
@@ -101,8 +101,8 @@ export type MachineEdit =
   | {
       type: 'reanchor_transition';
       sourcePath: string[];
-      newSourcePath?: string[] | undefined;
-      newTargetPath?: string[] | undefined;
+      newSourcePath?: string[];
+      newTargetPath?: string[] | null;
       transitionPath: TransitionPath;
       newTransitionPath?: TransitionPath;
     }
@@ -157,7 +157,7 @@ export type MachineEdit =
       path: string[];
       invokeIndex: number;
       source: string;
-      id?: string | undefined;
+      id?: string;
     }
   | {
       type: 'remove_invoke';
@@ -168,14 +168,14 @@ export type MachineEdit =
       type: 'edit_invoke';
       path: string[];
       invokeIndex: number;
-      source?: string | undefined;
-      id?: string | undefined;
+      source?: string;
+      id?: string | null;
     }
   | {
       type: 'set_description';
       statePath: string[];
       transitionPath?: TransitionPath;
-      description?: string;
+      description?: string | null;
     }
   | {
       type: 'update_layout_string';
@@ -281,7 +281,7 @@ export class MachineExtractResult {
         actions[action.node.name] = choose(
           action.node.chooseConditions.map((chooseCondition) => ({
             actions: chooseCondition.actionNodes.map((action) => action.name),
-            cond: chooseCondition.condition.cond,
+            cond: chooseCondition.condition.cond!,
           })),
         );
       }
@@ -592,7 +592,7 @@ export class MachineExtractResult {
           node: action.node,
           action: action.action,
           statePath,
-          chooseConditions: action.chooseConditions,
+          chooseConditions: action.chooseConditions!,
           inlineDeclarationId: action.inlineDeclarationId,
         });
       }
@@ -708,8 +708,9 @@ export class MachineExtractResult {
   };
 
   modify(edits: Array<MachineEdit>) {
-    // we need to read it before calling `recast.parse` as that mutates the AST and removes comments
+    // we need to read it before calling `recast.parse` as that mutates the AST and removes comments and sometimes also locations
     const existingLayoutComment = this.getLayoutComment();
+    const existingMachineNodeLoc = this.machineCallResult.node.loc!;
 
     // this ain't ideal because Recast mutates the input AST
     // so there is a risk that modifying multiple machines in a single file would lead to problems
@@ -755,14 +756,6 @@ export class MachineExtractResult {
           break;
         }
         case 'remove_state': {
-          const removed = removeState(recastDefinitionNode, edit.path);
-
-          deleted.push({
-            type: 'state',
-            statePath: edit.path,
-            state: removed,
-          });
-
           this.getTransitionTargets().forEach(
             ({ target, targetPath, fromPath, transitionPath }) => {
               target.forEach((_, index) => {
@@ -785,6 +778,14 @@ export class MachineExtractResult {
               });
             },
           );
+
+          const removed = removeState(recastDefinitionNode, edit.path);
+
+          deleted.push({
+            type: 'state',
+            statePath: edit.path,
+            state: removed,
+          });
           break;
         }
         case 'rename_state': {
@@ -1229,7 +1230,7 @@ export class MachineExtractResult {
               arePathsEqual(t.transitionPath, edit.transitionPath),
           );
           // TODO: this doesn't handle multiple targets but Studio doesnt either
-          const oldTargetPath = oldTransition?.targetPath[0];
+          const oldTargetPath = oldTransition?.targetPath[0] ?? null;
 
           let newTransitionPath = edit.newTransitionPath || edit.transitionPath;
 
@@ -1473,12 +1474,12 @@ export class MachineExtractResult {
             edit.statePath,
           );
           if (!edit.transitionPath) {
-            updateDescription(state, edit.description);
+            updateDescription(state, edit.description ?? null);
             break;
           }
 
           const transition = getTransitionObject(state, edit.transitionPath);
-          updateDescription(transition, edit.description);
+          updateDescription(transition, edit.description ?? null);
           updateTransitionAtPathWith(state, edit.transitionPath, transition);
           break;
         }
@@ -1544,10 +1545,8 @@ export class MachineExtractResult {
     // it's the best way we have right now to keep the formatting intact as much as possible though
     const machineNode = getMachineNodesFromFile(reprinted).machineNodes.find(
       (machineNode) =>
-        machineNode.loc!.start.line ===
-          this.machineCallResult.node.loc!.start.line &&
-        machineNode.loc!.start.column ===
-          this.machineCallResult.node.loc!.start.column,
+        machineNode.loc!.start.line === existingMachineNodeLoc.start.line &&
+        machineNode.loc!.start.column === existingMachineNodeLoc.start.column,
     )!;
 
     const configEdit: TextEdit = {
@@ -1683,7 +1682,7 @@ function setProperty(
 
 function updateDescription(
   obj: RecastObjectExpression,
-  description: string | undefined,
+  description: string | null,
 ) {
   if (typeof description !== 'string') {
     removeProperty(obj, 'description');
@@ -1708,9 +1707,15 @@ function updateInvoke(
   data: Pick<Extract<MachineEdit, { type: 'edit_invoke' }>, 'id' | 'source'>,
 ) {
   if (typeof data.id === 'string') {
-    const idProp = findObjectProperty(invoke, 'id')!;
-    idProp.value = b.stringLiteral(data.id);
-  } else if ('id' in data && data.id === undefined) {
+    const idProp = findObjectProperty(invoke, 'id');
+    if (idProp) {
+      idProp.value = b.stringLiteral(data.id);
+    } else {
+      invoke.properties.push(
+        b.objectProperty(b.identifier('id'), b.stringLiteral(data.id)),
+      );
+    }
+  } else if ('id' in data) {
     removeProperty(invoke, 'id');
   }
 
@@ -2380,10 +2385,10 @@ function getBestTargetDescriptor(
   {
     sourcePath,
     targetPath,
-  }: { sourcePath: string[]; targetPath: string[] | undefined },
-): string | undefined {
+  }: { sourcePath: string[]; targetPath: string[] | null },
+): string | null {
   if (!targetPath) {
-    return;
+    return null;
   }
 
   if (!targetPath.length) {
@@ -2548,7 +2553,7 @@ function isExternalTransition(transition: RecastObjectExpression): boolean {
 // it only minifies based on the `override` and if the transition contains only a target prop etc
 function minifyTransitionObjectExpression(
   transitionObject: RecastObjectExpression,
-  override?: { target?: string; internal?: boolean },
+  override?: { target?: string | null; internal?: boolean },
 ): RecastNode {
   const targetProp = findObjectProperty(transitionObject, 'target');
   const targetValue = targetProp
@@ -2581,11 +2586,9 @@ function minifyTransitionObjectExpression(
   }
 
   const finalTargetValue =
-    override && 'target' in override
-      ? override.target
-      : (targetValue as string | undefined);
+    override && 'target' in override ? override.target : targetValue;
 
-  if (finalTargetValue === undefined) {
+  if (typeof finalTargetValue !== 'string') {
     removeProperty(transitionObject, 'internal');
   } else if (override?.internal === true) {
     if (finalTargetValue.startsWith('.')) {
@@ -2656,7 +2659,7 @@ function getIndexForTransitionPathAppendant(
 
 type TransitionAnchors = {
   source: string[];
-  target?: string[] | undefined;
+  target: string[] | null;
 };
 
 function getTransitionExternalValue(

@@ -32,6 +32,34 @@ describe('edit_invoke', () => {
     `);
   });
 
+  it(`should be possible to add an ID to the existing invoke`, () => {
+    const modifiableMachine = getModifiableMachine(`
+      createMachine({
+        invoke: {
+          src: 'callDavid',
+        },
+      })
+    `);
+
+    expect(
+      modifiableMachine.modify([
+        {
+          type: 'edit_invoke',
+          path: [],
+          invokeIndex: 0,
+          id: 'importantCall',
+        },
+      ]).configEdit.newText,
+    ).toMatchInlineSnapshot(`
+      "{
+        invoke: {
+          src: 'callDavid',
+          id: "importantCall"
+        },
+      }"
+    `);
+  });
+
   it(`should be possible to update invoke's ID`, () => {
     const modifiableMachine = getModifiableMachine(`
       createMachine({
@@ -107,7 +135,7 @@ describe('edit_invoke', () => {
           type: 'edit_invoke',
           path: [],
           invokeIndex: 0,
-          id: undefined,
+          id: null,
         },
       ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
@@ -136,7 +164,7 @@ describe('edit_invoke', () => {
           type: 'edit_invoke',
           path: [],
           invokeIndex: 0,
-          id: undefined,
+          id: null,
         },
       ]).configEdit.newText,
     ).toMatchInlineSnapshot(`

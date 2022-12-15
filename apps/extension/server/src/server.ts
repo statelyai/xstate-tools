@@ -36,11 +36,7 @@ import { getCursorHoverType } from './getCursorHoverType';
 import { getDiagnostics } from './getDiagnostics';
 import { getReferences } from './getReferences';
 import { CachedDocument } from './types';
-import {
-  isErrorWithMessage,
-  isTypedMachineResult,
-  isTypegenData,
-} from './utils';
+import { getErrorMessage, isTypedMachineResult, isTypegenData } from './utils';
 
 let hasConfigurationCapability = false;
 let hasWorkspaceFolderCapability = false;
@@ -50,7 +46,13 @@ const defaultSettings: GlobalSettings = {
 };
 let globalSettings: GlobalSettings = defaultSettings;
 
-let displayedMachine: { uri: string; machineIndex: number } | undefined;
+let displayedMachine:
+  | {
+      uri: string;
+      machineIndex: number;
+      error?: { type: 'missing_index'; message: string } | undefined;
+    }
+  | undefined;
 
 connection.onInitialize((params) => {
   const capabilities = params.capabilities;
@@ -191,10 +193,35 @@ async function handleDocumentChange(textDocument: TextDocument): Promise<void> {
   const previouslyCachedDocument = documentsCache.get(textDocument.uri);
   try {
     const text = textDocument.getText();
-    const extracted = extractMachinesFromFile(text);
+
+    let extracted;
+
+    try {
+      extracted = extractMachinesFromFile(text);
+    } catch (err) {
+      if (
+        err &&
+        typeof err === 'object' &&
+        'code' in err &&
+        err.code === 'BABEL_PARSE_ERROR'
+      ) {
+        handleDocumentExtractionFailure(
+          textDocument,
+          {
+            type: 'syntax',
+            message: getErrorMessage(err),
+          },
+          previouslyCachedDocument,
+        );
+        return;
+      }
+      throw err;
+    }
+
     if (!extracted) {
       return;
     }
+
     const [settings, machineResults] = await Promise.all([
       getDocumentSettings(textDocument.uri),
       filterOutIgnoredMachines(extracted).machines,
@@ -220,7 +247,7 @@ async function handleDocumentChange(textDocument: TextDocument): Promise<void> {
       } catch (e) {
         return {
           machineResult,
-          configError: isErrorWithMessage(e) ? e.message : 'Unknown error',
+          configError: getErrorMessage(e),
         };
       }
     });
@@ -236,49 +263,81 @@ async function handleDocumentChange(textDocument: TextDocument): Promise<void> {
     });
 
     if (displayedMachine?.uri === textDocument.uri) {
-      const { configError, machineResult } =
-        extractionResults[displayedMachine.machineIndex];
+      // this isn't quite great but I don't know how to best "point" to a specific machine in a document
+      // ideally, we'd have a stable reference to it and we wouldn't be sensitive to the order of machines in the document
+      if (!extractionResults[displayedMachine.machineIndex]) {
+        // in this branch we don't want to clear the displayed machine, that would lead to a weird DX
+        // let's keep it as displayed with the error banner
+        const ordinal = displayedMachine.machineIndex + 1;
+        const ordinalString =
+          ordinal === 1
+            ? 'first'
+            : ordinal === 2
+            ? 'second'
+            : ordinal === 3
+            ? 'third'
+            : `${ordinal}th`;
 
-      if (configError) {
-        connection.sendNotification('extractionError', {
-          message: configError,
-        });
-        return;
-      } else if (
-        previouslyCachedDocument?.extractionResults[
-          displayedMachine.machineIndex
-        ].configError ||
-        previouslyCachedDocument?.syntaxError
-      ) {
-        // If we got this far we can safely assume that the machine config is valid and we can clear any potential errors
-        connection.sendNotification('extractionError', {
-          message: undefined,
-        });
-      }
+        displayedMachine.error = {
+          type: 'missing_index',
+          message: `You were previously viewing ${ordinalString} machine in this file. That no longer exists.`,
+        };
 
-      const updatedConfig = machineResult.toConfig();
-      const previousMachineResult =
-        previouslyCachedDocument?.extractionResults[
-          displayedMachine.machineIndex
-        ].machineResult;
-      if (
-        updatedConfig &&
-        previousMachineResult &&
-        !deepEqual(
-          previousMachineResult.toConfig({
-            anonymizeInlineImplementations: true,
-          }),
-          machineResult.toConfig({ anonymizeInlineImplementations: true }),
-        )
-      ) {
-        connection.sendNotification('displayedMachineUpdated', {
-          config: updatedConfig,
-          layoutString: machineResult.getLayoutComment()?.value,
-          implementations: getInlineImplementations(machineResult, text),
-          namedGuards: machineResult
-            .getAllConds(['named'])
-            .map((elem) => elem.name),
+        connection.sendNotification('extractionError', {
+          message: displayedMachine.error.message,
         });
+      } else {
+        const { configError, machineResult } =
+          extractionResults[displayedMachine.machineIndex];
+
+        if (configError) {
+          connection.sendNotification('extractionError', {
+            message: configError,
+          });
+          return;
+        }
+
+        if (
+          (previouslyCachedDocument &&
+            (previouslyCachedDocument.error ||
+              previouslyCachedDocument.extractionResults[
+                displayedMachine.machineIndex
+              ]?.configError)) ||
+          displayedMachine.error
+        ) {
+          // If we got this far we can safely assume that the machine config is valid and we can clear any potential errors
+          displayedMachine.error = undefined;
+          connection.sendNotification('extractionError', {
+            message: null,
+          });
+        }
+
+        const updatedConfig = machineResult.toConfig();
+        const previousMachineResult =
+          previouslyCachedDocument?.extractionResults[
+            displayedMachine.machineIndex
+          ]?.machineResult;
+        if (
+          updatedConfig &&
+          previousMachineResult &&
+          !deepEqual(
+            previousMachineResult.toConfig({
+              anonymizeInlineImplementations: true,
+            }),
+            machineResult.toConfig({
+              anonymizeInlineImplementations: true,
+            }),
+          )
+        ) {
+          connection.sendNotification('displayedMachineUpdated', {
+            config: updatedConfig,
+            layoutString: machineResult.getLayoutComment()?.value || null,
+            implementations: getInlineImplementations(machineResult, text),
+            namedGuards: machineResult
+              .getAllConds(['named'])
+              .map((elem) => elem.name),
+          });
+        }
       }
     }
 
@@ -308,21 +367,34 @@ async function handleDocumentChange(textDocument: TextDocument): Promise<void> {
       });
     }
   } catch (e) {
-    const message = isErrorWithMessage(e) ? e.message : 'Unknown error';
-
-    if (previouslyCachedDocument) {
-      previouslyCachedDocument.syntaxError = message;
-    }
-
-    if (displayedMachine?.uri === textDocument.uri) {
-      connection.sendNotification('extractionError', {
-        message,
-      });
-    }
-
-    connection.sendDiagnostics({ uri: textDocument.uri, diagnostics: [] });
+    handleDocumentExtractionFailure(
+      textDocument,
+      {
+        type: 'unknown',
+        message: getErrorMessage(e),
+      },
+      previouslyCachedDocument,
+    );
   }
 }
+
+const handleDocumentExtractionFailure = (
+  textDocument: TextDocument,
+  error: NonNullable<CachedDocument['error']>,
+  previouslyCachedDocument?: CachedDocument,
+) => {
+  if (previouslyCachedDocument) {
+    previouslyCachedDocument.error = error;
+  }
+
+  if (displayedMachine?.uri === textDocument.uri) {
+    connection.sendNotification('extractionError', {
+      message: error.message,
+    });
+  }
+
+  connection.sendDiagnostics({ uri: textDocument.uri, diagnostics: [] });
+};
 
 connection.documents.onDidChangeContent(({ document }) => {
   handleDocumentChange(document);
@@ -606,7 +678,7 @@ connection.onRequest('getMachineAtIndex', ({ uri, machineIndex }) => {
     config: machineResult.toConfig({
       hashInlineImplementations: true,
     })!,
-    layoutString: machineResult.getLayoutComment()?.value,
+    layoutString: machineResult.getLayoutComment()?.value || null,
     implementations: getInlineImplementations(
       machineResult,
       cachedDocument.documentText,
@@ -658,7 +730,7 @@ connection.onRequest('getMachineAtCursorPosition', ({ uri, position }) => {
       hashInlineImplementations: true,
     })!,
     machineIndex: machineResultIndex,
-    layoutString: machineResult.getLayoutComment()?.value,
+    layoutString: machineResult.getLayoutComment()?.value || null,
     implementations: getInlineImplementations(
       machineResult,
       cachedDocument.documentText,

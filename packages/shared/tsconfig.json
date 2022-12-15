@@ -9,7 +9,8 @@
     "outDir": "out",
     "rootDir": "src",
     "noEmit": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "exactOptionalPropertyTypes": true
   },
   "include": ["src"],
   "exclude": ["node_modules", "src/__tests__/__examples__"]

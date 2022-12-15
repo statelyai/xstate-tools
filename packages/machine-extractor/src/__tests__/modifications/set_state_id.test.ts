@@ -145,6 +145,7 @@ describe('set_state_id', () => {
         {
           type: 'set_state_id',
           path: ['a'],
+          id: null,
         },
       ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
@@ -173,6 +174,7 @@ describe('set_state_id', () => {
         {
           type: 'set_state_id',
           path: [],
+          id: null,
         },
       ]).configEdit.newText,
     ).toMatchInlineSnapshot(`

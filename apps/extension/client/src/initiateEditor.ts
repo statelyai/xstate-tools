@@ -3,7 +3,6 @@ import {
   ImplementationsMetadata,
   resolveUriToFilePrefix,
 } from '@xstate/tools-shared';
-import fetch from 'isomorphic-fetch';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { ColorThemeKind } from 'vscode';
@@ -61,7 +60,7 @@ async function getWebviewHtml(
     layoutString,
   }: {
     config: MachineConfig<any, any, any>;
-    layoutString: string | undefined;
+    layoutString: string | null;
     implementations: ImplementationsMetadata;
   },
 ) {
@@ -119,20 +118,20 @@ type EditMachine = {
   config: MachineConfig<any, any, any>;
   index: number;
   uri: string;
-  layoutString: string | undefined;
+  layoutString: string | null;
   implementations: ImplementationsMetadata;
 };
 
 type DisplayedMachineUpdated = {
   type: 'DISPLAYED_MACHINE_UPDATED';
   config: MachineConfig<any, any, any>;
-  layoutString: string | undefined;
+  layoutString: string | null;
   implementations: ImplementationsMetadata;
 };
 
 type ExtractionError = {
   type: 'EXTRACTION_ERROR';
-  message: string | undefined;
+  message: string | null;
 };
 
 const machine = createMachine(
