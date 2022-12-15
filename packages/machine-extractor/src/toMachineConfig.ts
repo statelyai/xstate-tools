@@ -221,6 +221,7 @@ export const getActionConfig = (
         actions.push(
           opts!.fileContent.slice(action.node.start!, action.node.end!),
         );
+        return;
       case !!action.chooseConditions:
         actions.push({
           type: 'xstate.choose',
