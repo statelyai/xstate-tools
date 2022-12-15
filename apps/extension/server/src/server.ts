@@ -312,7 +312,9 @@ async function handleDocumentChange(textDocument: TextDocument): Promise<void> {
           });
         }
 
-        const updatedConfig = machineResult.toConfig();
+        const updatedConfig = machineResult.toConfig({
+          hashInlineImplementations: true,
+        });
         const previousMachineResult =
           previouslyCachedDocument?.extractionResults[
             displayedMachine.machineIndex
