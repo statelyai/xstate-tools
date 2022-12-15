@@ -1,5 +1,25 @@
 # @xstate/machine-extractor
 
+## 0.9.0
+
+### Minor Changes
+
+- [#271](https://github.com/statelyai/xstate-tools/pull/271) [`7471716`](https://github.com/statelyai/xstate-tools/commit/74717167822b6c0c3848108f221d129c300841e9) Thanks [@Andarist](https://github.com/Andarist)! - Replaced `undefined` with `null` within `MachineEdit` type to ensure that those properties stay JSON-serializable.
+
+### Patch Changes
+
+- [#277](https://github.com/statelyai/xstate-tools/pull/277) [`3d8bb6e`](https://github.com/statelyai/xstate-tools/commit/3d8bb6e6a2c101b782aa1f38a0d0bc29d8852d18) Thanks [@Andarist](https://github.com/Andarist)! - Properly extract state descriptions that are declared using simple template literals from the source code
+
+* [#268](https://github.com/statelyai/xstate-tools/pull/268) [`e6ccc1e`](https://github.com/statelyai/xstate-tools/commit/e6ccc1ebd10d5dc5ebab0b130c8491b7f1e8fa03) Thanks [@Andarist](https://github.com/Andarist)! - Fixed adding `invoke`'s `id` to an existing `invoke`.
+
+- [#273](https://github.com/statelyai/xstate-tools/pull/273) [`96c4506`](https://github.com/statelyai/xstate-tools/commit/96c4506232e84d1aaae6196644029dd2153341ae) Thanks [@Andarist](https://github.com/Andarist)! - Fixed an occasional crash when applying machine edits to machines directly exported from a file, like in the code here:
+
+  ```js
+  export default createMachine({});
+  ```
+
+* [#276](https://github.com/statelyai/xstate-tools/pull/276) [`286d037`](https://github.com/statelyai/xstate-tools/commit/286d0379bb25aefb41f797072f6e68660edbcb9f) Thanks [@Andarist](https://github.com/Andarist)! - Fixed an issue with not being able to remove states with self-transitions from the code.
+
 ## 0.7.1
 
 ### Patch Changes
