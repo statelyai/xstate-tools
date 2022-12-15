@@ -6,6 +6,8 @@ export interface TypegenData extends ReturnType<typeof getTypegenData> {}
 
 const removeExtension = (fileName: string) => fileName.replace(/\.[^/.]+$/, '');
 
+const isInlineServiceId = (id: string) => /:invocation\[\d+\]$/.test(id);
+
 export const getTypegenData = (
   fileName: string,
   machineIndex: number,
@@ -97,12 +99,16 @@ export const getTypegenData = (
         services: getMissingImplementationsForType(
           services,
           providedImplementations.services,
-        ),
+        ).filter((id) => !isInlineServiceId(id)),
       },
       eventsCausingActions: getEventsCausing(actions),
       eventsCausingDelays: getEventsCausing(delays),
       eventsCausingGuards: getEventsCausing(guards),
-      eventsCausingServices: getEventsCausing(services),
+      eventsCausingServices: Object.fromEntries(
+        Object.entries(getEventsCausing(services)).filter(
+          ([id]) => !isInlineServiceId(id),
+        ),
+      ),
       // this is an object so it's not worth sorting it here
       stateSchema: introspectResult.stateSchema,
       tags: Array.from(
