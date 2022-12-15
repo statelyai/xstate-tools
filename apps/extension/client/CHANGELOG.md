@@ -1,5 +1,11 @@
 # stately-vscode
 
+## 1.11.2
+
+### Patch Changes
+
+- [#280](https://github.com/statelyai/xstate-tools/pull/280) [`590b368`](https://github.com/statelyai/xstate-tools/commit/590b368915c66c966f7d261f19eb1d6a083d0578) Thanks [@Andarist](https://github.com/Andarist)! - Fixed an issue with "hashed IDs" being sometimes mistakenly displayed in the Editor.
+
 ## 1.11.1
 
 ### Patch Changes
