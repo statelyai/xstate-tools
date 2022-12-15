@@ -676,7 +676,7 @@ connection.onRequest('getMachineAtIndex', ({ uri, machineIndex }) => {
 
   return {
     config: machineResult.toConfig({
-      hashInlineImplementations: true,
+      anonymizeInlineImplementations: true,
     })!,
     layoutString: machineResult.getLayoutComment()?.value || null,
     implementations: getInlineImplementations(
@@ -727,7 +727,7 @@ connection.onRequest('getMachineAtCursorPosition', ({ uri, position }) => {
 
   return {
     config: machineResult.toConfig({
-      hashInlineImplementations: true,
+      anonymizeInlineImplementations: true,
     })!,
     machineIndex: machineResultIndex,
     layoutString: machineResult.getLayoutComment()?.value || null,
