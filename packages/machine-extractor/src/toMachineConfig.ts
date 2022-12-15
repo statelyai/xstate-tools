@@ -5,6 +5,7 @@ import {
   TransitionConfigOrTarget,
 } from 'xstate';
 import { MaybeArrayOfActions } from './actions';
+import { CondNode } from './conds';
 import { TMachineCallExpression } from './machineCallExpression';
 import { StateNodeReturn } from './stateNode';
 import { MaybeTransitionArray } from './transitions';
@@ -220,6 +221,17 @@ export const getActionConfig = (
         actions.push(
           opts!.fileContent.slice(action.node.start!, action.node.end!),
         );
+      case !!action.chooseConditions:
+        actions.push({
+          type: 'xstate.choose',
+          conds: action.chooseConditions!.map((condition) => {
+            const cond = getCondition(condition.conditionNode, opts);
+            return {
+              ...(cond && { cond }),
+              actions: getActionConfig(condition.actionNodes, opts),
+            };
+          }),
+        });
         return;
     }
   });
@@ -229,6 +241,23 @@ export const getActionConfig = (
   }
 
   return actions;
+};
+
+const getCondition = (
+  condNode: CondNode | undefined,
+  opts: ToMachineConfigOptions | undefined,
+) => {
+  if (!condNode) {
+    return;
+  }
+  switch (true) {
+    case condNode.declarationType === 'named':
+      return condNode.name;
+    case opts?.anonymizeInlineImplementations:
+      return 'anonymous';
+    case opts?.hashInlineImplementations:
+      return condNode.inlineDeclarationId;
+  }
 };
 
 export const getTransitions = (
@@ -246,18 +275,9 @@ export const getTransitions = (
         toPush.target = transition?.target.map((target) => target.value);
       }
     }
-    if (transition?.cond) {
-      switch (true) {
-        case transition.cond.declarationType === 'named':
-          toPush.cond = transition.cond.name;
-          break;
-        case opts?.anonymizeInlineImplementations:
-          toPush.cond = 'anonymous';
-          break;
-        case opts?.hashInlineImplementations:
-          toPush.cond = transition.cond.inlineDeclarationId;
-          break;
-      }
+    const cond = getCondition(transition?.cond, opts);
+    if (cond) {
+      toPush.cond = cond;
     }
     if (transition?.actions) {
       toPush.actions = getActionConfig(transition.actions, opts);

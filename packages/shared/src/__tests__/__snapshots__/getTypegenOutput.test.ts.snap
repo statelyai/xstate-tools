@@ -117,6 +117,37 @@ export interface Typegen0 {
 "
 `;
 
+exports[`getTypegenOutput choose-defined-in-config 1`] = `
+"// This file was automatically generated. Edits will be overwritten
+
+export interface Typegen0 {
+  "@@xstate/typegen": true;
+  internalEvents: {
+    "xstate.init": { type: "xstate.init" };
+  };
+  invokeSrcNameMap: {};
+  missingImplementations: {
+    actions: "a" | "b" | "c";
+    delays: never;
+    guards: "cond1";
+    services: never;
+  };
+  eventsCausingActions: {
+    a: "FOO";
+    b: "FOO";
+    c: "FOO";
+  };
+  eventsCausingDelays: {};
+  eventsCausingGuards: {
+    cond1: "FOO";
+  };
+  eventsCausingServices: {};
+  matchesStates: "a" | "b";
+  tags: never;
+}
+"
+`;
+
 exports[`getTypegenOutput choose-defined-in-implementations 1`] = `
 "// This file was automatically generated. Edits will be overwritten
 
