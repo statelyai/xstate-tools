@@ -1,5 +1,11 @@
 # stately-vscode
 
+## 1.11.3
+
+### Patch Changes
+
+- [#284](https://github.com/statelyai/xstate-tools/pull/284) [`3ba1941`](https://github.com/statelyai/xstate-tools/commit/3ba1941f88ac3e92f5b04fbe7f1a99046dcdff1f) Thanks [@mellson](https://github.com/mellson)! - Fixed an issue where the color theme wasn't always set correctly.
+
 ## 1.11.2
 
 ### Patch Changes
