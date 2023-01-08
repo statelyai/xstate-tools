@@ -341,7 +341,7 @@ export class MachineExtractResult {
       const proximity =
         this.machineCallResult.callee.loc!.start.line - comment.loc!.end.line;
 
-      return proximity < 5;
+      return Math.abs(proximity) <= 2;
     });
 
     if (!layoutComment) return undefined;
