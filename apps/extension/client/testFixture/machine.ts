@@ -8,13 +8,12 @@ createMachine(
     states: {
       idle: {
         on: {
-          NEXT: {
-            target: 'active',
-            cond: 'canGoNext',
-          },
+          NEXT: 'active',
         },
       },
+
       active: {},
+      'new state 1': {},
     },
   },
   {
