@@ -4,12 +4,12 @@ import * as recast from 'recast';
 import { Action, Condition, MachineOptions } from 'xstate';
 import { choose } from 'xstate/lib/actions';
 import { DeclarationType } from '.';
+import { RecordOfArrays } from './RecordOfArrays';
 import { ActionNode, ParsedChooseCondition } from './actions';
 import { getMachineNodesFromFile } from './getMachineNodesFromFile';
 import { TMachineCallExpression } from './machineCallExpression';
-import { RecordOfArrays } from './RecordOfArrays';
 import { StateNodeReturn } from './stateNode';
-import { toMachineConfig, ToMachineConfigOptions } from './toMachineConfig';
+import { ToMachineConfigOptions, toMachineConfig } from './toMachineConfig';
 import { TransitionConfigNode } from './transitions';
 import { Comment } from './types';
 
@@ -338,10 +338,10 @@ export class MachineExtractResult {
         return false;
       }
 
-      return (
-        comment.loc!.end.line ===
-        this.machineCallResult.callee.loc!.start.line - 1
-      );
+      const proximity =
+        this.machineCallResult.callee.loc!.start.line - comment.loc!.end.line;
+
+      return proximity < 5;
     });
 
     if (!layoutComment) return undefined;

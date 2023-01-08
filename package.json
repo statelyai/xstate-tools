@@ -34,7 +34,8 @@
     "deps:build": "preconstruct build",
     "vscode:dev": "yarn turbo run vscode:build:dev --no-cache && cp apps/extension/server/dist/index.js apps/extension/client/dist/server.js",
     "vscode:prod": "yarn turbo run vscode:build:prod --no-cache && cp apps/extension/server/dist/index.js apps/extension/client/dist/server.js",
-    "test": "jest"
+    "test": "jest",
+    "build:vsix": "cd apps/extension/client && npx vsce package --yarn"
   },
   "preconstruct": {
     "packages": [
