@@ -1,5 +1,14 @@
 # @xstate/cli
 
+## 0.4.2
+
+### Patch Changes
+
+- [#288](https://github.com/statelyai/xstate-tools/pull/288) [`17dc81c`](https://github.com/statelyai/xstate-tools/commit/17dc81cff5cd3ea1ad28c98642374739d79a6d5d) Thanks [@Andarist](https://github.com/Andarist)! - Fixed an issue with a misleading dev-only warning being printed when generating typegen data because of the internal `createMachine` call.
+
+- Updated dependencies [[`17dc81c`](https://github.com/statelyai/xstate-tools/commit/17dc81cff5cd3ea1ad28c98642374739d79a6d5d)]:
+  - @xstate/tools-shared@2.0.2
+
 ## 0.4.1
 
 ### Patch Changes
