@@ -103,7 +103,7 @@ function createWebviewPanel() {
   return vscode.window.createWebviewPanel(
     'editor',
     'XState Editor',
-    vscode.ViewColumn.Beside,
+    typeSafeVsCode.getViewColumn(),
     {
       enableScripts: true,
       retainContextWhenHidden: true,
