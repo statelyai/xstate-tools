@@ -77,6 +77,15 @@
           ],
           "default": "auto",
           "description": "Color theme for the visual editor. Auto syncs the VS Code theme with the editor theme."
+        },
+        "xstate.viewColumn": {
+          "type": "string",
+          "enum": [
+            "beside",
+            "active"
+          ],
+          "default": "beside",
+          "description": "Target for opening the Visual Editor and Inspector. Beside opens in a group next to the current file, while active opens in the current group of the current file."
         }
       }
     },

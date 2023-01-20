@@ -28,7 +28,7 @@ export const initiateVisualizer = (
       machineIndex,
     });
     if (currentPanel) {
-      currentPanel.reveal(vscode.ViewColumn.Beside);
+      currentPanel.reveal(typeSafeVsCode.getViewColumn());
 
       sendMessage({
         type: 'RECEIVE_SERVICE',
@@ -39,7 +39,7 @@ export const initiateVisualizer = (
       currentPanel = vscode.window.createWebviewPanel(
         'visualizer',
         'XState Visualizer',
-        vscode.ViewColumn.Beside,
+        typeSafeVsCode.getViewColumn(),
         { enableScripts: true, retainContextWhenHidden: true },
       );
 

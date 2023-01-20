@@ -18,10 +18,17 @@ export function registerCommand<Name extends keyof XStateCommands>(
 
 interface XStateConfiguration {
   theme?: 'auto' | 'dark' | 'light';
+  viewColumn?: 'beside' | 'active';
 }
 
 export function getConfiguration<Name extends keyof XStateConfiguration>(
   name: Name,
 ): XStateConfiguration[Name] {
   return vscode.workspace.getConfiguration('xstate').get(name);
+}
+
+export function getViewColumn(): vscode.ViewColumn {
+  return getConfiguration('viewColumn') === 'active'
+    ? vscode.ViewColumn.Active
+    : vscode.ViewColumn.Beside;
 }
