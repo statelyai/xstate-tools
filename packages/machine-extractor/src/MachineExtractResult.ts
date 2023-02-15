@@ -331,8 +331,38 @@ export class MachineExtractResult {
    *
    * For instance: '@xstate-layout 1234' will return '1234'
    */
-  getLayoutComment = (): { value: string; comment: Comment } | undefined => {
+  getLayoutComment = ():
+    | { type: 'inner' | 'outer'; value: string; comment: Comment }
+    | undefined => {
     if (!this.machineCallResult.callee?.loc) return undefined;
+
+    const definitionNode = this.machineCallResult.definition?.node;
+    if (definitionNode && t.isObjectExpression(definitionNode)) {
+      const innerComment = definitionNode.innerComments?.find(
+        ({ value }) => !!getLayoutString(value),
+      );
+      if (innerComment) {
+        return {
+          type: 'inner',
+          value: getLayoutString(innerComment.value)!,
+          comment: { type: 'xstate-layout', node: innerComment },
+        };
+      }
+      const firstProp = definitionNode.properties[0];
+      if (firstProp) {
+        const leadingComment = firstProp.leadingComments?.find(
+          ({ value }) => !!getLayoutString(value),
+        );
+        if (leadingComment) {
+          return {
+            type: 'inner',
+            value: getLayoutString(leadingComment.value)!,
+            comment: { type: 'xstate-layout', node: leadingComment },
+          };
+        }
+      }
+    }
+
     const layoutComment = (this._fileAst.comments || []).find((comment) => {
       if (!comment.value.includes('xstate-layout')) {
         return false;
@@ -353,6 +383,7 @@ export class MachineExtractResult {
     if (!value) return undefined;
 
     return {
+      type: 'outer',
       comment: { type: 'xstate-layout', node: layoutComment },
       value,
     };
@@ -1490,16 +1521,32 @@ export class MachineExtractResult {
             );
           }
           if (!existingLayoutComment) {
-            const calleePosition = {
-              line: this.machineCallResult.callee.loc!.start.line - 1,
-              column: this.machineCallResult.callee.loc!.start.column,
-              index: this.machineCallResult.callee.start!,
+            const definitionNode = this.machineCallResult.definition?.node;
+            if (!t.isObjectExpression(definitionNode)) {
+              const calleePosition = {
+                line: this.machineCallResult.callee.loc!.start.line - 1,
+                column: this.machineCallResult.callee.loc!.start.column,
+                index: this.machineCallResult.callee.start!,
+              } as const;
+
+              layoutEdit = {
+                // this is used as a replace but it could be a simpler~ insertion
+                type: 'replace',
+                range: [calleePosition, calleePosition],
+                newText: `\n/** @xstate-layout ${edit.layoutString} */\n`,
+              };
+              break;
+            }
+            const insidePosition = {
+              line: definitionNode.loc!.start.line - 1,
+              column: definitionNode.loc!.start.column + 1,
+              index: definitionNode.start! + 1,
             } as const;
 
             layoutEdit = {
               // this is used as a replace but it could be a simpler~ insertion
               type: 'replace',
-              range: [calleePosition, calleePosition],
+              range: [insidePosition, insidePosition],
               newText: `\n/** @xstate-layout ${edit.layoutString} */\n`,
             };
             break;

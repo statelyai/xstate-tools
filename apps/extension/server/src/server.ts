@@ -36,7 +36,12 @@ import { getCursorHoverType } from './getCursorHoverType';
 import { getDiagnostics } from './getDiagnostics';
 import { getReferences } from './getReferences';
 import { CachedDocument } from './types';
-import { getErrorMessage, isTypedMachineResult, isTypegenData } from './utils';
+import {
+  getErrorMessage,
+  isTypedMachineResult,
+  isTypegenData,
+  mergeOverlappingEdits,
+} from './utils';
 
 let hasConfigurationCapability = false;
 let hasWorkspaceFolderCapability = false;
@@ -787,11 +792,12 @@ connection.onRequest('applyMachineEdits', ({ machineEdits, reason }) => {
       );
     }
   }
-
-  const edits = [
-    modified.configEdit,
-    'layoutEdit' in modified ? modified.layoutEdit : undefined,
-  ].filter((edit): edit is NonNullable<typeof edit> => !!edit);
+  const edits = mergeOverlappingEdits(
+    [
+      modified.configEdit,
+      'layoutEdit' in modified ? modified.layoutEdit : undefined,
+    ].filter((edit): edit is NonNullable<typeof edit> => !!edit),
+  );
 
   let newDocumentText = cachedDocument.documentText;
 
