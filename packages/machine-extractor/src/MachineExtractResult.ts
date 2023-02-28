@@ -1547,7 +1547,7 @@ export class MachineExtractResult {
               // this is used as a replace but it could be a simpler~ insertion
               type: 'replace',
               range: [insidePosition, insidePosition],
-              newText: `\n/** @xstate-layout ${edit.layoutString} */\n`,
+              newText: `\n/** @xstate-layout ${edit.layoutString} */`,
             };
             break;
           }
