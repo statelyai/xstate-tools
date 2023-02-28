@@ -1537,17 +1537,20 @@ export class MachineExtractResult {
               };
               break;
             }
+            const indentation = consumeIndentationToNodeAtIndex(
+              this._fileContent,
+              definitionNode.properties[0]?.start,
+            );
             const insidePosition = {
               line: definitionNode.loc!.start.line - 1,
               column: definitionNode.loc!.start.column + 1,
               index: definitionNode.start! + 1,
             } as const;
-
             layoutEdit = {
               // this is used as a replace but it could be a simpler~ insertion
               type: 'replace',
               range: [insidePosition, insidePosition],
-              newText: `\n/** @xstate-layout ${edit.layoutString} */`,
+              newText: `\n${indentation}/** @xstate-layout ${edit.layoutString} */`,
             };
             break;
           }
@@ -2768,4 +2771,28 @@ function getStatesObjectInState(stateObj: RecastObjectExpression) {
   const statesObj = b.objectExpression([]);
   stateObj.properties.push(b.objectProperty(b.identifier('states'), statesObj));
   return statesObj;
+}
+
+function consumeIndentationToNodeAtIndex(
+  fileContent: string,
+  index: number | null | undefined,
+) {
+  if (typeof index !== 'number') {
+    return '';
+  }
+  let indentation = '';
+  let i = index;
+  while (true) {
+    index--;
+    const char = fileContent[index];
+
+    if (char === '\n') {
+      return indentation;
+    }
+
+    if (!/\s/.test(char)) {
+      return '';
+    }
+    indentation = `${char}${indentation}`;
+  }
 }
