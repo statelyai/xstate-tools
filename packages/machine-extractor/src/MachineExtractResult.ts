@@ -331,8 +331,38 @@ export class MachineExtractResult {
    *
    * For instance: '@xstate-layout 1234' will return '1234'
    */
-  getLayoutComment = (): { value: string; comment: Comment } | undefined => {
+  getLayoutComment = ():
+    | { type: 'inner' | 'outer'; value: string; comment: Comment }
+    | undefined => {
     if (!this.machineCallResult.callee?.loc) return undefined;
+
+    const definitionNode = this.machineCallResult.definition?.node;
+    if (definitionNode && t.isObjectExpression(definitionNode)) {
+      const innerComment = definitionNode.innerComments?.find(
+        ({ value }) => !!getLayoutString(value),
+      );
+      if (innerComment) {
+        return {
+          type: 'inner',
+          value: getLayoutString(innerComment.value)!,
+          comment: { type: 'xstate-layout', node: innerComment },
+        };
+      }
+      const firstProp = definitionNode.properties[0];
+      if (firstProp) {
+        const leadingComment = firstProp.leadingComments?.find(
+          ({ value }) => !!getLayoutString(value),
+        );
+        if (leadingComment) {
+          return {
+            type: 'inner',
+            value: getLayoutString(leadingComment.value)!,
+            comment: { type: 'xstate-layout', node: leadingComment },
+          };
+        }
+      }
+    }
+
     const layoutComment = (this._fileAst.comments || []).find((comment) => {
       if (!comment.value.includes('xstate-layout')) {
         return false;
@@ -353,6 +383,7 @@ export class MachineExtractResult {
     if (!value) return undefined;
 
     return {
+      type: 'outer',
       comment: { type: 'xstate-layout', node: layoutComment },
       value,
     };
@@ -1490,17 +1521,36 @@ export class MachineExtractResult {
             );
           }
           if (!existingLayoutComment) {
-            const calleePosition = {
-              line: this.machineCallResult.callee.loc!.start.line - 1,
-              column: this.machineCallResult.callee.loc!.start.column,
-              index: this.machineCallResult.callee.start!,
-            } as const;
+            const definitionNode = this.machineCallResult.definition?.node;
+            if (!t.isObjectExpression(definitionNode)) {
+              const calleePosition = {
+                line: this.machineCallResult.callee.loc!.start.line - 1,
+                column: this.machineCallResult.callee.loc!.start.column,
+                index: this.machineCallResult.callee.start!,
+              } as const;
 
+              layoutEdit = {
+                // this is used as a replace but it could be a simpler~ insertion
+                type: 'replace',
+                range: [calleePosition, calleePosition],
+                newText: `\n/** @xstate-layout ${edit.layoutString} */\n`,
+              };
+              break;
+            }
+            const indentation = consumeIndentationToNodeAtIndex(
+              this._fileContent,
+              definitionNode.properties[0]?.start,
+            );
+            const insidePosition = {
+              line: definitionNode.loc!.start.line - 1,
+              column: definitionNode.loc!.start.column + 1,
+              index: definitionNode.start! + 1,
+            } as const;
             layoutEdit = {
               // this is used as a replace but it could be a simpler~ insertion
               type: 'replace',
-              range: [calleePosition, calleePosition],
-              newText: `\n/** @xstate-layout ${edit.layoutString} */\n`,
+              range: [insidePosition, insidePosition],
+              newText: `\n${indentation}/** @xstate-layout ${edit.layoutString} */`,
             };
             break;
           }
@@ -2721,4 +2771,28 @@ function getStatesObjectInState(stateObj: RecastObjectExpression) {
   const statesObj = b.objectExpression([]);
   stateObj.properties.push(b.objectProperty(b.identifier('states'), statesObj));
   return statesObj;
+}
+
+function consumeIndentationToNodeAtIndex(
+  fileContent: string,
+  index: number | null | undefined,
+) {
+  if (typeof index !== 'number') {
+    return '';
+  }
+  let indentation = '';
+  let i = index;
+  while (true) {
+    index--;
+    const char = fileContent[index];
+
+    if (char === '\n') {
+      return indentation;
+    }
+
+    if (!/\s/.test(char)) {
+      return '';
+    }
+    indentation = `${char}${indentation}`;
+  }
 }
