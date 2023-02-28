@@ -1,5 +1,11 @@
 # stately-vscode
 
+## 1.13.0
+
+### Minor Changes
+
+- [#305](https://github.com/statelyai/xstate-tools/pull/305) [`7689f10`](https://github.com/statelyai/xstate-tools/commit/7689f10018ab5ff72d60f5d854f3eda798f82e12) Thanks [@Andarist](https://github.com/Andarist)! - Changed the default location for the layout string insertion to be **within** the machine config (before its first property).
+
 ## 1.12.0
 
 ### Minor Changes
