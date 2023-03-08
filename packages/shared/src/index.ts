@@ -15,4 +15,5 @@ export * from './processFileEdits';
 export * from './removeFile';
 export * from './resolveUriToFilePrefix';
 export * from './types';
+export * from './writeToFetchedMachineFile';
 export * from './writeToTypegenFile';

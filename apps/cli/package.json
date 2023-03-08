@@ -7,8 +7,8 @@
   "scripts": {
     "prepare": "yarn build",
     "lint": "tsc",
-    "test": "jest",
-    "build": "esbuild src/bin.ts --outdir=bin --platform=node --format=cjs"
+    "test": "jest liveMachines",
+    "build": "esbuild src/bin.ts --outdir=bin --platform=node --format=cjs --sourcemap"
   },
   "devDependencies": {
     "@types/jest": "^27.4.0",
@@ -22,6 +22,7 @@
     "@xstate/tools-shared": "^2.0.2",
     "chokidar": "^3.5.3",
     "commander": "^8.0.0",
+    "isomorphic-unfetch": "^4.0.2",
     "xstate": "^4.33.4"
   },
   "author": "Stately Team",

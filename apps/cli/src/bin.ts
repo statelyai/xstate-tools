@@ -5,6 +5,7 @@ import {
   getTsTypesEdits,
   getTypegenData,
   processFileEdits,
+  writeToFetchedMachineFile,
   writeToTypegenFile,
 } from '@xstate/tools-shared';
 import { watch } from 'chokidar';
@@ -101,6 +102,98 @@ program
             return;
           }
           tasks.push(writeToFiles([path]));
+        })
+        .on('ready', async () => {
+          const settled = await allSettled(tasks);
+          if (settled.some((result) => result.status === 'rejected')) {
+            process.exit(1);
+          }
+          process.exit(0);
+        });
+    }
+  });
+
+const getMachinesWriteToFiles = async (uriArray: string[]) => {
+  await Promise.all(
+    uriArray.map(async (uri) => {
+      try {
+        const fileContents = await fs.readFile(uri, 'utf8');
+        const parseResult = extractMachinesFromFile(fileContents);
+        if (parseResult && parseResult.machines.length > 0) {
+          const parsedMachine = parseResult.machines[0];
+          const workflowId =
+            parsedMachine?.machineCallResult.definition?.id?.value;
+          console.log(`machineId`, workflowId);
+
+          if (workflowId) {
+            const configResponse = await fetch(
+              `http://localhost:3000/registry/api/sky/machine-config?workflowId=${workflowId}`,
+            );
+            const configStringObject = (await configResponse.text()) as any;
+            const config = { ...configStringObject };
+            console.log(config);
+
+            // .then((response: any) => {
+            //   console.log(response);
+            //   const config = response.text();
+            //   console.log(config);
+            //   return config;
+            // })
+            // .catch((error: any) => {
+            //   console.log('error, something weird happened');
+
+            //   console.error(error);
+            //   return undefined;
+            // });
+
+            await writeToFetchedMachineFile({
+              filePath: uri,
+              machine: configStringObject,
+            });
+            console.log(`${uri} - success`);
+          }
+        }
+      } catch (e: any) {
+        if (e?.code === 'BABEL_PARSER_SYNTAX_ERROR') {
+          console.error(`${uri} - syntax error, skipping`);
+        } else {
+          console.error(`${uri} - error, `, e);
+        }
+        throw e;
+      }
+    }),
+  );
+};
+
+program
+  .command('createLiveMachines')
+  .description('Create live machines from the Stately Editor')
+  .argument('<files>', 'The files to target, expressed as a glob pattern')
+  .option('-w, --watch', 'Run getMachines in watch mode')
+  .action(async (filesPattern: string, opts: { watch?: boolean }) => {
+    console.log(`filesPattern`, filesPattern);
+
+    if (opts.watch) {
+      // TODO: implement per path queuing to avoid tasks related to the same file from overlapping their execution
+      const processFile = (path: string) => {
+        if (path.endsWith('.typegen.ts')) {
+          return;
+        }
+        getMachinesWriteToFiles([path]).catch(() => {});
+      };
+      // TODO: handle removals
+      watch(filesPattern, { awaitWriteFinish: true })
+        .on('add', processFile)
+        .on('change', processFile);
+    } else {
+      const tasks: Array<Promise<void>> = [];
+      // TODO: could this cleanup outdated typegen files?
+      watch(filesPattern, { persistent: false })
+        .on('add', (path) => {
+          if (path.endsWith('.typegen.ts')) {
+            return;
+          }
+          tasks.push(getMachinesWriteToFiles([path]));
         })
         .on('ready', async () => {
           const settled = await allSettled(tasks);
