@@ -1,5 +1,5 @@
 import { createMachine } from 'xstate';
-const lightMachine = createMachine({
+export const lightMachine = createMachine({
   id: 'Light Machine',
   initial: 'Off',
   states: {
@@ -19,10 +19,9 @@ const lightMachine = createMachine({
     },
   },
   schema: {
-    context: {} as {},
     events: {} as { type: 'Turn on' } | { type: 'Turn off' },
   },
-  context: {},
+
   predictableActionArguments: true,
   preserveActionOrder: true,
   tsTypes: {} as import('./toggleMachine.fetched.typegen').Typegen0,

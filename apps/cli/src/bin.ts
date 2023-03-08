@@ -125,13 +125,11 @@ const getMachinesWriteToFiles = async (uriArray: string[]) => {
             parsedMachine?.machineCallResult.definition?.id?.value;
           console.log(`machineId`, workflowId);
 
-          if (workflowId) {
+          if (workflowId && workflowId.length > 0) {
             const configResponse = await fetch(
               `http://localhost:3000/registry/api/sky/machine-config?workflowId=${workflowId}`,
             );
-            const configStringObject = (await configResponse.text()) as any;
-            const config = { ...configStringObject };
-            console.log(config);
+            const configStringObject = await configResponse.text();
 
             // .then((response: any) => {
             //   console.log(response);
@@ -148,7 +146,7 @@ const getMachinesWriteToFiles = async (uriArray: string[]) => {
 
             await writeToFetchedMachineFile({
               filePath: uri,
-              machine: configStringObject,
+              configStringObject,
             });
             console.log(`${uri} - success`);
           }
