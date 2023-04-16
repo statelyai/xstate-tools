@@ -4,6 +4,7 @@ import { TypegenData } from './getTypegenData';
 
 export interface GlobalSettings {
   showVisualEditorWarnings: boolean;
+  appendJSToTypegenImport: boolean;
 }
 
 export interface SourceLocation {

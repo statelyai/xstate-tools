@@ -68,6 +68,11 @@
           "default": true,
           "description": "Enable nesting the generated typegen files."
         },
+        "xstate.appendJSToTypegenImport": {
+          "type": "boolean",
+          "default": false,
+          "description": "Append .js extension to TypeGen import to satisfy ESM environments."
+        },
         "xstate.theme": {
           "type": "string",
           "enum": [
