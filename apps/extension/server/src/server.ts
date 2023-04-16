@@ -234,7 +234,6 @@ async function handleDocumentChange(textDocument: TextDocument): Promise<void> {
     ]);
 
     const extractionResults = machineResults.map((machineResult, index) => {
-      console.log({ settings, t: 'asdf' });
       try {
         if (isTypedMachineResult(machineResult)) {
           // Create typegen data for typed machines. This will throw if there are any errors.
