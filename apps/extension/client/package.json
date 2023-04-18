@@ -68,10 +68,10 @@
           "default": true,
           "description": "Enable nesting the generated typegen files."
         },
-        "xstate.appendJSToTypegenImport": {
+        "xstate.useDeclarationFileForTypegenData": {
           "type": "boolean",
           "default": false,
-          "description": "Append .js extension to TypeGen import to satisfy ESM environments."
+          "description": "Generate typegen data into `.d.ts` files and use this extension in the import's source that refers to it."
         },
         "xstate.theme": {
           "type": "string",

@@ -2,9 +2,12 @@ import { MachineEdit } from '@xstate/machine-extractor';
 import { MachineConfig } from 'xstate';
 import { TypegenData } from './getTypegenData';
 
-export interface GlobalSettings {
+export interface TypegenOptions {
+  useDeclarationFileForTypegenData: boolean;
+}
+
+export interface GlobalSettings extends TypegenOptions {
   showVisualEditorWarnings: boolean;
-  appendJSToTypegenImport: boolean;
 }
 
 export interface SourceLocation {
@@ -88,10 +91,13 @@ export interface RequestMap {
   };
   getTsTypesAndEdits: {
     params: { uri: string };
-    result: {
-      types: TypegenData[];
-      edits: Array<FileTextEdit>;
-    };
+    result:
+      | {
+          typegenUri: string;
+          types: TypegenData[];
+          edits: Array<FileTextEdit>;
+        }
+      | undefined;
     error: never;
   };
   getNodePosition: {
@@ -119,7 +125,7 @@ export interface NotificationMap {
     namedGuards: string[];
   };
   typesUpdated: {
-    uri: string;
+    typegenUri: string;
     types: TypegenData[];
   };
   extractionError: {
