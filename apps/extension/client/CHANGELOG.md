@@ -1,5 +1,15 @@
 # stately-vscode
 
+## 1.14.0
+
+### Minor Changes
+
+- [#323](https://github.com/statelyai/xstate-tools/pull/323) [`6e524df`](https://github.com/statelyai/xstate-tools/commit/6e524dfc7b03cd0cea0fcb9df62feaeaa8ae1729) Thanks [@Andarist](https://github.com/Andarist)! - Upgraded the Babel parser used to analyze the content of the files and machines. This should fix parsing issues with new TS features such as `const` type parameters.
+
+* [#322](https://github.com/statelyai/xstate-tools/pull/322) [`cddae40`](https://github.com/statelyai/xstate-tools/commit/cddae4096bf0a8ff08fec6a816dc1d5ec286ffad) Thanks [@andreash](https://github.com/andreash), [@Andarist](https://github.com/Andarist)! - Introduced a new opt-in option `useDeclarationFileForTypegenData`. It's the recommended way of using this extension and typegen and it fixes compatibility with modern `moduleResolution` options in TypeScript. It can also help you to avoid issues in frameworks that derive pages based on the directory content (such as Nuxt).
+
+  Enabling this might require using at least TypeScript 5.0.
+
 ## 1.13.0
 
 ### Minor Changes
