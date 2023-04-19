@@ -68,6 +68,11 @@
           "default": true,
           "description": "Enable nesting the generated typegen files."
         },
+        "xstate.useDeclarationFileForTypegenData": {
+          "type": "boolean",
+          "default": false,
+          "description": "Generate typegen data into `.d.ts` files and use this extension in the import's source that refers to it."
+        },
         "xstate.theme": {
           "type": "string",
           "enum": [

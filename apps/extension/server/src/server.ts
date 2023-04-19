@@ -18,6 +18,7 @@ import {
   introspectMachine,
   isCursorInPosition,
   TypegenData,
+  TypegenOptions,
 } from '@xstate/tools-shared';
 import deepEqual from 'fast-deep-equal';
 import { CodeLens, Position } from 'vscode-languageserver';
@@ -43,11 +44,26 @@ import {
   mergeOverlappingEdits,
 } from './utils';
 
+const getTypegenUri = (
+  uri: string,
+  { useDeclarationFileForTypegenData }: TypegenOptions,
+) => {
+  const parsedUri = URI.parse(uri);
+  return parsedUri
+    .with({
+      path:
+        parsedUri.path.slice(0, -UriUtils.extname(parsedUri).length) +
+        `.typegen${useDeclarationFileForTypegenData ? '.d' : ''}.ts`,
+    })
+    .toString();
+};
+
 let hasConfigurationCapability = false;
 let hasWorkspaceFolderCapability = false;
 
 const defaultSettings: GlobalSettings = {
   showVisualEditorWarnings: true,
+  useDeclarationFileForTypegenData: false,
 };
 let globalSettings: GlobalSettings = defaultSettings;
 
@@ -242,6 +258,7 @@ async function handleDocumentChange(textDocument: TextDocument): Promise<void> {
               UriUtils.basename(URI.parse(textDocument.uri)),
               index,
               machineResult,
+              settings,
             ),
           };
         } else {
@@ -369,7 +386,7 @@ async function handleDocumentChange(textDocument: TextDocument): Promise<void> {
       )
     ) {
       connection.sendNotification('typesUpdated', {
-        uri: textDocument.uri,
+        typegenUri: getTypegenUri(textDocument.uri, settings),
         types,
       });
     }
@@ -411,9 +428,8 @@ connection.onDidChangeConfiguration((change) => {
   if (hasConfigurationCapability) {
     documentSettings.clear();
   } else {
-    globalSettings = <GlobalSettings>(
-      (change.settings.languageServerExample || defaultSettings)
-    );
+    globalSettings =
+      (change.settings.xstate as GlobalSettings) || defaultSettings;
   }
 
   connection.documents.all().forEach(handleDocumentChange);
@@ -829,18 +845,16 @@ connection.onRequest('applyMachineEdits', ({ machineEdits, reason }) => {
   };
 });
 
-connection.onRequest('getTsTypesAndEdits', ({ uri }) => {
+connection.onRequest('getTsTypesAndEdits', async ({ uri }) => {
   const cachedDocument = documentsCache.get(uri);
   if (!cachedDocument) {
-    return {
-      types: [],
-      edits: [],
-    };
+    return;
   }
   const types = cachedDocument.extractionResults
     .map((extractionResult) => extractionResult.types)
     .filter(isTypegenData);
   return {
+    typegenUri: getTypegenUri(uri, await getDocumentSettings(uri)),
     types,
     edits: getTsTypesEdits(types).map((edit) => ({
       type: 'replace',

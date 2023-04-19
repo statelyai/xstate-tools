@@ -1,6 +1,7 @@
 import { MachineExtractResult } from '@xstate/machine-extractor';
 import { createIntrospectableMachine } from './createIntrospectableMachine';
 import { introspectMachine } from './introspectMachine';
+import { TypegenOptions } from './types';
 
 export interface TypegenData extends ReturnType<typeof getTypegenData> {}
 
@@ -12,6 +13,7 @@ export const getTypegenData = (
   fileName: string,
   machineIndex: number,
   machineResult: MachineExtractResult,
+  { useDeclarationFileForTypegenData }: Partial<TypegenOptions> = {},
 ) => {
   const introspectResult = introspectMachine(
     createIntrospectableMachine(machineResult) as any,
@@ -65,7 +67,12 @@ export const getTypegenData = (
     // we sort strings here because we use deep comparison to detect a change in the output of this function
     data: {
       tsTypesValue: {
-        argument: `./${removeExtension(fileName)}.typegen`,
+        argument: `./${removeExtension(fileName)}.typegen${
+          // since TS 5.0 (and more precisely since https://github.com/microsoft/TypeScript/pull/52595)
+          // this explicit `.d.ts` could always be added to this import source
+          // for the time being we make it an opt-in as TS 5.0 is still pretty new
+          useDeclarationFileForTypegenData ? '.d.ts' : ''
+        }`,
         qualifier: `Typegen${machineIndex}`,
       },
       internalEvents: collectPotentialInternalEvents(
