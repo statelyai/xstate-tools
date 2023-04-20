@@ -853,6 +853,11 @@ connection.onRequest('getTsTypesAndEdits', async ({ uri }) => {
   const types = cachedDocument.extractionResults
     .map((extractionResult) => extractionResult.types)
     .filter(isTypegenData);
+
+  if (!types.length) {
+    return;
+  }
+
   return {
     typegenUri: getTypegenUri(uri, await getDocumentSettings(uri)),
     types,
