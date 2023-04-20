@@ -1,5 +1,11 @@
 # stately-vscode
 
+## 1.14.1
+
+### Patch Changes
+
+- [#327](https://github.com/statelyai/xstate-tools/pull/327) [`d1e290d`](https://github.com/statelyai/xstate-tools/commit/d1e290d831c413df3a5622dd915024b2e96c11a0) Thanks [@Andarist](https://github.com/Andarist)! - Fixed an issue with typegen files being sometimes generated when they shouldn't be.
+
 ## 1.14.0
 
 ### Minor Changes
