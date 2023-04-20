@@ -54,10 +54,6 @@ const writeToFiles = async (uriArray: string[]) => {
             getTypegenData(path.basename(uri), index, machineResult),
           );
 
-        if (!types.length) {
-          return;
-        }
-
         await writeToTypegenFile(uri, types);
 
         const edits = getTsTypesEdits(types);
