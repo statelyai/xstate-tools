@@ -12,7 +12,5 @@ export * from './getTypegenOutput';
 export * from './introspectMachine';
 export * from './isCursorInPosition';
 export * from './processFileEdits';
-export * from './removeFile';
 export * from './resolveUriToFilePrefix';
 export * from './types';
-export * from './writeToTypegenFile';

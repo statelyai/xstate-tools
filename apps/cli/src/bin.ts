@@ -2,16 +2,61 @@
 
 import { extractMachinesFromFile } from '@xstate/machine-extractor';
 import {
+  TypegenData,
   getTsTypesEdits,
   getTypegenData,
+  getTypegenOutput,
   processFileEdits,
-  writeToTypegenFile,
 } from '@xstate/tools-shared';
 import { watch } from 'chokidar';
 import { Command } from 'commander';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { version } from '../package.json';
+
+async function removeFile(filePath: string) {
+  try {
+    await fs.unlink(filePath);
+  } catch (e: any) {
+    if (e?.code === 'ENOENT') {
+      return;
+    }
+    throw e;
+  }
+}
+
+let prettier: typeof import('prettier') | undefined;
+
+function getPrettierInstance(cwd: string): typeof import('prettier') {
+  if (prettier) {
+    return prettier;
+  }
+  try {
+    return require(require.resolve('prettier', { paths: [cwd] }));
+  } catch (err) {
+    if (!err || (err as any).code !== 'MODULE_NOT_FOUND') {
+      throw err;
+    }
+    // we load our own prettier instance lazily on purpose to speed up the init time
+    return (prettier = require('prettier'));
+  }
+}
+
+const writeToTypegenFile = async (
+  typegenUri: string,
+  types: TypegenData[],
+  { cwd }: { cwd: string },
+) => {
+  const prettierInstance = getPrettierInstance(cwd);
+  await fs.writeFile(
+    typegenUri,
+    // // Prettier v3 returns a promise
+    await prettierInstance.format(getTypegenOutput(types), {
+      ...(await prettierInstance.resolveConfig(typegenUri)),
+      parser: 'typescript',
+    }),
+  );
+};
 
 // TODO: just use the native one when support for node 12 gets dropped
 const allSettled: typeof Promise.allSettled = (promises: Promise<any>[]) =>
@@ -28,7 +73,7 @@ const program = new Command();
 
 program.version(version);
 
-const writeToFiles = async (uriArray: string[]) => {
+const writeToFiles = async (uriArray: string[], { cwd }: { cwd: string }) => {
   /**
    * TODO - implement pretty readout
    */
@@ -43,6 +88,9 @@ const writeToFiles = async (uriArray: string[]) => {
           return;
         }
 
+        const typegenUri =
+          uri.slice(0, -path.extname(uri).length) + '.typegen.ts';
+
         const types = extracted.machines
           .filter(
             (
@@ -54,7 +102,7 @@ const writeToFiles = async (uriArray: string[]) => {
             getTypegenData(path.basename(uri), index, machineResult),
           );
 
-        await writeToTypegenFile(uri, types);
+        await writeToTypegenFile(typegenUri, types, { cwd });
 
         const edits = getTsTypesEdits(types);
         if (edits.length > 0) {
@@ -80,13 +128,14 @@ program
   .argument('<files>', 'The files to target, expressed as a glob pattern')
   .option('-w, --watch', 'Run the typegen in watch mode')
   .action(async (filesPattern: string, opts: { watch?: boolean }) => {
+    const cwd = process.cwd();
     if (opts.watch) {
       // TODO: implement per path queuing to avoid tasks related to the same file from overlapping their execution
       const processFile = (path: string) => {
         if (path.endsWith('.typegen.ts')) {
           return;
         }
-        writeToFiles([path]).catch(() => {});
+        writeToFiles([path], { cwd }).catch(() => {});
       };
       // TODO: handle removals
       watch(filesPattern, { awaitWriteFinish: true })
@@ -100,7 +149,7 @@ program
           if (path.endsWith('.typegen.ts')) {
             return;
           }
-          tasks.push(writeToFiles([path]));
+          tasks.push(writeToFiles([path], { cwd }));
         })
         .on('ready', async () => {
           const settled = await allSettled(tasks);
