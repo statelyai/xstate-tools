@@ -4,7 +4,7 @@
   "description": "Visual editing, autocomplete and typegen for XState",
   "license": "MIT",
   "author": "Stately Team",
-  "version": "1.14.1",
+  "version": "1.14.2",
   "private": true,
   "engines": {
     "vscode": "^1.52.0"
@@ -111,7 +111,7 @@
   "dependencies": {
     "@types/lz-string": "^1.3.34",
     "@xstate/inspect": "^0.4.1",
-    "@xstate/tools-shared": "^2.0.1",
+    "@xstate/tools-shared": "^3.0.0",
     "isomorphic-fetch": "^3.0.0",
     "lz-string": "^1.4.4",
     "vscode-languageclient": "^7.0.0",
