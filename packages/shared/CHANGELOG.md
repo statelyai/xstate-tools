@@ -1,5 +1,15 @@
 # @xstate/tools-shared
 
+## 3.0.0
+
+### Major Changes
+
+- [#328](https://github.com/statelyai/xstate-tools/pull/328) [`87bf22a`](https://github.com/statelyai/xstate-tools/commit/87bf22aeb47e1e08edad373c218ca2a0abd0f9d7) Thanks [@Andarist](https://github.com/Andarist)! - Removed some FS-related utils from the package.
+
+### Patch Changes
+
+- [#333](https://github.com/statelyai/xstate-tools/pull/333) [`2823e81`](https://github.com/statelyai/xstate-tools/commit/2823e8153ebd084eaa5e165f6fd0963bf4079dd2) Thanks [@Andarist](https://github.com/Andarist)! - Fixed an issue that caused inline actors with IDs being marked as not provided by typegen. This could result in false positive "Some implementations missing" error.
+
 ## 2.0.2
 
 ### Patch Changes
