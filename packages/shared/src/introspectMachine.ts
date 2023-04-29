@@ -353,16 +353,16 @@ function createTraversalContext(machine: AnyStateNode) {
     nodeIdToSourceEventsMap: new Map<string, Set<string>>(),
 
     actions: new ItemMap({
-      checkIfOptional: (name) => Boolean(machine.options?.actions?.[name]),
+      checkIfOptional: (name) => !!machine.options?.actions?.[name],
     }),
     delays: new ItemMap({
-      checkIfOptional: (name) => Boolean(machine.options?.delays?.[name]),
+      checkIfOptional: (name) => !!machine.options?.delays?.[name],
     }),
     guards: new ItemMap({
-      checkIfOptional: (name) => Boolean(machine.options?.guards?.[name]),
+      checkIfOptional: (name) => !!machine.options?.guards?.[name],
     }),
     services: new ItemMap({
-      checkIfOptional: (name) => Boolean(machine.options?.services?.[name]),
+      checkIfOptional: (name) => !!machine.options?.services?.[name],
     }),
   };
 }
@@ -508,6 +508,8 @@ export const introspectMachine = (machine: AnyStateNode) => {
     serviceSrcToIdMap: ctx.serviceSrcToIdMap,
   };
 };
+
+export type IntrospectResult = ReturnType<typeof introspectMachine>;
 
 const getServiceSrc = (invoke: InvokeDefinition<any, any>) => {
   if (typeof invoke.src === 'string') {
