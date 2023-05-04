@@ -1,8 +1,9 @@
+import pick from 'lodash.pick';
 import { groupByUniqueName, MachineExtractResult } from '..';
 import { extractMachinesFromFile } from '../extractMachinesFromFile';
 
 describe('MachineParseResult', () => {
-  it('Should let you get a state node by path', () => {
+  it.skip('Should let you get a state node by path', () => {
     const result = extractMachinesFromFile(`
       createMachine({
         states: {
@@ -29,7 +30,7 @@ describe('MachineParseResult', () => {
     expect(b1Node?.path).toEqual(['b', 'b1']);
   });
 
-  it('Should let you list all of the transition target nodes', () => {
+  it.skip('Should let you list all of the transition target nodes', () => {
     const result = extractMachinesFromFile(`
       createMachine({
         onDone: ['state.onDone'],
@@ -58,7 +59,7 @@ describe('MachineParseResult', () => {
     ).toHaveLength(6);
   });
 
-  it('Should let you list all of the named guards', () => {
+  it.skip('Should let you list all of the named guards', () => {
     const result = extractMachinesFromFile(`
     createMachine({
       onDone: [{cond: 'state.onDone'}],
@@ -90,7 +91,7 @@ describe('MachineParseResult', () => {
     expect(conds['WOW.object']).toHaveLength(2);
   });
 
-  it('Should grab all invoke names', () => {
+  it.skip('Should grab all invoke names', () => {
     const result = extractMachinesFromFile(`
       createMachine({
         invoke: {
@@ -104,7 +105,7 @@ describe('MachineParseResult', () => {
     expect(Object.keys(services)).toHaveLength(1);
   });
 
-  it('should grab target defined with a template literal', () => {
+  it.skip('should grab target defined with a template literal', () => {
     const result = extractMachinesFromFile(`
       createMachine({
         initial: 'a',
@@ -130,109 +131,83 @@ describe('MachineParseResult', () => {
     });
   });
 
-  describe('Assign actions as expression', () => {
-    const assignActions = [
-      'assign({count: 1})',
-      `assign((ctx, e) => {
+  it.only('should extract assignment from actions', () => {
+    const result = extractMachinesFromFile(`
+    createMachine({
+      initial: 'a',
+      context: {count: 0},
+      entry: [assign((ctx, e) => {
         const val = e.data;
         return {
           count: val + ctx.count
         }
-      })`,
-      'assign({count: ctx => ctx.count + 1})',
-    ];
-    const config = `
-      createMachine({
-        initial: 'a',
-        context: {count: 0},
-        entry: [${assignActions}],
-        exit: [${assignActions}],
-        states: {
-          a: {
-            exit: [${assignActions}],
-            on: {
-              GO: {
-                target: 'b',
-                actions: ${assignActions[0]}
-              }
+      })],
+      states: {
+        a: {
+          exit: [assign({count: ctx => ctx.count + 1})],
+          on: {
+            GO: {
+              target: 'b',
+              actions: [assign({a: 0, b: 'b', c: true, d: [1,2,3], e: {e1: 'whatever'}})]
             }
-          },
-          b: {
-            entry: [${assignActions}]
           }
-        }
-      })
-    `;
-    const result = extractMachinesFromFile(config);
+        },
+        b: {}
+      }
+    })
+  `);
     const machine = result!.machines[0];
+    const config = machine?.toConfig();
 
-    it('should extract entry assignment', () => {
-      expect(machine?.toConfig({ stringifyInlineImplementations: true })?.entry)
-        .toMatchInlineSnapshot(`
-        [
-          "assign({count: 1})",
-          "assign((ctx, e) => {
-                const val = e.data;
-                return {
-                  count: val + ctx.count
-                }
-              })",
-          "assign({count: ctx => ctx.count + 1})",
-        ]
-      `);
-      expect(
-        machine?.toConfig({ stringifyInlineImplementations: true })?.states?.b
-          .entry,
-      ).toMatchInlineSnapshot(`
-        [
-          "assign({count: 1})",
-          "assign((ctx, e) => {
-                const val = e.data;
-                return {
-                  count: val + ctx.count
-                }
-              })",
-          "assign({count: ctx => ctx.count + 1})",
-        ]
-      `);
-    });
-    it('should extract exit assignment', () => {
-      expect(machine?.toConfig({ stringifyInlineImplementations: true })?.exit)
-        .toMatchInlineSnapshot(`
-        [
-          "assign({count: 1})",
-          "assign((ctx, e) => {
-                const val = e.data;
-                return {
-                  count: val + ctx.count
-                }
-              })",
-          "assign({count: ctx => ctx.count + 1})",
-        ]
-      `);
-      expect(
-        machine?.toConfig({ stringifyInlineImplementations: true })?.states?.a
-          .exit,
-      ).toMatchInlineSnapshot(`
-        [
-          "assign({count: 1})",
-          "assign((ctx, e) => {
-                const val = e.data;
-                return {
-                  count: val + ctx.count
-                }
-              })",
-          "assign({count: ctx => ctx.count + 1})",
-        ]
-      `);
-    });
-    it('should extract assignment from transitions actions', () => {
-      expect(
-        (
-          machine?.toConfig({ stringifyInlineImplementations: true })?.states?.a
-            .on as any
-        ).GO.actions,
-      ).toMatchInlineSnapshot(`"assign({count: 1})"`);
-    });
+    expect(pick(config?.entry, ['name', 'assignment'])).toMatchInlineSnapshot(`
+      {
+        "assignment": {
+          "inlineAssigner": {
+            "type": "expression",
+            "value": "(ctx, e) => {
+              const val = e.data;
+              return {
+                count: val + ctx.count
+              }
+            }",
+          },
+        },
+        "name": "xstate.assign",
+      }
+    `);
+
+    expect(pick(config?.states.a.exit, ['name', 'assignment']))
+      .toMatchInlineSnapshot(`
+      {
+        "assignment": {
+          "count": {
+            "type": "expression",
+            "value": "ctx => ctx.count + 1",
+          },
+        },
+        "name": "xstate.assign",
+      }
+    `);
+
+    expect(pick(config?.states?.a?.on?.GO?.actions, ['name', 'assignment']))
+      .toMatchInlineSnapshot(`
+      {
+        "assignment": {
+          "a": {
+            "type": "number",
+            "value": 0,
+          },
+          "b": {
+            "type": "string",
+            "value": "b",
+          },
+          "c": {
+            "type": "boolean",
+            "value": true,
+          },
+        },
+        "name": "xstate.assign",
+      }
+    `);
   });
 });

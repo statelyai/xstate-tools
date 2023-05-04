@@ -4,8 +4,9 @@ import {
   StateNodeConfig,
   TransitionConfigOrTarget,
 } from 'xstate';
-import { MaybeArrayOfActions } from './actions';
+import { ActionNode, MaybeArrayOfActions } from './actions';
 import { CondNode } from './conds';
+import { extractAssignment, isAssignAction } from './extractAction';
 import { TMachineCallExpression } from './machineCallExpression';
 import { StateNodeReturn } from './stateNode';
 import { MaybeTransitionArray } from './transitions';
@@ -27,10 +28,6 @@ export interface ToMachineConfigOptions {
    * @default false
    */
   anonymizeInlineImplementations?: boolean;
-  /**
-   * If true, actions will be extracted as expressions
-   */
-  stringifyInlineImplementations?: boolean;
   /**
    * Original source code text
    */
@@ -217,11 +214,6 @@ export const getActionConfig = (
           type: action.inlineDeclarationId,
         });
         return;
-      case opts?.stringifyInlineImplementations:
-        actions.push(
-          opts!.fileContent.slice(action.node.start!, action.node.end!),
-        );
-        return;
       case !!action.chooseConditions:
         actions.push({
           type: 'xstate.choose',
@@ -232,6 +224,13 @@ export const getActionConfig = (
               actions: getActionConfig(condition.actionNodes, opts),
             };
           }),
+        });
+        return;
+      case isAssignAction(action):
+        actions.push({
+          type: action.name || `Assignment ${Math.random().toFixed(3)}`,
+          name: 'xstate.assign',
+          assignment: extractAssignment(action, opts!.fileContent),
         });
         return;
     }
