@@ -1,8 +1,8 @@
 diff --git a/node_modules/ast-types/lib/types.d.ts b/node_modules/ast-types/lib/types.d.ts
-index c573902..5c2ba90 100644
+index fd07495..41be2d5 100644
 --- a/node_modules/ast-types/lib/types.d.ts
 +++ b/node_modules/ast-types/lib/types.d.ts
-@@ -10,7 +10,7 @@ export interface AnyType {
+@@ -14,7 +14,7 @@ export interface AnyType {
  declare abstract class BaseType<T> {
      abstract toString(): string;
      abstract check(value: any, deep?: Deep): value is T;
