@@ -4,7 +4,7 @@
   "description": "Visual editing, autocomplete and typegen for XState",
   "license": "MIT",
   "author": "Stately Team",
-  "version": "1.14.2",
+  "version": "1.14.3",
   "private": true,
   "engines": {
     "vscode": "^1.52.0"
