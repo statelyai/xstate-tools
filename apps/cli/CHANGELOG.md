@@ -1,5 +1,11 @@
 # @xstate/cli
 
+## 0.5.1
+
+### Patch Changes
+
+- [#341](https://github.com/statelyai/xstate-tools/pull/341) [`be2caea`](https://github.com/statelyai/xstate-tools/commit/be2caeae0cfd48609701d1375e7662074751df6b) Thanks [@Andarist](https://github.com/Andarist)! - Fixed an issue with typegen files being sometimes generated when they shouldn't be.
+
 ## 0.5.0
 
 ### Minor Changes
