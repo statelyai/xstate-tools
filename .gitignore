@@ -6,6 +6,7 @@ apps/extension/client/scripts
 .vscode-test
 *.vsix
 *.zip
+*.log
 .DS_Store
 .turbo
 .idea

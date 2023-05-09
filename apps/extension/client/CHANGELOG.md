@@ -1,5 +1,11 @@
 # stately-vscode
 
+## 1.14.3
+
+### Patch Changes
+
+- [#338](https://github.com/statelyai/xstate-tools/pull/338) [`1ebfcea`](https://github.com/statelyai/xstate-tools/commit/1ebfcea83485c6bf3f242c4d9223334e1e09d55a) Thanks [@Andarist](https://github.com/Andarist)! - Fixed an issue with not being able to apply code updates in files containing `satisfies` keyword
+
 ## 1.14.2
 
 ### Patch Changes

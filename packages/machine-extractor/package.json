@@ -1,6 +1,6 @@
 {
   "name": "@xstate/machine-extractor",
-  "version": "0.9.1",
+  "version": "0.9.2",
   "main": "dist/xstate-machine-extractor.cjs.js",
   "author": "Matt Pocock",
   "license": "MIT",
@@ -12,7 +12,7 @@
     "@babel/parser": "^7.21.4",
     "@babel/traverse": "^7.21.4",
     "@babel/types": "^7.21.4",
-    "recast": "^0.21.2"
+    "recast": "^0.23.1"
   },
   "peerDependencies": {
     "xstate": "^4"
