@@ -1,5 +1,30 @@
 # stately-vscode
 
+## 1.14.2
+
+### Patch Changes
+
+- [#333](https://github.com/statelyai/xstate-tools/pull/333) [`2823e81`](https://github.com/statelyai/xstate-tools/commit/2823e8153ebd084eaa5e165f6fd0963bf4079dd2) Thanks [@Andarist](https://github.com/Andarist)! - Fixed an issue that caused inline actors with IDs being marked as not provided by typegen. This could result in false positive "Some implementations missing" error.
+
+- Updated dependencies [[`2823e81`](https://github.com/statelyai/xstate-tools/commit/2823e8153ebd084eaa5e165f6fd0963bf4079dd2), [`87bf22a`](https://github.com/statelyai/xstate-tools/commit/87bf22aeb47e1e08edad373c218ca2a0abd0f9d7)]:
+  - @xstate/tools-shared@3.0.0
+
+## 1.14.1
+
+### Patch Changes
+
+- [#327](https://github.com/statelyai/xstate-tools/pull/327) [`d1e290d`](https://github.com/statelyai/xstate-tools/commit/d1e290d831c413df3a5622dd915024b2e96c11a0) Thanks [@Andarist](https://github.com/Andarist)! - Fixed an issue with typegen files being sometimes generated when they shouldn't be.
+
+## 1.14.0
+
+### Minor Changes
+
+- [#323](https://github.com/statelyai/xstate-tools/pull/323) [`6e524df`](https://github.com/statelyai/xstate-tools/commit/6e524dfc7b03cd0cea0fcb9df62feaeaa8ae1729) Thanks [@Andarist](https://github.com/Andarist)! - Upgraded the Babel parser used to analyze the content of the files and machines. This should fix parsing issues with new TS features such as `const` type parameters.
+
+* [#322](https://github.com/statelyai/xstate-tools/pull/322) [`cddae40`](https://github.com/statelyai/xstate-tools/commit/cddae4096bf0a8ff08fec6a816dc1d5ec286ffad) Thanks [@andreash](https://github.com/andreash), [@Andarist](https://github.com/Andarist)! - Introduced a new opt-in option `useDeclarationFileForTypegenData`. It's the recommended way of using this extension and typegen and it fixes compatibility with modern `moduleResolution` options in TypeScript. It can also help you to avoid issues in frameworks that derive pages based on the directory content (such as Nuxt).
+
+  Enabling this might require using at least TypeScript 5.0.
+
 ## 1.13.0
 
 ### Minor Changes

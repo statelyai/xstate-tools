@@ -1,6 +1,5 @@
 import { getTypegenOutput, TypegenData } from '@xstate/tools-shared';
 import * as vscode from 'vscode';
-import { Utils as UriUtils } from 'vscode-uri';
 import { registerDisposable } from './registerDisposable';
 import { TypeSafeLanguageClient } from './typeSafeLanguageClient';
 
@@ -23,15 +22,10 @@ const timeout = (ms: number) =>
 
 const createTypegenFile = async (
   context: vscode.ExtensionContext,
-  uri: string,
+  typegenUriString: string,
   types: TypegenData[],
 ) => {
-  const parsedUri = vscode.Uri.parse(uri);
-  const typegenUri = parsedUri.with({
-    path:
-      parsedUri.path.slice(0, -UriUtils.extname(parsedUri).length) +
-      '.typegen.ts',
-  });
+  const typegenUri = vscode.Uri.parse(typegenUriString);
 
   const documentOpened = createDeferred();
 
@@ -87,18 +81,20 @@ export const initiateTypegen = (
             return [];
           }
 
-          const { edits, types } = await languageClient.sendRequest(
+          const response = await languageClient.sendRequest(
             'getTsTypesAndEdits',
             {
               uri,
             },
           );
 
-          if (!types.length) {
+          if (!response) {
             return [];
           }
 
-          await createTypegenFile(context, uri, types);
+          const { typegenUri, types, edits } = response;
+
+          await createTypegenFile(context, typegenUri, types);
 
           return edits.map(
             (edit) =>
@@ -117,8 +113,11 @@ export const initiateTypegen = (
 
   registerDisposable(
     context,
-    languageClient.onNotification('typesUpdated', async ({ uri, types }) => {
-      await createTypegenFile(context, uri, types);
-    }),
+    languageClient.onNotification(
+      'typesUpdated',
+      async ({ typegenUri, types }) => {
+        await createTypegenFile(context, typegenUri, types);
+      },
+    ),
   );
 };
