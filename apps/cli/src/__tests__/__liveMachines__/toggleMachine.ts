@@ -1,5 +1,5 @@
 import { createLiveMachine } from '../../createLiveMachineHelper';
 
-const lightMachine = createLiveMachine({
-  id: '6dd78989-fd35-4e8b-866e-9aa78f9c34e6',
+const toggleMachine = createLiveMachine({
+  id: 'cf092ad2-5172-4f52-8ec8-7943bfe8b189',
 });

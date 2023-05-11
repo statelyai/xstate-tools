@@ -15,14 +15,14 @@ describe('typegen', () => {
     cwd: __dirname,
     stdio: 'ignore',
   });
+
   execSync('node ../../bin/bin.js typegen "./__examples__/*.ts"', {
     cwd: __dirname,
   });
+
   it('Should pass tsc', async () => {
     try {
-      execSync(`tsc`, {
-        cwd: examplesPath,
-      });
+      execSync(`tsc`, { cwd: examplesPath });
     } catch (e: any) {
       throw new Error(e.stdout.toString());
     }

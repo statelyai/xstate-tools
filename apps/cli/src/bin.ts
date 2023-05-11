@@ -8,13 +8,14 @@ import {
   getTypegenOutput,
   processFileEdits,
   writeToFetchedMachineFile,
-  writeToTypegenFile,
 } from '@xstate/tools-shared';
 import { watch } from 'chokidar';
 import { Command } from 'commander';
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { fetch } from 'undici';
 import { version } from '../package.json';
+import { SkyConfig } from './sky';
 
 async function removeFile(filePath: string) {
   try {
@@ -171,34 +172,23 @@ const getMachinesWriteToFiles = async (uriArray: string[]) => {
         const parseResult = extractMachinesFromFile(fileContents);
         if (parseResult && parseResult.machines.length > 0) {
           const parsedMachine = parseResult.machines[0];
-          const workflowId =
+          const machineVersionId =
             parsedMachine?.machineCallResult.definition?.id?.value;
-          console.log(`machineId`, workflowId);
-
-          if (workflowId && workflowId.length > 0) {
+          // TODO: do not hardcode api keys 🤣
+          const apiKey = 'sta_989e0c7d-7633-42a2-b793-52755a469fa9';
+          if (machineVersionId && machineVersionId.length > 0) {
             const configResponse = await fetch(
-              `http://localhost:3000/registry/api/sky/machine-config?workflowId=${workflowId}`,
+              `http://localhost:3000/registry/api/v1/connect/create-live-machine?machineVersionId=${machineVersionId}`,
+              { headers: { Authorization: `apikey ${apiKey}` } },
             );
-            const configStringObject = await configResponse.text();
-
-            // .then((response: any) => {
-            //   console.log(response);
-            //   const config = response.text();
-            //   console.log(config);
-            //   return config;
-            // })
-            // .catch((error: any) => {
-            //   console.log('error, something weird happened');
-
-            //   console.error(error);
-            //   return undefined;
-            // });
+            const { prettyConfigString } =
+              (await configResponse.json()) as SkyConfig;
 
             await writeToFetchedMachineFile({
               filePath: uri,
-              configStringObject,
+              prettyConfigString,
+              createTypeGenFile: writeToFiles,
             });
-            console.log(`${uri} - success`);
           }
         }
       } catch (e: any) {
