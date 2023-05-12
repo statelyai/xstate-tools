@@ -1,8 +1,11 @@
-const machine = await import(
-  './__tests__/__liveMachines__/toggleMachine.fetched'
-);
-
-export const createLiveMachine = ({ id }: { id: string }) => {
-  console.log(id);
-  return machine.default;
+export const createLiveMachine = <T>({
+  machineVersionId,
+  apiKey,
+  fetchedMachine,
+}: {
+  machineVersionId: string;
+  apiKey: string;
+  fetchedMachine: T;
+}) => {
+  return fetchedMachine;
 };

@@ -1,6 +1,5 @@
 import * as t from '@babel/types';
 import { createParser } from './createParser';
-import { GetMachineOptions } from './getMachineOptions';
 import { MachineOptions } from './options';
 import { StateNode } from './stateNode';
 import { AnyTypeParameterList } from './typeParameters';
@@ -13,7 +12,6 @@ export type TMachineCallExpression = GetParserResult<
 export const ALLOWED_CALL_EXPRESSION_NAMES = [
   'createMachine',
   'Machine',
-  'createLiveMachine',
   'createTestMachine',
 ];
 
@@ -40,27 +38,6 @@ export const MachineCallExpression = createParser({
       t.isIdentifier(node.callee) &&
       ALLOWED_CALL_EXPRESSION_NAMES.includes(node.callee.name)
     ) {
-      if (node.callee.name === 'createLiveMachine') {
-        console.log('node', node);
-        const machineId = StateNode.parse(node.arguments[0], context)?.id
-          ?.value;
-        if (machineId) {
-          console.log('machineId', machineId);
-          // return {
-          //   machineId,
-          //   callee: node.callee,
-          //   calleeName: node.callee.name,
-          //   definition: StateNode.parse(node.arguments[0], context),
-          //   options: MachineOptions.parse(node.arguments[1], context),
-          //   isMemberExpression: false,
-          //   typeArguments: AnyTypeParameterList.parse(
-          //     node.typeParameters,
-          //     context,
-          //   ),
-          //   node,
-          // };
-        }
-      }
       return {
         callee: node.callee,
         calleeName: node.callee.name,

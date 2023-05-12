@@ -1,8 +1,12 @@
 #!/usr/bin/env node
 
-import { extractMachinesFromFile } from '@xstate/machine-extractor';
+import {
+  extractLiveMachinesFromFile,
+  extractMachinesFromFile,
+} from '@xstate/machine-extractor';
 import {
   TypegenData,
+  doesFetchedMachineFileExist,
   getTsTypesEdits,
   getTypegenData,
   getTypegenOutput,
@@ -164,74 +168,69 @@ program
     }
   });
 
-const getMachinesWriteToFiles = async (uriArray: string[]) => {
-  await Promise.all(
-    uriArray.map(async (uri) => {
-      try {
-        const fileContents = await fs.readFile(uri, 'utf8');
-        const parseResult = extractMachinesFromFile(fileContents);
-        if (parseResult && parseResult.machines.length > 0) {
-          const parsedMachine = parseResult.machines[0];
-          const machineVersionId =
-            parsedMachine?.machineCallResult.definition?.id?.value;
-          // TODO: do not hardcode api keys 🤣
-          const apiKey = 'sta_989e0c7d-7633-42a2-b793-52755a469fa9';
-          if (machineVersionId && machineVersionId.length > 0) {
-            const configResponse = await fetch(
-              `http://localhost:3000/registry/api/v1/connect/create-live-machine?machineVersionId=${machineVersionId}`,
-              { headers: { Authorization: `apikey ${apiKey}` } },
-            );
-            const { prettyConfigString } =
-              (await configResponse.json()) as SkyConfig;
+const writeLiveMachinesToFiles = async (uri: string) => {
+  try {
+    if (doesFetchedMachineFileExist(uri)) {
+      console.log('Fetched machine file already exists, skipping');
+      return;
+    }
 
-            await writeToFetchedMachineFile({
-              filePath: uri,
-              prettyConfigString,
-              createTypeGenFile: writeToFiles,
-            });
-          }
+    const fileContents = await fs.readFile(uri, 'utf8');
+    const parseResult = extractLiveMachinesFromFile(fileContents);
+    if (!parseResult) return;
+    await Promise.all(
+      parseResult.liveMachines.map(async (liveMachine) => {
+        const machineVersionId = liveMachine?.machineVersionId?.value;
+        const apiKey = liveMachine?.apiKey?.value;
+        if (
+          machineVersionId &&
+          machineVersionId.length > 0 &&
+          apiKey &&
+          apiKey.length > 0
+        ) {
+          const configResponse = await fetch(
+            `http://localhost:3000/registry/api/v1/connect/create-live-machine?machineVersionId=${machineVersionId}`,
+            { headers: { Authorization: `apikey ${apiKey}` } },
+          );
+          const { prettyConfigString } =
+            (await configResponse.json()) as SkyConfig;
+
+          return await writeToFetchedMachineFile({
+            filePath: uri,
+            prettyConfigString,
+            createTypeGenFile: writeToFiles,
+          });
         }
-      } catch (e: any) {
-        if (e?.code === 'BABEL_PARSER_SYNTAX_ERROR') {
-          console.error(`${uri} - syntax error, skipping`);
-        } else {
-          console.error(`${uri} - error, `, e);
-        }
-        throw e;
-      }
-    }),
-  );
+      }),
+    );
+  } catch (e: any) {
+    if (e?.code === 'BABEL_PARSER_SYNTAX_ERROR') {
+      console.error(`${uri} - syntax error, skipping`);
+    } else {
+      console.error(`${uri} - error, `, e);
+    }
+    throw e;
+  }
 };
 
 program
   .command('createLiveMachines')
   .description('Create live machines from the Stately Editor')
   .argument('<files>', 'The files to target, expressed as a glob pattern')
-  .option('-w, --watch', 'Run getMachines in watch mode')
+  .option('-w, --watch', 'Run createLiveMachines in watch mode')
   .action(async (filesPattern: string, opts: { watch?: boolean }) => {
-    console.log(`filesPattern`, filesPattern);
-
     if (opts.watch) {
-      // TODO: implement per path queuing to avoid tasks related to the same file from overlapping their execution
       const processFile = (path: string) => {
-        if (path.endsWith('.typegen.ts')) {
-          return;
-        }
-        getMachinesWriteToFiles([path]).catch(() => {});
+        writeLiveMachinesToFiles(path).catch(() => {});
       };
-      // TODO: handle removals
       watch(filesPattern, { awaitWriteFinish: true })
         .on('add', processFile)
         .on('change', processFile);
     } else {
       const tasks: Array<Promise<void>> = [];
-      // TODO: could this cleanup outdated typegen files?
       watch(filesPattern, { persistent: false })
         .on('add', (path) => {
-          if (path.endsWith('.typegen.ts')) {
-            return;
-          }
-          tasks.push(getMachinesWriteToFiles([path]));
+          tasks.push(writeLiveMachinesToFiles(path));
         })
         .on('ready', async () => {
           const settled = await allSettled(tasks);

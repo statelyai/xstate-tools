@@ -1,6 +1,7 @@
 import { parse } from '@babel/parser';
 import traverse from '@babel/traverse';
 import * as t from '@babel/types';
+import { ALLOWED_LIVE_CALL_EXPRESSION_NAMES } from './liveMachines/liveMachineUtils';
 import { ALLOWED_CALL_EXPRESSION_NAMES } from './machineCallExpression';
 
 export const getMachineNodesFromFile = (fileContent: string) => {
@@ -20,6 +21,12 @@ export const getMachineNodesFromFile = (fileContent: string) => {
   traverse(file, {
     CallExpression(path) {
       const node = path.node;
+      if (
+        t.isIdentifier(node.callee) &&
+        ALLOWED_LIVE_CALL_EXPRESSION_NAMES.includes(node.callee.name)
+      ) {
+        machineNodes.push(node);
+      }
       if (
         t.isMemberExpression(node.callee) &&
         t.isIdentifier(node.callee.property) &&
