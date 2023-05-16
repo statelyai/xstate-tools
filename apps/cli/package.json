@@ -7,7 +7,7 @@
   "scripts": {
     "prepare": "yarn build",
     "lint": "tsc",
-    "test": "jest liveMachines",
+    "test": "jest generate",
     "build": "esbuild src/bin.ts --outdir=bin --platform=node --format=cjs --sourcemap"
   },
   "devDependencies": {
@@ -22,7 +22,9 @@
     "@xstate/tools-shared": "^3.0.0",
     "chokidar": "^3.5.3",
     "commander": "^8.0.0",
+    "dotenv": "^16.0.3",
     "prettier": "^2.8.7",
+    "recast": "^0.23.1",
     "undici": "^5.22.1",
     "xstate": "^4.33.4"
   },

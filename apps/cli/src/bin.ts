@@ -15,8 +15,10 @@ import {
 } from '@xstate/tools-shared';
 import { watch } from 'chokidar';
 import { Command } from 'commander';
+import 'dotenv/config';
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import * as recast from 'recast';
 import { fetch } from 'undici';
 import { version } from '../package.json';
 import { SkyConfig } from './sky';
@@ -168,20 +170,34 @@ program
     }
   });
 
-const writeLiveMachinesToFiles = async (uri: string) => {
+const writeLiveMachinesToFiles = async (opts: {
+  uri: string;
+  apiKey: string | undefined;
+  host: string | undefined;
+}) => {
   try {
-    if (doesFetchedMachineFileExist(uri)) {
+    const fileContents2 = await fs.readFile(opts.uri, 'utf8');
+    const ast = recast.parse(fileContents2);
+    const importer = recast.types.builders.importSpecifier({
+      name: 'fetchedMachine',
+      type: 'Identifier',
+    });
+
+    console.error(JSON.stringify(ast.program.body[0], null, 2));
+    // console.error(JSON.stringify(importer, null, 2));
+
+    if (doesFetchedMachineFileExist(opts.uri)) {
       console.log('Fetched machine file already exists, skipping');
       return;
     }
 
-    const fileContents = await fs.readFile(uri, 'utf8');
+    const fileContents = await fs.readFile(opts.uri, 'utf8');
     const parseResult = extractLiveMachinesFromFile(fileContents);
     if (!parseResult) return;
     await Promise.all(
       parseResult.liveMachines.map(async (liveMachine) => {
         const machineVersionId = liveMachine?.machineVersionId?.value;
-        const apiKey = liveMachine?.apiKey?.value;
+        const apiKey = liveMachine?.apiKey?.value ?? opts.apiKey;
         if (
           machineVersionId &&
           machineVersionId.length > 0 &&
@@ -189,57 +205,79 @@ const writeLiveMachinesToFiles = async (uri: string) => {
           apiKey.length > 0
         ) {
           const configResponse = await fetch(
-            `http://localhost:3000/registry/api/v1/connect/create-live-machine?machineVersionId=${machineVersionId}`,
+            `${
+              opts.host ?? 'https://stately.ai'
+            }/registry/api/v1/connect/create-live-machine?machineVersionId=${machineVersionId}`,
             { headers: { Authorization: `apikey ${apiKey}` } },
           );
           const { prettyConfigString } =
             (await configResponse.json()) as SkyConfig;
 
-          return await writeToFetchedMachineFile({
-            filePath: uri,
+          await writeToFetchedMachineFile({
+            filePath: opts.uri,
             prettyConfigString,
             createTypeGenFile: writeToFiles,
           });
+
+          const ast = recast.parse(fileContents);
+          console.error(ast);
+          return;
         }
       }),
     );
   } catch (e: any) {
     if (e?.code === 'BABEL_PARSER_SYNTAX_ERROR') {
-      console.error(`${uri} - syntax error, skipping`);
+      console.error(`${opts.uri} - syntax error, skipping`);
     } else {
-      console.error(`${uri} - error, `, e);
+      console.error(`${opts.uri} - error, `, e);
     }
     throw e;
   }
 };
 
 program
-  .command('createLiveMachines')
-  .description('Create live machines from the Stately Editor')
+  .command('generate')
+  .description(
+    'Generate will fetch machine configs, and setup interactions with the Stately Studio',
+  )
   .argument('<files>', 'The files to target, expressed as a glob pattern')
-  .option('-w, --watch', 'Run createLiveMachines in watch mode')
-  .action(async (filesPattern: string, opts: { watch?: boolean }) => {
-    if (opts.watch) {
-      const processFile = (path: string) => {
-        writeLiveMachinesToFiles(path).catch(() => {});
-      };
-      watch(filesPattern, { awaitWriteFinish: true })
-        .on('add', processFile)
-        .on('change', processFile);
-    } else {
-      const tasks: Array<Promise<void>> = [];
-      watch(filesPattern, { persistent: false })
-        .on('add', (path) => {
-          tasks.push(writeLiveMachinesToFiles(path));
-        })
-        .on('ready', async () => {
-          const settled = await allSettled(tasks);
-          if (settled.some((result) => result.status === 'rejected')) {
-            process.exit(1);
-          }
-          process.exit(0);
-        });
-    }
-  });
+  .option('-w, --watch', 'Run generate in watch mode')
+  .option(
+    '-k, --api-key <key>',
+    'API key to use for interacting with the Stately Studio',
+  )
+  .option('-h, --host <host>', 'URL pointing to the Stately Studio host')
+  .action(
+    async (
+      filesPattern: string,
+      opts: { watch?: boolean; apiKey?: string; host?: string },
+    ) => {
+      const host = opts.host ?? process.env.STATELY_HOST;
+      const envApiKey = process.env.STATELY_API_KEY;
+      const apiKey = opts.apiKey ?? envApiKey;
+
+      if (opts.watch) {
+        const processFile = (uri: string) => {
+          writeLiveMachinesToFiles({ uri, apiKey, host }).catch(() => {});
+        };
+        watch(filesPattern, { awaitWriteFinish: true })
+          .on('add', processFile)
+          .on('change', processFile);
+      } else {
+        const tasks: Array<Promise<void>> = [];
+        watch(filesPattern, { persistent: false })
+          .on('add', (uri) => {
+            tasks.push(writeLiveMachinesToFiles({ uri, apiKey, host }));
+          })
+          .on('ready', async () => {
+            const settled = await allSettled(tasks);
+            if (settled.some((result) => result.status === 'rejected')) {
+              process.exit(1);
+            }
+            process.exit(0);
+          });
+      }
+    },
+  );
 
 program.parse(process.argv);

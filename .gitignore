@@ -10,3 +10,4 @@ apps/extension/client/scripts
 .DS_Store
 .turbo
 .idea
+.env
