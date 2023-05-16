@@ -11,7 +11,8 @@
     "test": "jest"
   },
   "peerDependencies": {
-    "xstate": "^4"
+    "xstate": "^4",
+    "prettier": "^2"
   },
   "devDependencies": {
     "@types/jest": "^27.4.0",
