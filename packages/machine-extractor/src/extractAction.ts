@@ -37,10 +37,15 @@ export function extractAssignment(
   if (t.isCallExpression(node)) {
     const assigner = node.arguments[0];
 
+    // assign({})
     if (t.isObjectExpression(assigner)) {
-      assigner.properties.forEach(prop => {
+      assigner.properties.forEach((prop) => {
         if (t.isObjectProperty(prop)) {
           if (t.isIdentifier(prop.key)) {
+            /**
+             * assign({prop: () => {}})
+             * assign({prop: function() {}})
+             */
             if (
               t.isArrowFunctionExpression(prop.value) ||
               t.isFunctionExpression(prop.value)
@@ -50,6 +55,10 @@ export function extractAssignment(
                 value: fileContent.slice(prop.value.start!, prop.value.end!),
               };
             } else if (
+              /**
+               * assign({prop: []})
+               * assign({prop: {}})
+               */
               t.isArrayExpression(prop.value) ||
               t.isObjectExpression(prop.value)
             ) {
@@ -58,6 +67,9 @@ export function extractAssignment(
                 value: fileContent.slice(prop.value.start!, prop.value.end!),
               };
             } else if (t.isLiteral(prop.value)) {
+              /**
+               * assign({prop: literal value})
+               */
               if (
                 t.isRegExpLiteral(prop.value) ||
                 t.isTemplateLiteral(prop.value) ||
@@ -77,18 +89,26 @@ export function extractAssignment(
           }
         }
       });
-    } else if (
+
+      return assignment;
+    }
+
+    // assign(() => {})
+    // assign(function() {})
+    if (
       t.isArrowFunctionExpression(assigner) ||
       t.isFunctionExpression(assigner)
     ) {
-      assignment.inlineImplementation = {
-        type: 'expression',
-        value: fileContent.slice(assigner.start!, assigner.end!),
+      return {
+        inlineImplementation: {
+          type: 'expression',
+          value: fileContent.slice(assigner.start!, assigner.end!),
+        },
       };
     }
   }
 
-  return assignment;
+  throw Error(`Unsupported assignment`);
 }
 
 export function extractRaisedEvent(
@@ -108,7 +128,7 @@ export function extractRaisedEvent(
 
     // raise({type: 'event', ...props})
     if (t.isObjectExpression(arg)) {
-      arg.properties.forEach(prop => {
+      arg.properties.forEach((prop) => {
         if (t.isObjectProperty(prop)) {
           if (t.isIdentifier(prop.key)) {
             if (t.isLiteral(prop.value)) {
@@ -144,15 +164,17 @@ export function extractRaisedEvent(
           }
         }
       });
+
+      return event;
     }
 
     // raise('event')
-    else if (t.isStringLiteral(arg)) {
-      event.type = { type: 'string', value: arg.value };
+    if (t.isStringLiteral(arg)) {
+      return { type: { type: 'string', value: arg.value } };
     }
   }
 
-  return event;
+  throw Error(`Unsupported raised event`);
 }
 
 export function extractLogExpression(
@@ -183,6 +205,11 @@ export function extractLogExpression(
   throw Error(`Unsupported log expression`);
 }
 
+export function extractSendToProperties(
+  actionNode: ActionNode,
+  fileContent: string,
+) {}
+
 function getLiteralType(value: t.ObjectProperty['value']) {
   if (
     t.isNullLiteral(value) ||
@@ -203,26 +230,7 @@ function getLiteralType(value: t.ObjectProperty['value']) {
   throw Error('Unsupported literal property value');
 }
 
-export const isAssignAction = (actionNode: ActionNode) => {
-  return (
-    t.isCallExpression(actionNode.node) &&
-    t.isIdentifier(actionNode.node.callee) &&
-    actionNode.node.callee.name === 'assign'
-  );
-};
-
-export const isRaiseAction = (actionNode: ActionNode) => {
-  return (
-    t.isCallExpression(actionNode.node) &&
-    t.isIdentifier(actionNode.node.callee) &&
-    actionNode.node.callee.name === 'raise'
-  );
-};
-
-export const isLogAction = (actionNode: ActionNode) => {
-  return (
-    t.isCallExpression(actionNode.node) &&
-    t.isIdentifier(actionNode.node.callee) &&
-    actionNode.node.callee.name === 'log'
-  );
-};
+export const isBuiltinActionWithName = (actionNode: ActionNode, name: string) =>
+  t.isCallExpression(actionNode.node) &&
+  t.isIdentifier(actionNode.node.callee) &&
+  actionNode.node.callee.name === name;

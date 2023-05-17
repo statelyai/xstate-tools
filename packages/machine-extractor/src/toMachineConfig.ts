@@ -10,9 +10,7 @@ import {
   extractAssignment,
   extractLogExpression,
   extractRaisedEvent,
-  isAssignAction,
-  isLogAction,
-  isRaiseAction,
+  isBuiltinActionWithName,
 } from './extractAction';
 import { TMachineCallExpression } from './machineCallExpression';
 import { StateNodeReturn } from './stateNode';
@@ -233,21 +231,21 @@ export const getActionConfig = (
           }),
         });
         return;
-      case isAssignAction(action):
+      case isBuiltinActionWithName(action, 'assign'):
         actions.push({
           type: action.name || `Assignment ${Math.random().toFixed(3)}`,
           name: 'xstate.assign',
           assignment: extractAssignment(action, opts!.fileContent),
         });
         return;
-      case isRaiseAction(action):
+      case isBuiltinActionWithName(action, 'raise'):
         actions.push({
           type: action.name || `Raise ${Math.random().toFixed(3)}`,
           name: 'xstate.raise',
           event: extractRaisedEvent(action, opts!.fileContent),
         });
         return;
-      case isLogAction(action):
+      case isBuiltinActionWithName(action, 'log'):
         actions.push({
           type: action.name || `Log ${Math.random().toFixed(3)}`,
           name: 'xstate.log',
