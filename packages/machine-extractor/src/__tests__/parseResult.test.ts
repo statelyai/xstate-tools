@@ -3,7 +3,7 @@ import { groupByUniqueName, MachineExtractResult } from '..';
 import { extractMachinesFromFile } from '../extractMachinesFromFile';
 
 describe('MachineParseResult', () => {
-  it.skip('Should let you get a state node by path', () => {
+  it('Should let you get a state node by path', () => {
     const result = extractMachinesFromFile(`
       createMachine({
         states: {
@@ -30,7 +30,7 @@ describe('MachineParseResult', () => {
     expect(b1Node?.path).toEqual(['b', 'b1']);
   });
 
-  it.skip('Should let you list all of the transition target nodes', () => {
+  it('Should let you list all of the transition target nodes', () => {
     const result = extractMachinesFromFile(`
       createMachine({
         onDone: ['state.onDone'],
@@ -59,7 +59,7 @@ describe('MachineParseResult', () => {
     ).toHaveLength(6);
   });
 
-  it.skip('Should let you list all of the named guards', () => {
+  it('Should let you list all of the named guards', () => {
     const result = extractMachinesFromFile(`
     createMachine({
       onDone: [{cond: 'state.onDone'}],
@@ -91,7 +91,7 @@ describe('MachineParseResult', () => {
     expect(conds['WOW.object']).toHaveLength(2);
   });
 
-  it.skip('Should grab all invoke names', () => {
+  it('Should grab all invoke names', () => {
     const result = extractMachinesFromFile(`
       createMachine({
         invoke: {
@@ -105,7 +105,7 @@ describe('MachineParseResult', () => {
     expect(Object.keys(services)).toHaveLength(1);
   });
 
-  it.skip('should grab target defined with a template literal', () => {
+  it('should grab target defined with a template literal', () => {
     const result = extractMachinesFromFile(`
       createMachine({
         initial: 'a',
@@ -131,55 +131,88 @@ describe('MachineParseResult', () => {
     });
   });
 
-  it.only('should extract assignment from actions', () => {
+  it('should extract assignment from actions', () => {
     const result = extractMachinesFromFile(`
     createMachine({
-      initial: 'a',
-      context: {count: 0},
-      entry: [assign((ctx, e) => {
-        const val = e.data;
-        return {
-          count: val + ctx.count
-        }
-      })],
+      initial: "a",
+      context: { count: 0 },
+      entry: [
+        assign((ctx, e) => {
+          const val = e.data;
+          return {
+            count: val + ctx.count,
+          };
+        }),
+        assign(function (ctx, e) {
+          const val = e.data;
+          return {
+            count: val + ctx.count,
+          };
+        }),
+      ],
       states: {
         a: {
-          exit: [assign({count: ctx => ctx.count + 1})],
+          exit: [assign({count: ctx => ctx.count + 1, another: function (ctx, e) {
+            return ctx.whatever + e.anotherWhatever
+          }})],
           on: {
-            GO: {
+            FOO: {
               target: 'b',
               actions: [assign({a: 0, b: 'b', c: true, d: [1,2,3], e: {e1: 'whatever'}})]
             }
-          }
+          },
         },
-        b: {}
-      }
-    })
+        b: {},
+      },
+    });
   `);
     const machine = result!.machines[0];
     const config = machine?.toConfig();
 
-    expect(pick(config?.entry, ['name', 'assignment'])).toMatchInlineSnapshot(`
-      {
-        "assignment": {
-          "inlineAssigner": {
-            "type": "expression",
-            "value": "(ctx, e) => {
-              const val = e.data;
-              return {
-                count: val + ctx.count
-              }
-            }",
+    expect(config!.entry!.map((entry) => pick(entry, ['name', 'assignment'])))
+      .toMatchInlineSnapshot(`
+      [
+        {
+          "assignment": {
+            "inlineImplementation": {
+              "type": "expression",
+              "value": "(ctx, e) => {
+                const val = e.data;
+                return {
+                  count: val + ctx.count,
+                };
+              }",
+            },
           },
+          "name": "xstate.assign",
         },
-        "name": "xstate.assign",
-      }
+        {
+          "assignment": {
+            "inlineImplementation": {
+              "type": "expression",
+              "value": "function (ctx, e) {
+                const val = e.data;
+                return {
+                  count: val + ctx.count,
+                };
+              }",
+            },
+          },
+          "name": "xstate.assign",
+        },
+      ]
     `);
 
     expect(pick(config?.states.a.exit, ['name', 'assignment']))
       .toMatchInlineSnapshot(`
       {
         "assignment": {
+          "another": {
+            "type": "expression",
+            "value": "function (ctx, e) {
+                  return ctx.whatever + e.anotherWhatever
+                }",
+          },
           "count": {
             "type": "expression",
             "value": "ctx => ctx.count + 1",
@@ -189,7 +222,7 @@ describe('MachineParseResult', () => {
       }
     `);
 
-    expect(pick(config?.states?.a?.on?.GO?.actions, ['name', 'assignment']))
+    expect(pick(config?.states?.a?.on?.FOO?.actions, ['name', 'assignment']))
       .toMatchInlineSnapshot(`
       {
         "assignment": {

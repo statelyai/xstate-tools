@@ -14,10 +14,13 @@ export function extractAssignment(actionNode: ActionNode, fileContent: string) {
     const assigner = node.arguments[0];
 
     if (t.isObjectExpression(assigner)) {
-      assigner.properties.forEach((prop) => {
+      assigner.properties.forEach(prop => {
         if (t.isObjectProperty(prop)) {
           if (t.isIdentifier(prop.key)) {
-            if (t.isArrowFunctionExpression(prop.value)) {
+            if (
+              t.isArrowFunctionExpression(prop.value) ||
+              t.isFunctionExpression(prop.value)
+            ) {
               assignment[prop.key.name] = {
                 type: 'expression',
                 value: fileContent.slice(prop.value.start!, prop.value.end!),
@@ -46,8 +49,11 @@ export function extractAssignment(actionNode: ActionNode, fileContent: string) {
           }
         }
       });
-    } else if (t.isArrowFunctionExpression(assigner)) {
-      assignment.inlineAssigner = {
+    } else if (
+      t.isArrowFunctionExpression(assigner) ||
+      t.isFunctionExpression(assigner)
+    ) {
+      assignment.inlineImplementation = {
         type: 'expression',
         value: fileContent.slice(assigner.start!, assigner.end!),
       };
@@ -85,5 +91,13 @@ export const isAssignAction = (actionNode: ActionNode) => {
     t.isCallExpression(actionNode.node) &&
     t.isIdentifier(actionNode.node.callee) &&
     actionNode.node.callee.name === 'assign'
+  );
+};
+
+export const isRaiseAction = (actionNode: ActionNode) => {
+  return (
+    t.isCallExpression(actionNode.node) &&
+    t.isIdentifier(actionNode.node.callee) &&
+    actionNode.node.callee.name === 'raise'
   );
 };
