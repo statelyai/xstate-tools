@@ -16,7 +16,16 @@ export type JsonValue =
   | JsonObject;
 type JsonEntryType = JsonValue | JsonExpression;
 
-export function extractAssignment(actionNode: ActionNode, fileContent: string) {
+export function extractAssignment(
+  actionNode: ActionNode,
+  fileContent: string,
+): Record<
+  string,
+  {
+    type: JsonEntryType;
+    value: JsonValue;
+  }
+> {
   const node = actionNode.node;
   const assignment: Record<
     string,
@@ -29,7 +38,7 @@ export function extractAssignment(actionNode: ActionNode, fileContent: string) {
     const assigner = node.arguments[0];
 
     if (t.isObjectExpression(assigner)) {
-      assigner.properties.forEach((prop) => {
+      assigner.properties.forEach(prop => {
         if (t.isObjectProperty(prop)) {
           if (t.isIdentifier(prop.key)) {
             if (
@@ -82,7 +91,16 @@ export function extractAssignment(actionNode: ActionNode, fileContent: string) {
   return assignment;
 }
 
-export function extractRaise(actionNode: ActionNode, fileContent: string) {
+export function extractRaisedEvent(
+  actionNode: ActionNode,
+  fileContent: string,
+): Record<
+  string,
+  {
+    type: JsonEntryType;
+    value: JsonValue;
+  }
+> {
   const node = actionNode.node;
   const event: Record<string, { type: JsonEntryType; value: JsonValue }> = {};
   if (t.isCallExpression(node)) {
@@ -90,7 +108,7 @@ export function extractRaise(actionNode: ActionNode, fileContent: string) {
 
     // raise({type: 'event', ...props})
     if (t.isObjectExpression(arg)) {
-      arg.properties.forEach((prop) => {
+      arg.properties.forEach(prop => {
         if (t.isObjectProperty(prop)) {
           if (t.isIdentifier(prop.key)) {
             if (t.isLiteral(prop.value)) {
@@ -137,6 +155,34 @@ export function extractRaise(actionNode: ActionNode, fileContent: string) {
   return event;
 }
 
+export function extractLogExpression(
+  actionNode: ActionNode,
+  fileContent: string,
+): { type: JsonEntryType; value: JsonValue } {
+  const node = actionNode.node;
+  if (t.isCallExpression(node)) {
+    const arg = node.arguments[0];
+
+    // log('string')
+    if (t.isStringLiteral(arg)) {
+      return {
+        type: 'string',
+        value: arg.value,
+      };
+    }
+
+    // log((ctx, evt) => {})
+    if (t.isArrowFunctionExpression(arg) || t.isFunctionExpression(arg)) {
+      return {
+        type: 'expression',
+        value: fileContent.slice(node.start!, node.end!),
+      };
+    }
+  }
+
+  throw Error(`Unsupported log expression`);
+}
+
 function getLiteralType(value: t.ObjectProperty['value']) {
   if (
     t.isNullLiteral(value) ||
@@ -170,5 +216,13 @@ export const isRaiseAction = (actionNode: ActionNode) => {
     t.isCallExpression(actionNode.node) &&
     t.isIdentifier(actionNode.node.callee) &&
     actionNode.node.callee.name === 'raise'
+  );
+};
+
+export const isLogAction = (actionNode: ActionNode) => {
+  return (
+    t.isCallExpression(actionNode.node) &&
+    t.isIdentifier(actionNode.node.callee) &&
+    actionNode.node.callee.name === 'log'
   );
 };

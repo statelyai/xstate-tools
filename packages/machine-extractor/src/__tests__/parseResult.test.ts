@@ -315,4 +315,41 @@ describe('MachineParseResult', () => {
       ]
     `);
   });
+
+  it('should extract log action expression', () => {
+    const result = extractMachinesFromFile(`
+    createMachine({
+      initial: "a",
+      context: { count: 0 },
+      entry: [
+        log((ctx, e) => {}),
+        raise('Some string')
+      ]
+    });
+  `);
+    const machine = result!.machines[0];
+    const config = machine?.toConfig();
+
+    expect(config!.entry!.map((entry) => omit(entry, ['type'])))
+      .toMatchInlineSnapshot(`
+      [
+        {
+          "expr": {
+            "type": "expression",
+            "value": "log((ctx, e) => {})",
+          },
+          "name": "xstate.log",
+        },
+        {
+          "event": {
+            "type": {
+              "type": "string",
+              "value": "Some string",
+            },
+          },
+          "name": "xstate.raise",
+        },
+      ]
+    `);
+  });
 });

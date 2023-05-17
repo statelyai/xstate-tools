@@ -8,8 +8,10 @@ import { ActionNode, MaybeArrayOfActions } from './actions';
 import { CondNode } from './conds';
 import {
   extractAssignment,
-  extractRaise,
+  extractLogExpression,
+  extractRaisedEvent,
   isAssignAction,
+  isLogAction,
   isRaiseAction,
 } from './extractAction';
 import { TMachineCallExpression } from './machineCallExpression';
@@ -71,7 +73,7 @@ const parseStateNode = (
   }
 
   if (astResult.tags) {
-    const tags = astResult.tags.map((tag) => tag.value);
+    const tags = astResult.tags.map(tag => tag.value);
 
     if (tags.length === 1) {
       config.tags = tags[0];
@@ -83,7 +85,7 @@ const parseStateNode = (
   if (astResult.on) {
     config.on = {};
 
-    astResult.on.properties.forEach((onProperty) => {
+    astResult.on.properties.forEach(onProperty => {
       (config.on as any)[onProperty.key] = getTransitions(
         onProperty.result,
         opts,
@@ -94,7 +96,7 @@ const parseStateNode = (
   if (astResult.after) {
     config.after = {};
 
-    astResult.after.properties.forEach((afterProperty) => {
+    astResult.after.properties.forEach(afterProperty => {
       (config.after as any)[afterProperty.key] = getTransitions(
         afterProperty.result,
         opts,
@@ -109,7 +111,7 @@ const parseStateNode = (
   if (astResult.states) {
     const states: typeof config.states = {};
 
-    astResult.states.properties.forEach((state) => {
+    astResult.states.properties.forEach(state => {
       states[state.key] = parseStateNode(state.result, opts);
     });
 
@@ -137,7 +139,7 @@ const parseStateNode = (
   if (astResult.invoke) {
     const invokes: typeof config.invoke = [];
 
-    astResult.invoke.forEach((invoke) => {
+    astResult.invoke.forEach(invoke => {
       if (!invoke.src) {
         return;
       }
@@ -153,7 +155,7 @@ const parseStateNode = (
           src = invoke.src.inlineDeclarationId;
       }
 
-      const toPush: (typeof invokes)[number] = {
+      const toPush: typeof invokes[number] = {
         src: src || (() => () => {}),
       };
 
@@ -204,7 +206,7 @@ export const getActionConfig = (
 ): Actions<any, any> => {
   const actions: Actions<any, any> = [];
 
-  astActions?.forEach((action) => {
+  astActions?.forEach(action => {
     switch (true) {
       case action.declarationType === 'named':
         actions.push(action.name);
@@ -222,7 +224,7 @@ export const getActionConfig = (
       case !!action.chooseConditions:
         actions.push({
           type: 'xstate.choose',
-          conds: action.chooseConditions!.map((condition) => {
+          conds: action.chooseConditions!.map(condition => {
             const cond = getCondition(condition.conditionNode, opts);
             return {
               ...(cond && { cond }),
@@ -242,7 +244,14 @@ export const getActionConfig = (
         actions.push({
           type: action.name || `Raise ${Math.random().toFixed(3)}`,
           name: 'xstate.raise',
-          event: extractRaise(action, opts!.fileContent),
+          event: extractRaisedEvent(action, opts!.fileContent),
+        });
+        return;
+      case isLogAction(action):
+        actions.push({
+          type: action.name || `Log ${Math.random().toFixed(3)}`,
+          name: 'xstate.log',
+          expr: extractLogExpression(action, opts!.fileContent),
         });
         return;
     }
@@ -278,13 +287,13 @@ export const getTransitions = (
 ): TransitionConfigOrTarget<any, any> => {
   const transitions: TransitionConfigOrTarget<any, any> = [];
 
-  astTransitions?.forEach((transition) => {
+  astTransitions?.forEach(transition => {
     const toPush: TransitionConfigOrTarget<any, any> = {};
     if (transition?.target && transition?.target?.length > 0) {
       if (transition.target.length === 1) {
         toPush.target = transition?.target[0].value;
       } else {
-        toPush.target = transition?.target.map((target) => target.value);
+        toPush.target = transition?.target.map(target => target.value);
       }
     }
     const cond = getCondition(transition?.cond, opts);
