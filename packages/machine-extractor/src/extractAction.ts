@@ -1,20 +1,35 @@
 import * as t from '@babel/types';
 import { ActionNode } from './actions';
 
+// These types are copied over from studio blocks.
+export type JsonObject = { [key: string]: JsonValue };
+export type JsonArray = JsonValue[];
+export type JsonEntry = [string, { value: JsonValue; type: JsonEntryType }];
+// Using this type to avoid merging 'expression' and string for JsonEntry.type
+type JsonExpression = 'expression' & { __tag: 'JsonExpression' };
+export type JsonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | JsonArray
+  | JsonObject;
+type JsonEntryType = JsonValue | JsonExpression;
+
 export function extractAssignment(actionNode: ActionNode, fileContent: string) {
   const node = actionNode.node;
   const assignment: Record<
     string,
     {
-      type: 'expression' | 'string' | 'number' | 'boolean' | 'array' | 'object';
-      value: string | number | boolean | Array<any> | object | null;
+      type: JsonEntryType;
+      value: JsonValue;
     }
   > = {};
   if (t.isCallExpression(node)) {
     const assigner = node.arguments[0];
 
     if (t.isObjectExpression(assigner)) {
-      assigner.properties.forEach(prop => {
+      assigner.properties.forEach((prop) => {
         if (t.isObjectProperty(prop)) {
           if (t.isIdentifier(prop.key)) {
             if (
@@ -25,15 +40,19 @@ export function extractAssignment(actionNode: ActionNode, fileContent: string) {
                 type: 'expression',
                 value: fileContent.slice(prop.value.start!, prop.value.end!),
               };
+            } else if (
+              t.isArrayExpression(prop.value) ||
+              t.isObjectExpression(prop.value)
+            ) {
+              assignment[prop.key.name] = {
+                type: 'expression',
+                value: fileContent.slice(prop.value.start!, prop.value.end!),
+              };
             } else if (t.isLiteral(prop.value)) {
-              if (t.isNullLiteral(prop.value)) {
-                assignment[prop.key.name] = {
-                  type: 'expression',
-                  value: null,
-                };
-              } else if (
+              if (
                 t.isRegExpLiteral(prop.value) ||
-                t.isTemplateLiteral(prop.value)
+                t.isTemplateLiteral(prop.value) ||
+                t.isNullLiteral(prop.value)
               ) {
                 assignment[prop.key.name] = {
                   type: 'expression',
@@ -63,16 +82,68 @@ export function extractAssignment(actionNode: ActionNode, fileContent: string) {
   return assignment;
 }
 
+export function extractRaise(actionNode: ActionNode, fileContent: string) {
+  const node = actionNode.node;
+  const event: Record<string, { type: JsonEntryType; value: JsonValue }> = {};
+  if (t.isCallExpression(node)) {
+    const arg = node.arguments[0];
+
+    // raise({type: 'event', ...props})
+    if (t.isObjectExpression(arg)) {
+      arg.properties.forEach((prop) => {
+        if (t.isObjectProperty(prop)) {
+          if (t.isIdentifier(prop.key)) {
+            if (t.isLiteral(prop.value)) {
+              if (
+                t.isRegExpLiteral(prop.value) ||
+                t.isTemplateLiteral(prop.value) ||
+                t.isNullLiteral(prop.value)
+              ) {
+                event[prop.key.name] = {
+                  type: 'expression',
+                  value: fileContent.slice(prop.value.start!, prop.value.end!),
+                };
+              } else {
+                event[prop.key.name] = {
+                  type: getLiteralType(prop.value),
+                  value: prop.value.value,
+                };
+              }
+            } else if (
+              t.isArrayExpression(prop.value) ||
+              t.isObjectExpression(prop.value)
+            ) {
+              event[prop.key.name] = {
+                type: 'expression',
+                value: fileContent.slice(prop.value.start!, prop.value.end!),
+              };
+            } else {
+              console.warn(
+                `Unsupported property value of type ${prop.value.type} in assignment`,
+                { key: prop.key.name, value: prop.value },
+              );
+            }
+          }
+        }
+      });
+    }
+
+    // raise('event')
+    else if (t.isStringLiteral(arg)) {
+      event.type = { type: 'string', value: arg.value };
+    }
+  }
+
+  return event;
+}
+
 function getLiteralType(value: t.ObjectProperty['value']) {
   if (
     t.isNullLiteral(value) ||
     t.isRegExpLiteral(value) ||
     t.isTemplateLiteral(value)
   ) {
-    throw Error('null,regexp or template literans can not have literal type');
-  }
-  if (Array.isArray(value)) {
-    return 'array';
+    throw Error('null,regexp or template literals can not have literal type');
   }
   if (t.isNumericLiteral(value)) {
     return 'number';
@@ -83,7 +154,7 @@ function getLiteralType(value: t.ObjectProperty['value']) {
   if (t.isBooleanLiteral(value)) {
     return 'boolean';
   }
-  throw Error('Unsupported property value');
+  throw Error('Unsupported literal property value');
 }
 
 export const isAssignAction = (actionNode: ActionNode) => {

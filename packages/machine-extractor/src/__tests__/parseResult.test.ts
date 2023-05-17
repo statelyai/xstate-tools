@@ -1,3 +1,4 @@
+import omit from 'lodash.omit';
 import pick from 'lodash.pick';
 import { groupByUniqueName, MachineExtractResult } from '..';
 import { extractMachinesFromFile } from '../extractMachinesFromFile';
@@ -131,7 +132,7 @@ describe('MachineParseResult', () => {
     });
   });
 
-  it('should extract assignment from actions', () => {
+  it('should extract assignment actions', () => {
     const result = extractMachinesFromFile(`
     createMachine({
       initial: "a",
@@ -222,6 +223,11 @@ describe('MachineParseResult', () => {
       }
     `);
 
+    ['a', 'b', 'c', 'd', 'e'].forEach((prop) => {
+      expect(config?.states?.a?.on?.FOO?.actions.assignment).toHaveProperty(
+        prop,
+      );
+    });
     expect(pick(config?.states?.a?.on?.FOO?.actions, ['name', 'assignment']))
       .toMatchInlineSnapshot(`
       {
@@ -238,9 +244,75 @@ describe('MachineParseResult', () => {
             "type": "boolean",
             "value": true,
           },
+          "d": {
+            "type": "expression",
+            "value": "[1,2,3]",
+          },
+          "e": {
+            "type": "expression",
+            "value": "{e1: 'whatever'}",
+          },
         },
         "name": "xstate.assign",
       }
+    `);
+  });
+
+  it('should extract raise actions', () => {
+    const result = extractMachinesFromFile(`
+    createMachine({
+      initial: "a",
+      context: { count: 0 },
+      entry: [
+        raise({type: 'Some event', foo: 'foo', bar: true, baz: [1,2,3], obj: {prop: {prop2: 2}}}),
+        raise('Some other event')
+      ],
+    });
+  `);
+    const machine = result!.machines[0];
+    const config = machine?.toConfig();
+
+    ['type', 'foo', 'bar', 'baz', 'obj'].forEach((prop) => {
+      expect(config!.entry![0].event).toHaveProperty(prop);
+    });
+    expect(config!.entry!.map((entry) => omit(entry, ['type'])))
+      .toMatchInlineSnapshot(`
+      [
+        {
+          "event": {
+            "bar": {
+              "type": "boolean",
+              "value": true,
+            },
+            "baz": {
+              "type": "expression",
+              "value": "[1,2,3]",
+            },
+            "foo": {
+              "type": "string",
+              "value": "foo",
+            },
+            "obj": {
+              "type": "expression",
+              "value": "{prop: {prop2: 2}}",
+            },
+            "type": {
+              "type": "string",
+              "value": "Some event",
+            },
+          },
+          "name": "xstate.raise",
+        },
+        {
+          "event": {
+            "type": {
+              "type": "string",
+              "value": "Some other event",
+            },
+          },
+          "name": "xstate.raise",
+        },
+      ]
     `);
   });
 });
