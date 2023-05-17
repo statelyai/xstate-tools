@@ -9,10 +9,9 @@ describe('generate', () => {
     stdio: 'ignore',
   });
 
-  execSync(
-    'node ../../bin/bin.js generate "./__liveMachines__/toggleMachine.ts"',
-    { cwd: __dirname },
-  );
+  execSync('node ../../bin/bin.js generate "./__liveMachines__/*.ts"', {
+    cwd: __dirname,
+  });
 
   it('Should pass tsc', async () => {
     try {

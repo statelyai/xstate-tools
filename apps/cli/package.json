@@ -24,7 +24,6 @@
     "commander": "^8.0.0",
     "dotenv": "^16.0.3",
     "prettier": "^2.8.7",
-    "recast": "^0.23.1",
     "undici": "^5.22.1",
     "xstate": "^4.33.4"
   },

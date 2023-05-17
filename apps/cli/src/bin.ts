@@ -10,6 +10,7 @@ import {
   getTsTypesEdits,
   getTypegenData,
   getTypegenOutput,
+  modifyLiveMachineSource,
   processFileEdits,
   writeToFetchedMachineFile,
 } from '@xstate/tools-shared';
@@ -18,7 +19,6 @@ import { Command } from 'commander';
 import 'dotenv/config';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import * as recast from 'recast';
 import { fetch } from 'undici';
 import { version } from '../package.json';
 import { SkyConfig } from './sky';
@@ -176,16 +176,6 @@ const writeLiveMachinesToFiles = async (opts: {
   host: string | undefined;
 }) => {
   try {
-    const fileContents2 = await fs.readFile(opts.uri, 'utf8');
-    const ast = recast.parse(fileContents2);
-    const importer = recast.types.builders.importSpecifier({
-      name: 'fetchedMachine',
-      type: 'Identifier',
-    });
-
-    console.error(JSON.stringify(ast.program.body[0], null, 2));
-    // console.error(JSON.stringify(importer, null, 2));
-
     if (doesFetchedMachineFileExist(opts.uri)) {
       console.log('Fetched machine file already exists, skipping');
       return;
@@ -219,9 +209,7 @@ const writeLiveMachinesToFiles = async (opts: {
             createTypeGenFile: writeToFiles,
           });
 
-          const ast = recast.parse(fileContents);
-          console.error(ast);
-          return;
+          await modifyLiveMachineSource({ filePath: opts.uri });
         }
       }),
     );

@@ -4,15 +4,16 @@
   "main": "dist/xstate-tools-shared.cjs.js",
   "license": "MIT",
   "dependencies": {
-    "@xstate/machine-extractor": "^0.9.0"
+    "@xstate/machine-extractor": "^0.9.0",
+    "recast": "^0.23.1"
   },
   "scripts": {
     "lint": "tsc",
     "test": "jest"
   },
   "peerDependencies": {
-    "xstate": "^4",
-    "prettier": "^2"
+    "prettier": "^2",
+    "xstate": "^4"
   },
   "devDependencies": {
     "@types/jest": "^27.4.0",
