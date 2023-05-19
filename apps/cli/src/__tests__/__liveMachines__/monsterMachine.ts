@@ -1,9 +1,26 @@
-import { interpret } from 'xstate';
+import { fetchedConfig } from './monsterMachine.fetched';
 import { createLiveMachine } from '../../createLiveMachineHelper';
-import { fetchedMachine } from './monsterMachine.fetched';
 
-const machineVersionId = 'cf092ad2-5172-4f52-8ec8-7943bfe8b189';
-const toggleMachine = createLiveMachine({ machineVersionId }, fetchedMachine);
+const machineVersionId = '3e4df75b-be6e-4e03-97e1-9ef8b379ccbb';
 
-const actor = interpret(toggleMachine).start();
-actor.send({ type: 'hungry' });
+// Scenario 1: Create a machine from the Studio
+const machine = createLiveMachine({ machineVersionId }, fetchedConfig);
+
+// // Scenario 2: Create a live actor from the Studio which is running on Stately Sky
+// const liveActor = createLiveActor(
+//   { machineVersionId, sessionId },
+//   fetchedMachine,
+// );
+
+// const actor = interpret(machine).start();
+// actor.send({ type: 'toggle' });
+
+// //
+// const { isReady, ...snapshot } = actor.getSnapshot();
+
+// interface LiveActor extends AnyActorRef<T> {
+//   isReady: boolean;
+// }
+// interface LiveActorSnapshot extends Snapshot<T> {
+//   isReady: boolean;
+// }

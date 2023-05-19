@@ -5,6 +5,7 @@ import {
   extractMachinesFromFile,
 } from '@xstate/machine-extractor';
 import {
+  SkyConfig,
   TypegenData,
   doesFetchedMachineFileExist,
   getTsTypesEdits,
@@ -21,7 +22,6 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { fetch } from 'undici';
 import { version } from '../package.json';
-import { SkyConfig } from './sky';
 
 async function removeFile(filePath: string) {
   try {
@@ -200,12 +200,11 @@ const writeLiveMachinesToFiles = async (opts: {
             }/registry/api/v1/connect/create-live-machine?machineVersionId=${machineVersionId}`,
             { headers: { Authorization: `apikey ${apiKey}` } },
           );
-          const { prettyConfigString } =
-            (await configResponse.json()) as SkyConfig;
+          const skyConfig = (await configResponse.json()) as SkyConfig;
 
           await writeToFetchedMachineFile({
             filePath: opts.uri,
-            prettyConfigString,
+            skyConfig,
             createTypeGenFile: writeToFiles,
           });
 

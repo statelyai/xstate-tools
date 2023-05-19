@@ -14,5 +14,6 @@ export * from './isCursorInPosition';
 export * from './modifyLiveMachineSource';
 export * from './processFileEdits';
 export * from './resolveUriToFilePrefix';
+export * from './skyTypes';
 export * from './types';
 export * from './writeToFetchedMachineFile';

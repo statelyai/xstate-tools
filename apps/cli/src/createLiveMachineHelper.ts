@@ -1,4 +1,7 @@
-export const createLiveMachine = <T>(
+import { FetchedSkyConfigFile } from '@xstate/tools-shared';
+import { AnyStateMachine } from 'xstate';
+
+export const createLiveMachine = <T extends AnyStateMachine>(
   {
     apiKey,
     machineVersionId,
@@ -6,7 +9,7 @@ export const createLiveMachine = <T>(
     apiKey?: string;
     machineVersionId: string;
   },
-  fetchedMachine: T,
+  fetchedConfig: FetchedSkyConfigFile<T>,
 ) => {
-  return fetchedMachine;
+  return fetchedConfig.fetchedMachine;
 };

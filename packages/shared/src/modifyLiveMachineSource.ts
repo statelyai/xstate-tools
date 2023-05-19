@@ -7,7 +7,7 @@ export const modifyLiveMachineSource = async (opts: { filePath: string }) => {
   const fileContents = await fs.readFile(opts.filePath, 'utf8');
   const ast = recast.parse(fileContents);
   const b = recast.types.builders;
-  const importIdentifier = 'fetchedMachine';
+  const importIdentifier = 'fetchedConfig';
   const name = path
     .basename(opts.filePath)
     .slice(0, -path.extname(opts.filePath).length);
@@ -42,7 +42,6 @@ export const modifyLiveMachineSource = async (opts: { filePath: string }) => {
     // Add the import at the top of the file
     ast.program.body.unshift(importDeclaration);
 
-    const machineName = 'fetchedMachine';
     recast.visit(ast, {
       visitCallExpression(path) {
         const node = path.node;
@@ -52,10 +51,10 @@ export const modifyLiveMachineSource = async (opts: { filePath: string }) => {
         ) {
           const args = node.arguments;
           const hasFetchedMachine = args.some((arg) => {
-            return arg.type === 'Identifier' && arg.name === machineName;
+            return arg.type === 'Identifier' && arg.name === importIdentifier;
           });
           if (!hasFetchedMachine) {
-            args.push(b.identifier(machineName));
+            args.push(b.identifier(importIdentifier));
           }
         }
         return false;
