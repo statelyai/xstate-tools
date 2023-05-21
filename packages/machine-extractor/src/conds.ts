@@ -1,25 +1,25 @@
 import * as t from '@babel/types';
-import { Condition } from 'xstate';
+import { GuardObject } from 'xstate';
 import { DeclarationType } from '.';
 import { createParser } from './createParser';
 import { unionType } from './unionType';
 import { isFunctionOrArrowFunctionExpression } from './utils';
 
-export interface CondNode {
+export interface GuardNode {
   node: t.Node;
   name: string;
-  cond: Condition<any, any>;
+  guard: GuardObject<any, any> | (() => boolean) | string;
   declarationType: DeclarationType;
   inlineDeclarationId: string;
 }
 
 const CondAsFunctionExpression = createParser({
   babelMatcher: isFunctionOrArrowFunctionExpression,
-  parseNode: (node, context): CondNode => {
+  parseNode: (node, context): GuardNode => {
     return {
       node,
       name: '',
-      cond: () => {
+      guard: () => {
         return false;
       },
       declarationType: 'inline',
@@ -30,11 +30,11 @@ const CondAsFunctionExpression = createParser({
 
 const CondAsStringLiteral = createParser({
   babelMatcher: t.isStringLiteral,
-  parseNode: (node, context): CondNode => {
+  parseNode: (node, context): GuardNode => {
     return {
       node,
       name: node.value,
-      cond: node.value,
+      guard: node.value,
       declarationType: 'named',
       inlineDeclarationId: context.getNodeHash(node),
     };
@@ -43,7 +43,7 @@ const CondAsStringLiteral = createParser({
 
 const CondAsParametrizedGuard = createParser({
   babelMatcher: t.isObjectExpression,
-  parseNode: (node, context): CondNode | null => {
+  parseNode: (node, context): GuardNode | null => {
     let propValue: t.Node | null = null;
 
     for (const prop of node.properties) {
@@ -67,7 +67,7 @@ const CondAsParametrizedGuard = createParser({
     return {
       node,
       name: propValue.value,
-      cond: propValue.value,
+      guard: propValue.value,
       declarationType: 'named',
       inlineDeclarationId: id,
     };
@@ -76,19 +76,19 @@ const CondAsParametrizedGuard = createParser({
 
 const CondAsNode = createParser({
   babelMatcher: t.isNode,
-  parseNode: (node, context): CondNode => {
+  parseNode: (node, context): GuardNode => {
     const id = context.getNodeHash(node);
     return {
       node,
       name: '',
-      cond: id,
+      guard: id,
       declarationType: 'unknown',
       inlineDeclarationId: id,
     };
   },
 });
 
-export const Cond = unionType([
+export const Guard = unionType([
   CondAsFunctionExpression,
   CondAsStringLiteral,
   CondAsParametrizedGuard,

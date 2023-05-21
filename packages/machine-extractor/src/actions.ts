@@ -1,7 +1,7 @@
 import * as t from '@babel/types';
 import { Action, ChooseCondition } from 'xstate';
 import { assign, choose, forwardTo, send } from 'xstate/lib/actions';
-import { Cond, CondNode } from './conds';
+import { Guard, GuardNode } from './conds';
 import { createParser } from './createParser';
 import { maybeIdentifierTo } from './identifiers';
 import {
@@ -43,7 +43,7 @@ export interface ActionNode {
 export interface ParsedChooseCondition {
   condition: ChooseCondition<any, any>;
   actionNodes: ActionNode[];
-  conditionNode?: CondNode;
+  conditionNode?: GuardNode;
 }
 
 export const ActionAsIdentifier = maybeTsAsExpression(
@@ -115,7 +115,7 @@ export const ActionAsNode = createParser({
 
 const ChooseFirstArg = arrayOf(
   objectTypeWithKnownKeys({
-    cond: Cond,
+    cond: Guard,
     // Don't allow choose inside of choose for now,
     // too recursive
     // TODO - fix
@@ -129,7 +129,7 @@ export const ChooseAction = wrapParserResult(
     const conditions: ParsedChooseCondition[] = [];
 
     result.argument1Result?.forEach((arg1Result) => {
-      const toPush: typeof conditions[number] = {
+      const toPush: (typeof conditions)[number] = {
         condition: {
           actions: [],
         },
@@ -146,7 +146,7 @@ export const ChooseAction = wrapParserResult(
         toPush.actionNodes = arg1Result.actions;
       }
       if (arg1Result.cond) {
-        toPush.condition.cond = arg1Result.cond.cond;
+        toPush.condition.cond = arg1Result.cond.guard;
         toPush.conditionNode = arg1Result.cond;
       }
       conditions.push(toPush);

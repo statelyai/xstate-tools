@@ -4,12 +4,12 @@ import * as recast from 'recast';
 import { Action, Condition, MachineOptions } from 'xstate';
 import { choose } from 'xstate/lib/actions';
 import { DeclarationType } from '.';
+import { RecordOfArrays } from './RecordOfArrays';
 import { ActionNode, ParsedChooseCondition } from './actions';
 import { getMachineNodesFromFile } from './getMachineNodesFromFile';
 import { TMachineCallExpression } from './machineCallExpression';
-import { RecordOfArrays } from './RecordOfArrays';
 import { StateNodeReturn } from './stateNode';
-import { toMachineConfig, ToMachineConfigOptions } from './toMachineConfig';
+import { ToMachineConfigOptions, toMachineConfig } from './toMachineConfig';
 import { TransitionConfigNode } from './transitions';
 import { Comment } from './types';
 
@@ -281,7 +281,7 @@ export class MachineExtractResult {
         actions[action.node.name] = choose(
           action.node.chooseConditions.map((chooseCondition) => ({
             actions: chooseCondition.actionNodes.map((action) => action.name),
-            cond: chooseCondition.condition.cond!,
+            guard: chooseCondition.condition.guard!,
           })),
         );
       }
@@ -500,7 +500,7 @@ export class MachineExtractResult {
     });
   };
 
-  getAllConds = (
+  getAllGuards = (
     declarationTypes: DeclarationType[] = [
       'identifier',
       'inline',
@@ -508,9 +508,9 @@ export class MachineExtractResult {
       'named',
     ],
   ) => {
-    const conds: {
+    const guards: {
       node: t.Node;
-      cond: Condition<any, any>;
+      guard: Condition<any, any>;
       statePath: string[];
       name: string;
       inlineDeclarationId: string;
@@ -518,15 +518,15 @@ export class MachineExtractResult {
 
     this.getTransitions().forEach((transition) => {
       if (
-        transition.config.cond?.declarationType &&
-        declarationTypes.includes(transition.config.cond?.declarationType)
+        transition.config.guard?.declarationType &&
+        declarationTypes.includes(transition.config.guard?.declarationType)
       ) {
-        conds.push({
-          name: transition.config.cond.name,
-          node: transition.config.cond.node,
-          cond: transition.config.cond.cond,
+        guards.push({
+          name: transition.config.guard.name,
+          node: transition.config.guard.node,
+          guard: transition.config.guard.guard,
           statePath: transition.fromPath,
-          inlineDeclarationId: transition.config.cond.inlineDeclarationId,
+          inlineDeclarationId: transition.config.guard.inlineDeclarationId,
         });
       }
     });
@@ -541,10 +541,10 @@ export class MachineExtractResult {
               chooseCondition.conditionNode?.declarationType,
             )
           ) {
-            conds.push({
+            guards.push({
               name: chooseCondition.conditionNode.name,
               node: chooseCondition.conditionNode.node,
-              cond: chooseCondition.conditionNode.cond,
+              guard: chooseCondition.conditionNode.guard,
               statePath: action.statePath,
               inlineDeclarationId:
                 chooseCondition.conditionNode.inlineDeclarationId,
@@ -553,7 +553,7 @@ export class MachineExtractResult {
         });
       });
 
-    return conds;
+    return guards;
   };
 
   private getAllActionsInConfig = () => {
@@ -1217,7 +1217,7 @@ export class MachineExtractResult {
 
           const transition = minifyTransitionObjectExpression(
             toObjectExpression({
-              ...(edit.guard && { cond: edit.guard }),
+              ...(edit.guard && { guard: edit.guard }),
             }),
             {
               ...(typeof target === 'string' && { target }),
@@ -1896,7 +1896,7 @@ function getPropByPath(ast: RecastObjectExpression, path: (string | number)[]) {
     );
   }
   const pathCopy = [...path];
-  let segment: typeof path[number] | undefined;
+  let segment: (typeof path)[number] | undefined;
   let current: RecastNode | undefined | null = ast;
   while ((segment = pathCopy.shift()) !== undefined) {
     if (typeof segment === 'string') {
@@ -1936,7 +1936,7 @@ function insertAtTransitionPath(
     );
   }
   const pathCopy = path.slice(0, -1);
-  let segment: typeof path[number] | undefined;
+  let segment: (typeof path)[number] | undefined;
   let current: RecastNode = ast;
 
   while ((segment = pathCopy.shift()) !== undefined) {
@@ -1991,7 +1991,7 @@ function getTransitionObject(
   path: TransitionPath,
 ) {
   const pathCopy = [...path];
-  let segment: typeof path[number] | undefined;
+  let segment: (typeof path)[number] | undefined;
   let current: RecastNode = obj;
 
   while ((segment = pathCopy.shift()) !== undefined) {
@@ -2136,7 +2136,7 @@ function insertGuardAtTransitionPath(
 ) {
   const transition = getTransitionObject(obj, path);
   transition.properties.push(
-    b.objectProperty(b.identifier('cond'), value as any),
+    b.objectProperty(b.identifier('guard'), value as any),
   );
 }
 
@@ -2146,15 +2146,15 @@ function editGuardAtTransitionPath(
   value: RecastNode,
 ) {
   const transition = getTransitionObject(obj, path);
-  const condIndex = findObjectPropertyIndex(transition, 'cond');
-  if (condIndex === -1) {
-    throw new Error(`"cond" should exist before attempting to remove it`);
+  const guardIndex = findObjectPropertyIndex(transition, 'guard');
+  if (guardIndex === -1) {
+    throw new Error(`"guard" should exist before attempting to remove it`);
   }
 
-  const condProp = transition.properties[condIndex];
-  n.ObjectProperty.assert(condProp);
-  condProp.value = updateItemType(
-    unwrapSimplePropValue(condProp)!,
+  const guardProp = transition.properties[guardIndex];
+  n.ObjectProperty.assert(guardProp);
+  guardProp.value = updateItemType(
+    unwrapSimplePropValue(guardProp)!,
     value,
   ) as any;
 }
@@ -2164,13 +2164,13 @@ function removeGuardFromTransition(
   path: TransitionPath,
 ) {
   const transition = getTransitionObject(obj, path);
-  const condIndex = findObjectPropertyIndex(transition, 'cond');
+  const guardIndex = findObjectPropertyIndex(transition, 'guard');
 
-  if (condIndex === -1) {
-    throw new Error(`"cond" should exist before attempting to remove it`);
+  if (guardIndex === -1) {
+    throw new Error(`"guard" should exist before attempting to remove it`);
   }
 
-  removeProperty(transition, 'cond');
+  removeProperty(transition, 'guard');
   updateTransitionAtPathWith(obj, path, transition);
 }
 
@@ -2673,7 +2673,7 @@ function getIndexForTransitionPathAppendant(
   // this function is supposed to ignore the last element (the index)
   // we only want check max existing index of this path in the given state object
   const pathCopy = path.slice(0, -1);
-  let segment: typeof path[number] | undefined;
+  let segment: (typeof path)[number] | undefined;
   let current: RecastNode = ast;
 
   while ((segment = pathCopy.shift()) !== undefined) {

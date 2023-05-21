@@ -82,7 +82,7 @@ describe('MachineParseResult', () => {
     `);
 
     const conds = groupByUniqueName(
-      result!.machines[0]!.getAllConds(['named']),
+      result!.machines[0]!.getAllGuards(['named']),
     );
 
     expect(Object.keys(conds)).toHaveLength(5);

@@ -10,7 +10,7 @@ describe('edit_guard', () => {
       createMachine({
         on: {
           CALL_HIM_MAYBE: {
-            cond: 'isItTooLate',
+            guard: 'isItTooLate',
             actions: 'callDavid'
           }
         }
@@ -30,7 +30,7 @@ describe('edit_guard', () => {
       "{
         on: {
           CALL_HIM_MAYBE: {
-            cond: "isHeAwake",
+            guard: "isHeAwake",
             actions: 'callDavid'
           }
         }
@@ -43,7 +43,7 @@ describe('edit_guard', () => {
       createMachine({
         on: {
           CALL_HIM_MAYBE: {
-            cond: { type: 'isItTooLate', time: '9am' },
+            guard: { type: 'isItTooLate', time: '9am' },
             actions: 'callDavid'
           }
         }
@@ -63,7 +63,7 @@ describe('edit_guard', () => {
       "{
         on: {
           CALL_HIM_MAYBE: {
-            cond: { type: "isHeAwake", time: '9am' },
+            guard: { type: "isHeAwake", time: '9am' },
             actions: 'callDavid'
           }
         }

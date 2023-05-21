@@ -5,7 +5,7 @@ import {
   TransitionConfigOrTarget,
 } from 'xstate';
 import { MaybeArrayOfActions } from './actions';
-import { CondNode } from './conds';
+import { GuardNode } from './conds';
 import { TMachineCallExpression } from './machineCallExpression';
 import { StateNodeReturn } from './stateNode';
 import { MaybeTransitionArray } from './transitions';
@@ -151,7 +151,7 @@ const parseStateNode = (
           src = invoke.src.inlineDeclarationId;
       }
 
-      const toPush: typeof invokes[number] = {
+      const toPush: (typeof invokes)[number] = {
         src: src || (() => () => {}),
       };
 
@@ -245,7 +245,7 @@ export const getActionConfig = (
 };
 
 const getCondition = (
-  condNode: CondNode | undefined,
+  condNode: GuardNode | undefined,
   opts: ToMachineConfigOptions | undefined,
 ) => {
   if (!condNode) {

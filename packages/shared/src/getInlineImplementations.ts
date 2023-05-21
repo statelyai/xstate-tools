@@ -17,7 +17,7 @@ export const getInlineImplementations = (
      * We don't ask for 'named' implementations here,
      * since they're not declared inline
      */
-    parseResult?.getAllConds(['inline', 'identifier', 'unknown']) || [];
+    parseResult?.getAllGuards(['inline', 'identifier', 'unknown']) || [];
 
   const allServices =
     parseResult?.getAllServices(['inline', 'identifier', 'unknown']) || [];

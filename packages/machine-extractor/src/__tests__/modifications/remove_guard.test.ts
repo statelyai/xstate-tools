@@ -10,7 +10,7 @@ describe('remove_guard', () => {
       createMachine({
         on: {
           WORK_ON_OSS: {
-            cond: 'gotPaid',
+            guard: 'gotPaid',
             target: '.beHappy'
           }
         },
@@ -45,7 +45,7 @@ describe('remove_guard', () => {
       createMachine({
         on: {
           WORK_ON_OSS: {
-            cond: 'gotPaid',
+            guard: 'gotPaid',
             target: '.beHappy',
             actions: 'askForRepro'
           }
@@ -84,7 +84,7 @@ describe('remove_guard', () => {
       createMachine({
         on: {
           WORK_ON_OSS: [{
-            cond: 'gotPaid',
+            guard: 'gotPaid',
             target: '.happy'
           }, '.unhappy']
         },
@@ -123,7 +123,7 @@ describe('remove_guard', () => {
           src: 'workOnOSS',
           onDone: {
             target: '.happy',
-            cond: 'gotPaid'
+            guard: 'gotPaid'
           }
         },
         states: {

@@ -29,6 +29,6 @@
     "outdent": "^0.8.0",
     "patch-package": "^6.4.7",
     "typescript": "^5.0.4",
-    "xstate": "^4.33.4"
+    "xstate": "^5.0.0-beta.10"
   }
 }

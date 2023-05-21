@@ -21,7 +21,7 @@ describe('Choose parsing', () => {
 
     expect(
       Object.keys(
-        groupByUniqueName(result!.machines[0]!.getAllConds(['named'])),
+        groupByUniqueName(result!.machines[0]!.getAllGuards(['named'])),
       ),
     ).toHaveLength(2);
 
@@ -56,7 +56,7 @@ describe('Choose in machine options', () => {
 
     expect(
       Object.keys(
-        groupByUniqueName(result!.machines[0]!.getAllConds(['named'])),
+        groupByUniqueName(result!.machines[0]!.getAllGuards(['named'])),
       ),
     ).toHaveLength(2);
 
