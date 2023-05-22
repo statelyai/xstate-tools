@@ -1,11 +1,13 @@
+import { ALLOWED_LIVE_CALL_EXPRESSION_NAMES } from '@xstate/machine-extractor';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as prettier from 'prettier';
 import * as recast from 'recast';
+import * as parser from 'recast/parsers/typescript';
 
 export const modifyLiveMachineSource = async (opts: { filePath: string }) => {
   const fileContents = await fs.readFile(opts.filePath, 'utf8');
-  const ast = recast.parse(fileContents);
+  const ast = recast.parse(fileContents, { parser });
   const b = recast.types.builders;
   const importIdentifier = 'fetchedConfig';
   const name = path
@@ -47,7 +49,7 @@ export const modifyLiveMachineSource = async (opts: { filePath: string }) => {
         const node = path.node;
         if (
           node.callee.type === 'Identifier' &&
-          node.callee.name === 'createLiveMachine'
+          ALLOWED_LIVE_CALL_EXPRESSION_NAMES.includes(node.callee.name)
         ) {
           const args = node.arguments;
           const hasFetchedMachine = args.some((arg) => {

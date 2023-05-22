@@ -6,6 +6,7 @@ export * from './getMachineExtractResult';
 export * from './getMachineNodesFromFile';
 export * from './groupByUniqueName';
 export * from './liveMachines/extractLiveMachinesFromFile';
+export * from './liveMachines/liveMachineUtils';
 export * from './stateNode';
 export * from './types';
 export * from './utils';

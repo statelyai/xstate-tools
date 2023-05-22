@@ -14,7 +14,8 @@
     "@types/jest": "^27.4.0",
     "@types/node": "^16.0.1",
     "esbuild": "^0.14.48",
-    "jest": "^27.4.7"
+    "jest": "^27.4.7",
+    "vite": "^4.3.8"
   },
   "dependencies": {
     "@babel/core": "^7.21.4",
