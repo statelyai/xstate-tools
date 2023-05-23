@@ -352,4 +352,248 @@ describe('MachineParseResult', () => {
       ]
     `);
   });
+
+  it('Should extract sendTo expression', () => {
+    const result = extractMachinesFromFile(`
+    createMachine({
+      initial: "a",
+      states: {
+        a: {
+          entry: [
+            sendTo('actor', 'event'),
+            sendTo('actor', {type: 'event', id: 1}),
+            sendTo('actor', () => ({type: 'event', id: 1})),
+            sendTo((ctx) => ctx.actorRef, 'event'),
+            sendTo((ctx) => ctx.actorRef, {type: 'event', id: 1}),
+            sendTo((ctx) => ctx.actorRef, () => ({type: 'event', id: 1})),
+            sendTo('actor', 'event', {delay: 2000, id: 2}),
+            sendTo('actor', 'event', {delay: 'namedDelay', id: 'cancellationId'}),
+            sendTo('actor', 'event', {delay: () => 'namedDelay'}),
+            sendTo('actor', 'event', {delay: function () {return 2000}}),
+          ],
+        },
+      },
+    });    
+  `);
+    const machine = result!.machines[0];
+    const config = machine?.toConfig();
+
+    expect(config!.states!.a!.entry!.map((entry) => omit(entry, ['type'])))
+      .toMatchInlineSnapshot(`
+      [
+        {
+          "expr": {
+            "actorRef": {
+              "type": "string",
+              "value": "actor",
+            },
+            "event": {
+              "type": {
+                "type": "string",
+                "value": "event",
+              },
+            },
+            "options": {
+              "delay": undefined,
+              "id": undefined,
+            },
+          },
+          "name": "xstate.sendTo",
+        },
+        {
+          "expr": {
+            "actorRef": {
+              "type": "string",
+              "value": "actor",
+            },
+            "event": {
+              "id": {
+                "type": "number",
+                "value": 1,
+              },
+              "type": {
+                "type": "string",
+                "value": "event",
+              },
+            },
+            "options": {
+              "delay": undefined,
+              "id": undefined,
+            },
+          },
+          "name": "xstate.sendTo",
+        },
+        {
+          "expr": {
+            "actorRef": {
+              "type": "string",
+              "value": "actor",
+            },
+            "event": {
+              "type": "expression",
+              "value": "() => ({type: 'event', id: 1})",
+            },
+            "options": {
+              "delay": undefined,
+              "id": undefined,
+            },
+          },
+          "name": "xstate.sendTo",
+        },
+        {
+          "expr": {
+            "actorRef": {
+              "type": "expression",
+              "value": "(ctx) => ctx.actorRef",
+            },
+            "event": {
+              "type": {
+                "type": "string",
+                "value": "event",
+              },
+            },
+            "options": {
+              "delay": undefined,
+              "id": undefined,
+            },
+          },
+          "name": "xstate.sendTo",
+        },
+        {
+          "expr": {
+            "actorRef": {
+              "type": "expression",
+              "value": "(ctx) => ctx.actorRef",
+            },
+            "event": {
+              "id": {
+                "type": "number",
+                "value": 1,
+              },
+              "type": {
+                "type": "string",
+                "value": "event",
+              },
+            },
+            "options": {
+              "delay": undefined,
+              "id": undefined,
+            },
+          },
+          "name": "xstate.sendTo",
+        },
+        {
+          "expr": {
+            "actorRef": {
+              "type": "expression",
+              "value": "(ctx) => ctx.actorRef",
+            },
+            "event": {
+              "type": "expression",
+              "value": "() => ({type: 'event', id: 1})",
+            },
+            "options": {
+              "delay": undefined,
+              "id": undefined,
+            },
+          },
+          "name": "xstate.sendTo",
+        },
+        {
+          "expr": {
+            "actorRef": {
+              "type": "string",
+              "value": "actor",
+            },
+            "event": {
+              "type": {
+                "type": "string",
+                "value": "event",
+              },
+            },
+            "options": {
+              "delay": {
+                "type": "number",
+                "value": 2000,
+              },
+              "id": {
+                "type": "number",
+                "value": 2,
+              },
+            },
+          },
+          "name": "xstate.sendTo",
+        },
+        {
+          "expr": {
+            "actorRef": {
+              "type": "string",
+              "value": "actor",
+            },
+            "event": {
+              "type": {
+                "type": "string",
+                "value": "event",
+              },
+            },
+            "options": {
+              "delay": {
+                "type": "string",
+                "value": "namedDelay",
+              },
+              "id": {
+                "type": "string",
+                "value": "cancellationId",
+              },
+            },
+          },
+          "name": "xstate.sendTo",
+        },
+        {
+          "expr": {
+            "actorRef": {
+              "type": "string",
+              "value": "actor",
+            },
+            "event": {
+              "type": {
+                "type": "string",
+                "value": "event",
+              },
+            },
+            "options": {
+              "delay": {
+                "type": "expression",
+                "value": "delay: () => 'namedDelay'",
+              },
+              "id": undefined,
+            },
+          },
+          "name": "xstate.sendTo",
+        },
+        {
+          "expr": {
+            "actorRef": {
+              "type": "string",
+              "value": "actor",
+            },
+            "event": {
+              "type": {
+                "type": "string",
+                "value": "event",
+              },
+            },
+            "options": {
+              "delay": {
+                "type": "expression",
+                "value": "delay: function () {return 2000}",
+              },
+              "id": undefined,
+            },
+          },
+          "name": "xstate.sendTo",
+        },
+      ]
+    `);
+  });
 });

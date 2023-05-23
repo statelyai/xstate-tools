@@ -10,6 +10,7 @@ import {
   extractAssignment,
   extractLogExpression,
   extractRaisedEvent,
+  extractSendToProperties,
   isBuiltinActionWithName,
 } from './extractAction';
 import { TMachineCallExpression } from './machineCallExpression';
@@ -250,6 +251,13 @@ export const getActionConfig = (
           type: action.name || `Log ${Math.random().toFixed(3)}`,
           name: 'xstate.log',
           expr: extractLogExpression(action, opts!.fileContent),
+        });
+        return;
+      case isBuiltinActionWithName(action, 'sendTo'):
+        actions.push({
+          type: action.name || `SendTo ${Math.random().toFixed(3)}`,
+          name: 'xstate.sendTo',
+          expr: extractSendToProperties(action, opts!.fileContent),
         });
         return;
     }
