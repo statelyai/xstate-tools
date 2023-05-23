@@ -167,6 +167,29 @@ export function extractLogExpression(
   throw Error(`Unsupported log expression`);
 }
 
+export function extractStopProperties(
+  actionNode: ActionNode,
+  fileContent: string,
+): { type: JsonEntryType; value: JsonValue } {
+  const node = actionNode.node;
+  if (t.isCallExpression(node)) {
+    const arg = node.arguments[0];
+
+    if (t.isStringLiteral(arg)) {
+      return { type: 'string', value: arg.value };
+    }
+
+    if (t.isArrowFunctionExpression(arg) || t.isFunctionExpression(arg)) {
+      return {
+        type: 'expression',
+        value: fileContent.slice(arg.start!, arg.end!),
+      };
+    }
+  }
+
+  throw Error('Unsupported stop expression');
+}
+
 export function extractSendToProperties(
   actionNode: ActionNode,
   fileContent: string,

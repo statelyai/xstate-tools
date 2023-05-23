@@ -596,4 +596,54 @@ describe('MachineParseResult', () => {
       ]
     `);
   });
+
+  it('Should extract stop expressions', () => {
+    const result = extractMachinesFromFile(`
+    createMachine({
+      initial: "a",
+      states: {
+        a: {
+          entry: [
+            stop('actor'),
+            stop(() => 'actor'),
+            stop(function (ctx) {
+              return ctx.actorRef
+            })
+          ],
+        },
+      },
+    });    
+  `);
+    const machine = result!.machines[0];
+    const config = machine?.toConfig();
+
+    expect(config!.states!.a!.entry!.map((entry) => omit(entry, ['type'])))
+      .toMatchInlineSnapshot(`
+      [
+        {
+          "expr": {
+            "type": "string",
+            "value": "actor",
+          },
+          "name": "xstate.stop",
+        },
+        {
+          "expr": {
+            "type": "expression",
+            "value": "() => 'actor'",
+          },
+          "name": "xstate.stop",
+        },
+        {
+          "expr": {
+            "type": "expression",
+            "value": "function (ctx) {
+                    return ctx.actorRef
+                  }",
+          },
+          "name": "xstate.stop",
+        },
+      ]
+    `);
+  });
 });

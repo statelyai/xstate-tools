@@ -11,6 +11,7 @@ import {
   extractLogExpression,
   extractRaisedEvent,
   extractSendToProperties,
+  extractStopProperties,
   isBuiltinActionWithName,
 } from './extractAction';
 import { TMachineCallExpression } from './machineCallExpression';
@@ -258,6 +259,13 @@ export const getActionConfig = (
           type: action.name || `SendTo ${Math.random().toFixed(3)}`,
           name: 'xstate.sendTo',
           expr: extractSendToProperties(action, opts!.fileContent),
+        });
+        return;
+      case isBuiltinActionWithName(action, 'stop'):
+        actions.push({
+          type: action.name || `Stop ${Math.random().toFixed(3)}`,
+          name: 'xstate.stop',
+          expr: extractStopProperties(action, opts!.fileContent),
         });
         return;
     }
