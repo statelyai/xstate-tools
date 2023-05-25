@@ -2,7 +2,7 @@ import { INLINE_IMPLEMENTATION_TYPE } from '@xstate/machine-extractor';
 import * as XState from 'xstate';
 import { InvokeDefinition } from 'xstate';
 
-type AnyStateNode = XState.StateNode<any, any, any, any, any, any>;
+type AnyStateNode = XState.StateNode<any, any>;
 
 export interface StateSchema extends Record<string, StateSchema> {}
 
@@ -10,7 +10,7 @@ function getRelevantFinalStates(node: AnyStateNode): AnyStateNode[] {
   switch (node.type) {
     case 'compound':
       return getChildren(node)
-        .map((childNode) =>
+        .map(childNode =>
           childNode.type === 'final'
             ? [childNode]
             : getRelevantFinalStates(childNode),
@@ -20,7 +20,7 @@ function getRelevantFinalStates(node: AnyStateNode): AnyStateNode[] {
       const finalStatesPerRegion = getChildren(node).map(
         getRelevantFinalStates,
       );
-      return finalStatesPerRegion.every((perRegion) => !!perRegion.length)
+      return finalStatesPerRegion.every(perRegion => !!perRegion.length)
         ? finalStatesPerRegion.flat()
         : [];
     default:
@@ -49,8 +49,8 @@ function getAllNodesToNodes(nodes: AnyStateNode[]) {
 
 function getChildren(node: AnyStateNode) {
   return Object.keys(node.states)
-    .map((key) => node.states[key])
-    .filter((state) => state.type !== 'history');
+    .map(key => node.states[key])
+    .filter(state => state.type !== 'history');
 }
 
 function isWithin(nodeA: AnyStateNode, nodeB: AnyStateNode) {
@@ -92,7 +92,7 @@ function findLeastCommonAncestor(
 
 const makeStateSchema = (node: AnyStateNode): StateSchema => {
   return Object.fromEntries(
-    getChildren(node).map((child) => [child.key, makeStateSchema(child)]),
+    getChildren(node).map(child => [child.key, makeStateSchema(child)]),
   );
 };
 
@@ -171,7 +171,7 @@ class ItemMap {
 }
 
 function collectInvokes(ctx: TraversalContext, node: AnyStateNode) {
-  node.invoke.forEach((service) => {
+  node.invoke?.forEach(service => {
     const serviceSrc = getServiceSrc(service);
     if (
       typeof serviceSrc !== 'string' ||
@@ -179,7 +179,7 @@ function collectInvokes(ctx: TraversalContext, node: AnyStateNode) {
     ) {
       return;
     }
-    ctx.services.addItem(serviceSrc);
+    ctx.actors.addItem(serviceSrc);
 
     const serviceSrcToIdItem = ctx.serviceSrcToIdMap.get(serviceSrc);
     if (serviceSrcToIdItem) {
@@ -193,18 +193,18 @@ function collectInvokes(ctx: TraversalContext, node: AnyStateNode) {
 function collectAction(
   ctx: TraversalContext,
   eventType: string | Iterable<string>,
-  actionObject: XState.ActionObject<any, XState.EventObject>,
+  actionObject: XState.BaseActionObject,
 ) {
   if (
     actionObject.type === 'xstate.choose' &&
-    Array.isArray(actionObject.conds)
+    Array.isArray(actionObject.params?.guards) // TODO: guards?
   ) {
-    actionObject.conds.forEach(({ cond, actions: condActions }) => {
-      if (typeof cond === 'string') {
-        ctx.guards.addEventToItem(cond, eventType);
+    actionObject.params!.guards.forEach(({ guard, actions: condActions }) => {
+      if (typeof guard === 'string') {
+        ctx.guards.addEventToItem(guard, eventType);
       }
       if (Array.isArray(condActions)) {
-        condActions.forEach((condAction) => {
+        condActions.forEach(condAction => {
           if (typeof condAction === 'string') {
             ctx.actions.addEventToItem(condAction, eventType);
           }
@@ -233,11 +233,12 @@ function collectAction(
 function collectActions(
   ctx: TraversalContext,
   eventType: string | Iterable<string>,
-  actionObjects: XState.ActionObject<any, XState.EventObject>[],
+  actionObjects: XState.BaseActionObject[],
 ) {
-  actionObjects.forEach((actionObject) => {
+  actionObjects?.forEach(actionObject => {
     collectAction(ctx, eventType, actionObject);
-    const actionInOptions = ctx.machine.options.actions?.[actionObject.type];
+    const actionInOptions =
+      ctx.machine.machine.options.actions?.[actionObject.type];
     if (actionInOptions && typeof actionInOptions === 'object') {
       collectAction(ctx, eventType, actionInOptions);
     }
@@ -263,21 +264,21 @@ function exitChildren(
   eventType: string,
   entered: Set<AnyStateNode> = new Set(),
 ) {
-  getChildren(node).forEach((child) => {
+  getChildren(node).forEach(child => {
     if (entered.has(child)) {
       return;
     }
-    collectActions(ctx, eventType, child.onExit);
+    collectActions(ctx, eventType, child.exit);
     exitChildren(ctx, child, eventType, entered);
   });
 }
 
 function collectTransitions(ctx: TraversalContext, node: AnyStateNode) {
-  node.transitions.forEach((transition) => {
-    if (transition.cond && transition.cond.name) {
-      if (transition.cond.name !== 'cond') {
-        ctx.guards.addEventToItem(transition.cond.name, transition.eventType);
-      }
+  node.transitions?.forEach(transition => {
+    if (transition.guard && transition.guard.type) {
+      // if (transition.guard.type !== 'guard') {
+      ctx.guards.addEventToItem(transition.guard.type, transition.eventType);
+      // }
     }
 
     collectActions(ctx, transition.eventType, transition.actions);
@@ -286,7 +287,7 @@ function collectTransitions(ctx: TraversalContext, node: AnyStateNode) {
       return;
     }
 
-    transition.target.forEach((target) => {
+    transition.target.forEach(target => {
       if (isWithin(node, target)) {
         const enteredSet = new Set<AnyStateNode>();
         let marker: typeof target = target;
@@ -298,22 +299,22 @@ function collectTransitions(ctx: TraversalContext, node: AnyStateNode) {
           enteredSet.add(marker);
           marker = marker.parent!;
         }
-        if (!transition.internal) {
+        if (transition.reenter) {
           enteredSet.add(marker);
         }
 
-        enteredSet.forEach((entered) => {
+        enteredSet.forEach(entered => {
           enterState(ctx, entered, transition.eventType);
         });
 
         exitChildren(ctx, node, transition.eventType, enteredSet);
 
-        if (!transition.internal) {
-          collectActions(ctx, transition.eventType, node.onExit);
+        if (transition.reenter) {
+          collectActions(ctx, transition.eventType, node.exit);
         }
       } else {
         exitChildren(ctx, node, transition.eventType);
-        collectActions(ctx, transition.eventType, node.onExit);
+        collectActions(ctx, transition.eventType, node.exit);
 
         const leastCommonAncestor = findLeastCommonAncestor(
           ctx.machine,
@@ -326,7 +327,7 @@ function collectTransitions(ctx: TraversalContext, node: AnyStateNode) {
           if (marker === leastCommonAncestor) {
             break;
           }
-          collectActions(ctx, transition.eventType, marker.onExit);
+          collectActions(ctx, transition.eventType, marker.exit);
           marker = marker.parent!;
         }
 
@@ -353,16 +354,17 @@ function createTraversalContext(machine: AnyStateNode) {
     nodeIdToSourceEventsMap: new Map<string, Set<string>>(),
 
     actions: new ItemMap({
-      checkIfOptional: (name) => Boolean(machine.options?.actions?.[name]),
+      checkIfOptional: name =>
+        Boolean(machine.machine.options?.actions?.[name]),
     }),
     delays: new ItemMap({
-      checkIfOptional: (name) => Boolean(machine.options?.delays?.[name]),
+      checkIfOptional: name => Boolean(machine.machine.options?.delays?.[name]),
     }),
     guards: new ItemMap({
-      checkIfOptional: (name) => Boolean(machine.options?.guards?.[name]),
+      checkIfOptional: name => Boolean(machine.machine.options?.guards?.[name]),
     }),
-    services: new ItemMap({
-      checkIfOptional: (name) => Boolean(machine.options?.services?.[name]),
+    actors: new ItemMap({
+      checkIfOptional: name => Boolean(machine.machine.options?.actors?.[name]),
     }),
   };
 }
@@ -373,10 +375,10 @@ type TraversalContext = ReturnType<typeof createTraversalContext>;
 function collectSimpleInformation(ctx: TraversalContext, node: AnyStateNode) {
   // TODO: history states are not handled yet
   collectInvokes(ctx, node);
-  collectActions(ctx, 'xstate.stop', node.onExit);
+  collectActions(ctx, 'xstate.stop', node.exit);
   collectTransitions(ctx, node);
 
-  getChildren(node).forEach((childNode) =>
+  getChildren(node).forEach(childNode =>
     collectSimpleInformation(ctx, childNode),
   );
 }
@@ -385,12 +387,12 @@ function collectEnterables(ctx: TraversalContext, node: AnyStateNode) {
   const sourceEvents = ctx.nodeIdToSourceEventsMap.get(node.id);
 
   if (!sourceEvents) {
-    getChildren(node).forEach((child) => collectEnterables(ctx, child));
+    getChildren(node).forEach(child => collectEnterables(ctx, child));
     return;
   }
 
   const enterableNodes = new Set([node]);
-  const initialLeafNodes = node.initialStateNodes;
+  const initialLeafNodes = getInitialStateNodes(node);
 
   let current: typeof node | undefined;
   while ((current = initialLeafNodes.pop())) {
@@ -401,29 +403,29 @@ function collectEnterables(ctx: TraversalContext, node: AnyStateNode) {
     }
   }
 
-  enterableNodes.forEach((enterableNode) => {
-    enterableNode.invoke.forEach((service) => {
+  enterableNodes.forEach(enterableNode => {
+    enterableNode.invoke?.forEach(service => {
       const serviceSrc = getServiceSrc(service);
       if (typeof serviceSrc !== 'string') {
         return;
       }
-      sourceEvents.forEach((eventType) => {
-        ctx.services.addEventToItem(serviceSrc, eventType);
+      sourceEvents.forEach(eventType => {
+        ctx.actors.addEventToItem(serviceSrc, eventType);
       });
     });
 
-    enterableNode.after.forEach(({ delay }) => {
+    enterableNode.after?.forEach(({ delay }) => {
       if (typeof delay === 'string') {
-        sourceEvents.forEach((source) => {
+        sourceEvents.forEach(source => {
           ctx.delays.addEventToItem(delay, source);
         });
       }
     });
 
-    collectActions(ctx, sourceEvents, enterableNode.onEntry);
+    collectActions(ctx, sourceEvents, enterableNode.entry);
   });
 
-  getChildren(node).forEach((child) => collectEnterables(ctx, child));
+  getChildren(node).forEach(child => collectEnterables(ctx, child));
 }
 
 function collectEventsLeadingToFinalStates(ctx: TraversalContext) {
@@ -452,7 +454,7 @@ function collectEventsLeadingToFinalStates(ctx: TraversalContext) {
     while (marker) {
       seenStates.add(marker);
 
-      collectActions(ctx, sourceEvents, marker.onExit);
+      collectActions(ctx, sourceEvents, marker.exit);
 
       if (marker.parent?.type === 'parallel') {
         leafParallelSeenMap.set(marker, {
@@ -471,7 +473,7 @@ function collectEventsLeadingToFinalStates(ctx: TraversalContext) {
         continue;
       }
       for (const node of otherSeen.nodes) {
-        collectActions(ctx, seen.events, node.onExit);
+        collectActions(ctx, seen.events, node.exit);
       }
     }
   }
@@ -480,8 +482,8 @@ function collectEventsLeadingToFinalStates(ctx: TraversalContext) {
       Array.from(events),
     ),
   );
-  getAllNodesToNodes(Array.from(leafParallelSeenMap.keys())).forEach((node) => {
-    collectActions(ctx, eventsLeadingToFinalStates, node.onExit);
+  getAllNodesToNodes(Array.from(leafParallelSeenMap.keys())).forEach(node => {
+    collectActions(ctx, eventsLeadingToFinalStates, node.exit);
   });
 }
 
@@ -496,14 +498,14 @@ export const introspectMachine = (machine: AnyStateNode) => {
   collectEventsLeadingToFinalStates(ctx);
 
   return {
-    states: machine.stateIds.map((id) => ({
+    states: getStateIds(machine.machine).map(id => ({
       id,
       sources: ctx.nodeIdToSourceEventsMap.get(id) || new Set(),
     })),
     stateSchema: makeStateSchema(machine),
     guards: ctx.guards.toDataShape(),
     actions: ctx.actions.toDataShape(),
-    services: ctx.services.toDataShape(),
+    actors: ctx.actors.toDataShape(),
     delays: ctx.delays.toDataShape(),
     serviceSrcToIdMap: ctx.serviceSrcToIdMap,
   };
@@ -514,5 +516,29 @@ const getServiceSrc = (invoke: InvokeDefinition<any, any>) => {
     return invoke.src;
   }
 
-  return invoke.src.type;
+  // TODO: might not be needed
+  return invoke.src;
 };
+
+function getInitialStateNodes(node: AnyStateNode): AnyStateNode[] {
+  if (node.type === 'compound') {
+    return getChildren(node).flatMap(getInitialStateNodes);
+  }
+  if (node.type === 'parallel') {
+    return getChildren(node).flatMap(getInitialStateNodes);
+  }
+  return [node];
+}
+
+function getStateIds(machine: XState.AnyStateMachine): string[] {
+  const stateIds: string[] = [];
+
+  function iter(stateNode: XState.StateNode) {
+    stateIds.push(stateNode.id);
+    Object.values(stateNode.states).forEach(iter);
+  }
+
+  iter(machine.root);
+
+  return stateIds;
+}

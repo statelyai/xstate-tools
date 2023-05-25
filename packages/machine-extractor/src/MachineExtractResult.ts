@@ -719,7 +719,7 @@ export class MachineExtractResult {
   };
 
   getServiceImplementation = (name: string) => {
-    const node = this.machineCallResult.options?.services?.properties.find(
+    const node = this.machineCallResult.options?.actors?.properties.find(
       (property) => {
         return property.key === name;
       },

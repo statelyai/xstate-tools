@@ -30,7 +30,7 @@ export const getTypegenData = (
   const guards = introspectResult.guards.lines.filter(
     line => !line.name.startsWith('xstate.'),
   );
-  const services = introspectResult.services.lines.filter(
+  const actors = introspectResult.actors.lines.filter(
     line => !line.name.startsWith('xstate.'),
   );
 
@@ -77,7 +77,7 @@ export const getTypegenData = (
       internalEvents: collectPotentialInternalEvents(
         [
           introspectResult.actions.lines,
-          introspectResult.services.lines,
+          introspectResult.actors.lines,
           introspectResult.guards.lines,
           introspectResult.delays.lines,
         ],
@@ -103,7 +103,7 @@ export const getTypegenData = (
           providedImplementations.guards,
         ),
         services: getMissingImplementationsForType(
-          services,
+          actors,
           providedImplementations.services,
         ).filter(id => !isInlineServiceId(id)),
       },
@@ -111,7 +111,7 @@ export const getTypegenData = (
       eventsCausingDelays: getEventsCausing(delays),
       eventsCausingGuards: getEventsCausing(guards),
       eventsCausingServices: Object.fromEntries(
-        Object.entries(getEventsCausing(services)).filter(
+        Object.entries(getEventsCausing(actors)).filter(
           ([id]) => !isInlineServiceId(id),
         ),
       ),
@@ -146,7 +146,7 @@ const getProvidedImplementations = (machine: MachineExtractResult) => {
       ) || [],
     ),
     services: new Set(
-      machine.machineCallResult.options?.services?.properties.map(
+      machine.machineCallResult.options?.actors?.properties.map(
         property => property.key,
       ) || [],
     ),
