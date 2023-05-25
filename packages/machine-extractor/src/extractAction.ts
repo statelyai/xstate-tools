@@ -409,3 +409,40 @@ function extractEventObject(
 
   return extracted;
 }
+
+export type Implementation = {
+  fullCode: string;
+  body: string;
+  params: string[];
+  imports?: string[];
+  dependentCodes?: {
+    javascript?: string[];
+    typescript?: string[];
+  };
+  dependentPackages?: string[];
+};
+export function extractNamedActionImplementation(
+  node: t.Node,
+  fileContent: string,
+): Implementation {
+  if (t.isArrowFunctionExpression(node) || t.isFunctionExpression(node)) {
+    return {
+      params: node.params.map(param => {
+        if (t.isIdentifier(param)) {
+          return param.name;
+        }
+        if (t.isRestElement(param)) {
+          return fileContent.slice(param.start!, param.end!);
+        }
+        return '';
+      }),
+      body: fileContent.slice(node.body.start!, node.body.end!),
+      // TODO: find out what imports are referenced inside the code and copy them into fullCode, imports and dependentPackages
+      fullCode: fileContent.slice(node.start!, node.end!),
+      imports: [],
+      dependentPackages: [],
+    };
+  }
+
+  throw Error('Unsupported named action implementation');
+}

@@ -646,4 +646,29 @@ describe('MachineParseResult', () => {
       ]
     `);
   });
+
+  it.only('should extract action implementation', () => {
+    const result = extractMachinesFromFile(`
+    createMachine({
+      initial: "a",
+      states: {
+        a: {
+          entry: [
+            'test'
+          ],
+        },
+      },
+    }, {
+      actions: {
+        test: (ctx, evt, ...rest) => {
+          myAction(ctx, evt, ...rest)
+        }
+      }
+    });    
+  `);
+    const machine = result!.machines[0];
+    const config = machine?.toConfig();
+
+    console.log(config?.states.a.entry);
+  });
 });

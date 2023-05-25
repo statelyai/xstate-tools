@@ -9,6 +9,7 @@ import { CondNode } from './conds';
 import {
   extractAssignment,
   extractLogExpression,
+  extractNamedActionImplementation,
   extractRaisedEvent,
   extractSendToProperties,
   extractStopProperties,
@@ -42,38 +43,39 @@ export interface ToMachineConfigOptions {
 }
 
 const parseStateNode = (
-  astResult: StateNodeReturn,
+  astResult: TMachineCallExpression,
+  astDefinition: StateNodeReturn,
   opts: ToMachineConfigOptions | undefined,
 ): StateNodeConfig<any, any, any> => {
   const config: MachineConfig<any, any, any> = {};
 
-  if (astResult?.id) {
-    config.id = astResult.id.value;
+  if (astDefinition?.id) {
+    config.id = astDefinition.id.value;
   }
 
-  if (astResult?.initial) {
-    config.initial = astResult.initial.value;
+  if (astDefinition?.initial) {
+    config.initial = astDefinition.initial.value;
   }
 
-  if (astResult?.type) {
-    config.type = astResult.type.value as any;
+  if (astDefinition?.type) {
+    config.type = astDefinition.type.value as any;
   }
 
-  if (astResult.entry) {
-    config.entry = getActionConfig(astResult.entry, opts);
+  if (astDefinition.entry) {
+    config.entry = getActionConfig(astResult, astDefinition.entry, opts);
   }
-  if (astResult.onEntry) {
-    config.onEntry = getActionConfig(astResult.onEntry, opts);
+  if (astDefinition.onEntry) {
+    config.onEntry = getActionConfig(astResult, astDefinition.onEntry, opts);
   }
-  if (astResult.exit) {
-    config.exit = getActionConfig(astResult.exit, opts);
+  if (astDefinition.exit) {
+    config.exit = getActionConfig(astResult, astDefinition.exit, opts);
   }
-  if (astResult.onExit) {
-    config.onExit = getActionConfig(astResult.onExit, opts);
+  if (astDefinition.onExit) {
+    config.onExit = getActionConfig(astResult, astDefinition.onExit, opts);
   }
 
-  if (astResult.tags) {
-    const tags = astResult.tags.map(tag => tag.value);
+  if (astDefinition.tags) {
+    const tags = astDefinition.tags.map(tag => tag.value);
 
     if (tags.length === 1) {
       config.tags = tags[0];
@@ -82,10 +84,10 @@ const parseStateNode = (
     }
   }
 
-  if (astResult.on) {
+  if (astDefinition.on) {
     config.on = {};
 
-    astResult.on.properties.forEach(onProperty => {
+    astDefinition.on.properties.forEach(onProperty => {
       (config.on as any)[onProperty.key] = getTransitions(
         onProperty.result,
         opts,
@@ -93,10 +95,10 @@ const parseStateNode = (
     });
   }
 
-  if (astResult.after) {
+  if (astDefinition.after) {
     config.after = {};
 
-    astResult.after.properties.forEach(afterProperty => {
+    astDefinition.after.properties.forEach(afterProperty => {
       (config.after as any)[afterProperty.key] = getTransitions(
         afterProperty.result,
         opts,
@@ -104,42 +106,42 @@ const parseStateNode = (
     });
   }
 
-  if (astResult.history) {
-    config.history = astResult.history.value;
+  if (astDefinition.history) {
+    config.history = astDefinition.history.value;
   }
 
-  if (astResult.states) {
+  if (astDefinition.states) {
     const states: typeof config.states = {};
 
-    astResult.states.properties.forEach(state => {
-      states[state.key] = parseStateNode(state.result, opts);
+    astDefinition.states.properties.forEach(state => {
+      states[state.key] = parseStateNode(astResult, state.result, opts);
     });
 
     config.states = states;
   }
 
-  if (astResult.always) {
-    config.always = getTransitions(astResult.always, opts);
+  if (astDefinition.always) {
+    config.always = getTransitions(astDefinition.always, opts);
   }
 
-  if (astResult.meta?.description) {
+  if (astDefinition.meta?.description) {
     config.meta = {
-      description: astResult.meta.description.value,
+      description: astDefinition.meta.description.value,
     };
   }
 
-  if (astResult.onDone) {
-    config.onDone = getTransitions(astResult.onDone, opts) as any[];
+  if (astDefinition.onDone) {
+    config.onDone = getTransitions(astDefinition.onDone, opts) as any[];
   }
 
-  if (astResult.description) {
-    config.description = astResult.description.value;
+  if (astDefinition.description) {
+    config.description = astDefinition.description.value;
   }
 
-  if (astResult.invoke) {
+  if (astDefinition.invoke) {
     const invokes: typeof config.invoke = [];
 
-    astResult.invoke.forEach(invoke => {
+    astDefinition.invoke.forEach(invoke => {
       if (!invoke.src) {
         return;
       }
@@ -197,10 +199,11 @@ export const toMachineConfig = (
   opts?: ToMachineConfigOptions,
 ): MachineConfig<any, any, any> | undefined => {
   if (!result?.definition) return undefined;
-  return parseStateNode(result?.definition, opts);
+  return parseStateNode(result, result.definition, opts);
 };
 
 export const getActionConfig = (
+  astResult: TMachineCallExpression,
   astActions: GetParserResult<typeof MaybeArrayOfActions>,
   opts: ToMachineConfigOptions | undefined,
 ): Actions<any, any> => {
@@ -210,7 +213,13 @@ export const getActionConfig = (
     switch (true) {
       case action.declarationType === 'named':
         actions.push(action.name);
-        return;
+        const val = astResult.options?.actions?.properties.find(
+          prop => prop.key === action.name,
+        )!;
+        console.log(
+          val.result.node,
+          extractNamedActionImplementation(val.result.node, opts!.fileContent),
+        );
       case opts?.anonymizeInlineImplementations:
         actions.push({
           type: 'anonymous',
@@ -228,7 +237,7 @@ export const getActionConfig = (
             const cond = getCondition(condition.conditionNode, opts);
             return {
               ...(cond && { cond }),
-              actions: getActionConfig(condition.actionNodes, opts),
+              actions: getActionConfig(astResult, condition.actionNodes, opts),
             };
           }),
         });
