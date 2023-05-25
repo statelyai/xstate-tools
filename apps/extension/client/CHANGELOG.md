@@ -1,5 +1,20 @@
 # stately-vscode
 
+## 1.14.3
+
+### Patch Changes
+
+- [#338](https://github.com/statelyai/xstate-tools/pull/338) [`1ebfcea`](https://github.com/statelyai/xstate-tools/commit/1ebfcea83485c6bf3f242c4d9223334e1e09d55a) Thanks [@Andarist](https://github.com/Andarist)! - Fixed an issue with not being able to apply code updates in files containing `satisfies` keyword
+
+## 1.14.2
+
+### Patch Changes
+
+- [#333](https://github.com/statelyai/xstate-tools/pull/333) [`2823e81`](https://github.com/statelyai/xstate-tools/commit/2823e8153ebd084eaa5e165f6fd0963bf4079dd2) Thanks [@Andarist](https://github.com/Andarist)! - Fixed an issue that caused inline actors with IDs being marked as not provided by typegen. This could result in false positive "Some implementations missing" error.
+
+- Updated dependencies [[`2823e81`](https://github.com/statelyai/xstate-tools/commit/2823e8153ebd084eaa5e165f6fd0963bf4079dd2), [`87bf22a`](https://github.com/statelyai/xstate-tools/commit/87bf22aeb47e1e08edad373c218ca2a0abd0f9d7)]:
+  - @xstate/tools-shared@3.0.0
+
 ## 1.14.1
 
 ### Patch Changes

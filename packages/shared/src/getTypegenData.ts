@@ -1,6 +1,6 @@
 import { MachineExtractResult } from '@xstate/machine-extractor';
 import { createIntrospectableMachine } from './createIntrospectableMachine';
-import { introspectMachine } from './introspectMachine';
+import { IntrospectResult, introspectMachine } from './introspectMachine';
 import { TypegenOptions } from './types';
 
 export interface TypegenData extends ReturnType<typeof getTypegenData> {}
@@ -19,7 +19,10 @@ export const getTypegenData = (
   const introspectResult = introspectMachine(introspectableMachine.root);
   const tsTypes = machineResult.machineCallResult.definition?.tsTypes?.node!;
 
-  const providedImplementations = getProvidedImplementations(machineResult);
+  const providedImplementations = getProvidedImplementations(
+    machineResult,
+    introspectResult,
+  );
 
   const actions = introspectResult.actions.lines.filter(
     line => !line.name.startsWith('xstate.'),
@@ -128,7 +131,10 @@ export const getTypegenData = (
   };
 };
 
-const getProvidedImplementations = (machine: MachineExtractResult) => {
+const getProvidedImplementations = (
+  machine: MachineExtractResult,
+  introspectResult: IntrospectResult,
+) => {
   return {
     actions: new Set(
       machine.machineCallResult.options?.actions?.properties.map(
@@ -145,11 +151,14 @@ const getProvidedImplementations = (machine: MachineExtractResult) => {
         property => property.key,
       ) || [],
     ),
-    services: new Set(
-      machine.machineCallResult.options?.actors?.properties.map(
+    services: new Set([
+      ...introspectResult.actors.lines
+        .filter(({ required }) => !required)
+        .map(({ name }) => name),
+      ...(machine.machineCallResult.options?.actors?.properties.map(
         property => property.key,
-      ) || [],
-    ),
+      ) || []),
+    ]),
   };
 };
 

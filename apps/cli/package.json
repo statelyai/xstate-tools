@@ -1,6 +1,6 @@
 {
   "name": "@xstate/cli",
-  "version": "0.4.2",
+  "version": "0.5.1",
   "bin": {
     "xstate": "./bin/bin.js"
   },
@@ -19,7 +19,7 @@
   "dependencies": {
     "@babel/core": "^7.21.4",
     "@xstate/machine-extractor": "^0.9.0",
-    "@xstate/tools-shared": "^2.0.2",
+    "@xstate/tools-shared": "^3.0.0",
     "chokidar": "^3.5.3",
     "commander": "^8.0.0",
     "prettier": "^2.8.7",

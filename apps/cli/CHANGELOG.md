@@ -1,5 +1,22 @@
 # @xstate/cli
 
+## 0.5.1
+
+### Patch Changes
+
+- [#341](https://github.com/statelyai/xstate-tools/pull/341) [`be2caea`](https://github.com/statelyai/xstate-tools/commit/be2caeae0cfd48609701d1375e7662074751df6b) Thanks [@Andarist](https://github.com/Andarist)! - Fixed an issue with typegen files being sometimes generated when they shouldn't be.
+
+## 0.5.0
+
+### Minor Changes
+
+- [#328](https://github.com/statelyai/xstate-tools/pull/328) [`87bf22a`](https://github.com/statelyai/xstate-tools/commit/87bf22aeb47e1e08edad373c218ca2a0abd0f9d7) Thanks [@Andarist](https://github.com/Andarist)! - A local version of Prettier (if available) should now be used when writing typegen files.
+
+### Patch Changes
+
+- Updated dependencies [[`2823e81`](https://github.com/statelyai/xstate-tools/commit/2823e8153ebd084eaa5e165f6fd0963bf4079dd2), [`87bf22a`](https://github.com/statelyai/xstate-tools/commit/87bf22aeb47e1e08edad373c218ca2a0abd0f9d7)]:
+  - @xstate/tools-shared@3.0.0
+
 ## 0.4.2
 
 ### Patch Changes
