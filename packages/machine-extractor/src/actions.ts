@@ -115,7 +115,7 @@ export const ActionAsNode = createParser({
 
 const ChooseFirstArg = arrayOf(
   objectTypeWithKnownKeys({
-    cond: Guard,
+    guard: Guard,
     // Don't allow choose inside of choose for now,
     // too recursive
     // TODO - fix
@@ -128,15 +128,15 @@ export const ChooseAction = wrapParserResult(
   (result, node, context): ActionNode => {
     const conditions: ParsedChooseCondition[] = [];
 
-    result.argument1Result?.forEach((arg1Result) => {
-      const toPush: (typeof conditions)[number] = {
+    result.argument1Result?.forEach(arg1Result => {
+      const toPush: typeof conditions[number] = {
         condition: {
           actions: [],
         },
         actionNodes: [],
       };
       if (arg1Result.actions) {
-        const actionResult = arg1Result.actions.map((action) => action.action);
+        const actionResult = arg1Result.actions.map(action => action.action);
 
         if (actionResult.length === 1) {
           toPush.condition.actions = actionResult[0];
@@ -145,16 +145,16 @@ export const ChooseAction = wrapParserResult(
         }
         toPush.actionNodes = arg1Result.actions;
       }
-      if (arg1Result.cond) {
-        toPush.condition.cond = arg1Result.cond.guard;
-        toPush.conditionNode = arg1Result.cond;
+      if (arg1Result.guard) {
+        toPush.condition.guard = arg1Result.guard.guard;
+        toPush.conditionNode = arg1Result.guard;
       }
       conditions.push(toPush);
     });
 
     return {
       node: node,
-      action: choose(conditions.map((condition) => condition.condition)),
+      action: choose(conditions.map(condition => condition.condition)),
       chooseConditions: conditions,
       name: '',
       declarationType: 'inline',

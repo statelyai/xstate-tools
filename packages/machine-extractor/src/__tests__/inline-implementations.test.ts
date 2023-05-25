@@ -7,7 +7,7 @@ describe('Inline implementations', () => {
 				states: {
 					a: {
 						always: {
-							cond: () => true,
+							guard: () => true,
 						}
 					},
 				}
@@ -20,7 +20,7 @@ describe('Inline implementations', () => {
 
     const config = machine.toConfig({ hashInlineImplementations: true });
 
-    const parsedId = (config as any)?.states.a.always.cond;
+    const parsedId = (config as any)?.states.a.always.guard;
 
     expect(parsedId).toBeTruthy();
     expect(typeof parsedId).toEqual('string');

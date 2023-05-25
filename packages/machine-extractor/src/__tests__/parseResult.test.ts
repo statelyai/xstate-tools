@@ -54,26 +54,26 @@ describe('MachineParseResult', () => {
 
     // Doing a map here to improve the error messaging
     expect(
-      targets.map((target) => target.target.map((target) => target.value)),
+      targets.map(target => target.target.map(target => target.value)),
     ).toHaveLength(6);
   });
 
   it('Should let you list all of the named guards', () => {
     const result = extractMachinesFromFile(`
     createMachine({
-      onDone: [{cond: 'state.onDone'}],
+      onDone: [{guard: 'state.onDone'}],
       invoke: {
-        onDone: [{cond: 'invoke.onDone'}],
-        onError: [{cond: 'invoke.onError'}]
+        onDone: [{guard: 'invoke.onDone'}],
+        onError: [{guard: 'invoke.onError'}]
       },
-      always: [{cond: 'always'}],
+      always: [{guard: 'always'}],
       states: {
         a: {
           on: {
             WOW: [{
-              cond: 'WOW.object'
+              guard: 'WOW.object'
             }, {
-              cond: 'WOW.object'
+              guard: 'WOW.object'
             }]
           }
         },
@@ -81,13 +81,13 @@ describe('MachineParseResult', () => {
     })
     `);
 
-    const conds = groupByUniqueName(
+    const guards = groupByUniqueName(
       result!.machines[0]!.getAllGuards(['named']),
     );
 
-    expect(Object.keys(conds)).toHaveLength(5);
+    expect(Object.keys(guards)).toHaveLength(5);
 
-    expect(conds['WOW.object']).toHaveLength(2);
+    expect(guards['WOW.object']).toHaveLength(2);
   });
 
   it('Should grab all invoke names', () => {
@@ -123,7 +123,7 @@ describe('MachineParseResult', () => {
 
     expect({
       from: transition.fromPath,
-      to: transition.target.map((t) => t.value),
+      to: transition.target.map(t => t.value),
     }).toEqual({
       from: ['a'],
       to: ['b'],
@@ -228,10 +228,8 @@ describe('MachineParseResult', () => {
     });
     it('should extract assignment from transitions actions', () => {
       expect(
-        (
-          machine?.toConfig({ stringifyInlineImplementations: true })?.states?.a
-            .on as any
-        ).GO.actions,
+        (machine?.toConfig({ stringifyInlineImplementations: true })?.states?.a
+          .on as any).GO.actions,
       ).toMatchInlineSnapshot(`"assign({count: 1})"`);
     });
   });

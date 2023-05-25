@@ -1301,7 +1301,7 @@ describe('add_transition', () => {
           foo: {
             on: {
               NEXT: {
-                cond: "isItTooLate",
+                guard: "isItTooLate",
                 target: "bar"
               }
             }
@@ -1345,7 +1345,7 @@ describe('add_transition', () => {
 
         on: {
           NEXT: {
-            cond: "isItTooLate",
+            guard: "isItTooLate",
             target: ".bar"
           }
         }
@@ -1386,7 +1386,7 @@ describe('add_transition', () => {
 
         on: {
           NEXT: {
-            cond: "isItTooLate",
+            guard: "isItTooLate",
             target: ".bar",
             internal: false
           }
@@ -1423,7 +1423,7 @@ describe('add_transition', () => {
           foo: {
             on: {
               NEXT: {
-                cond: "isItTooLate"
+                guard: "isItTooLate"
               }
             }
           },
