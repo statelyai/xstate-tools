@@ -1,8 +1,7 @@
 import { createMachine } from 'xstate';
 
 createMachine({
-  tsTypes:
-    {} as import('./parametrized-guard-in-always-transition.typegen').Typegen0,
+  tsTypes: {} as import('./parametrized-guard-in-always-transition.typegen').Typegen0,
   initial: 'a',
   states: {
     a: {
@@ -13,7 +12,7 @@ createMachine({
     b: {
       always: {
         target: 'c',
-        cond: {
+        guard: {
           type: 'myAwesomeGuard',
         },
       },

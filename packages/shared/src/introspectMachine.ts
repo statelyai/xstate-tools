@@ -197,7 +197,7 @@ function collectAction(
 ) {
   if (
     actionObject.type === 'xstate.choose' &&
-    Array.isArray(actionObject.params?.guards) // TODO: guards?
+    Array.isArray(actionObject.params?.guards)
   ) {
     actionObject.params!.guards.forEach(({ guard, actions: condActions }) => {
       if (typeof guard === 'string') {
@@ -274,7 +274,8 @@ function exitChildren(
 }
 
 function collectTransitions(ctx: TraversalContext, node: AnyStateNode) {
-  node.transitions?.forEach(transition => {
+  const transitions = [...node.transitions, ...(node.always ?? [])];
+  transitions?.forEach(transition => {
     if (transition.guard && transition.guard.type) {
       // if (transition.guard.type !== 'guard') {
       ctx.guards.addEventToItem(transition.guard.type, transition.eventType);

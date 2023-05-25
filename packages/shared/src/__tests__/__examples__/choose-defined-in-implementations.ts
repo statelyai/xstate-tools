@@ -1,10 +1,8 @@
-import { createMachine } from 'xstate';
-import { choose } from 'xstate/lib/actions';
+import { choose, createMachine } from 'xstate';
 
 createMachine(
   {
-    tsTypes:
-      {} as import('./choose-defined-in-implementations.typegen').Typegen0,
+    tsTypes: {} as import('./choose-defined-in-implementations.typegen').Typegen0,
     initial: 'a',
     states: {
       a: {
@@ -28,7 +26,7 @@ createMachine(
       wow: choose([
         {
           actions: ['a', 'b', 'c'],
-          cond: 'cond1',
+          guard: 'cond1',
         },
       ]),
     },

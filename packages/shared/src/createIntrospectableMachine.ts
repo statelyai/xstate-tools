@@ -18,7 +18,6 @@ export function createIntrospectableMachine(
     {
       ...machineResult.toConfig(),
       context: {},
-      predictableActionArguments: true,
     },
     {
       guards: stubAllWith(() => false),

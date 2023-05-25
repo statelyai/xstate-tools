@@ -12,7 +12,7 @@ describe('getTypegenOutput', () => {
     if (file.includes('.typegen.')) {
       return;
     }
-    // if (!file.includes('service-provided-function')) return;
+    // if (!file.includes('parametrized-guard-in-always')) return;
     const runTest = async () => {
       const filePath = path.join(examplesPath, file);
       const content = await fsP.readFile(filePath, 'utf8');
