@@ -8,11 +8,11 @@ describe('Choose parsing', () => {
           choose([
             {
               actions: ["1", "2", "3"],
-              cond: "cond1",
+              guard: "cond1",
             },
             {
               actions: ["2", "4"],
-              cond: "cond2",
+              guard: "cond2",
             },
           ])
         ]
@@ -43,11 +43,11 @@ describe('Choose in machine options', () => {
           chooseSomething: choose([
             {
               actions: ["1", "2", "3"],
-              cond: "cond1",
+              guard: "cond1",
             },
             {
               actions: ["2", "4"],
-              cond: "cond2",
+              guard: "cond2",
             },
           ])
         }

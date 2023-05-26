@@ -264,7 +264,7 @@ describe('edit_action', () => {
       createMachine({
         on: {
           CALL_HIM_MAYBE: [{
-            cond: 'isItTooLate'
+            guard: 'isItTooLate'
           }, {
             actions: 'callDavid'
           }]
@@ -285,7 +285,7 @@ describe('edit_action', () => {
       "{
         on: {
           CALL_HIM_MAYBE: [{
-            cond: 'isItTooLate'
+            guard: 'isItTooLate'
           }, {
             actions: "getRaise"
           }]

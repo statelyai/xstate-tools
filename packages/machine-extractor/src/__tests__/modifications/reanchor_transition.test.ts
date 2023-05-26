@@ -326,7 +326,7 @@ describe('reanchor_transition', () => {
             on: {
               NEXT: {
                 target: '.a1',
-                cond: 'isTooLate',
+                guard: 'isTooLate',
                 internal: true
               }
             },
@@ -357,7 +357,7 @@ describe('reanchor_transition', () => {
             on: {
               NEXT: {
                 target: "c",
-                cond: 'isTooLate'
+                guard: 'isTooLate'
               }
             },
             states: {
@@ -471,7 +471,7 @@ describe('reanchor_transition', () => {
             on: {
               NEXT: {
                 target: '.a1',
-                cond: 'isTooLate',
+                guard: 'isTooLate',
                 internal: false
               }
             },
@@ -497,7 +497,7 @@ describe('reanchor_transition', () => {
             on: {
               NEXT: {
                 target: "a",
-                cond: 'isTooLate'
+                guard: 'isTooLate'
               }
             },
           },
@@ -648,7 +648,7 @@ describe('reanchor_transition', () => {
             on: {
               NEXT: {
                 target: 'a',
-                cond: 'isTooLate'
+                guard: 'isTooLate'
               }
             },
           },
@@ -672,7 +672,7 @@ describe('reanchor_transition', () => {
           a: {
             on: {
               NEXT: {
-                cond: 'isTooLate'
+                guard: 'isTooLate'
               }
             },
           },
@@ -729,7 +729,7 @@ describe('reanchor_transition', () => {
           a: {
             on: {
               NEXT: {
-                cond: 'isTooLate'
+                guard: 'isTooLate'
               }
             },
           },
@@ -753,7 +753,7 @@ describe('reanchor_transition', () => {
           a: {
             on: {
               NEXT: {
-                cond: 'isTooLate',
+                guard: 'isTooLate',
                 target: "a",
                 internal: true
               }
@@ -907,7 +907,7 @@ describe('reanchor_transition', () => {
             on: {
               NEXT: {
                 target: 'b',
-                cond: 'isItTooLate'
+                guard: 'isItTooLate'
               }
             },
           },
@@ -936,7 +936,7 @@ describe('reanchor_transition', () => {
             on: {
               NEXT: {
                 target: "b",
-                cond: 'isItTooLate'
+                guard: 'isItTooLate'
               }
             }
           }
