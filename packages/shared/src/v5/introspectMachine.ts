@@ -130,7 +130,7 @@ class ItemMap {
 
   /**
    * Add a triggering event to an item in the cache, for
-   * instance the event type which triggers a guard/action/service
+   * instance the event type which triggers a guard/action/actor
    */
   addEventToItem(itemName: string, eventType: string | Iterable<string>) {
     this.addItem(itemName);
@@ -174,22 +174,22 @@ function collectInvokes(ctx: TraversalContext, node: AnyStateNode) {
   if (!node) {
     debugger;
   }
-  node.invoke?.forEach((service) => {
-    const serviceSrc = getServiceSrc(service);
+  node.invoke?.forEach((actor) => {
+    const actorSrc = getActorSrc(actor);
     if (
-      typeof serviceSrc !== 'string' ||
-      serviceSrc === INLINE_IMPLEMENTATION_TYPE
+      typeof actorSrc !== 'string' ||
+      actorSrc === INLINE_IMPLEMENTATION_TYPE
     ) {
       return;
     }
-    ctx.actors.addItem(serviceSrc);
+    ctx.actors.addItem(actorSrc);
 
-    const serviceSrcToIdItem = ctx.serviceSrcToIdMap.get(serviceSrc);
-    if (serviceSrcToIdItem) {
-      serviceSrcToIdItem.add(service.id);
+    const actorSrcToIdItem = ctx.actorSrcToIdMap.get(actorSrc);
+    if (actorSrcToIdItem) {
+      actorSrcToIdItem.add(actor.id);
       return;
     }
-    ctx.serviceSrcToIdMap.set(serviceSrc, new Set([service.id]));
+    ctx.actorSrcToIdMap.set(actorSrc, new Set([actor.id]));
   });
 }
 
@@ -354,7 +354,7 @@ function createTraversalContext(stateNode: AnyStateNode) {
   return {
     machine: stateNode,
 
-    serviceSrcToIdMap: new Map<string, Set<string>>(),
+    actorSrcToIdMap: new Map<string, Set<string>>(),
     nodeIdToSourceEventsMap: new Map<string, Set<string>>(),
 
     actions: new ItemMap({
@@ -407,13 +407,13 @@ function collectEnterables(ctx: TraversalContext, node: AnyStateNode) {
   }
 
   enterableNodes.forEach((enterableNode) => {
-    enterableNode.invoke?.forEach((service) => {
-      const serviceSrc = getServiceSrc(service);
-      if (typeof serviceSrc !== 'string') {
+    enterableNode.invoke?.forEach((actor) => {
+      const actorSrc = getActorSrc(actor);
+      if (typeof actorSrc !== 'string') {
         return;
       }
       sourceEvents.forEach((eventType) => {
-        ctx.actors.addEventToItem(serviceSrc, eventType);
+        ctx.actors.addEventToItem(actorSrc, eventType);
       });
     });
 
@@ -510,13 +510,13 @@ export const introspectMachine = (machine: AnyStateNode) => {
     actions: ctx.actions.toDataShape(),
     actors: ctx.actors.toDataShape(),
     delays: ctx.delays.toDataShape(),
-    serviceSrcToIdMap: ctx.serviceSrcToIdMap,
+    actorSrcToIdMap: ctx.actorSrcToIdMap,
   };
 };
 
 export type IntrospectResult = ReturnType<typeof introspectMachine>;
 
-const getServiceSrc = (invoke: InvokeDefinition<any, any>) => {
+const getActorSrc = (invoke: InvokeDefinition<any, any>) => {
   if (typeof invoke.src === 'string') {
     return invoke.src;
   }

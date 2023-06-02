@@ -28,7 +28,7 @@ export const getTypegenOutput = (types: TypegenData[]) => {
             .join('\n')}
         };
         invokeSrcNameMap: {
-          ${Object.entries(typegenData.serviceSrcToIdMap)
+          ${Object.entries(typegenData.actorSrcToIdMap)
             .map(
               ([src, ids]) =>
                 `${withSafeQuotes(src)}: ${toUnion(
@@ -41,11 +41,9 @@ export const getTypegenOutput = (types: TypegenData[]) => {
           actions: ${toUnionOrNever(
             typegenData.missingImplementations.actions,
           )};
+          actors: ${toUnionOrNever(typegenData.missingImplementations.actors)};
           delays: ${toUnionOrNever(typegenData.missingImplementations.delays)};
           guards: ${toUnionOrNever(typegenData.missingImplementations.guards)};
-          services: ${toUnionOrNever(
-            typegenData.missingImplementations.actors,
-          )};
         };
         eventsCausingActions: {
           ${Object.entries(typegenData.eventsCausingActions)

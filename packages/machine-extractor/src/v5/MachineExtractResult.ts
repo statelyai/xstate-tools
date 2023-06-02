@@ -643,7 +643,7 @@ export class MachineExtractResult {
     return actions;
   };
 
-  getAllServices = (
+  getAllActors = (
     declarationTypes: DeclarationType[] = [
       'identifier',
       'inline',
@@ -651,7 +651,7 @@ export class MachineExtractResult {
       'named',
     ],
   ) => {
-    const services: {
+    const actors: {
       node: t.Node;
       src: string;
       id: string | undefined;
@@ -668,7 +668,7 @@ export class MachineExtractResult {
           invoke.src?.declarationType &&
           declarationTypes.includes(invoke.src?.declarationType)
         ) {
-          services.push({
+          actors.push({
             src: invokeSrc ?? invoke.src?.inlineDeclarationId,
             id: invoke.id?.value,
             node: invoke.node,
@@ -680,7 +680,7 @@ export class MachineExtractResult {
       });
     });
 
-    return services;
+    return actors;
   };
 
   getAllNamedDelays = () => {
@@ -717,7 +717,7 @@ export class MachineExtractResult {
     return node;
   };
 
-  getServiceImplementation = (name: string) => {
+  getActorImplementation = (name: string) => {
     const node = this.machineCallResult.options?.actors?.properties.find(
       (property) => {
         return property.key === name;

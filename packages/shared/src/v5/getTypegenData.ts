@@ -37,9 +37,9 @@ export const getTypegenData = (
     (line) => !line.name.startsWith('xstate.'),
   );
 
-  const allServices =
+  const allActors =
     machineResult
-      .getAllServices(['named'])
+      .getAllActors(['named'])
       .map((elem) => ({ src: elem.src, id: elem.id })) || [];
 
   return {
@@ -84,11 +84,11 @@ export const getTypegenData = (
           introspectResult.guards.lines,
           introspectResult.delays.lines,
         ],
-        allServices,
+        allActors,
       ),
-      serviceSrcToIdMap: Object.fromEntries(
-        Array.from(introspectResult.serviceSrcToIdMap)
-          .filter(([src]) => allServices.some((service) => service.src === src))
+      actorSrcToIdMap: Object.fromEntries(
+        Array.from(introspectResult.actorSrcToIdMap)
+          .filter(([src]) => allActors.some((actor) => actor.src === src))
           .sort(([srcA], [srcB]) => (srcA < srcB ? -1 : 1))
           .map(([src, ids]) => [src, Array.from(ids).sort()]),
       ),
@@ -165,7 +165,7 @@ const getProvidedImplementations = (
 
 const collectPotentialInternalEvents = (
   lineArrays: { events: string[] }[][],
-  services: Array<{ id: string | undefined }>,
+  actors: Array<{ id: string | undefined }>,
 ) =>
   unique(
     lineArrays
@@ -175,15 +175,15 @@ const collectPotentialInternalEvents = (
           event === '' ||
           // TODO: we should source those from the machine config properties like after, invoke, etc
           // OTOH, maybe for the the optimized output we should actually rely on the events that can be given to available implementations
-          // in such a case though the `services.flatMap(...)` below would be redundant
+          // in such a case though the `actors.flatMap(...)` below would be redundant
           /^(xstate|done\.invoke|error\.platform)\./.test(event),
       )
       .concat(
         'xstate.init',
-        services.flatMap((service) =>
-          // TODO: is this correct? shouldn't we also generate events for services without an id?
-          service.id
-            ? [`done.invoke.${service.id}`, `error.platform.${service.id}`]
+        actors.flatMap((actor) =>
+          // TODO: is this correct? shouldn't we also generate events for actors without an id?
+          actor.id
+            ? [`done.invoke.${actor.id}`, `error.platform.${actor.id}`]
             : [],
         ),
       ),

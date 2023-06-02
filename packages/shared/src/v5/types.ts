@@ -34,7 +34,7 @@ export interface ImplementationsMetadata {
       jsImplementation?: string;
     }
   >;
-  services: Record<
+  actors: Record<
     string,
     {
       jsImplementation?: string;

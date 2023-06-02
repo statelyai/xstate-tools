@@ -19,8 +19,8 @@ export const getInlineImplementations = (
      */
     parseResult?.getAllGuards(['inline', 'identifier', 'unknown']) || [];
 
-  const allServices =
-    parseResult?.getAllServices(['inline', 'identifier', 'unknown']) || [];
+  const allActors =
+    parseResult?.getAllActors(['inline', 'identifier', 'unknown']) || [];
 
   const allActions =
     parseResult?.getAllActions(['inline', 'identifier', 'unknown']) || [];
@@ -28,7 +28,7 @@ export const getInlineImplementations = (
   const inlineImplementations: ImplementationsMetadata = {
     actions: {},
     guards: {},
-    services: {},
+    actors: {},
   };
 
   allGuards.forEach((guard) => {
@@ -47,10 +47,10 @@ export const getInlineImplementations = (
       jsImplementation: getRawTextFromNode(fileText, action.node),
     };
   });
-  allServices.forEach((service) => {
-    if (service.srcNode) {
-      inlineImplementations.services[service.inlineDeclarationId] = {
-        jsImplementation: getRawTextFromNode(fileText, service.srcNode),
+  allActors.forEach((actor) => {
+    if (actor.srcNode) {
+      inlineImplementations.actors[actor.inlineDeclarationId] = {
+        jsImplementation: getRawTextFromNode(fileText, actor.srcNode),
       };
     }
   });

@@ -11,9 +11,9 @@ export interface Typegen0 {
   invokeSrcNameMap: {};
   missingImplementations: {
     actions: "anotherNotImplementedYet" | "notImplementedYet";
+    actors: never;
     delays: never;
     guards: never;
-    services: never;
   };
   eventsCausingActions: {
     anotherNotImplementedYet: "xstate.init";
@@ -41,9 +41,9 @@ export interface Typegen0 {
   invokeSrcNameMap: {};
   missingImplementations: {
     actions: never;
+    actors: never;
     delays: never;
     guards: never;
-    services: never;
   };
   eventsCausingActions: {
     someAction: "xstate.init";
@@ -69,9 +69,9 @@ export interface Typegen0 {
   invokeSrcNameMap: {};
   missingImplementations: {
     actions: "sayHello";
+    actors: never;
     delays: never;
     guards: never;
-    services: never;
   };
   eventsCausingActions: {
     sayHello: "xstate.after(500)#(machine)";
@@ -99,9 +99,9 @@ export interface Typegen0 {
   invokeSrcNameMap: {};
   missingImplementations: {
     actions: "someAction";
+    actors: never;
     delays: "myDelay";
     guards: never;
-    services: never;
   };
   eventsCausingActions: {
     someAction: "xstate.after(myDelay)#(machine).b" | "xstate.init";
@@ -128,9 +128,9 @@ export interface Typegen0 {
   invokeSrcNameMap: {};
   missingImplementations: {
     actions: "a" | "b" | "c";
+    actors: never;
     delays: never;
     guards: "cond1";
-    services: never;
   };
   eventsCausingActions: {
     a: "FOO";
@@ -159,9 +159,9 @@ export interface Typegen0 {
   invokeSrcNameMap: {};
   missingImplementations: {
     actions: never;
+    actors: never;
     delays: never;
     guards: never;
-    services: never;
   };
   eventsCausingActions: {
     a: "FOO";
@@ -191,9 +191,9 @@ export interface Typegen0 {
   invokeSrcNameMap: {};
   missingImplementations: {
     actions: "sayHello";
+    actors: never;
     delays: never;
     guards: never;
-    services: never;
   };
   eventsCausingActions: {
     sayHello: "GO_STRING";
@@ -218,9 +218,9 @@ export interface Typegen0 {
   invokeSrcNameMap: {};
   missingImplementations: {
     actions: "sayHello";
+    actors: never;
     delays: never;
     guards: never;
-    services: never;
   };
   eventsCausingActions: {
     sayHello: "GO_STRING";
@@ -245,9 +245,9 @@ export interface Typegen0 {
   invokeSrcNameMap: {};
   missingImplementations: {
     actions: "rootEntry" | "sayHello";
+    actors: never;
     delays: never;
     guards: never;
-    services: never;
   };
   eventsCausingActions: {
     rootEntry: "xstate.init";
@@ -273,9 +273,9 @@ export interface Typegen0 {
   invokeSrcNameMap: {};
   missingImplementations: {
     actions: "rootEntry";
+    actors: never;
     delays: never;
     guards: never;
-    services: never;
   };
   eventsCausingActions: {
     rootEntry: "FOO" | "xstate.init";
@@ -300,9 +300,9 @@ export interface Typegen0 {
   invokeSrcNameMap: {};
   missingImplementations: {
     actions: "otherAction" | "someAction";
+    actors: never;
     delays: never;
     guards: never;
-    services: never;
   };
   eventsCausingActions: {
     otherAction: "BAR";
@@ -328,9 +328,9 @@ export interface Typegen0 {
   invokeSrcNameMap: {};
   missingImplementations: {
     actions: "entryA" | "entryA1" | "rootEntry";
+    actors: never;
     delays: never;
     guards: never;
-    services: never;
   };
   eventsCausingActions: {
     entryA: "FOO" | "xstate.init";
@@ -357,9 +357,9 @@ export interface Typegen0 {
   invokeSrcNameMap: {};
   missingImplementations: {
     actions: "sayBazinga" | "sayHello";
+    actors: never;
     delays: never;
     guards: never;
-    services: never;
   };
   eventsCausingActions: {
     sayBazinga: "GO_STRING";
@@ -386,9 +386,9 @@ export interface Typegen0 {
   invokeSrcNameMap: {};
   missingImplementations: {
     actions: "doSomethingWithFoo";
+    actors: never;
     delays: never;
     guards: never;
-    services: never;
   };
   eventsCausingActions: {
     doSomethingWithFoo: "FOO" | "xstate.stop";
@@ -414,9 +414,9 @@ export interface Typegen0 {
   invokeSrcNameMap: {};
   missingImplementations: {
     actions: "exitA";
+    actors: never;
     delays: never;
     guards: never;
-    services: never;
   };
   eventsCausingActions: {
     exitA: "xstate.stop";
@@ -442,9 +442,9 @@ export interface Typegen0 {
   invokeSrcNameMap: {};
   missingImplementations: {
     actions: "exitA";
+    actors: never;
     delays: never;
     guards: never;
-    services: never;
   };
   eventsCausingActions: {
     exitA: "xstate.stop";
@@ -470,9 +470,9 @@ export interface Typegen0 {
   invokeSrcNameMap: {};
   missingImplementations: {
     actions: "doSomethingWithFoo";
+    actors: never;
     delays: never;
     guards: never;
-    services: never;
   };
   eventsCausingActions: {
     doSomethingWithFoo: "FOO" | "xstate.stop";
@@ -498,9 +498,9 @@ export interface Typegen0 {
   invokeSrcNameMap: {};
   missingImplementations: {
     actions: "rootExit" | "sayHello";
+    actors: never;
     delays: never;
     guards: never;
-    services: never;
   };
   eventsCausingActions: {
     rootExit: "xstate.stop";
@@ -536,9 +536,9 @@ export interface Typegen0 {
       | "b3Exit"
       | "bExit"
       | "rootExit";
+    actors: never;
     delays: never;
     guards: never;
-    services: never;
   };
   eventsCausingActions: {
     a1Exit: "TICK_A1" | "xstate.stop";
@@ -581,9 +581,9 @@ export interface Typegen0 {
   invokeSrcNameMap: {};
   missingImplementations: {
     actions: "aExit" | "bExit" | "rootExit";
+    actors: never;
     delays: never;
     guards: never;
-    services: never;
   };
   eventsCausingActions: {
     aExit: "TICK_A" | "TICK_B" | "xstate.stop";
@@ -618,9 +618,9 @@ export interface Typegen0 {
   invokeSrcNameMap: {};
   missingImplementations: {
     actions: "aExit" | "bExit" | "rootExit";
+    actors: never;
     delays: never;
     guards: never;
-    services: never;
   };
   eventsCausingActions: {
     aExit: "xstate.stop";
@@ -663,9 +663,9 @@ export interface Typegen0 {
       | "bExit"
       | "cExit"
       | "rootExit";
+    actors: never;
     delays: never;
     guards: never;
-    services: never;
   };
   eventsCausingActions: {
     a12Exit:
@@ -779,9 +779,9 @@ export interface Typegen0 {
       | "b2Exit"
       | "bExit"
       | "rootExit";
+    actors: never;
     delays: never;
     guards: never;
-    services: never;
   };
   eventsCausingActions: {
     a12Exit: "TICK_A11" | "TICK_A21" | "TICK_B11" | "TICK_B21" | "xstate.stop";
@@ -835,9 +835,9 @@ export interface Typegen0 {
   invokeSrcNameMap: {};
   missingImplementations: {
     actions: "rootExit";
+    actors: never;
     delays: never;
     guards: never;
-    services: never;
   };
   eventsCausingActions: {
     rootExit: "xstate.stop";
@@ -863,9 +863,9 @@ export interface Typegen0 {
   invokeSrcNameMap: {};
   missingImplementations: {
     actions: "finalExit" | "rootExit";
+    actors: never;
     delays: never;
     guards: never;
-    services: never;
   };
   eventsCausingActions: {
     finalExit: "TICK" | "xstate.stop";
@@ -892,9 +892,9 @@ export interface Typegen0 {
   invokeSrcNameMap: {};
   missingImplementations: {
     actions: "bExit" | "cExit" | "dExit" | "rootExit";
+    actors: never;
     delays: never;
     guards: never;
-    services: never;
   };
   eventsCausingActions: {
     bExit: "TICK_B" | "xstate.stop";
@@ -923,9 +923,9 @@ export interface Typegen0 {
   invokeSrcNameMap: {};
   missingImplementations: {
     actions: "myAction";
+    actors: never;
     delays: never;
     guards: never;
-    services: never;
   };
   eventsCausingActions: {
     myAction: "FOO" | "xstate.stop";
@@ -951,9 +951,9 @@ export interface Typegen0 {
   invokeSrcNameMap: {};
   missingImplementations: {
     actions: "exitA1" | "exitA2";
+    actors: never;
     delays: never;
     guards: never;
-    services: never;
   };
   eventsCausingActions: {
     exitA1: "FOO" | "xstate.stop";
@@ -979,9 +979,9 @@ export interface Typegen0 {
   invokeSrcNameMap: {};
   missingImplementations: {
     actions: "sayHello";
+    actors: never;
     delays: never;
     guards: never;
-    services: never;
   };
   eventsCausingActions: {
     sayHello: "FOO";
@@ -1008,9 +1008,9 @@ export interface Typegen0 {
   invokeSrcNameMap: {};
   missingImplementations: {
     actions: never;
+    actors: never;
     delays: never;
     guards: never;
-    services: never;
   };
   eventsCausingActions: {};
   eventsCausingActors: {};
@@ -1033,9 +1033,9 @@ export interface Typegen0 {
   invokeSrcNameMap: {};
   missingImplementations: {
     actions: never;
+    actors: never;
     delays: never;
     guards: never;
-    services: never;
   };
   eventsCausingActions: {};
   eventsCausingActors: {};
@@ -1058,9 +1058,9 @@ export interface Typegen0 {
   invokeSrcNameMap: {};
   missingImplementations: {
     actions: never;
+    actors: never;
     delays: never;
     guards: never;
-    services: never;
   };
   eventsCausingActions: {};
   eventsCausingActors: {
@@ -1085,9 +1085,9 @@ export interface Typegen0 {
   invokeSrcNameMap: {};
   missingImplementations: {
     actions: "logSmth";
+    actors: never;
     delays: never;
     guards: never;
-    services: never;
   };
   eventsCausingActions: {
     logSmth: "FOO";
@@ -1112,9 +1112,9 @@ export interface Typegen0 {
   invokeSrcNameMap: {};
   missingImplementations: {
     actions: "logSmth";
+    actors: never;
     delays: never;
     guards: never;
-    services: never;
   };
   eventsCausingActions: {
     logSmth: "FOO";
@@ -1144,9 +1144,9 @@ export interface Typegen0 {
   invokeSrcNameMap: {};
   missingImplementations: {
     actions: "entryB" | "invokeOnDoneAction";
+    actors: never;
     delays: never;
     guards: never;
-    services: never;
   };
   eventsCausingActions: {
     entryB: "done.invoke.(machine).a:invocation[0]";
@@ -1172,9 +1172,9 @@ export interface Typegen0 {
   invokeSrcNameMap: {};
   missingImplementations: {
     actions: never;
+    actors: never;
     delays: never;
     guards: never;
-    services: never;
   };
   eventsCausingActions: {};
   eventsCausingActors: {};
@@ -1197,9 +1197,9 @@ export interface Typegen0 {
   invokeSrcNameMap: {};
   missingImplementations: {
     actions: never;
+    actors: never;
     delays: never;
     guards: never;
-    services: never;
   };
   eventsCausingActions: {};
   eventsCausingActors: {};
@@ -1224,9 +1224,9 @@ export interface Typegen0 {
   };
   missingImplementations: {
     actions: never;
+    actors: "jump";
     delays: never;
     guards: never;
-    services: "jump";
   };
   eventsCausingActions: {};
   eventsCausingActors: {
@@ -1252,9 +1252,9 @@ export interface Typegen0 {
   invokeSrcNameMap: {};
   missingImplementations: {
     actions: never;
+    actors: never;
     delays: never;
     guards: "myAwesomeGuard";
-    services: never;
   };
   eventsCausingActions: {};
   eventsCausingActors: {};
@@ -1279,9 +1279,9 @@ export interface Typegen0 {
   invokeSrcNameMap: {};
   missingImplementations: {
     actions: never;
+    actors: never;
     delays: never;
     guards: "myAwesomeGuard";
-    services: never;
   };
   eventsCausingActions: {};
   eventsCausingActors: {};
@@ -1309,9 +1309,9 @@ export interface Typegen0 {
   };
   missingImplementations: {
     actions: never;
+    actors: never;
     delays: never;
     guards: never;
-    services: never;
   };
   eventsCausingActions: {};
   eventsCausingActors: {
