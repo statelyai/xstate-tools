@@ -286,6 +286,9 @@ export const getTransitions = (
     if (transition?.description) {
       toPush.description = transition?.description.value;
     }
+    if (typeof transition?.internal?.value === 'boolean') {
+      toPush.internal = transition.internal.value;
+    }
 
     transitions.push(toPush);
   });
