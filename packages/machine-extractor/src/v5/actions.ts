@@ -5,7 +5,7 @@ import {
   assign,
   choose,
   forwardTo,
-  send,
+  sendTo,
 } from 'xstate5';
 import { Guard, GuardNode } from './conds';
 import { createParser } from './createParser';
@@ -226,7 +226,7 @@ export const AssignAction = wrapParserResult(
   },
 );
 
-export const SendActionSecondArg = objectTypeWithKnownKeys({
+export const SendToActionThirdArg = objectTypeWithKnownKeys({
   to: StringLiteral,
   delay: unionType<{ node: t.Node; value: string | number }>([
     NumericLiteral,
@@ -235,32 +235,36 @@ export const SendActionSecondArg = objectTypeWithKnownKeys({
   id: StringLiteral,
 });
 
-export const SendAction = wrapParserResult(
+export const SendToAction = wrapParserResult(
   namedFunctionCall(
-    'send',
+    'sendTo',
     unionType<{ node: t.Node; value?: string }>([StringLiteral, AnyNode]),
-    SendActionSecondArg,
+    AnyNode,
+    SendToActionThirdArg,
   ),
   (result, node, context): ActionNode => {
     return {
       node: result.node,
       name: '',
-      action: send(
+      action: sendTo(
         result.argument1Result?.value ??
           (() => {
-            return {
-              type: 'UNDEFINED',
-            };
+            return '__ACTOR__';
           }),
+        () => {
+          return {
+            type: 'UNDEFINED',
+          };
+        },
         {
-          ...(result.argument2Result?.id?.value && {
-            id: result.argument2Result.id.value,
+          ...(result.argument3Result?.id?.value && {
+            id: result.argument3Result.id.value,
           }),
-          ...(result.argument2Result?.to?.value && {
-            to: result.argument2Result.to.value,
+          ...(result.argument3Result?.to?.value && {
+            to: result.argument3Result.to.value,
           }),
-          ...(result.argument2Result?.delay?.value && {
-            delay: result.argument2Result.delay.value,
+          ...(result.argument3Result?.delay?.value && {
+            delay: result.argument3Result.delay.value,
           }),
         },
       ),
@@ -294,7 +298,7 @@ export const ForwardToAction = wrapParserResult(
 const NamedAction = unionType([
   ChooseAction,
   AssignAction,
-  SendAction,
+  SendToAction,
   ForwardToAction,
   AfterAction,
   CancelAction,

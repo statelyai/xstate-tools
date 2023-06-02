@@ -1,7 +1,7 @@
 import * as t from '@babel/types';
 import { TextEdit } from '@xstate/tools-shared';
 import * as recast from 'recast';
-import { Action, Condition, MachineOptions, choose } from 'xstate5';
+import { Action, GuardObject, MachineImplementations, choose } from 'xstate5';
 import { DeclarationType } from '.';
 import { RecordOfArrays } from './RecordOfArrays';
 import { ActionNode, ParsedChooseCondition } from './actions';
@@ -271,7 +271,7 @@ export class MachineExtractResult {
   };
 
   public getChooseActionsToAddToOptions = () => {
-    const actions: MachineOptions<any, any, any>['actions'] = {};
+    const actions: MachineImplementations<any, any, any>['actions'] = {};
 
     const chooseActions = this.getChooseActionsInOptions();
 
@@ -509,7 +509,7 @@ export class MachineExtractResult {
   ) => {
     const guards: {
       node: t.Node;
-      guard: Condition<any, any>;
+      guard: GuardObject<any, any> | (() => boolean) | string;
       statePath: string[];
       name: string;
       inlineDeclarationId: string;
