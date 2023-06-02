@@ -6,7 +6,10 @@ createMachine({
   // intentionally add an extra event that can cause all of those entry actions
   // it ensures that `xstate.init` is not used merely as fallback event
   on: {
-    FOO: '#a1',
+    FOO: {
+      target: '#a1',
+      reenter: true,
+    },
   },
   initial: 'a',
   states: {
