@@ -1,4 +1,4 @@
-import { createMachine } from 'xstate5';
+import { createMachine, fromPromise } from 'xstate5';
 
 createMachine(
   {
@@ -24,12 +24,12 @@ createMachine(
   },
   {
     actors: {
-      service1() {
+      service1: fromPromise(() => {
         return Promise.resolve(true);
-      },
-      service2() {
+      }),
+      service2: fromPromise(() => {
         return Promise.resolve(true);
-      },
+      }),
     },
   },
 );

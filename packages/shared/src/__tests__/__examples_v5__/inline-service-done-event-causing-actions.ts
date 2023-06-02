@@ -1,4 +1,4 @@
-import { createMachine } from 'xstate5';
+import { createMachine, fromPromise } from 'xstate5';
 
 createMachine({
   tsTypes:
@@ -7,7 +7,7 @@ createMachine({
   states: {
     a: {
       invoke: {
-        src: () => Promise.resolve(),
+        src: fromPromise(() => Promise.resolve()),
         onDone: {
           target: 'b',
           actions: 'invokeOnDoneAction',

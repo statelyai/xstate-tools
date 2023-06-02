@@ -1,6 +1,6 @@
-import { createMachine } from 'xstate5';
+import { createMachine, fromPromise } from 'xstate5';
 
-const someActor = () => Promise.resolve();
+const someActor = fromPromise(() => Promise.resolve());
 
 createMachine({
   tsTypes: {} as import('./inline-actor-with-id.typegen').Typegen0,
