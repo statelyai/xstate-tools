@@ -1,4 +1,4 @@
-import { MachineEdit } from '@xstate/machine-extractor';
+import { MachineEdit } from '@xstate/machine-extractor/v5';
 import { MachineConfig } from 'xstate5';
 import { TypegenData } from './getTypegenData';
 

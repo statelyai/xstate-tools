@@ -1,4 +1,4 @@
-import type { MachineExtractResult } from '@xstate/machine-extractor';
+import type { MachineExtractResult } from '@xstate/machine-extractor/v5';
 import { getRawTextFromNode, ImplementationsMetadata } from '.';
 
 /**

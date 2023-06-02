@@ -1,7 +1,7 @@
 import type {
   FileExtractResult,
   MachineExtractResult,
-} from '@xstate/machine-extractor';
+} from '@xstate/machine-extractor/v5';
 
 export const isMachineResult = (
   machineResult: MachineExtractResult | undefined,

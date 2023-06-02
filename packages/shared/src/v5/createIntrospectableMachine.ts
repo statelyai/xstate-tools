@@ -1,4 +1,4 @@
-import { MachineExtractResult } from '@xstate/machine-extractor';
+import { MachineExtractResult } from '@xstate/machine-extractor/v5';
 import { AnyStateMachine, createMachine } from 'xstate5';
 
 function stubAllWith<T>(value: T): Record<string, T> {

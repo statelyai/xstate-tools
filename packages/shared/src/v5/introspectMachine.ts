@@ -1,4 +1,4 @@
-import { INLINE_IMPLEMENTATION_TYPE } from '@xstate/machine-extractor';
+import { INLINE_IMPLEMENTATION_TYPE } from '@xstate/machine-extractor/v5';
 import * as XState from 'xstate5';
 import { InvokeDefinition } from 'xstate5';
 

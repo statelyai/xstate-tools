@@ -1,4 +1,4 @@
-import { MachineExtractResult } from '@xstate/machine-extractor';
+import { MachineExtractResult } from '@xstate/machine-extractor/v5';
 import { createIntrospectableMachine } from './createIntrospectableMachine';
 import { IntrospectResult, introspectMachine } from './introspectMachine';
 import { TypegenOptions } from './types';
