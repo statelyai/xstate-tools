@@ -214,9 +214,9 @@ export const getActionConfig = (
           type: 'xstate.choose',
           params: {
             guards: action.chooseConditions!.map((condition) => {
-              const cond = getCondition(condition.conditionNode, opts);
+              const guard = getCondition(condition.conditionNode, opts);
               return {
-                ...(cond && { cond }),
+                ...(guard && { guard }),
                 actions: getActionConfig(condition.actionNodes, opts),
               };
             }),
