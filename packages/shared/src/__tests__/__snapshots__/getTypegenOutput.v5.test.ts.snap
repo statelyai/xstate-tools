@@ -264,7 +264,7 @@ export interface Typegen0 {
 "
 `;
 
-exports[`getTypegenOutput entry-action-root-external-transition 1`] = `
+exports[`getTypegenOutput entry-action-root-reentering-transition 1`] = `
 "// This file was automatically generated. Edits will be overwritten
 
 export interface Typegen0 {
@@ -281,6 +281,33 @@ export interface Typegen0 {
   };
   eventsCausingActions: {
     rootEntry: "FOO" | "xstate.init";
+  };
+  eventsCausingActors: {};
+  eventsCausingDelays: {};
+  eventsCausingGuards: {};
+  matchesStates: "a" | "b";
+  tags: never;
+}
+"
+`;
+
+exports[`getTypegenOutput entry-action-root-transition-targeting-descendant-using-id 1`] = `
+"// This file was automatically generated. Edits will be overwritten
+
+export interface Typegen0 {
+  "@@xstate/typegen": true;
+  internalEvents: {
+    "xstate.init": { type: "xstate.init" };
+  };
+  invokeSrcNameMap: {};
+  missingImplementations: {
+    actions: "rootEntry";
+    actors: never;
+    delays: never;
+    guards: never;
+  };
+  eventsCausingActions: {
+    rootEntry: "xstate.init";
   };
   eventsCausingActors: {};
   eventsCausingDelays: {};
