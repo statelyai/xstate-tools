@@ -55,7 +55,7 @@ export const getTypegenOutput = (types: TypegenData[]) => {
             )
             .join('\n')}
         };
-        eventsCausingServices: {
+        eventsCausingActors: {
           ${Object.entries(typegenData.eventsCausingActors)
             .map(
               ([actor, events]) =>

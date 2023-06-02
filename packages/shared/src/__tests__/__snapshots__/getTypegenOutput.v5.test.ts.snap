@@ -21,9 +21,9 @@ export interface Typegen0 {
     otherAction: "xstate.init";
     someAction: "xstate.init";
   };
+  eventsCausingActors: {};
   eventsCausingDelays: {};
   eventsCausingGuards: {};
-  eventsCausingServices: {};
   matchesStates: undefined;
   tags: never;
 }
@@ -48,9 +48,9 @@ export interface Typegen0 {
   eventsCausingActions: {
     someAction: "xstate.init";
   };
+  eventsCausingActors: {};
   eventsCausingDelays: {};
   eventsCausingGuards: {};
-  eventsCausingServices: {};
   matchesStates: undefined;
   tags: never;
 }
@@ -76,9 +76,9 @@ export interface Typegen0 {
   eventsCausingActions: {
     sayHello: "xstate.after(500)#(machine)";
   };
+  eventsCausingActors: {};
   eventsCausingDelays: {};
   eventsCausingGuards: {};
-  eventsCausingServices: {};
   matchesStates: undefined;
   tags: never;
 }
@@ -104,13 +104,13 @@ export interface Typegen0 {
     services: never;
   };
   eventsCausingActions: {
-    someAction: "xstate.after(myDelay)#(machine).b";
+    someAction: "xstate.after(myDelay)#(machine).b" | "xstate.init";
   };
+  eventsCausingActors: {};
   eventsCausingDelays: {
     myDelay: "NEXT";
   };
   eventsCausingGuards: {};
-  eventsCausingServices: {};
   matchesStates: "a" | "b" | "c";
   tags: never;
 }
@@ -137,11 +137,11 @@ export interface Typegen0 {
     b: "FOO";
     c: "FOO";
   };
+  eventsCausingActors: {};
   eventsCausingDelays: {};
   eventsCausingGuards: {
     cond1: "FOO";
   };
-  eventsCausingServices: {};
   matchesStates: "a" | "b";
   tags: never;
 }
@@ -169,11 +169,11 @@ export interface Typegen0 {
     c: "FOO";
     wow: "FOO";
   };
+  eventsCausingActors: {};
   eventsCausingDelays: {};
   eventsCausingGuards: {
     cond1: "FOO";
   };
-  eventsCausingServices: {};
   matchesStates: "a" | "b";
   tags: never;
 }
@@ -198,9 +198,9 @@ export interface Typegen0 {
   eventsCausingActions: {
     sayHello: "GO_STRING";
   };
+  eventsCausingActors: {};
   eventsCausingDelays: {};
   eventsCausingGuards: {};
-  eventsCausingServices: {};
   matchesStates: "a" | "b" | "b.c" | { b?: "c" };
   tags: never;
 }
@@ -225,9 +225,9 @@ export interface Typegen0 {
   eventsCausingActions: {
     sayHello: "GO_STRING";
   };
+  eventsCausingActors: {};
   eventsCausingDelays: {};
   eventsCausingGuards: {};
-  eventsCausingServices: {};
   matchesStates: "a" | "b" | "b.c" | { b?: "c" };
   tags: never;
 }
@@ -253,9 +253,9 @@ export interface Typegen0 {
     rootEntry: "xstate.init";
     sayHello: "FOO";
   };
+  eventsCausingActors: {};
   eventsCausingDelays: {};
   eventsCausingGuards: {};
-  eventsCausingServices: {};
   matchesStates: "a" | "b" | "b.b1" | { b?: "b1" };
   tags: never;
 }
@@ -280,9 +280,9 @@ export interface Typegen0 {
   eventsCausingActions: {
     rootEntry: "FOO" | "xstate.init";
   };
+  eventsCausingActors: {};
   eventsCausingDelays: {};
   eventsCausingGuards: {};
-  eventsCausingServices: {};
   matchesStates: "a" | "b";
   tags: never;
 }
@@ -308,9 +308,9 @@ export interface Typegen0 {
     otherAction: "BAR";
     someAction: "FOO";
   };
+  eventsCausingActors: {};
   eventsCausingDelays: {};
   eventsCausingGuards: {};
-  eventsCausingServices: {};
   matchesStates: "a" | "b" | "c";
   tags: never;
 }
@@ -337,9 +337,9 @@ export interface Typegen0 {
     entryA1: "FOO" | "xstate.init";
     rootEntry: "FOO" | "xstate.init";
   };
+  eventsCausingActors: {};
   eventsCausingDelays: {};
   eventsCausingGuards: {};
-  eventsCausingServices: {};
   matchesStates: "a" | "a.a1" | { a?: "a1" };
   tags: never;
 }
@@ -365,9 +365,9 @@ export interface Typegen0 {
     sayBazinga: "GO_STRING";
     sayHello: "GO_STRING";
   };
+  eventsCausingActors: {};
   eventsCausingDelays: {};
   eventsCausingGuards: {};
-  eventsCausingServices: {};
   matchesStates: "a" | "b" | "b.c" | "b.d" | { b?: "c" | "d" };
   tags: never;
 }
@@ -393,9 +393,9 @@ export interface Typegen0 {
   eventsCausingActions: {
     doSomethingWithFoo: "FOO" | "xstate.stop";
   };
+  eventsCausingActors: {};
   eventsCausingDelays: {};
   eventsCausingGuards: {};
-  eventsCausingServices: {};
   matchesStates: "a" | "b";
   tags: never;
 }
@@ -421,9 +421,9 @@ export interface Typegen0 {
   eventsCausingActions: {
     exitA: "xstate.stop";
   };
+  eventsCausingActors: {};
   eventsCausingDelays: {};
   eventsCausingGuards: {};
-  eventsCausingServices: {};
   matchesStates: "a" | "a.c" | "a.d" | { a?: "c" | "d" };
   tags: never;
 }
@@ -449,9 +449,9 @@ export interface Typegen0 {
   eventsCausingActions: {
     exitA: "xstate.stop";
   };
+  eventsCausingActors: {};
   eventsCausingDelays: {};
   eventsCausingGuards: {};
-  eventsCausingServices: {};
   matchesStates: "a" | "a.c" | "a.d" | { a?: "c" | "d" };
   tags: never;
 }
@@ -477,9 +477,9 @@ export interface Typegen0 {
   eventsCausingActions: {
     doSomethingWithFoo: "FOO" | "xstate.stop";
   };
+  eventsCausingActors: {};
   eventsCausingDelays: {};
   eventsCausingGuards: {};
-  eventsCausingServices: {};
   matchesStates: "a" | "a.a1" | "b" | { a?: "a1" };
   tags: never;
 }
@@ -506,9 +506,9 @@ export interface Typegen0 {
     rootExit: "xstate.stop";
     sayHello: "FOO" | "xstate.stop";
   };
+  eventsCausingActors: {};
   eventsCausingDelays: {};
   eventsCausingGuards: {};
-  eventsCausingServices: {};
   matchesStates: "a" | "a.a1" | "b" | { a?: "a1" };
   tags: never;
 }
@@ -551,9 +551,9 @@ export interface Typegen0 {
     bExit: "TICK_A2" | "TICK_B2" | "xstate.stop";
     rootExit: "TICK_A2" | "TICK_B2" | "xstate.stop";
   };
+  eventsCausingActors: {};
   eventsCausingDelays: {};
   eventsCausingGuards: {};
-  eventsCausingServices: {};
   matchesStates:
     | "a"
     | "a.a1"
@@ -590,9 +590,9 @@ export interface Typegen0 {
     bExit: "TICK_A" | "TICK_B" | "xstate.stop";
     rootExit: "TICK_A" | "TICK_B" | "xstate.stop";
   };
+  eventsCausingActors: {};
   eventsCausingDelays: {};
   eventsCausingGuards: {};
-  eventsCausingServices: {};
   matchesStates:
     | "a"
     | "a.a1"
@@ -627,9 +627,9 @@ export interface Typegen0 {
     bExit: "xstate.stop";
     rootExit: "xstate.stop";
   };
+  eventsCausingActors: {};
   eventsCausingDelays: {};
   eventsCausingGuards: {};
-  eventsCausingServices: {};
   matchesStates:
     | "a"
     | "a.a1"
@@ -725,9 +725,9 @@ export interface Typegen0 {
       | "TICK_C1"
       | "xstate.stop";
   };
+  eventsCausingActors: {};
   eventsCausingDelays: {};
   eventsCausingGuards: {};
-  eventsCausingServices: {};
   matchesStates:
     | "a"
     | "a.a1"
@@ -796,9 +796,9 @@ export interface Typegen0 {
     bExit: "TICK_A11" | "TICK_A21" | "TICK_B11" | "TICK_B21" | "xstate.stop";
     rootExit: "TICK_A11" | "TICK_A21" | "TICK_B11" | "TICK_B21" | "xstate.stop";
   };
+  eventsCausingActors: {};
   eventsCausingDelays: {};
   eventsCausingGuards: {};
-  eventsCausingServices: {};
   matchesStates:
     | "a"
     | "a.a1"
@@ -840,11 +840,11 @@ export interface Typegen0 {
     services: never;
   };
   eventsCausingActions: {
-    rootExit: "FOO" | "xstate.stop";
+    rootExit: "xstate.stop";
   };
+  eventsCausingActors: {};
   eventsCausingDelays: {};
   eventsCausingGuards: {};
-  eventsCausingServices: {};
   matchesStates: "a" | "b";
   tags: never;
 }
@@ -871,9 +871,9 @@ export interface Typegen0 {
     finalExit: "TICK" | "xstate.stop";
     rootExit: "TICK" | "xstate.stop";
   };
+  eventsCausingActors: {};
   eventsCausingDelays: {};
   eventsCausingGuards: {};
-  eventsCausingServices: {};
   matchesStates: "a" | "b";
   tags: never;
 }
@@ -902,9 +902,9 @@ export interface Typegen0 {
     dExit: "xstate.stop";
     rootExit: "TICK_B" | "TICK_C" | "xstate.stop";
   };
+  eventsCausingActors: {};
   eventsCausingDelays: {};
   eventsCausingGuards: {};
-  eventsCausingServices: {};
   matchesStates: "a" | "b" | "c" | "d";
   tags: never;
 }
@@ -930,9 +930,9 @@ export interface Typegen0 {
   eventsCausingActions: {
     myAction: "FOO" | "xstate.stop";
   };
+  eventsCausingActors: {};
   eventsCausingDelays: {};
   eventsCausingGuards: {};
-  eventsCausingServices: {};
   matchesStates: "a" | "a.b" | "c" | { a?: "b" };
   tags: never;
 }
@@ -959,9 +959,9 @@ export interface Typegen0 {
     exitA1: "FOO" | "xstate.stop";
     exitA2: "xstate.stop";
   };
+  eventsCausingActors: {};
   eventsCausingDelays: {};
   eventsCausingGuards: {};
-  eventsCausingServices: {};
   matchesStates: "a" | "a.a1" | "a.a2" | { a?: "a1" | "a2" };
   tags: never;
 }
@@ -986,11 +986,11 @@ export interface Typegen0 {
   eventsCausingActions: {
     sayHello: "FOO";
   };
+  eventsCausingActors: {};
   eventsCausingDelays: {};
   eventsCausingGuards: {
     guard: "FOO";
   };
-  eventsCausingServices: {};
   matchesStates: undefined;
   tags: never;
 }
@@ -1013,9 +1013,9 @@ export interface Typegen0 {
     services: never;
   };
   eventsCausingActions: {};
+  eventsCausingActors: {};
   eventsCausingDelays: {};
   eventsCausingGuards: {};
-  eventsCausingServices: {};
   matchesStates: undefined;
   tags: never;
 }
@@ -1038,9 +1038,9 @@ export interface Typegen0 {
     services: never;
   };
   eventsCausingActions: {};
+  eventsCausingActors: {};
   eventsCausingDelays: {};
   eventsCausingGuards: {};
-  eventsCausingServices: {};
   matchesStates: undefined;
   tags: never;
 }
@@ -1063,11 +1063,11 @@ export interface Typegen0 {
     services: never;
   };
   eventsCausingActions: {};
-  eventsCausingDelays: {};
-  eventsCausingGuards: {};
-  eventsCausingServices: {
+  eventsCausingActors: {
     someActor: "xstate.init";
   };
+  eventsCausingDelays: {};
+  eventsCausingGuards: {};
   matchesStates: undefined;
   tags: never;
 }
@@ -1092,9 +1092,9 @@ export interface Typegen0 {
   eventsCausingActions: {
     logSmth: "FOO";
   };
+  eventsCausingActors: {};
   eventsCausingDelays: {};
   eventsCausingGuards: {};
-  eventsCausingServices: {};
   matchesStates: undefined;
   tags: never;
 }
@@ -1119,9 +1119,9 @@ export interface Typegen0 {
   eventsCausingActions: {
     logSmth: "FOO";
   };
+  eventsCausingActors: {};
   eventsCausingDelays: {};
   eventsCausingGuards: {};
-  eventsCausingServices: {};
   matchesStates: undefined;
   tags: never;
 }
@@ -1152,9 +1152,9 @@ export interface Typegen0 {
     entryB: "done.invoke.(machine).a:invocation[0]";
     invokeOnDoneAction: "done.invoke.(machine).a:invocation[0]";
   };
+  eventsCausingActors: {};
   eventsCausingDelays: {};
   eventsCausingGuards: {};
-  eventsCausingServices: {};
   matchesStates: "a" | "b";
   tags: never;
 }
@@ -1177,9 +1177,9 @@ export interface Typegen0 {
     services: never;
   };
   eventsCausingActions: {};
+  eventsCausingActors: {};
   eventsCausingDelays: {};
   eventsCausingGuards: {};
-  eventsCausingServices: {};
   matchesStates: undefined;
   tags: never;
 }
@@ -1202,9 +1202,9 @@ export interface Typegen0 {
     services: never;
   };
   eventsCausingActions: {};
+  eventsCausingActors: {};
   eventsCausingDelays: {};
   eventsCausingGuards: {};
-  eventsCausingServices: {};
   matchesStates: undefined;
   tags: never;
 }
@@ -1229,11 +1229,11 @@ export interface Typegen0 {
     services: "jump";
   };
   eventsCausingActions: {};
-  eventsCausingDelays: {};
-  eventsCausingGuards: {};
-  eventsCausingServices: {
+  eventsCausingActors: {
     jump: "GO_STRING";
   };
+  eventsCausingDelays: {};
+  eventsCausingGuards: {};
   matchesStates: "a" | "b" | "b.c" | { b?: "c" };
   tags: never;
 }
@@ -1257,11 +1257,11 @@ export interface Typegen0 {
     services: never;
   };
   eventsCausingActions: {};
+  eventsCausingActors: {};
   eventsCausingDelays: {};
   eventsCausingGuards: {
     myAwesomeGuard: "";
   };
-  eventsCausingServices: {};
   matchesStates: "a" | "b" | "c";
   tags: never;
 }
@@ -1284,11 +1284,11 @@ export interface Typegen0 {
     services: never;
   };
   eventsCausingActions: {};
+  eventsCausingActors: {};
   eventsCausingDelays: {};
   eventsCausingGuards: {
     myAwesomeGuard: "MY_AWESOME_EVENT";
   };
-  eventsCausingServices: {};
   matchesStates: "a" | "b";
   tags: never;
 }
@@ -1314,12 +1314,12 @@ export interface Typegen0 {
     services: never;
   };
   eventsCausingActions: {};
-  eventsCausingDelays: {};
-  eventsCausingGuards: {};
-  eventsCausingServices: {
+  eventsCausingActors: {
     service1: "xstate.init";
     service2: "xstate.init";
   };
+  eventsCausingDelays: {};
+  eventsCausingGuards: {};
   matchesStates: undefined;
   tags: never;
 }
