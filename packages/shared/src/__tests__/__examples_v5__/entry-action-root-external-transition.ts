@@ -1,4 +1,4 @@
-import { createMachine } from 'xstate';
+import { createMachine } from 'xstate5';
 
 // this behavior might change in v5 if we decide that root is not never exited when transitions are taken
 

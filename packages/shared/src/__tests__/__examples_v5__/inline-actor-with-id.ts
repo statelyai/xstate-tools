@@ -1,4 +1,4 @@
-import { createMachine } from 'xstate';
+import { createMachine } from 'xstate5';
 
 const someActor = () => Promise.resolve();
 

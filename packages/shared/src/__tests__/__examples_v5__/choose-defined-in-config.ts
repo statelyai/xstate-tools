@@ -1,4 +1,4 @@
-import { choose, createMachine } from 'xstate';
+import { choose, createMachine } from 'xstate5';
 
 createMachine({
   tsTypes: {} as import('./choose-defined-in-config.typegen').Typegen0,

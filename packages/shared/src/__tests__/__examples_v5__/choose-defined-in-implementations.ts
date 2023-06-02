@@ -1,4 +1,4 @@
-import { choose, createMachine } from 'xstate';
+import { choose, createMachine } from 'xstate5';
 
 createMachine(
   {

@@ -1,4 +1,4 @@
-import { createMachine } from 'xstate';
+import { createMachine } from 'xstate5';
 
 createMachine({
   tsTypes: {} as import('./parametrized-guard-in-transition.typegen').Typegen0,

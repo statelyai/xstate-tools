@@ -1,4 +1,4 @@
-import { createMachine } from 'xstate';
+import { createMachine } from 'xstate5';
 
 createMachine({
   tsTypes: {} as import('./after-string-delay.typegen').Typegen0,

@@ -1,4 +1,4 @@
-import { createMachine } from 'xstate';
+import { createMachine } from 'xstate5';
 
 const machine = createMachine({
   tsTypes: {} as import('./invoke-within-targeted-parallel.typegen').Typegen0,
