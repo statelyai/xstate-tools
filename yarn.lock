@@ -7634,15 +7634,15 @@ xmlchars@^2.2.0:
   resolved "https://registry.yarnpkg.com/xmlchars/-/xmlchars-2.2.0.tgz#060fe1bcb7f9c76fe2a17db86a9bc3ab894210cb"
   integrity sha512-JZnDKK8B0RCDw84FNdDAIpZK+JuJw+s7Lz8nksI7SIuU3UXJJslUthsi+uWBUYOwPFwW7W7PRLRfUKpxjtjFCw==
 
+"xstate5@npm:xstate@5.0.0-beta.13":
+  version "5.0.0-beta.13"
+  resolved "https://registry.yarnpkg.com/xstate/-/xstate-5.0.0-beta.13.tgz#66f89ad99ce499e10891b60647643fea60f98643"
+  integrity sha512-cv27Y9t6xJimBZ/FBFe6Vjegai/3Gv6INFQcdsiNGrFuXXjP7IMwjytOIxL6VhlDasXcoofWQoPy95v2d284ow==
+
 xstate@^4.33.4:
   version "4.33.4"
   resolved "https://registry.yarnpkg.com/xstate/-/xstate-4.33.4.tgz#ff6831b95947c5185a455f8bc4570b21f547278a"
   integrity sha512-3giWybQ8XvAr+3tDENlGduR4XREmiUOVxKRjdqFEe6g8eD8UrYhTth3OyLHX/sR9r/9GY2t/LbjfkCC8XFfv4Q==
-
-xstate@^5.0.0-beta.10:
-  version "5.0.0-beta.10"
-  resolved "https://registry.yarnpkg.com/xstate/-/xstate-5.0.0-beta.10.tgz#84ff2cb52b757f9265a8d0690896220efd4ed8db"
-  integrity sha512-mFmqk6CguOYkVfrGnpUfbv4McqQCnvlN0XwCxyRYHPaO90T2J6AifPsIql0r7r+lQk3AHlKkjYWm5GefhQk3oQ==
 
 y18n@^4.0.0:
   version "4.0.3"

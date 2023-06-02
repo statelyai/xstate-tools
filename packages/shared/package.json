@@ -11,7 +11,7 @@
     "test": "jest"
   },
   "peerDependencies": {
-    "xstate": "^5.0.0-beta.13"
+    "xstate": "^4"
   },
   "devDependencies": {
     "@types/jest": "^27.4.0",
@@ -19,6 +19,8 @@
     "jest": "^27.4.7",
     "jest-watch-typeahead": "^1.0.0",
     "prettier": "^2.8.7",
-    "typescript": "^5.0.4"
+    "typescript": "^5.0.4",
+    "xstate": "^4.33.4",
+    "xstate5": "npm:xstate@5.0.0-beta.13"
   }
 }
