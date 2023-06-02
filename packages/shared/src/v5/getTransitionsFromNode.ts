@@ -1,5 +1,4 @@
-import { pathToStateValue, toStatePaths } from 'xstate/lib/utils';
-import { StateNode } from 'xstate5';
+import { StateNode, pathToStateValue, toStatePaths } from 'xstate5';
 
 export const getTransitionsFromNode = (node: StateNode): string[] => {
   const transitions = new Set<string>();

@@ -1,6 +1,12 @@
 import * as t from '@babel/types';
-import { assign, choose, forwardTo, send } from 'xstate/lib/actions';
-import { Action, ChooseCondition } from 'xstate5';
+import {
+  Action,
+  ChooseCondition,
+  assign,
+  choose,
+  forwardTo,
+  send,
+} from 'xstate5';
 import { Guard, GuardNode } from './conds';
 import { createParser } from './createParser';
 import { maybeIdentifierTo } from './identifiers';

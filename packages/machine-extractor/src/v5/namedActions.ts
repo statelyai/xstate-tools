@@ -12,7 +12,7 @@ import {
   sendUpdate,
   start,
   stop,
-} from 'xstate/lib/actions';
+} from 'xstate5';
 import type { ActionNode } from './actions';
 import { AnyNode, NumericLiteral, StringLiteral } from './scalars';
 import { unionType } from './unionType';

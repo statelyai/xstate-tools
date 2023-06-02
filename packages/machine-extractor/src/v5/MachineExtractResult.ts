@@ -1,8 +1,7 @@
 import * as t from '@babel/types';
 import { TextEdit } from '@xstate/tools-shared';
 import * as recast from 'recast';
-import { choose } from 'xstate/lib/actions';
-import { Action, Condition, MachineOptions } from 'xstate5';
+import { Action, Condition, MachineOptions, choose } from 'xstate5';
 import { DeclarationType } from '.';
 import { RecordOfArrays } from './RecordOfArrays';
 import { ActionNode, ParsedChooseCondition } from './actions';
