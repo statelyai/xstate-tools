@@ -1,9 +1,9 @@
-import { extractMachinesFromFile } from '@xstate/machine-extractor';
+import { extractMachinesFromFile } from '@xstate/machine-extractor/v5';
 import * as fs from 'fs';
 import * as fsP from 'fs/promises';
 import * as path from 'path';
 import { format } from 'prettier';
-import { getTypegenData, getTypegenOutput } from '..';
+import { getTypegenData, getTypegenOutput } from '../v5';
 
 const examplesPath = path.resolve(__dirname, '__examples_v5__');
 
