@@ -44,7 +44,7 @@ export const getTypegenOutput = (types: TypegenData[]) => {
           delays: ${toUnionOrNever(typegenData.missingImplementations.delays)};
           guards: ${toUnionOrNever(typegenData.missingImplementations.guards)};
           services: ${toUnionOrNever(
-            typegenData.missingImplementations.services,
+            typegenData.missingImplementations.actors,
           )};
         };
         eventsCausingActions: {
@@ -52,6 +52,14 @@ export const getTypegenOutput = (types: TypegenData[]) => {
             .map(
               ([action, events]) =>
                 `${withSafeQuotes(action)}: ${toUnionOrNever(events)};`,
+            )
+            .join('\n')}
+        };
+        eventsCausingServices: {
+          ${Object.entries(typegenData.eventsCausingActors)
+            .map(
+              ([actor, events]) =>
+                `${withSafeQuotes(actor)}: ${toUnionOrNever(events)};`,
             )
             .join('\n')}
         };
@@ -68,14 +76,6 @@ export const getTypegenOutput = (types: TypegenData[]) => {
             .map(
               ([guard, events]) =>
                 `${withSafeQuotes(guard)}: ${toUnionOrNever(events)};`,
-            )
-            .join('\n')}
-        };
-        eventsCausingServices: {
-          ${Object.entries(typegenData.eventsCausingServices)
-            .map(
-              ([service, events]) =>
-                `${withSafeQuotes(service)}: ${toUnionOrNever(events)};`,
             )
             .join('\n')}
         };

@@ -7,7 +7,7 @@ export interface TypegenData extends ReturnType<typeof getTypegenData> {}
 
 const removeExtension = (fileName: string) => fileName.replace(/\.[^/.]+$/, '');
 
-const isInlineServiceId = (id: string) => /:invocation\[\d+\]$/.test(id);
+const isInlineActorId = (id: string) => /:invocation\[\d+\]$/.test(id);
 
 export const getTypegenData = (
   fileName: string,
@@ -97,6 +97,10 @@ export const getTypegenData = (
           actions,
           providedImplementations.actions,
         ),
+        actors: getMissingImplementationsForType(
+          actors,
+          providedImplementations.actors,
+        ).filter((id) => !isInlineActorId(id)),
         delays: getMissingImplementationsForType(
           delays,
           providedImplementations.delays,
@@ -105,19 +109,15 @@ export const getTypegenData = (
           guards,
           providedImplementations.guards,
         ),
-        services: getMissingImplementationsForType(
-          actors,
-          providedImplementations.services,
-        ).filter((id) => !isInlineServiceId(id)),
       },
       eventsCausingActions: getEventsCausing(actions),
-      eventsCausingDelays: getEventsCausing(delays),
-      eventsCausingGuards: getEventsCausing(guards),
-      eventsCausingServices: Object.fromEntries(
+      eventsCausingActors: Object.fromEntries(
         Object.entries(getEventsCausing(actors)).filter(
-          ([id]) => !isInlineServiceId(id),
+          ([id]) => !isInlineActorId(id),
         ),
       ),
+      eventsCausingDelays: getEventsCausing(delays),
+      eventsCausingGuards: getEventsCausing(guards),
       // this is an object so it's not worth sorting it here
       stateSchema: introspectResult.stateSchema,
       tags: Array.from(
@@ -142,6 +142,14 @@ const getProvidedImplementations = (
         (property) => property.key,
       ) || [],
     ),
+    actors: new Set([
+      ...introspectResult.actors.lines
+        .filter(({ required }) => !required)
+        .map(({ name }) => name),
+      ...(machine.machineCallResult.options?.actors?.properties.map(
+        (property) => property.key,
+      ) || []),
+    ]),
     delays: new Set(
       machine.machineCallResult.options?.delays?.properties.map(
         (property) => property.key,
@@ -152,14 +160,6 @@ const getProvidedImplementations = (
         (property) => property.key,
       ) || [],
     ),
-    services: new Set([
-      ...introspectResult.actors.lines
-        .filter(({ required }) => !required)
-        .map(({ name }) => name),
-      ...(machine.machineCallResult.options?.actors?.properties.map(
-        (property) => property.key,
-      ) || []),
-    ]),
   };
 };
 
