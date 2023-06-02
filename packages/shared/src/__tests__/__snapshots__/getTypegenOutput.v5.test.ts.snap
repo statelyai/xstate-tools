@@ -106,7 +106,7 @@ export interface Typegen0 {
     guards: never;
   };
   eventsCausingActions: {
-    someAction: "xstate.after(myDelay)#(machine).b" | "xstate.init";
+    someAction: "xstate.after(myDelay)#(machine).b";
   };
   eventsCausingActors: {};
   eventsCausingDelays: {

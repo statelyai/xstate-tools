@@ -524,7 +524,8 @@ const getActorSrc = (invoke: InvokeDefinition<any, any>) => {
 
 function getInitialStateNodes(node: AnyStateNode): AnyStateNode[] {
   if (node.type === 'compound') {
-    return getChildren(node).flatMap(getInitialStateNodes);
+    const initialState = node.states[node.initial.target[0].key];
+    return getChildren(initialState).flatMap(getInitialStateNodes);
   }
   if (node.type === 'parallel') {
     return getChildren(node).flatMap(getInitialStateNodes);
