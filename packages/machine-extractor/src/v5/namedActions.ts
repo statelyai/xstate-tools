@@ -75,7 +75,7 @@ export const SendParentAction = wrapParserResult(
   (result, node, context): ActionNode => {
     return {
       node: result.node,
-      action: sendParent(''),
+      action: sendParent({ type: '' }),
       name: '',
       declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),

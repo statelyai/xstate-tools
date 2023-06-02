@@ -1,4 +1,5 @@
-import { StateNode, pathToStateValue, toStatePaths } from 'xstate5';
+import { StateNode, pathToStateValue } from 'xstate5';
+import { toStatePaths } from './toStatePaths';
 
 export const getTransitionsFromNode = (node: StateNode): string[] => {
   const transitions = new Set<string>();
@@ -39,15 +40,15 @@ export const getTransitionsFromNode = (node: StateNode): string[] => {
     });
   });
 
-  const rootNode = node.machine;
+  const machine = node.machine;
 
-  const nodesWithId = rootNode.stateIds
+  const nodesWithId = machine.root.stateIds
     .filter((id) => !/(\.|\(machine\))/.test(id))
-    .map((id) => rootNode.getStateNodeById(id));
+    .map((id) => machine.getStateNodeById(id));
 
   nodesWithId.forEach((idNode) => {
     getMatchesStates(idNode).forEach((match) => {
-      if (idNode.id === rootNode.id) {
+      if (idNode.id === machine.root.id) {
         transitions.add(`#${idNode.id}.${match}`);
         return;
       }
@@ -69,8 +70,8 @@ export const getTransitionsFromNode = (node: StateNode): string[] => {
 
 export const getMatchesStates = (node: StateNode) => {
   return node.stateIds.flatMap((id) =>
-    toStatePaths(pathToStateValue(node.getStateNodeById(id).path)).map((path) =>
-      path.join('.'),
+    toStatePaths(pathToStateValue(node.machine.getStateNodeById(id).path)).map(
+      (path) => path.join('.'),
     ),
   );
 };

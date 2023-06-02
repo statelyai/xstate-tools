@@ -11,17 +11,12 @@ import { Guard, GuardNode } from './conds';
 import { createParser } from './createParser';
 import { maybeIdentifierTo } from './identifiers';
 import {
-  AfterAction,
   CancelAction,
-  DoneAction,
   EscalateAction,
   LogAction,
   PureAction,
   RaiseAction,
-  RespondAction,
   SendParentAction,
-  SendUpdateAction,
-  StartAction,
   StopAction,
 } from './namedActions';
 import { AnyNode, NumericLiteral, StringLiteral } from './scalars';
@@ -300,16 +295,11 @@ const NamedAction = unionType([
   AssignAction,
   SendToAction,
   ForwardToAction,
-  AfterAction,
   CancelAction,
-  DoneAction,
   EscalateAction,
   LogAction,
   PureAction,
   RaiseAction,
-  RespondAction,
-  SendUpdateAction,
-  StartAction,
   StopAction,
   SendParentAction,
 ]);

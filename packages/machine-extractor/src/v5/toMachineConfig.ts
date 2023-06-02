@@ -3,6 +3,7 @@ import {
   MachineConfig,
   StateNodeConfig,
   TransitionConfigOrTarget,
+  fromCallback,
 } from 'xstate5';
 import { MaybeArrayOfActions } from './actions';
 import { GuardNode } from './conds';
@@ -146,19 +147,11 @@ const parseStateNode = (
       }
 
       const toPush: (typeof invokes)[number] = {
-        src: src || (() => () => {}),
+        src: src || fromCallback(() => {}),
       };
 
       if (invoke.id) {
         toPush.id = invoke.id.value;
-      }
-
-      if (invoke.autoForward) {
-        toPush.autoForward = invoke.autoForward.value;
-      }
-
-      if (invoke.forward) {
-        toPush.forward = invoke.forward.value;
       }
 
       if (invoke.onDone) {
