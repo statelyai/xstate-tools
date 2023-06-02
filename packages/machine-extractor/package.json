@@ -37,7 +37,8 @@
     "recast": "^0.23.1"
   },
   "peerDependencies": {
-    "xstate": "^4"
+    "xstate": "^4",
+    "xstate5": "*"
   },
   "devDependencies": {
     "@babel/core": "^7.21.4",
