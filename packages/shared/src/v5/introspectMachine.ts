@@ -171,9 +171,6 @@ class ItemMap {
 }
 
 function collectInvokes(ctx: TraversalContext, node: AnyStateNode) {
-  if (!node) {
-    debugger;
-  }
   node.invoke?.forEach((actor) => {
     const actorSrc = getActorSrc(actor);
     if (
