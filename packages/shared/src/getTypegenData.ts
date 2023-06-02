@@ -15,8 +15,9 @@ export const getTypegenData = (
   machineResult: MachineExtractResult,
   { useDeclarationFileForTypegenData }: Partial<TypegenOptions> = {},
 ) => {
-  const introspectableMachine = createIntrospectableMachine(machineResult);
-  const introspectResult = introspectMachine(introspectableMachine.root);
+  const introspectResult = introspectMachine(
+    createIntrospectableMachine(machineResult) as any,
+  );
   const tsTypes = machineResult.machineCallResult.definition?.tsTypes?.node!;
 
   const providedImplementations = getProvidedImplementations(
@@ -25,22 +26,22 @@ export const getTypegenData = (
   );
 
   const actions = introspectResult.actions.lines.filter(
-    line => !line.name.startsWith('xstate.'),
+    (line) => !line.name.startsWith('xstate.'),
   );
   const delays = introspectResult.delays.lines.filter(
-    line => !line.name.startsWith('xstate.'),
+    (line) => !line.name.startsWith('xstate.'),
   );
   const guards = introspectResult.guards.lines.filter(
-    line => !line.name.startsWith('xstate.'),
+    (line) => !line.name.startsWith('xstate.'),
   );
-  const actors = introspectResult.actors.lines.filter(
-    line => !line.name.startsWith('xstate.'),
+  const services = introspectResult.services.lines.filter(
+    (line) => !line.name.startsWith('xstate.'),
   );
 
   const allServices =
     machineResult
       .getAllServices(['named'])
-      .map(elem => ({ src: elem.src, id: elem.id })) || [];
+      .map((elem) => ({ src: elem.src, id: elem.id })) || [];
 
   return {
     typesNode: {
@@ -80,7 +81,7 @@ export const getTypegenData = (
       internalEvents: collectPotentialInternalEvents(
         [
           introspectResult.actions.lines,
-          introspectResult.actors.lines,
+          introspectResult.services.lines,
           introspectResult.guards.lines,
           introspectResult.delays.lines,
         ],
@@ -88,7 +89,7 @@ export const getTypegenData = (
       ),
       serviceSrcToIdMap: Object.fromEntries(
         Array.from(introspectResult.serviceSrcToIdMap)
-          .filter(([src]) => allServices.some(service => service.src === src))
+          .filter(([src]) => allServices.some((service) => service.src === src))
           .sort(([srcA], [srcB]) => (srcA < srcB ? -1 : 1))
           .map(([src, ids]) => [src, Array.from(ids).sort()]),
       ),
@@ -106,15 +107,15 @@ export const getTypegenData = (
           providedImplementations.guards,
         ),
         services: getMissingImplementationsForType(
-          actors,
+          services,
           providedImplementations.services,
-        ).filter(id => !isInlineServiceId(id)),
+        ).filter((id) => !isInlineServiceId(id)),
       },
       eventsCausingActions: getEventsCausing(actions),
       eventsCausingDelays: getEventsCausing(delays),
       eventsCausingGuards: getEventsCausing(guards),
       eventsCausingServices: Object.fromEntries(
-        Object.entries(getEventsCausing(actors)).filter(
+        Object.entries(getEventsCausing(services)).filter(
           ([id]) => !isInlineServiceId(id),
         ),
       ),
@@ -124,7 +125,8 @@ export const getTypegenData = (
         new Set(
           machineResult
             ?.getAllStateNodes()
-            .flatMap(node => node.ast.tags?.map(tag => tag.value) || []) || [],
+            .flatMap((node) => node.ast.tags?.map((tag) => tag.value) || []) ||
+            [],
         ),
       ).sort(),
     },
@@ -138,25 +140,25 @@ const getProvidedImplementations = (
   return {
     actions: new Set(
       machine.machineCallResult.options?.actions?.properties.map(
-        property => property.key,
+        (property) => property.key,
       ) || [],
     ),
     delays: new Set(
       machine.machineCallResult.options?.delays?.properties.map(
-        property => property.key,
+        (property) => property.key,
       ) || [],
     ),
     guards: new Set(
       machine.machineCallResult.options?.guards?.properties.map(
-        property => property.key,
+        (property) => property.key,
       ) || [],
     ),
     services: new Set([
-      ...introspectResult.actors.lines
+      ...introspectResult.services.lines
         .filter(({ required }) => !required)
         .map(({ name }) => name),
-      ...(machine.machineCallResult.options?.actors?.properties.map(
-        property => property.key,
+      ...(machine.machineCallResult.options?.services?.properties.map(
+        (property) => property.key,
       ) || []),
     ]),
   };
@@ -168,9 +170,9 @@ const collectPotentialInternalEvents = (
 ) =>
   unique(
     lineArrays
-      .flatMap(lines => lines.flatMap(line => line.events))
+      .flatMap((lines) => lines.flatMap((line) => line.events))
       .filter(
-        event =>
+        (event) =>
           event === '' ||
           // TODO: we should source those from the machine config properties like after, invoke, etc
           // OTOH, maybe for the the optimized output we should actually rely on the events that can be given to available implementations
@@ -179,7 +181,7 @@ const collectPotentialInternalEvents = (
       )
       .concat(
         'xstate.init',
-        services.flatMap(service =>
+        services.flatMap((service) =>
           // TODO: is this correct? shouldn't we also generate events for services without an id?
           service.id
             ? [`done.invoke.${service.id}`, `error.platform.${service.id}`]
@@ -193,9 +195,9 @@ const getMissingImplementationsForType = (
   providedImplementations: Set<string>,
 ) => {
   return usedImplementations
-    .map(usedImplementation => usedImplementation.name)
+    .map((usedImplementation) => usedImplementation.name)
     .filter(
-      usedImplementation => !providedImplementations.has(usedImplementation),
+      (usedImplementation) => !providedImplementations.has(usedImplementation),
     )
     .sort();
 };
@@ -204,7 +206,7 @@ const getEventsCausing = (lines: { name: string; events: string[] }[]) => {
   return Object.fromEntries(
     lines
       .sort((lineA, lineB) => (lineA.name < lineB.name ? -1 : 1))
-      .map(line => [line.name, unique(line.events).sort()]),
+      .map((line) => [line.name, unique(line.events).sort()]),
   );
 };
 

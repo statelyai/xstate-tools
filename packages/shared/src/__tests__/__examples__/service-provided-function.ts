@@ -4,7 +4,7 @@ createMachine(
   {
     tsTypes: {} as import('./service-provided-function.typegen').Typegen0,
     schema: {
-      actors: {
+      services: {
         service1: {} as {
           data: boolean;
         },
@@ -23,7 +23,7 @@ createMachine(
     ],
   },
   {
-    actors: {
+    services: {
       service1() {
         return Promise.resolve(true);
       },

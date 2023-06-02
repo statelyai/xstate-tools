@@ -5,7 +5,7 @@ createMachine(
     tsTypes: {} as import('./guard-provided-function.typegen').Typegen0,
     on: {
       FOO: {
-        guard: 'guard',
+        cond: 'guard',
         actions: 'sayHello',
       },
     },

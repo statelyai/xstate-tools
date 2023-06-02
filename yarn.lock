@@ -1645,10 +1645,10 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@preconstruct/cli@^2.5.0":
-  version "2.5.0"
-  resolved "https://registry.yarnpkg.com/@preconstruct/cli/-/cli-2.5.0.tgz#f66ac50aa9a3f7801efacffc8040fdf9b6d7f483"
-  integrity sha512-EIpiKdSS2KD3hvSKMftJB8jY36YNYoe1+v2u3UcLY0kutqSpxfh/kBKaYmLvXmBQhBo21ccYARB8itwFLOVKjw==
+"@preconstruct/cli@^2.7.0":
+  version "2.7.0"
+  resolved "https://registry.yarnpkg.com/@preconstruct/cli/-/cli-2.7.0.tgz#78891a094871ebb401a2e8e42871bc208717cba7"
+  integrity sha512-reluhXnOCPYhltV9wZZe07v9Eir6+9HiwQtdsUgvmm6UndtDr1kRr2jtObnDtXTjt7LEpU4+TD43+3+Tu7Qebw==
   dependencies:
     "@babel/code-frame" "^7.5.5"
     "@babel/core" "^7.7.7"
@@ -1687,6 +1687,7 @@
     semver "^7.3.4"
     terser "^5.16.8"
     v8-compile-cache "^2.1.1"
+    zod "^3.21.4"
 
 "@preconstruct/hook@^0.4.0":
   version "0.4.0"
@@ -7721,3 +7722,8 @@ yocto-queue@^0.1.0:
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/yocto-queue/-/yocto-queue-0.1.0.tgz#0294eb3dee05028d31ee1a5fa2c556a6aaf10a1b"
   integrity sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==
+
+zod@^3.21.4:
+  version "3.21.4"
+  resolved "https://registry.yarnpkg.com/zod/-/zod-3.21.4.tgz#10882231d992519f0a10b5dd58a38c9dabbb64db"
+  integrity sha512-m46AKbrzKVzOzs/DZgVnG5H55N1sv1M8qZU3A8RIKbs3mrACDNeIOeilDymVb2HdmP8uwshOCF4uJ8uM9rCqJw==

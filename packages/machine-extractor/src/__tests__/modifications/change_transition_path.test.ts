@@ -53,7 +53,7 @@ describe('change_transition_path', () => {
             on: {
               NEXT: {
                 target: 'b',
-                guard: 'isItTooLate'
+                cond: 'isItTooLate'
               }
             }
           },
@@ -79,7 +79,7 @@ describe('change_transition_path', () => {
             on: {
               NEW: {
                 target: 'b',
-                guard: 'isItTooLate'
+                cond: 'isItTooLate'
               }
             }
           },

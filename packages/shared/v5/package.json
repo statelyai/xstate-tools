@@ -1,0 +1,4 @@
+{
+  "main": "dist/xstate-tools-shared-v5.cjs.js",
+  "module": "dist/xstate-tools-shared-v5.esm.js"
+}

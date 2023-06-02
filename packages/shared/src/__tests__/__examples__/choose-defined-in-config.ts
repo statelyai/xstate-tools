@@ -1,4 +1,5 @@
-import { choose, createMachine } from 'xstate';
+import { createMachine } from 'xstate';
+import { choose } from 'xstate/lib/actions';
 
 createMachine({
   tsTypes: {} as import('./choose-defined-in-config.typegen').Typegen0,
@@ -13,7 +14,7 @@ createMachine({
       entry: choose([
         {
           actions: ['a', 'b', 'c'],
-          guard: 'cond1',
+          cond: 'cond1',
         },
       ]),
     },

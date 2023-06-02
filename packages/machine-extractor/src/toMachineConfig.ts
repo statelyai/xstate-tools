@@ -5,7 +5,7 @@ import {
   TransitionConfigOrTarget,
 } from 'xstate';
 import { MaybeArrayOfActions } from './actions';
-import { GuardNode } from './conds';
+import { CondNode } from './conds';
 import { TMachineCallExpression } from './machineCallExpression';
 import { StateNodeReturn } from './stateNode';
 import { MaybeTransitionArray } from './transitions';
@@ -58,12 +58,18 @@ const parseStateNode = (
   if (astResult.entry) {
     config.entry = getActionConfig(astResult.entry, opts);
   }
+  if (astResult.onEntry) {
+    config.onEntry = getActionConfig(astResult.onEntry, opts);
+  }
   if (astResult.exit) {
     config.exit = getActionConfig(astResult.exit, opts);
   }
+  if (astResult.onExit) {
+    config.onExit = getActionConfig(astResult.onExit, opts);
+  }
 
   if (astResult.tags) {
-    const tags = astResult.tags.map(tag => tag.value);
+    const tags = astResult.tags.map((tag) => tag.value);
 
     if (tags.length === 1) {
       config.tags = tags[0];
@@ -75,7 +81,7 @@ const parseStateNode = (
   if (astResult.on) {
     config.on = {};
 
-    astResult.on.properties.forEach(onProperty => {
+    astResult.on.properties.forEach((onProperty) => {
       (config.on as any)[onProperty.key] = getTransitions(
         onProperty.result,
         opts,
@@ -86,7 +92,7 @@ const parseStateNode = (
   if (astResult.after) {
     config.after = {};
 
-    astResult.after.properties.forEach(afterProperty => {
+    astResult.after.properties.forEach((afterProperty) => {
       (config.after as any)[afterProperty.key] = getTransitions(
         afterProperty.result,
         opts,
@@ -101,7 +107,7 @@ const parseStateNode = (
   if (astResult.states) {
     const states: typeof config.states = {};
 
-    astResult.states.properties.forEach(state => {
+    astResult.states.properties.forEach((state) => {
       states[state.key] = parseStateNode(state.result, opts);
     });
 
@@ -129,7 +135,7 @@ const parseStateNode = (
   if (astResult.invoke) {
     const invokes: typeof config.invoke = [];
 
-    astResult.invoke.forEach(invoke => {
+    astResult.invoke.forEach((invoke) => {
       if (!invoke.src) {
         return;
       }
@@ -145,7 +151,7 @@ const parseStateNode = (
           src = invoke.src.inlineDeclarationId;
       }
 
-      const toPush: typeof invokes[number] = {
+      const toPush: (typeof invokes)[number] = {
         src: src || (() => () => {}),
       };
 
@@ -196,7 +202,7 @@ export const getActionConfig = (
 ): Actions<any, any> => {
   const actions: Actions<any, any> = [];
 
-  astActions?.forEach(action => {
+  astActions?.forEach((action) => {
     switch (true) {
       case action.declarationType === 'named':
         actions.push(action.name);
@@ -219,15 +225,13 @@ export const getActionConfig = (
       case !!action.chooseConditions:
         actions.push({
           type: 'xstate.choose',
-          params: {
-            guards: action.chooseConditions!.map(condition => {
-              const cond = getCondition(condition.conditionNode, opts);
-              return {
-                ...(cond && { cond }),
-                actions: getActionConfig(condition.actionNodes, opts),
-              };
-            }),
-          },
+          conds: action.chooseConditions!.map((condition) => {
+            const cond = getCondition(condition.conditionNode, opts);
+            return {
+              ...(cond && { cond }),
+              actions: getActionConfig(condition.actionNodes, opts),
+            };
+          }),
         });
         return;
     }
@@ -241,7 +245,7 @@ export const getActionConfig = (
 };
 
 const getCondition = (
-  condNode: GuardNode | undefined,
+  condNode: CondNode | undefined,
   opts: ToMachineConfigOptions | undefined,
 ) => {
   if (!condNode) {
@@ -263,18 +267,18 @@ export const getTransitions = (
 ): TransitionConfigOrTarget<any, any> => {
   const transitions: TransitionConfigOrTarget<any, any> = [];
 
-  astTransitions?.forEach(transition => {
+  astTransitions?.forEach((transition) => {
     const toPush: TransitionConfigOrTarget<any, any> = {};
     if (transition?.target && transition?.target?.length > 0) {
       if (transition.target.length === 1) {
         toPush.target = transition?.target[0].value;
       } else {
-        toPush.target = transition?.target.map(target => target.value);
+        toPush.target = transition?.target.map((target) => target.value);
       }
     }
-    const guard = getCondition(transition?.guard, opts);
-    if (guard) {
-      toPush.guard = guard;
+    const cond = getCondition(transition?.cond, opts);
+    if (cond) {
+      toPush.cond = cond;
     }
     if (transition?.actions) {
       toPush.actions = getActionConfig(transition.actions, opts);

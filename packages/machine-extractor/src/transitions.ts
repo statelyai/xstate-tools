@@ -1,5 +1,5 @@
 import { MaybeArrayOfActions } from './actions';
-import { Guard } from './conds';
+import { Cond } from './conds';
 import { StringLiteral, TemplateLiteral } from './scalars';
 import { unionType } from './unionType';
 import {
@@ -18,7 +18,7 @@ const TransitionTarget = maybeArrayOf(
 const TransitionObject = objectTypeWithKnownKeys({
   target: TransitionTarget,
   actions: MaybeArrayOfActions,
-  guard: Guard,
+  cond: Cond,
   description: unionType([StringLiteral, TemplateLiteral]),
 });
 

@@ -4,12 +4,12 @@ import * as recast from 'recast';
 import { Action, Condition, MachineOptions } from 'xstate';
 import { choose } from 'xstate/lib/actions';
 import { DeclarationType } from '.';
-import { RecordOfArrays } from './RecordOfArrays';
 import { ActionNode, ParsedChooseCondition } from './actions';
 import { getMachineNodesFromFile } from './getMachineNodesFromFile';
 import { TMachineCallExpression } from './machineCallExpression';
+import { RecordOfArrays } from './RecordOfArrays';
 import { StateNodeReturn } from './stateNode';
-import { ToMachineConfigOptions, toMachineConfig } from './toMachineConfig';
+import { toMachineConfig, ToMachineConfigOptions } from './toMachineConfig';
 import { TransitionConfigNode } from './transitions';
 import { Comment } from './types';
 
@@ -281,7 +281,7 @@ export class MachineExtractResult {
         actions[action.node.name] = choose(
           action.node.chooseConditions.map((chooseCondition) => ({
             actions: chooseCondition.actionNodes.map((action) => action.name),
-            guard: chooseCondition.condition.guard!,
+            cond: chooseCondition.condition.cond!,
           })),
         );
       }
@@ -500,7 +500,7 @@ export class MachineExtractResult {
     });
   };
 
-  getAllGuards = (
+  getAllConds = (
     declarationTypes: DeclarationType[] = [
       'identifier',
       'inline',
@@ -508,9 +508,9 @@ export class MachineExtractResult {
       'named',
     ],
   ) => {
-    const guards: {
+    const conds: {
       node: t.Node;
-      guard: Condition<any, any>;
+      cond: Condition<any, any>;
       statePath: string[];
       name: string;
       inlineDeclarationId: string;
@@ -518,15 +518,15 @@ export class MachineExtractResult {
 
     this.getTransitions().forEach((transition) => {
       if (
-        transition.config.guard?.declarationType &&
-        declarationTypes.includes(transition.config.guard?.declarationType)
+        transition.config.cond?.declarationType &&
+        declarationTypes.includes(transition.config.cond?.declarationType)
       ) {
-        guards.push({
-          name: transition.config.guard.name,
-          node: transition.config.guard.node,
-          guard: transition.config.guard.guard,
+        conds.push({
+          name: transition.config.cond.name,
+          node: transition.config.cond.node,
+          cond: transition.config.cond.cond,
           statePath: transition.fromPath,
-          inlineDeclarationId: transition.config.guard.inlineDeclarationId,
+          inlineDeclarationId: transition.config.cond.inlineDeclarationId,
         });
       }
     });
@@ -541,10 +541,10 @@ export class MachineExtractResult {
               chooseCondition.conditionNode?.declarationType,
             )
           ) {
-            guards.push({
+            conds.push({
               name: chooseCondition.conditionNode.name,
               node: chooseCondition.conditionNode.node,
-              guard: chooseCondition.conditionNode.guard,
+              cond: chooseCondition.conditionNode.cond,
               statePath: action.statePath,
               inlineDeclarationId:
                 chooseCondition.conditionNode.inlineDeclarationId,
@@ -553,7 +553,7 @@ export class MachineExtractResult {
         });
       });
 
-    return guards;
+    return conds;
   };
 
   private getAllActionsInConfig = () => {
@@ -719,7 +719,7 @@ export class MachineExtractResult {
   };
 
   getServiceImplementation = (name: string) => {
-    const node = this.machineCallResult.options?.actors?.properties.find(
+    const node = this.machineCallResult.options?.services?.properties.find(
       (property) => {
         return property.key === name;
       },
@@ -1217,7 +1217,7 @@ export class MachineExtractResult {
 
           const transition = minifyTransitionObjectExpression(
             toObjectExpression({
-              ...(edit.guard && { guard: edit.guard }),
+              ...(edit.guard && { cond: edit.guard }),
             }),
             {
               ...(typeof target === 'string' && { target }),
@@ -2136,7 +2136,7 @@ function insertGuardAtTransitionPath(
 ) {
   const transition = getTransitionObject(obj, path);
   transition.properties.push(
-    b.objectProperty(b.identifier('guard'), value as any),
+    b.objectProperty(b.identifier('cond'), value as any),
   );
 }
 
@@ -2146,15 +2146,15 @@ function editGuardAtTransitionPath(
   value: RecastNode,
 ) {
   const transition = getTransitionObject(obj, path);
-  const guardIndex = findObjectPropertyIndex(transition, 'guard');
-  if (guardIndex === -1) {
-    throw new Error(`"guard" should exist before attempting to remove it`);
+  const condIndex = findObjectPropertyIndex(transition, 'cond');
+  if (condIndex === -1) {
+    throw new Error(`"cond" should exist before attempting to remove it`);
   }
 
-  const guardProp = transition.properties[guardIndex];
-  n.ObjectProperty.assert(guardProp);
-  guardProp.value = updateItemType(
-    unwrapSimplePropValue(guardProp)!,
+  const condProp = transition.properties[condIndex];
+  n.ObjectProperty.assert(condProp);
+  condProp.value = updateItemType(
+    unwrapSimplePropValue(condProp)!,
     value,
   ) as any;
 }
@@ -2164,13 +2164,13 @@ function removeGuardFromTransition(
   path: TransitionPath,
 ) {
   const transition = getTransitionObject(obj, path);
-  const guardIndex = findObjectPropertyIndex(transition, 'guard');
+  const condIndex = findObjectPropertyIndex(transition, 'cond');
 
-  if (guardIndex === -1) {
-    throw new Error(`"guard" should exist before attempting to remove it`);
+  if (condIndex === -1) {
+    throw new Error(`"cond" should exist before attempting to remove it`);
   }
 
-  removeProperty(transition, 'guard');
+  removeProperty(transition, 'cond');
   updateTransitionAtPathWith(obj, path, transition);
 }
 

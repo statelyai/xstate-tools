@@ -2,6 +2,28 @@
   "name": "@xstate/machine-extractor",
   "version": "0.9.2",
   "main": "dist/xstate-machine-extractor.cjs.js",
+  "module": "dist/xstate-machine-extractor.esm.js",
+  "exports": {
+    ".": {
+      "types": {
+        "import": "./dist/xstate-machine-extractor.cjs.mjs",
+        "default": "./dist/xstate-machine-extractor.cjs.js"
+      },
+      "module": "./dist/xstate-machine-extractor.esm.js",
+      "import": "./dist/xstate-machine-extractor.cjs.mjs",
+      "default": "./dist/xstate-machine-extractor.cjs.js"
+    },
+    "./v5": {
+      "types": {
+        "import": "./v5/dist/xstate-machine-extractor-v5.cjs.mjs",
+        "default": "./v5/dist/xstate-machine-extractor-v5.cjs.js"
+      },
+      "module": "./v5/dist/xstate-machine-extractor-v5.esm.js",
+      "import": "./v5/dist/xstate-machine-extractor-v5.cjs.mjs",
+      "default": "./v5/dist/xstate-machine-extractor-v5.cjs.js"
+    },
+    "./package.json": "./package.json"
+  },
   "author": "Matt Pocock",
   "license": "MIT",
   "scripts": {
@@ -31,5 +53,11 @@
     "typescript": "^5.0.4",
     "xstate": "^4.33.4",
     "xstate5": "npm:xstate@5.0.0-beta.13"
+  },
+  "preconstruct": {
+    "entrypoints": [
+      "./index.ts",
+      "./v5/index.ts"
+    ]
   }
 }

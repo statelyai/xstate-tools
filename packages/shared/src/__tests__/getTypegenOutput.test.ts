@@ -8,16 +8,15 @@ import { getTypegenData, getTypegenOutput } from '..';
 const examplesPath = path.resolve(__dirname, '__examples__');
 
 describe('getTypegenOutput', () => {
-  fs.readdirSync(examplesPath).forEach(file => {
+  fs.readdirSync(examplesPath).forEach((file) => {
     if (file.includes('.typegen.')) {
       return;
     }
-    // if (!file.includes('parametrized-guard-in-always')) return;
     const runTest = async () => {
       const filePath = path.join(examplesPath, file);
       const content = await fsP.readFile(filePath, 'utf8');
       const extracted = extractMachinesFromFile(content);
-      const config = extracted?.machines[0]?.getAllGuards();
+
       if (!extracted) {
         throw new Error('No machines found in the file');
       }

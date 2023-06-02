@@ -31,7 +31,7 @@ describe('add_guard', () => {
         on: {
           FOO: {
             target: 'a',
-            guard: "isItTooLate"
+            cond: "isItTooLate"
           }
         },
         states: {
@@ -69,7 +69,7 @@ describe('add_guard', () => {
         on: {
           FOO: {
             target: 'a',
-            guard: "isItTooLate"
+            cond: "isItTooLate"
           }
         },
         states: {
@@ -107,7 +107,7 @@ describe('add_guard', () => {
         on: {
           FOO: [{
             target: 'a',
-            guard: "isItTooLate"
+            cond: "isItTooLate"
           }, 'b', 'c']
         },
         states: {
@@ -147,7 +147,7 @@ describe('add_guard', () => {
         on: {
           FOO: ['a', 'b', {
             target: 'c',
-            guard: "isItTooLate"
+            cond: "isItTooLate"
           }]
         },
         states: {
@@ -187,7 +187,7 @@ describe('add_guard', () => {
         on: {
           FOO: ['a', {
             target: 'b',
-            guard: "isItTooLate"
+            cond: "isItTooLate"
           }, 'c']
         },
         states: {
@@ -231,7 +231,7 @@ describe('add_guard', () => {
               src: 'callDavid',
               onDone: {
                 target: 'b',
-                guard: "isHeBusy"
+                cond: "isHeBusy"
               }
             }
           },
@@ -273,7 +273,7 @@ describe('add_guard', () => {
             on: {
               '': {
                 target: "b",
-                guard: "isItHalfEmpty"
+                cond: "isItHalfEmpty"
               },
             }
           },

@@ -39,7 +39,13 @@
   "preconstruct": {
     "packages": [
       "packages/*"
-    ]
+    ],
+    "exports": {
+      "importConditionDefaultExport": "default"
+    },
+    "___experimentalFlags_WILL_CHANGE_IN_PATCH": {
+      "importsConditions": true
+    }
   },
   "turbo": {
     "globalDependencies": [
@@ -91,7 +97,7 @@
     "@changesets/changelog-github": "^0.4.3",
     "@changesets/cli": "^2.21.0",
     "@manypkg/cli": "^0.19.1",
-    "@preconstruct/cli": "^2.5.0",
+    "@preconstruct/cli": "^2.7.0",
     "@types/node": "^16.0.1",
     "@typescript-eslint/eslint-plugin": "^5.59.0",
     "@typescript-eslint/parser": "^5.59.0",

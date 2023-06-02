@@ -8,11 +8,11 @@ describe('Choose parsing', () => {
           choose([
             {
               actions: ["1", "2", "3"],
-              guard: "cond1",
+              cond: "cond1",
             },
             {
               actions: ["2", "4"],
-              guard: "cond2",
+              cond: "cond2",
             },
           ])
         ]
@@ -21,7 +21,7 @@ describe('Choose parsing', () => {
 
     expect(
       Object.keys(
-        groupByUniqueName(result!.machines[0]!.getAllGuards(['named'])),
+        groupByUniqueName(result!.machines[0]!.getAllConds(['named'])),
       ),
     ).toHaveLength(2);
 
@@ -43,11 +43,11 @@ describe('Choose in machine options', () => {
           chooseSomething: choose([
             {
               actions: ["1", "2", "3"],
-              guard: "cond1",
+              cond: "cond1",
             },
             {
               actions: ["2", "4"],
-              guard: "cond2",
+              cond: "cond2",
             },
           ])
         }
@@ -56,7 +56,7 @@ describe('Choose in machine options', () => {
 
     expect(
       Object.keys(
-        groupByUniqueName(result!.machines[0]!.getAllGuards(['named'])),
+        groupByUniqueName(result!.machines[0]!.getAllConds(['named'])),
       ),
     ).toHaveLength(2);
 

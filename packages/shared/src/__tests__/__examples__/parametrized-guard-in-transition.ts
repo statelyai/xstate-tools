@@ -8,7 +8,7 @@ createMachine({
       on: {
         MY_AWESOME_EVENT: {
           target: 'b',
-          guard: {
+          cond: {
             type: 'myAwesomeGuard',
           },
         },

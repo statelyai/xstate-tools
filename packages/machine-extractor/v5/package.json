@@ -1,0 +1,4 @@
+{
+  "main": "dist/xstate-machine-extractor-v5.cjs.js",
+  "module": "dist/xstate-machine-extractor-v5.esm.js"
+}
