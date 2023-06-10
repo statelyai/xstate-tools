@@ -34,7 +34,8 @@
     "deps:build": "preconstruct build",
     "vscode:dev": "yarn turbo run vscode:build:dev --no-cache && cp apps/extension/server/dist/index.js apps/extension/client/dist/server.js",
     "vscode:prod": "yarn turbo run vscode:build:prod --no-cache && cp apps/extension/server/dist/index.js apps/extension/client/dist/server.js",
-    "test": "jest"
+    "test": "jest",
+    "lint": "eslint ."
   },
   "preconstruct": {
     "packages": [
@@ -93,11 +94,13 @@
     "@manypkg/cli": "^0.19.1",
     "@preconstruct/cli": "^2.5.0",
     "@types/node": "^16.0.1",
-    "@typescript-eslint/eslint-plugin": "^5.59.0",
-    "@typescript-eslint/parser": "^5.59.0",
+    "@typescript-eslint/eslint-plugin": "^5.59.9",
+    "@typescript-eslint/parser": "^5.59.9",
     "concurrently": "6.2.0",
     "esbuild": "^0.14.48",
-    "eslint": "^7.26.0",
+    "eslint": "^8.42.0",
+    "eslint-plugin-eslint-comments": "^3.2.0",
+    "eslint-plugin-jest": "^27.2.1",
     "husky": "^8.0.1",
     "lint-staged": ">=10",
     "patch-package": "^6.4.7",

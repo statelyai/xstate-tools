@@ -1,5 +1,8 @@
-node_modules/**
-apps/extension/client/node_modules/**
-apps/extension/client/out/**
-apps/extension/server/node_modules/**
-apps/extension/server/out/**
+**/dist
+**/out
+**/*.typegen.ts
+
+apps/cli/bin
+apps/extension/client/bundled-editor
+apps/extension/client/scripts
+apps/extension/client/testFixture/machine.ts
