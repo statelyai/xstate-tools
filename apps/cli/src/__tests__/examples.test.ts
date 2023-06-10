@@ -18,7 +18,7 @@ describe('typegen', () => {
   execSync('node ../../bin/bin.js typegen "./__examples__/*.ts"', {
     cwd: __dirname,
   });
-  it('Should pass tsc', async () => {
+  it('Should pass tsc', () => {
     try {
       execSync(`tsc`, {
         cwd: examplesPath,

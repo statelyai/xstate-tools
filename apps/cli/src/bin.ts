@@ -18,7 +18,7 @@ async function removeFile(filePath: string) {
   try {
     await fs.unlink(filePath);
   } catch (e: any) {
-    if (e?.code === 'ENOENT') {
+    if ((e as { code: string })?.code === 'ENOENT') {
       return;
     }
     throw e;
@@ -32,12 +32,14 @@ function getPrettierInstance(cwd: string): typeof import('prettier') {
     return prettier;
   }
   try {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return require(require.resolve('prettier', { paths: [cwd] }));
   } catch (err) {
-    if (!err || (err as any).code !== 'MODULE_NOT_FOUND') {
+    if (!err || (err as { code: string }).code !== 'MODULE_NOT_FOUND') {
       throw err;
     }
     // we load our own prettier instance lazily on purpose to speed up the init time
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-assignment
     return (prettier = require('prettier'));
   }
 }
@@ -51,7 +53,7 @@ const writeToTypegenFile = async (
   await fs.writeFile(
     typegenUri,
     // // Prettier v3 returns a promise
-    await prettierInstance.format(getTypegenOutput(types), {
+    prettierInstance.format(getTypegenOutput(types), {
       ...(await prettierInstance.resolveConfig(typegenUri)),
       parser: 'typescript',
     }),
@@ -63,7 +65,9 @@ const allSettled: typeof Promise.allSettled = (promises: Promise<any>[]) =>
   Promise.all(
     promises.map((promise) =>
       promise.then(
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         (value) => ({ status: 'fulfilled' as const, value }),
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         (reason) => ({ status: 'rejected' as const, reason }),
       ),
     ),
@@ -111,7 +115,7 @@ const writeToFiles = async (uriArray: string[], { cwd }: { cwd: string }) => {
         }
         console.log(`${uri} - success`);
       } catch (e: any) {
-        if (e?.code === 'BABEL_PARSER_SYNTAX_ERROR') {
+        if ((e as { code: string })?.code === 'BABEL_PARSER_SYNTAX_ERROR') {
           console.error(`${uri} - syntax error, skipping`);
         } else {
           console.error(`${uri} - error, `, e);
@@ -127,7 +131,7 @@ program
   .description('Generate TypeScript types from XState machines')
   .argument('<files>', 'The files to target, expressed as a glob pattern')
   .option('-w, --watch', 'Run the typegen in watch mode')
-  .action(async (filesPattern: string, opts: { watch?: boolean }) => {
+  .action((filesPattern: string, opts: { watch?: boolean }) => {
     const cwd = process.cwd();
     if (opts.watch) {
       // TODO: implement per path queuing to avoid tasks related to the same file from overlapping their execution
@@ -135,6 +139,7 @@ program
         if (path.endsWith('.typegen.ts')) {
           return;
         }
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
         writeToFiles([path], { cwd }).catch(() => {});
       };
       // TODO: handle removals
@@ -151,6 +156,7 @@ program
           }
           tasks.push(writeToFiles([path], { cwd }));
         })
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
         .on('ready', async () => {
           const settled = await allSettled(tasks);
           if (settled.some((result) => result.status === 'rejected')) {

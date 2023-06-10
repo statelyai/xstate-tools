@@ -14,6 +14,7 @@ export const initiateVisualizer = (
   let lastTokenSource: vscode.CancellationTokenSource | undefined;
 
   const sendMessage = (event: VizWebviewMachineEvent) => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     currentPanel?.webview.postMessage(event);
   };
 
@@ -23,6 +24,7 @@ export const initiateVisualizer = (
     uri: string,
     guardsToMock: string[],
   ) => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     languageClient.sendRequest('setDisplayedMachine', {
       uri,
       machineIndex,
@@ -60,6 +62,7 @@ export const initiateVisualizer = (
       // Handle disposing the current XState Visualizer
       currentPanel.onDidDispose(
         () => {
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
           languageClient.sendRequest('clearDisplayedMachine', undefined);
           currentPanel = undefined;
         },
@@ -70,31 +73,38 @@ export const initiateVisualizer = (
   };
 
   context.subscriptions.push(
-    typeSafeVsCode.registerCommand('stately-xstate.visualize', async () => {
-      lastTokenSource?.cancel();
-      lastTokenSource = new vscode.CancellationTokenSource();
-      try {
-        const activeTextEditor = vscode.window.activeTextEditor!;
-        const uri = resolveUriToFilePrefix(activeTextEditor.document.uri.path);
-        const { config, machineIndex, namedGuards } =
-          await languageClient.sendRequest(
-            'getMachineAtCursorPosition',
-            {
-              uri,
-              position: {
-                line: activeTextEditor.selection.start.line,
-                column: activeTextEditor.selection.start.character,
-              },
-            },
-            lastTokenSource.token,
+    typeSafeVsCode.registerCommand(
+      'stately-xstate.visualize',
+      // eslint-disable-next-line @typescript-eslint/no-misused-promises
+      async () => {
+        lastTokenSource?.cancel();
+        lastTokenSource = new vscode.CancellationTokenSource();
+        try {
+          const activeTextEditor = vscode.window.activeTextEditor!;
+          const uri = resolveUriToFilePrefix(
+            activeTextEditor.document.uri.path,
           );
-        startService(config, machineIndex, uri, namedGuards);
-      } catch {
-        vscode.window.showErrorMessage(
-          'Could not find a machine at the current cursor.',
-        );
-      }
-    }),
+          const { config, machineIndex, namedGuards } =
+            await languageClient.sendRequest(
+              'getMachineAtCursorPosition',
+              {
+                uri,
+                position: {
+                  line: activeTextEditor.selection.start.line,
+                  column: activeTextEditor.selection.start.character,
+                },
+              },
+              lastTokenSource.token,
+            );
+          startService(config, machineIndex, uri, namedGuards);
+        } catch {
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          vscode.window.showErrorMessage(
+            'Could not find a machine at the current cursor.',
+          );
+        }
+      },
+    ),
   );
 
   context.subscriptions.push(
@@ -116,6 +126,7 @@ export const initiateVisualizer = (
       (uri, machineIndex) => {
         lastTokenSource?.cancel();
         lastTokenSource = new vscode.CancellationTokenSource();
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         languageClient
           .sendRequest(
             'getMachineAtIndex',

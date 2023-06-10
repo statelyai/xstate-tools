@@ -2,10 +2,10 @@ import { NotificationMap, RequestMap } from '@xstate/tools-shared';
 import * as vscode from 'vscode';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import {
-  createConnection,
   HandlerResult,
   ProposedFeatures,
   TextDocuments,
+  createConnection,
 } from 'vscode-languageserver/node';
 
 function _createTypeSafeConnection() {
@@ -35,5 +35,4 @@ function _createTypeSafeConnection() {
 export const createTypeSafeConnection: () => TypeSafeConnection =
   _createTypeSafeConnection;
 
-export interface TypeSafeConnection
-  extends ReturnType<typeof _createTypeSafeConnection> {}
+export type TypeSafeConnection = ReturnType<typeof _createTypeSafeConnection>;

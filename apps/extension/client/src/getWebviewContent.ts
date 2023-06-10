@@ -40,7 +40,7 @@ export const getWebviewContent = (scriptsSrc: vscode.Uri, title: string) => {
                   <div class="iframe-wrapper">
                       <iframe id="iframe" title="${title} Iframe"></iframe>
                   </div>
-                  <script src="${scriptsSrc}">
+                  <script src="${scriptsSrc.toString()}">
               </body>
           </html>
       `;

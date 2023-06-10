@@ -452,7 +452,7 @@ describe('reparent_state', () => {
     `);
   });
 
-  it(`should keep the sibling transition target that targets a state within the reparented state `, () => {
+  it(`should keep the sibling transition target that targets a state within the reparented state`, () => {
     const modifiableMachine = getModifiableMachine(`
       createMachine({
         states: {

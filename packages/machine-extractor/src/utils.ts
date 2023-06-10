@@ -105,6 +105,7 @@ export const staticObjectProperty = <KeyResult>(
     }
   >({
     babelMatcher: (node): node is t.ObjectProperty => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       return t.isObjectProperty(node) && !node.computed;
     },
     parseNode: (node, context) => {
@@ -146,6 +147,7 @@ export const dynamicObjectProperty = <KeyResult>(
     }
   >({
     babelMatcher: (node): node is t.ObjectProperty => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       return t.isObjectProperty(node) && node.computed;
     },
     parseNode: (node, context) => {
@@ -228,7 +230,7 @@ export const getPropertiesOfObjectExpression = (
       const result = propertyKey.parse(property, context);
       if (result && result?.key) {
         propertiesToReturn.push({
-          key: `${result.key?.value}`,
+          key: `${result.key?.value || ''}`,
           node: result.node,
           keyNode: result.key.node,
           property,
@@ -292,14 +294,18 @@ export const objectTypeWithKnownKeys = <
             let result: any | undefined;
 
             if (t.isObjectMethod(property.node)) {
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
               result = parser.parse(property.node, context);
             } else if (t.isObjectProperty(property.node)) {
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
               result = parser.parse(property.node.value, context);
               if (result) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 result._valueNode = property.node.value;
               }
             }
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
             (toReturn as any)[key] = result;
           });
 
@@ -412,6 +418,7 @@ export const namedFunctionCall = <Argument1Result, Argument2Result>(
 export const isFunctionOrArrowFunctionExpression = (
   node: any,
 ): node is t.ArrowFunctionExpression | t.FunctionExpression => {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   return t.isArrowFunctionExpression(node) || t.isFunctionExpression(node);
 };
 

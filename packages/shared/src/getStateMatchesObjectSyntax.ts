@@ -17,10 +17,13 @@ export const getStateMatchesObjectSyntax = (
             .map((state) =>
               JSON.stringify(state, (_key, value) => {
                 if (typeof value !== 'object') {
+                  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                   return value;
                 }
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 return Object.keys(value).reduce<Record<string, any>>(
                   (acc, key) => {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                     acc[key] = value[key];
                     return acc;
                   },
@@ -31,6 +34,7 @@ export const getStateMatchesObjectSyntax = (
 
     const substatesWithChildren = Object.entries(subState).filter(
       ([, value]) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         return Object.keys(value).length > 0;
       },
     );
@@ -41,6 +45,7 @@ export const getStateMatchesObjectSyntax = (
           .sort(([stateA], [stateB]) => (stateA < stateB ? -1 : 1))
           .map(([state, value]) => {
             return `${withSafeQuotes(state)}?: ${getUnionForSubState(
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
               value,
               depth + 1,
             )};`;

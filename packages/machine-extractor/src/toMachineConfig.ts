@@ -52,6 +52,7 @@ const parseStateNode = (
   }
 
   if (astResult?.type) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     config.type = astResult.type.value as any;
   }
 
@@ -82,6 +83,7 @@ const parseStateNode = (
     config.on = {};
 
     astResult.on.properties.forEach((onProperty) => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       (config.on as any)[onProperty.key] = getTransitions(
         onProperty.result,
         opts,
@@ -93,6 +95,7 @@ const parseStateNode = (
     config.after = {};
 
     astResult.after.properties.forEach((afterProperty) => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       (config.after as any)[afterProperty.key] = getTransitions(
         afterProperty.result,
         opts,
@@ -147,11 +150,13 @@ const parseStateNode = (
           break;
         case opts?.anonymizeInlineImplementations:
           src = 'anonymous';
+        // eslint-disable-next-line no-fallthrough
         case opts?.hashInlineImplementations:
           src = invoke.src.inlineDeclarationId;
       }
 
-      const toPush: typeof invokes[number] = {
+      const toPush: (typeof invokes)[number] = {
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
         src: src || (() => () => {}),
       };
 

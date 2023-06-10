@@ -90,6 +90,7 @@ export const getTypegenOutput = (types: TypegenData[]) => {
 const toPaths = (stateSchema: StateSchema): string[] => {
   return Object.entries(stateSchema).flatMap(([key, value]) => [
     key,
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     ...toPaths(value).map((path) => `${key}.${path}`),
   ]);
 };

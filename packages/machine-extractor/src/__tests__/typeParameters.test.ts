@@ -12,8 +12,8 @@ describe('Type parameter parsing', () => {
     ).toHaveLength(4);
 
     const sliceOfResult = fileText.slice(
-      result.machines[0]!.machineCallResult?.typeArguments?.node.start!,
-      result.machines[0]!.machineCallResult?.typeArguments?.node.end!,
+      result.machines[0]!.machineCallResult.typeArguments!.node.start!,
+      result.machines[0]!.machineCallResult.typeArguments!.node.end!,
     );
 
     expect(sliceOfResult).toEqual('<Context, Event, any, any>');

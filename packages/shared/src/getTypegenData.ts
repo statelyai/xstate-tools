@@ -3,7 +3,7 @@ import { createIntrospectableMachine } from './createIntrospectableMachine';
 import { IntrospectResult, introspectMachine } from './introspectMachine';
 import { TypegenOptions } from './types';
 
-export interface TypegenData extends ReturnType<typeof getTypegenData> {}
+export type TypegenData = ReturnType<typeof getTypegenData>;
 
 const removeExtension = (fileName: string) => fileName.replace(/\.[^/.]+$/, '');
 
@@ -16,9 +16,10 @@ export const getTypegenData = (
   { useDeclarationFileForTypegenData }: Partial<TypegenOptions> = {},
 ) => {
   const introspectResult = introspectMachine(
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     createIntrospectableMachine(machineResult) as any,
   );
-  const tsTypes = machineResult.machineCallResult.definition?.tsTypes?.node!;
+  const tsTypes = machineResult.machineCallResult.definition!.tsTypes!.node;
 
   const providedImplementations = getProvidedImplementations(
     machineResult,

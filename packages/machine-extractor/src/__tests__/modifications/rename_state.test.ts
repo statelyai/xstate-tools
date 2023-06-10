@@ -1,3 +1,4 @@
+// eslint-disable no-mixed-spaces-and-tabs
 import outdent from 'outdent';
 import { extractMachinesFromFile } from '../../extractMachinesFromFile';
 
@@ -561,6 +562,7 @@ describe('rename_state', () => {
     `);
   });
 
+  // eslint-disable-next-line jest/no-identical-title
   it('should adjust target in the sibling state when renaming a nested state (leading segment)', () => {
     const modifiableMachine = getModifiableMachine(`
       createMachine({
@@ -607,6 +609,7 @@ describe('rename_state', () => {
     `);
   });
 
+  // eslint-disable-next-line jest/no-identical-title
   it('should adjust target in the sibling state when renaming a nested state (segment in the middle)', () => {
     const modifiableMachine = getModifiableMachine(`
       createMachine({

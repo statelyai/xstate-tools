@@ -140,7 +140,7 @@ describe('MachineParseResult', () => {
         }
       })`,
       'assign({count: ctx => ctx.count + 1})',
-    ];
+    ].join(',\n');
     const config = `
       createMachine({
         initial: 'a',

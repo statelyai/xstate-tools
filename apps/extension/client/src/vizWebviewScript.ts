@@ -28,6 +28,7 @@ const machine = createMachine<WebViewMachineContext, VizWebviewMachineEvent>({
     src: () => (send) => {
       window.addEventListener('message', (event) => {
         try {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
           send(event.data);
         } catch (e) {
           console.warn(e);

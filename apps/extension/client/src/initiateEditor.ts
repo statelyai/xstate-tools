@@ -6,7 +6,7 @@ import {
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { ColorThemeKind } from 'vscode';
-import { createMachine, interpret, MachineConfig } from 'xstate';
+import { MachineConfig, createMachine, interpret } from 'xstate';
 import { forwardTo } from 'xstate/lib/actions';
 import { registerDisposable } from './registerDisposable';
 import { TypeSafeLanguageClient } from './typeSafeLanguageClient';
@@ -73,9 +73,10 @@ async function getWebviewHtml(
     ),
   );
 
-  const baseTag = `<base href="${webviewPanel.webview.asWebviewUri(
-    bundledEditorRootUri,
-  )}/">`;
+  const uri = webviewPanel.webview
+    .asWebviewUri(bundledEditorRootUri)
+    .toString();
+  const baseTag = `<base href="${uri}/">`;
 
   // TODO: atm this is not refreshed with the theme changes
   const settingsTheme = typeSafeVsCode.getConfiguration('theme') ?? 'auto';
@@ -209,12 +210,14 @@ const machine = createMachine(
     actions: {
       forwardToWebview: forwardTo('webview'),
       setEditedMachine: ({ languageClient }, { uri, index }) => {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         languageClient.sendRequest('setDisplayedMachine', {
           uri,
           machineIndex: index,
         });
       },
       clearEditedMachine: ({ languageClient }) => {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         languageClient.sendRequest('clearDisplayedMachine', undefined);
       },
     },
@@ -222,39 +225,45 @@ const machine = createMachine(
       registerEditAtCursorPositionCommand:
         ({ extensionContext, languageClient }) =>
         (sendBack) =>
-          registerCommand(extensionContext, 'stately-xstate.edit', async () => {
-            try {
-              const activeTextEditor = vscode.window.activeTextEditor!;
-              const uri = resolveUriToFilePrefix(
-                activeTextEditor.document.uri.path,
-              );
-              const tokenSource = new vscode.CancellationTokenSource();
-              const { config, layoutString, implementations, machineIndex } =
-                await languageClient.sendRequest(
-                  'getMachineAtCursorPosition',
-                  {
-                    uri,
-                    position: {
-                      line: activeTextEditor.selection.start.line,
-                      column: activeTextEditor.selection.start.character,
-                    },
-                  },
-                  tokenSource.token,
+          registerCommand(
+            extensionContext,
+            'stately-xstate.edit',
+            // eslint-disable-next-line @typescript-eslint/no-misused-promises
+            async () => {
+              try {
+                const activeTextEditor = vscode.window.activeTextEditor!;
+                const uri = resolveUriToFilePrefix(
+                  activeTextEditor.document.uri.path,
                 );
-              sendBack({
-                type: 'EDIT_MACHINE',
-                config,
-                index: machineIndex,
-                uri,
-                layoutString,
-                implementations,
-              });
-            } catch {
-              vscode.window.showErrorMessage(
-                'Could not find a machine at the current cursor.',
-              );
-            }
-          }),
+                const tokenSource = new vscode.CancellationTokenSource();
+                const { config, layoutString, implementations, machineIndex } =
+                  await languageClient.sendRequest(
+                    'getMachineAtCursorPosition',
+                    {
+                      uri,
+                      position: {
+                        line: activeTextEditor.selection.start.line,
+                        column: activeTextEditor.selection.start.character,
+                      },
+                    },
+                    tokenSource.token,
+                  );
+                sendBack({
+                  type: 'EDIT_MACHINE',
+                  config,
+                  index: machineIndex,
+                  uri,
+                  layoutString,
+                  implementations,
+                });
+              } catch {
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                vscode.window.showErrorMessage(
+                  'Could not find a machine at the current cursor.',
+                );
+              }
+            },
+          ),
       registerEditOnCodeLensClickCommand:
         ({ extensionContext, languageClient }) =>
         (sendBack) =>
@@ -264,6 +273,7 @@ const machine = createMachine(
             (uri, machineIndex) => {
               const tokenSource = new vscode.CancellationTokenSource();
 
+              // eslint-disable-next-line @typescript-eslint/no-floating-promises
               languageClient
                 .sendRequest(
                   'getMachineAtIndex',
@@ -330,6 +340,7 @@ const machine = createMachine(
             extensionContext,
             webviewPanel.webview.onDidReceiveMessage((event: StudioEvent) => {
               if (event.type === 'MACHINE_CHANGED') {
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
                 languageClient
                   .sendRequest('applyMachineEdits', {
                     machineEdits: event.edits,
@@ -367,6 +378,7 @@ const machine = createMachine(
                 if (!editor) {
                   return;
                 }
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
                 languageClient
                   .sendRequest('getNodePosition', { path: event.path })
                   .then((range) => {
@@ -384,6 +396,7 @@ const machine = createMachine(
                   });
               } else if (event.type === 'OPEN_LINK') {
                 // TODO: test out if this is even needed now
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
                 vscode.env.openExternal(vscode.Uri.parse(event.url));
               }
             }),
@@ -405,6 +418,7 @@ const machine = createMachine(
                   uri = event.uri;
 
                   webviewPanel.reveal(vscode.ViewColumn.Beside);
+                  // eslint-disable-next-line @typescript-eslint/no-floating-promises
                   webviewPanel.webview.postMessage({
                     type: 'UPDATE_CONFIG',
                     config: event.config,
@@ -414,6 +428,7 @@ const machine = createMachine(
                   return;
                 }
                 case 'DISPLAYED_MACHINE_UPDATED': {
+                  // eslint-disable-next-line @typescript-eslint/no-floating-promises
                   webviewPanel.webview.postMessage({
                     type: 'UPDATE_CONFIG',
                     config: event.config,
@@ -423,6 +438,7 @@ const machine = createMachine(
                   return;
                 }
                 case 'EXTRACTION_ERROR': {
+                  // eslint-disable-next-line @typescript-eslint/no-floating-promises
                   webviewPanel.webview.postMessage({
                     type: 'DISPLAY_ERROR',
                     error: event.message,
@@ -433,7 +449,9 @@ const machine = createMachine(
             },
           );
 
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
           (async () => {
+            config;
             const html = await getWebviewHtml(extensionContext, webviewPanel, {
               config,
               implementations,

@@ -4,12 +4,12 @@ import * as recast from 'recast';
 import { Action, Condition, MachineOptions } from 'xstate';
 import { choose } from 'xstate/lib/actions';
 import { DeclarationType } from '.';
+import { RecordOfArrays } from './RecordOfArrays';
 import { ActionNode, ParsedChooseCondition } from './actions';
 import { getMachineNodesFromFile } from './getMachineNodesFromFile';
 import { TMachineCallExpression } from './machineCallExpression';
-import { RecordOfArrays } from './RecordOfArrays';
 import { StateNodeReturn } from './stateNode';
-import { toMachineConfig, ToMachineConfigOptions } from './toMachineConfig';
+import { ToMachineConfigOptions, toMachineConfig } from './toMachineConfig';
 import { TransitionConfigNode } from './transitions';
 import { Comment } from './types';
 
@@ -747,13 +747,14 @@ export class MachineExtractResult {
     // so there is a risk that modifying multiple machines in a single file would lead to problems
     // however, we never modify multiple machines based on the same file content so this is somewhat safe
     // each modification updates the AST, that is printed and the file is re-parsed, so the next modification sees the next AST
-    const ast: RecastFile = recast.parse(this._fileContent, {
+    this._fileContent;
+    const ast = recast.parse(this._fileContent, {
       parser: {
         // this is a slight hack to defer the work done by `recast.parse`
         // we don't need to re-parse the file though, as we already have the AST
         parse: () => this._fileAst,
       },
-    });
+    }) as RecastFile;
 
     const recastDefinitionNode = findRecastDefinitionNode(
       ast,
@@ -1334,11 +1335,14 @@ export class MachineExtractResult {
 
           if (n.ArrayExpression.check(transitionProp.value)) {
             if (transitionProp.value.elements.length === 1) {
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
               transitionProp.value = minifiedTransition as any;
               break;
             }
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             transitionProp.value.elements[index] = minifiedTransition as any;
           } else {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             transitionProp.value = minifiedTransition as any;
           }
           break;
@@ -1390,11 +1394,14 @@ export class MachineExtractResult {
 
           if (n.ArrayExpression.check(transitionProp.value)) {
             if (transitionProp.value.elements.length === 1) {
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
               transitionProp.value = minifiedTransition as any;
               break;
             }
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             transitionProp.value.elements[index] = minifiedTransition as any;
           } else {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             transitionProp.value = minifiedTransition as any;
           }
           break;
@@ -1622,13 +1629,13 @@ export class MachineExtractResult {
     // so there is a risk that modifying multiple machines in a single file would lead to problems
     // however, we never modify multiple machines based on the same file content so this is somewhat safe
     // each modification updates the AST, that is printed and the file is re-parsed, so the next modification sees the next AST
-    const ast: RecastFile = recast.parse(this._fileContent, {
+    const ast = recast.parse(this._fileContent, {
       parser: {
         // this is a slight hack to defer the work done by `recast.parse`
         // we don't need to re-parse the file though, as we already have the AST
         parse: () => this._fileAst,
       },
-    });
+    }) as RecastFile;
 
     const recastDefinitionNode = findRecastDefinitionNode(
       ast,
@@ -1722,10 +1729,12 @@ function setProperty(
 ) {
   const prop = findObjectProperty(obj, propName);
   if (prop) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     prop.value = value as any;
     return;
   }
   obj.properties.push(
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     b.objectProperty(safePropertyKey(propName), value as any),
   );
 }
@@ -1771,6 +1780,7 @@ function updateInvoke(
 
   if (typeof data.source === 'string') {
     const srcProp = findObjectProperty(invoke, 'src')!;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     srcProp.value = updateItemType(
       unwrapSimplePropValue(srcProp)!,
       b.stringLiteral(data.source),
@@ -1896,7 +1906,7 @@ function getPropByPath(ast: RecastObjectExpression, path: (string | number)[]) {
     );
   }
   const pathCopy = [...path];
-  let segment: typeof path[number] | undefined;
+  let segment: (typeof path)[number] | undefined;
   let current: RecastNode | undefined | null = ast;
   while ((segment = pathCopy.shift()) !== undefined) {
     if (typeof segment === 'string') {
@@ -1936,7 +1946,7 @@ function insertAtTransitionPath(
     );
   }
   const pathCopy = path.slice(0, -1);
-  let segment: typeof path[number] | undefined;
+  let segment: (typeof path)[number] | undefined;
   let current: RecastNode = ast;
 
   while ((segment = pathCopy.shift()) !== undefined) {
@@ -1950,6 +1960,7 @@ function insertAtTransitionPath(
 
       if (!pathCopy.length) {
         current.properties.push(
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
           b.objectProperty(safePropertyKey(segment), value as any),
         );
         return;
@@ -1969,12 +1980,14 @@ function insertAtTransitionPath(
     if (!pathCopy.length) {
       n.ObjectProperty.assert(prop);
       if (!n.ArrayExpression.check(prop.value)) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         prop.value = b.arrayExpression([prop.value as any]);
       }
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       prop.value.elements.splice(last(path), 0, value as any);
       return;
     }
-    let unwrapped = unwrapSimplePropValue(prop)!;
+    const unwrapped = unwrapSimplePropValue(prop)!;
     if (typeof pathCopy[0] === 'number') {
       const index = pathCopy.shift() as number;
       if (n.ArrayExpression.check(unwrapped)) {
@@ -1991,7 +2004,7 @@ function getTransitionObject(
   path: TransitionPath,
 ) {
   const pathCopy = [...path];
-  let segment: typeof path[number] | undefined;
+  let segment: (typeof path)[number] | undefined;
   let current: RecastNode = obj;
 
   while ((segment = pathCopy.shift()) !== undefined) {
@@ -2000,7 +2013,7 @@ function getTransitionObject(
         ? findObjectProperty(current as RecastObjectExpression, segment)!
         : findArrayElementWithSingularFallback(current, segment)!;
 
-    let unwrapped = unwrapSimplePropValue(prop)!;
+    const unwrapped = unwrapSimplePropValue(prop)!;
 
     if (typeof pathCopy[0] === 'number') {
       const index = pathCopy.shift() as number;
@@ -2136,6 +2149,7 @@ function insertGuardAtTransitionPath(
 ) {
   const transition = getTransitionObject(obj, path);
   transition.properties.push(
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     b.objectProperty(b.identifier('cond'), value as any),
   );
 }
@@ -2153,6 +2167,7 @@ function editGuardAtTransitionPath(
 
   const condProp = transition.properties[condIndex];
   n.ObjectProperty.assert(condProp);
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   condProp.value = updateItemType(
     unwrapSimplePropValue(condProp)!,
     value,
@@ -2185,11 +2200,14 @@ function updateTransitionAtPathWith(
     const transitionProp = getPropByPath(obj, path.slice(0, -1))!;
     if (n.ArrayExpression.check(transitionProp.value)) {
       if (transitionProp.value.elements.length === 1) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         transitionProp.value = minified as any;
         return;
       }
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       transitionProp.value.elements[last(path)] = minified as any;
     } else {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       transitionProp.value = minified as any;
     }
   }
@@ -2209,6 +2227,7 @@ function insertAtArrayifiableProperty({
   const propIndex = findObjectPropertyIndex(obj, property);
   if (propIndex === -1) {
     obj.properties.push(
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       b.objectProperty(safePropertyKey(property), value as any),
     );
     return;
@@ -2217,10 +2236,12 @@ function insertAtArrayifiableProperty({
   if (!n.ArrayExpression.check(unwrapped)) {
     const prop = obj.properties[propIndex];
     n.ObjectProperty.assert(prop);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     prop.value = b.arrayExpression([unwrapped as any]);
   }
   const arr = unwrapSimplePropValue(obj.properties[propIndex]);
   n.ArrayExpression.assert(arr);
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   arr.elements.splice(index, 0, value as any);
 }
 
@@ -2271,9 +2292,11 @@ function editAtArrayifiableProperty({
 
   const unwrapped = unwrapSimplePropValue(obj.properties[propIndex])!;
   if (!n.ArrayExpression.check(unwrapped)) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     prop.value = updateItemType(unwrapped, value) as any;
     return;
   }
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   unwrapped.elements[index] = updateItemType(
     unwrapped.elements[index]!,
     value,
@@ -2283,6 +2306,7 @@ function editAtArrayifiableProperty({
 function updateItemType(item: RecastNode, newName: RecastNode) {
   if (n.ObjectExpression.check(item)) {
     const prop = findObjectProperty(item, 'type')!;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     prop.value = newName as any;
     return item;
   }
@@ -2292,6 +2316,7 @@ function updateItemType(item: RecastNode, newName: RecastNode) {
 function upgradeSimpleTarget(transition: RecastNode) {
   if (!n.ObjectExpression.check(transition)) {
     return b.objectExpression([
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       b.objectProperty(b.identifier('target'), transition as any),
     ]);
   }
@@ -2405,6 +2430,7 @@ function toObjectExpression(
       if (Array.isArray(value)) {
         throw new Error('Converting arrays is not implemented');
       }
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const valueNode = n.Node.check(value)
         ? (value as any)
         : typeof value === 'string'
@@ -2425,6 +2451,7 @@ function toObjectExpression(
           'Converting this type of a value to a node has not been implemented',
         );
       }
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       return b.objectProperty(safePropertyKey(key), valueNode);
     }),
   );
@@ -2531,6 +2558,7 @@ function removeTransitionAtPath(
       switch (unwrapped.elements.length) {
         case 0: {
           removeProperty(obj, propPath[0]);
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-return
           return removed as any;
         }
         case 1: {
@@ -2538,10 +2566,13 @@ function removeTransitionAtPath(
           n.ObjectProperty.assert(prop);
           // array elements should be expressions and property values should be expressions too
           // so this should always be valid in practice
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           prop.value = unwrapped.elements[0] as any;
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-return
           return removed as any;
         }
         default: {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-return
           return removed as any;
         }
       }
@@ -2673,7 +2704,7 @@ function getIndexForTransitionPathAppendant(
   // this function is supposed to ignore the last element (the index)
   // we only want check max existing index of this path in the given state object
   const pathCopy = path.slice(0, -1);
-  let segment: typeof path[number] | undefined;
+  let segment: (typeof path)[number] | undefined;
   let current: RecastNode = ast;
 
   while ((segment = pathCopy.shift()) !== undefined) {
@@ -2693,7 +2724,7 @@ function getIndexForTransitionPathAppendant(
       }
       return prop.value.elements.length;
     }
-    let unwrapped = unwrapSimplePropValue(prop)!;
+    const unwrapped = unwrapSimplePropValue(prop)!;
     if (typeof pathCopy[0] === 'number') {
       const index = pathCopy.shift() as number;
       if (n.ArrayExpression.check(unwrapped)) {
@@ -2781,7 +2812,7 @@ function consumeIndentationToNodeAtIndex(
     return '';
   }
   let indentation = '';
-  let i = index;
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     index--;
     const char = fileContent[index];

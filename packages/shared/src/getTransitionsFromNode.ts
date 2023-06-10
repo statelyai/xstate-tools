@@ -15,7 +15,7 @@ export const getTransitionsFromNode = (node: StateNode): string[] => {
 
         if ((node.parent?.path.length || 0) > 0) {
           relativeKey = relativeKey.replace(
-            new RegExp(`^${(node.parent as StateNode).path.join('.')}\.`),
+            new RegExp(`^${(node.parent as StateNode).path.join('.')}.`),
             '',
           );
         }
@@ -30,7 +30,7 @@ export const getTransitionsFromNode = (node: StateNode): string[] => {
 
       if ((childNode.parent?.path.length || 0) > 0) {
         relativeKey = relativeKey.replace(
-          new RegExp(`^${(childNode.parent as StateNode).path.join('.')}\.`),
+          new RegExp(`^${(childNode.parent as StateNode).path.join('.')}.`),
           '',
         );
       }
@@ -47,6 +47,7 @@ export const getTransitionsFromNode = (node: StateNode): string[] => {
     .map((id) => rootNode.getStateNodeById(id));
 
   nodesWithId.forEach((idNode) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     getMatchesStates(idNode).forEach((match) => {
       if (idNode.id === rootNode.id) {
         transitions.add(`#${idNode.id}.${match}`);

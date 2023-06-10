@@ -1,6 +1,6 @@
 import { assign, createMachine } from 'xstate';
 
-type Data = {};
+type Data = unknown;
 
 type Context = {
   data: Data[];
@@ -73,9 +73,11 @@ const machine = createMachine(
        * This service will now type error if it
        * returns anything other than { id: string }
        */
+      // eslint-disable-next-line @typescript-eslint/require-await
       pollData: async () => {
         return [];
       },
+      // eslint-disable-next-line @typescript-eslint/require-await
       getData: async () => {
         return [];
       },

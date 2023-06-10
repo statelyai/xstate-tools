@@ -19,9 +19,11 @@ export const findVariableDeclaratorWithName = (
 ): t.VariableDeclarator | null | undefined => {
   let declarator: t.VariableDeclarator | null | undefined = null;
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   traverse(file, {
     VariableDeclarator(path) {
       if (t.isIdentifier(path.node.id) && path.node.id.name === name) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         declarator = path.node as any;
       }
     },
@@ -60,9 +62,11 @@ export const findTSEnumDeclarationWithName = (
 ): t.TSEnumDeclaration | null | undefined => {
   let declarator: t.TSEnumDeclaration | null | undefined = null;
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   traverse(file, {
     TSEnumDeclaration(path) {
       if (t.isIdentifier(path.node.id) && path.node.id.name === name) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         declarator = path.node as any;
       }
     },
@@ -99,6 +103,7 @@ const deepMemberExpressionToPath = (
 
 const deepMemberExpression = createParser({
   babelMatcher(node): node is t.MemberExpression | t.Identifier {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     return t.isIdentifier(node) || t.isMemberExpression(node);
   },
   parseNode: (
@@ -129,6 +134,7 @@ export const objectExpressionWithDeepPath = <Result>(
         const pathSection = path[currentIndex];
 
         const objectProperties = getPropertiesOfObjectExpression(
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
           currentNode as any,
           context,
         );
@@ -190,7 +196,7 @@ export const memberExpressionReferencingEnumMember = createParser({
 
     const foundEnum = findTSEnumDeclarationWithName(
       context.file,
-      rootIdentifier?.name!,
+      rootIdentifier!.name,
     );
 
     if (!foundEnum) return undefined;
