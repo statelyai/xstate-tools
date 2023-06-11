@@ -200,7 +200,7 @@ const getServiceMatchingCursor = (
   position: Position,
 ) => {
   return parseResult?.getAllServices(['named']).find((service) => {
-    return isCursorInPosition(service.srcNode?.loc!, position);
+    return isCursorInPosition(service.srcNode!.loc!, position);
   });
 };
 

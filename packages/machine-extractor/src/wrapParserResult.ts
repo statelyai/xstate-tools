@@ -19,6 +19,7 @@ export const wrapParserResult = <T extends t.Node, Result, NewResult>(
     parse: (node: any, context) => {
       const result = parser.parse(node, context);
       if (!result) return undefined;
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       return changeResult(result, node, context);
     },
   };

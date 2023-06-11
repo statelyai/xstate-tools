@@ -16,7 +16,7 @@ describe('Inline implementations', () => {
 
     const result = extractMachinesFromFile(input)!;
 
-    const machine = result!.machines[0]!;
+    const machine = result.machines[0]!;
 
     const config = machine.toConfig({ hashInlineImplementations: true });
 

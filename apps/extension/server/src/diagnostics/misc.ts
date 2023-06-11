@@ -24,7 +24,7 @@ export const miscDiagnostics: DiagnosticGetter = (
     const machine = createIntrospectableMachine(machineResult);
     machine.transition(machine.initialState, {} as any);
   } catch (e) {
-    let range: Range = {
+    const range: Range = {
       start: textDocument.positionAt(
         machineResult.machineCallResult?.definition?.node.start || 0,
       ),
@@ -91,6 +91,7 @@ export const miscDiagnostics: DiagnosticGetter = (
     // }
     return [
       {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
         message: (e as any).message,
         range,
         severity: DiagnosticSeverity.Error,

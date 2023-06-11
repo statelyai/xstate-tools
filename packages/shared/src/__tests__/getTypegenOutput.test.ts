@@ -37,8 +37,10 @@ describe('getTypegenOutput', () => {
 
     if (/\.only$/.test(extensionlessFile)) {
       // preserve original test name
+      // eslint-disable-next-line jest/valid-title, jest/no-focused-tests
       it.only(extensionlessFile.replace(/\.only$/, ''), runTest);
     } else {
+      // eslint-disable-next-line jest/valid-title
       it(extensionlessFile, runTest);
     }
   });

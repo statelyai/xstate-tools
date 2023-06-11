@@ -141,6 +141,7 @@ describe('MachineParseResult', () => {
       })`,
       'assign({count: ctx => ctx.count + 1})',
     ];
+    /* eslint-disable @typescript-eslint/restrict-template-expressions */
     const config = `
       createMachine({
         initial: 'a',
@@ -163,6 +164,7 @@ describe('MachineParseResult', () => {
         }
       })
     `;
+    /* eslint-enable @typescript-eslint/restrict-template-expressions */
     const result = extractMachinesFromFile(config);
     const machine = result!.machines[0];
 

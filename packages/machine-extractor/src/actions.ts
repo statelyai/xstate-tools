@@ -66,6 +66,7 @@ export const ActionAsFunctionExpression = maybeTsAsExpression(
     createParser({
       babelMatcher: isFunctionOrArrowFunctionExpression,
       parseNode: (node, context): ActionNode => {
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
         const action = function actions() {};
         const id = context.getNodeHash(node);
 
@@ -129,7 +130,7 @@ export const ChooseAction = wrapParserResult(
     const conditions: ParsedChooseCondition[] = [];
 
     result.argument1Result?.forEach((arg1Result) => {
-      const toPush: typeof conditions[number] = {
+      const toPush: (typeof conditions)[number] = {
         condition: {
           actions: [],
         },
@@ -165,6 +166,7 @@ export const ChooseAction = wrapParserResult(
 
 interface AssignFirstArg {
   node: t.Node;
+  // eslint-disable-next-line @typescript-eslint/ban-types
   value: {} | (() => {});
 }
 

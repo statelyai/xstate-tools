@@ -45,6 +45,7 @@ const enableTypegenNesting = () => {
   if (!fileNestingPatterns || typeof fileNestingPatterns !== 'object') return;
 
   // If the user chooses to enable file nesting for typegen files we need to make sure that VSCode's file nesting is also enabled
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
   fileNestingConfig.update('enabled', true, true);
 
   const getUpdatedPattern = (typegenPatternKey: string) => {
@@ -63,6 +64,7 @@ const enableTypegenNesting = () => {
   const updatedPatterns = createTypegenPatterns(getUpdatedPattern);
 
   // Update file nesting patterns with all existing patterns and our updated pattern
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
   fileNestingConfig.update(
     'patterns',
     {
@@ -106,6 +108,7 @@ const disableTypegenNesting = () => {
   const updatedPatterns = createTypegenPatterns(getUpdatedPattern);
 
   // Update file nesting patterns with all existing patterns and our updated pattern
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
   fileNestingConfig.update(
     'patterns',
     removeEmptyPatterns({
@@ -158,6 +161,7 @@ export const handleTypegenNestingConfig = () => {
     const enableOption = 'Enable';
     const disableOption = "No, don't ask again";
     const learnMoreOption = 'Learn more';
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     vscode.window
       .showInformationMessage(
         'Do you want to enable file nesting for XState typegen files?',
@@ -171,10 +175,12 @@ export const handleTypegenNestingConfig = () => {
             enableTypegenNesting();
             break;
           case disableOption:
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             getXStateConfig().update('nestTypegenFiles', false, true);
             disableTypegenNesting();
             break;
           case learnMoreOption:
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             vscode.env.openExternal(
               Uri.parse('https://stately.ai/blog/nesting-xstate-typegen-files'),
             );

@@ -4,7 +4,7 @@ import { registerDisposable } from './registerDisposable';
 import { TypeSafeLanguageClient } from './typeSafeLanguageClient';
 
 const createDeferred = () => {
-  let deferred: {
+  const deferred: {
     resolve?: () => void;
     reject?: () => void;
     promise?: Promise<void>;
@@ -36,11 +36,13 @@ const createTypegenFile = async (
       if (String(textDocument.uri) === String(typegenUri)) {
         documentOpened.resolve();
         // by saving here we
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         textDocument.save();
       }
     }),
   );
 
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
   Promise.race([
     // timeout shouldn't happen in practice
     // it's not clear how strong guarantees we have for this though
@@ -115,6 +117,7 @@ export const initiateTypegen = (
     context,
     languageClient.onNotification(
       'typesUpdated',
+      // eslint-disable-next-line @typescript-eslint/no-misused-promises
       async ({ typegenUri, types }) => {
         await createTypegenFile(context, typegenUri, types);
       },

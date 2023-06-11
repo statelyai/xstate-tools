@@ -123,6 +123,7 @@ connection.onInitialize((params) => {
 connection.onInitialized(() => {
   if (hasConfigurationCapability) {
     // Register for all configuration changes.
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     connection.client.register(
       DidChangeConfigurationNotification.type,
       undefined,
@@ -131,13 +132,13 @@ connection.onInitialized(() => {
 });
 
 // Cache the settings of all open documents
-let documentSettings: Map<string, Thenable<GlobalSettings>> = new Map();
+const documentSettings: Map<string, Thenable<GlobalSettings>> = new Map();
 
 function getDocumentSettings(resource: string): Thenable<GlobalSettings> {
   if (!hasConfigurationCapability) {
     return Promise.resolve(globalSettings);
   }
-  let cachedResult = documentSettings.get(resource);
+  const cachedResult = documentSettings.get(resource);
   if (cachedResult) {
     return cachedResult;
   }
@@ -263,6 +264,7 @@ async function handleDocumentChange(textDocument: TextDocument): Promise<void> {
           };
         } else {
           // for the time being we are piggy-backing on the fact that `createMachine` called in `instrospectMachine` might throw for invalid configs
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
           introspectMachine(createIntrospectableMachine(machineResult) as any);
           return { machineResult };
         }
@@ -421,6 +423,7 @@ const handleDocumentExtractionFailure = (
 };
 
 connection.documents.onDidChangeContent(({ document }) => {
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
   handleDocumentChange(document);
 });
 
@@ -429,9 +432,11 @@ connection.onDidChangeConfiguration((change) => {
     documentSettings.clear();
   } else {
     globalSettings =
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       (change.settings.xstate as GlobalSettings) || defaultSettings;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
   connection.documents.all().forEach(handleDocumentChange);
 });
 
@@ -446,6 +451,7 @@ connection.onCompletion(({ textDocument, position }): CompletionItem[] => {
 
   if (cursor?.type === 'TARGET') {
     const possibleTransitions = getTransitionsFromNode(
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       createMachine(cursor.machine.toConfig() as any).getStateNodeByPath(
         cursor.state.path,
       ) as any,
@@ -461,6 +467,7 @@ connection.onCompletion(({ textDocument, position }): CompletionItem[] => {
   }
   if (cursor?.type === 'INITIAL') {
     const state = createMachine(
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       cursor.machine.toConfig() as any,
     ).getStateNodeByPath(cursor.state.path);
 
@@ -632,10 +639,10 @@ const getTextEditsForImplementation = (
   if (!machine.machineCallResult.options?.[type]?.node.loc) {
     const rawText = getRawTextFromNode(
       text,
-      machine.machineCallResult.options?.node!,
+      machine.machineCallResult.options!.node,
     );
     const range = getRangeFromSourceLocation(
-      machine.machineCallResult.options?.node.loc!,
+      machine.machineCallResult.options!.node.loc!,
     );
 
     return [
@@ -662,10 +669,10 @@ const getTextEditsForImplementation = (
   if (machine.machineCallResult.options?.[type]?.node) {
     const rawText = getRawTextFromNode(
       text,
-      machine.machineCallResult.options?.[type]?.node!,
+      machine.machineCallResult.options[type]!.node,
     );
     const range = getRangeFromSourceLocation(
-      machine.machineCallResult.options?.[type]?.node.loc!,
+      machine.machineCallResult.options[type]!.node.loc!,
     );
 
     return [
@@ -728,11 +735,11 @@ connection.onRequest('getMachineAtCursorPosition', ({ uri, position }) => {
       }
       return (
         isCursorInPosition(
-          machineResult.machineCallResult.definition?.node?.loc!,
+          machineResult.machineCallResult.definition!.node.loc!,
           vsCodePosition,
         ) ||
         isCursorInPosition(
-          machineResult.machineCallResult.options?.node?.loc!,
+          machineResult.machineCallResult.options!.node.loc!,
           vsCodePosition,
         )
       );

@@ -26,7 +26,8 @@ export const getReferences = (
 
       const state = fullMachine.getStateNodeByPath(cursorHover.state.path);
 
-      // @ts-ignore
+      // @ts-expect-error intentional assignment to private property
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
       const targetStates: { id: string }[] = state.resolveTarget([
         cursorHover.target?.value,
       ]);
@@ -154,7 +155,9 @@ export const getReferences = (
         };
       });
     }
-  } catch (e) {}
+  } catch (e) {
+    //
+  }
 
   return [];
 };

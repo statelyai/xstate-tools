@@ -13,7 +13,9 @@ export const createParser = <T extends t.Node, Result>(params: {
     return params.babelMatcher(node);
   };
   const parse = (node: any, context: ParserContext): Result | undefined => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     if (!matches(node)) return undefined;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     return params.parseNode(node, context);
   };
   return {

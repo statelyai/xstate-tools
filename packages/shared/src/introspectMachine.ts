@@ -4,7 +4,8 @@ import { InvokeDefinition } from 'xstate';
 
 type AnyStateNode = XState.StateNode<any, any, any, any, any, any>;
 
-export interface StateSchema extends Record<string, StateSchema> {}
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface StateSchema extends Record<string, any> {}
 
 function getRelevantFinalStates(node: AnyStateNode): AnyStateNode[] {
   switch (node.type) {
@@ -16,13 +17,14 @@ function getRelevantFinalStates(node: AnyStateNode): AnyStateNode[] {
             : getRelevantFinalStates(childNode),
         )
         .flat();
-    case 'parallel':
+    case 'parallel': {
       const finalStatesPerRegion = getChildren(node).map(
         getRelevantFinalStates,
       );
       return finalStatesPerRegion.every((perRegion) => !!perRegion.length)
         ? finalStatesPerRegion.flat()
         : [];
+    }
     default:
       return [];
   }
@@ -74,6 +76,7 @@ function findLeastCommonAncestor(
   }
 
   let i = 0;
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     if (nodeA.path[i] === nodeB.path[i]) {
       i++;
@@ -239,6 +242,7 @@ function collectActions(
     collectAction(ctx, eventType, actionObject);
     const actionInOptions = ctx.machine.options.actions?.[actionObject.type];
     if (actionInOptions && typeof actionInOptions === 'object') {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       collectAction(ctx, eventType, actionInOptions);
     }
   });
@@ -249,7 +253,7 @@ function enterState(
   node: AnyStateNode,
   eventType: string,
 ) {
-  let nodeIdToSourceEventItem = ctx.nodeIdToSourceEventsMap.get(node.id);
+  const nodeIdToSourceEventItem = ctx.nodeIdToSourceEventsMap.get(node.id);
   if (nodeIdToSourceEventItem) {
     nodeIdToSourceEventItem.add(eventType);
     return;
@@ -267,6 +271,7 @@ function exitChildren(
     if (entered.has(child)) {
       return;
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     collectActions(ctx, eventType, child.onExit);
     exitChildren(ctx, child, eventType, entered);
   });
@@ -276,10 +281,12 @@ function collectTransitions(ctx: TraversalContext, node: AnyStateNode) {
   node.transitions.forEach((transition) => {
     if (transition.cond && transition.cond.name) {
       if (transition.cond.name !== 'cond') {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         ctx.guards.addEventToItem(transition.cond.name, transition.eventType);
       }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     collectActions(ctx, transition.eventType, transition.actions);
 
     if (!transition.target || !transition.target.length) {
@@ -296,6 +303,7 @@ function collectTransitions(ctx: TraversalContext, node: AnyStateNode) {
             break;
           }
           enteredSet.add(marker);
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           marker = marker.parent!;
         }
         if (!transition.internal) {
@@ -303,16 +311,21 @@ function collectTransitions(ctx: TraversalContext, node: AnyStateNode) {
         }
 
         enteredSet.forEach((entered) => {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
           enterState(ctx, entered, transition.eventType);
         });
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         exitChildren(ctx, node, transition.eventType, enteredSet);
 
         if (!transition.internal) {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
           collectActions(ctx, transition.eventType, node.onExit);
         }
       } else {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         exitChildren(ctx, node, transition.eventType);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         collectActions(ctx, transition.eventType, node.onExit);
 
         const leastCommonAncestor = findLeastCommonAncestor(
@@ -322,10 +335,12 @@ function collectTransitions(ctx: TraversalContext, node: AnyStateNode) {
         );
 
         let marker = node;
+        // eslint-disable-next-line no-constant-condition
         while (true) {
           if (marker === leastCommonAncestor) {
             break;
           }
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
           collectActions(ctx, transition.eventType, marker.onExit);
           marker = marker.parent!;
         }
@@ -336,6 +351,7 @@ function collectTransitions(ctx: TraversalContext, node: AnyStateNode) {
         marker = leastCommonAncestor;
         while ((segment = enteringPath.shift())) {
           marker = marker.states[segment];
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
           enterState(ctx, marker, transition.eventType);
         }
       }
@@ -373,6 +389,7 @@ type TraversalContext = ReturnType<typeof createTraversalContext>;
 function collectSimpleInformation(ctx: TraversalContext, node: AnyStateNode) {
   // TODO: history states are not handled yet
   collectInvokes(ctx, node);
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   collectActions(ctx, 'xstate.stop', node.onExit);
   collectTransitions(ctx, node);
 
@@ -420,6 +437,7 @@ function collectEnterables(ctx: TraversalContext, node: AnyStateNode) {
       }
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     collectActions(ctx, sourceEvents, enterableNode.onEntry);
   });
 
@@ -452,6 +470,7 @@ function collectEventsLeadingToFinalStates(ctx: TraversalContext) {
     while (marker) {
       seenStates.add(marker);
 
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       collectActions(ctx, sourceEvents, marker.onExit);
 
       if (marker.parent?.type === 'parallel') {
@@ -471,6 +490,7 @@ function collectEventsLeadingToFinalStates(ctx: TraversalContext) {
         continue;
       }
       for (const node of otherSeen.nodes) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         collectActions(ctx, seen.events, node.onExit);
       }
     }
@@ -481,6 +501,7 @@ function collectEventsLeadingToFinalStates(ctx: TraversalContext) {
     ),
   );
   getAllNodesToNodes(Array.from(leafParallelSeenMap.keys())).forEach((node) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     collectActions(ctx, eventsLeadingToFinalStates, node.onExit);
   });
 }
