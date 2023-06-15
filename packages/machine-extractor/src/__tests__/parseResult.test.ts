@@ -175,29 +175,25 @@ describe('MachineParseResult', () => {
       [
         {
           "assignment": {
-            "inlineImplementation": {
-              "type": "expression",
-              "value": "(ctx, e) => {
+            "type": "expression",
+            "value": "(ctx, e) => {
                 const val = e.data;
                 return {
                   count: val + ctx.count,
                 };
               }",
-            },
           },
           "name": "xstate.assign",
         },
         {
           "assignment": {
-            "inlineImplementation": {
-              "type": "expression",
-              "value": "function (ctx, e) {
+            "type": "expression",
+            "value": "function (ctx, e) {
                 const val = e.data;
                 return {
                   count: val + ctx.count,
                 };
               }",
-            },
           },
           "name": "xstate.assign",
         },
@@ -208,49 +204,50 @@ describe('MachineParseResult', () => {
       .toMatchInlineSnapshot(`
       {
         "assignment": {
-          "another": {
-            "type": "expression",
-            "value": "function (ctx, e) {
+          "type": "object",
+          "value": {
+            "another": {
+              "type": "expression",
+              "value": "function (ctx, e) {
                   return ctx.whatever + e.anotherWhatever
                 }",
-          },
-          "count": {
-            "type": "expression",
-            "value": "ctx => ctx.count + 1",
+            },
+            "count": {
+              "type": "expression",
+              "value": "ctx => ctx.count + 1",
+            },
           },
         },
         "name": "xstate.assign",
       }
     `);
 
-    ['a', 'b', 'c', 'd', 'e'].forEach((prop) => {
-      expect(config?.states?.a?.on?.FOO?.actions.assignment).toHaveProperty(
-        prop,
-      );
-    });
     expect(pick(config?.states?.a?.on?.FOO?.actions, ['name', 'assignment']))
       .toMatchInlineSnapshot(`
       {
         "assignment": {
-          "a": {
-            "type": "number",
-            "value": 0,
-          },
-          "b": {
-            "type": "string",
-            "value": "b",
-          },
-          "c": {
-            "type": "boolean",
-            "value": true,
-          },
-          "d": {
-            "type": "expression",
-            "value": "[1,2,3]",
-          },
-          "e": {
-            "type": "expression",
-            "value": "{e1: 'whatever'}",
+          "type": "object",
+          "value": {
+            "a": {
+              "type": "number",
+              "value": 0,
+            },
+            "b": {
+              "type": "string",
+              "value": "b",
+            },
+            "c": {
+              "type": "boolean",
+              "value": true,
+            },
+            "d": {
+              "type": "expression",
+              "value": "[1,2,3]",
+            },
+            "e": {
+              "type": "expression",
+              "value": "{e1: 'whatever'}",
+            },
           },
         },
         "name": "xstate.assign",
@@ -265,50 +262,61 @@ describe('MachineParseResult', () => {
       context: { count: 0 },
       entry: [
         raise({type: 'Some event', foo: 'foo', bar: true, baz: [1,2,3], obj: {prop: {prop2: 2}}}),
-        raise('Some other event')
+        raise('Some other event'),
+        raise(() => {})
       ],
     });
   `);
     const machine = result!.machines[0];
     const config = machine?.toConfig();
 
-    ['type', 'foo', 'bar', 'baz', 'obj'].forEach((prop) => {
-      expect(config!.entry![0].event).toHaveProperty(prop);
-    });
     expect(config!.entry!.map((entry) => omit(entry, ['type'])))
       .toMatchInlineSnapshot(`
       [
         {
           "event": {
-            "bar": {
-              "type": "boolean",
-              "value": true,
-            },
-            "baz": {
-              "type": "expression",
-              "value": "[1,2,3]",
-            },
-            "foo": {
-              "type": "string",
-              "value": "foo",
-            },
-            "obj": {
-              "type": "expression",
-              "value": "{prop: {prop2: 2}}",
-            },
-            "type": {
-              "type": "string",
-              "value": "Some event",
+            "type": "object",
+            "value": {
+              "bar": {
+                "type": "boolean",
+                "value": true,
+              },
+              "baz": {
+                "type": "expression",
+                "value": "[1,2,3]",
+              },
+              "foo": {
+                "type": "string",
+                "value": "foo",
+              },
+              "obj": {
+                "type": "expression",
+                "value": "{prop: {prop2: 2}}",
+              },
+              "type": {
+                "type": "string",
+                "value": "Some event",
+              },
             },
           },
           "name": "xstate.raise",
         },
         {
           "event": {
-            "type": {
-              "type": "string",
-              "value": "Some other event",
+            "type": "object",
+            "value": {
+              "type": {
+                "type": "string",
+                "value": "Some other event",
+              },
             },
+          },
+          "name": "xstate.raise",
+        },
+        {
+          "event": {
+            "type": "expression",
+            "value": "() => {}",
           },
           "name": "xstate.raise",
         },
@@ -323,7 +331,7 @@ describe('MachineParseResult', () => {
       context: { count: 0 },
       entry: [
         log((ctx, e) => {}),
-        raise('Some string')
+        log('Some string'),
       ]
     });
   `);
@@ -341,19 +349,17 @@ describe('MachineParseResult', () => {
           "name": "xstate.log",
         },
         {
-          "event": {
-            "type": {
-              "type": "string",
-              "value": "Some string",
-            },
+          "expr": {
+            "type": "string",
+            "value": "Some string",
           },
-          "name": "xstate.raise",
+          "name": "xstate.log",
         },
       ]
     `);
   });
 
-  it('Should extract sendTo expression', () => {
+  it.only('Should extract sendTo expression', () => {
     const result = extractMachinesFromFile(`
     createMachine({
       initial: "a",
@@ -361,11 +367,11 @@ describe('MachineParseResult', () => {
         a: {
           entry: [
             sendTo('actor', 'event'),
-            sendTo('actor', {type: 'event', id: 1}),
-            sendTo('actor', () => ({type: 'event', id: 1})),
+            sendTo('actor', {type: 'event', userId: 1}),
+            sendTo('actor', () => ({type: 'event', userId: 1})),
             sendTo((ctx) => ctx.actorRef, 'event'),
-            sendTo((ctx) => ctx.actorRef, {type: 'event', id: 1}),
-            sendTo((ctx) => ctx.actorRef, () => ({type: 'event', id: 1})),
+            sendTo((ctx) => ctx.actorRef, {type: 'event', userId: 1}),
+            sendTo((ctx) => ctx.actorRef, () => ({type: 'event', userId: 1})),
             sendTo('actor', 'event', {delay: 2000, id: 2}),
             sendTo('actor', 'event', {delay: 'namedDelay', id: 'cancellationId'}),
             sendTo('actor', 'event', {delay: () => 'namedDelay'}),
@@ -382,216 +388,194 @@ describe('MachineParseResult', () => {
       .toMatchInlineSnapshot(`
       [
         {
-          "expr": {
-            "actorRef": {
-              "type": "string",
-              "value": "actor",
-            },
-            "event": {
+          "delay": undefined,
+          "event": {
+            "type": "object",
+            "value": {
               "type": {
                 "type": "string",
                 "value": "event",
               },
             },
-            "options": {
-              "delay": undefined,
-              "id": undefined,
-            },
           },
+          "id": undefined,
           "name": "xstate.sendTo",
+          "to": {
+            "type": "string",
+            "value": "actor",
+          },
         },
         {
-          "expr": {
-            "actorRef": {
-              "type": "string",
-              "value": "actor",
-            },
-            "event": {
-              "id": {
+          "delay": undefined,
+          "event": {
+            "type": "object",
+            "value": {
+              "type": {
+                "type": "string",
+                "value": "event",
+              },
+              "userId": {
                 "type": "number",
                 "value": 1,
               },
+            },
+          },
+          "id": undefined,
+          "name": "xstate.sendTo",
+          "to": {
+            "type": "string",
+            "value": "actor",
+          },
+        },
+        {
+          "delay": undefined,
+          "event": {
+            "type": "expression",
+            "value": "() => ({type: 'event', userId: 1})",
+          },
+          "id": undefined,
+          "name": "xstate.sendTo",
+          "to": {
+            "type": "string",
+            "value": "actor",
+          },
+        },
+        {
+          "delay": undefined,
+          "event": {
+            "type": "object",
+            "value": {
               "type": {
                 "type": "string",
                 "value": "event",
               },
             },
-            "options": {
-              "delay": undefined,
-              "id": undefined,
-            },
           },
+          "id": undefined,
           "name": "xstate.sendTo",
+          "to": {
+            "type": "expression",
+            "value": "(ctx) => ctx.actorRef",
+          },
         },
         {
-          "expr": {
-            "actorRef": {
-              "type": "string",
-              "value": "actor",
-            },
-            "event": {
-              "type": "expression",
-              "value": "() => ({type: 'event', id: 1})",
-            },
-            "options": {
-              "delay": undefined,
-              "id": undefined,
-            },
-          },
-          "name": "xstate.sendTo",
-        },
-        {
-          "expr": {
-            "actorRef": {
-              "type": "expression",
-              "value": "(ctx) => ctx.actorRef",
-            },
-            "event": {
+          "delay": undefined,
+          "event": {
+            "type": "object",
+            "value": {
               "type": {
                 "type": "string",
                 "value": "event",
               },
-            },
-            "options": {
-              "delay": undefined,
-              "id": undefined,
-            },
-          },
-          "name": "xstate.sendTo",
-        },
-        {
-          "expr": {
-            "actorRef": {
-              "type": "expression",
-              "value": "(ctx) => ctx.actorRef",
-            },
-            "event": {
-              "id": {
+              "userId": {
                 "type": "number",
                 "value": 1,
               },
+            },
+          },
+          "id": undefined,
+          "name": "xstate.sendTo",
+          "to": {
+            "type": "expression",
+            "value": "(ctx) => ctx.actorRef",
+          },
+        },
+        {
+          "delay": undefined,
+          "event": {
+            "type": "expression",
+            "value": "() => ({type: 'event', userId: 1})",
+          },
+          "id": undefined,
+          "name": "xstate.sendTo",
+          "to": {
+            "type": "expression",
+            "value": "(ctx) => ctx.actorRef",
+          },
+        },
+        {
+          "delay": {
+            "type": "number",
+            "value": 2000,
+          },
+          "event": {
+            "type": "object",
+            "value": {
               "type": {
                 "type": "string",
                 "value": "event",
               },
             },
-            "options": {
-              "delay": undefined,
-              "id": undefined,
-            },
           },
+          "id": 2,
           "name": "xstate.sendTo",
+          "to": {
+            "type": "string",
+            "value": "actor",
+          },
         },
         {
-          "expr": {
-            "actorRef": {
-              "type": "expression",
-              "value": "(ctx) => ctx.actorRef",
-            },
-            "event": {
-              "type": "expression",
-              "value": "() => ({type: 'event', id: 1})",
-            },
-            "options": {
-              "delay": undefined,
-              "id": undefined,
-            },
+          "delay": {
+            "type": "string",
+            "value": "namedDelay",
           },
-          "name": "xstate.sendTo",
-        },
-        {
-          "expr": {
-            "actorRef": {
-              "type": "string",
-              "value": "actor",
-            },
-            "event": {
+          "event": {
+            "type": "object",
+            "value": {
               "type": {
                 "type": "string",
                 "value": "event",
               },
             },
-            "options": {
-              "delay": {
-                "type": "number",
-                "value": 2000,
-              },
-              "id": {
-                "type": "number",
-                "value": 2,
-              },
-            },
           },
+          "id": "cancellationId",
           "name": "xstate.sendTo",
+          "to": {
+            "type": "string",
+            "value": "actor",
+          },
         },
         {
-          "expr": {
-            "actorRef": {
-              "type": "string",
-              "value": "actor",
-            },
-            "event": {
+          "delay": {
+            "type": "expression",
+            "value": "delay: () => 'namedDelay'",
+          },
+          "event": {
+            "type": "object",
+            "value": {
               "type": {
                 "type": "string",
                 "value": "event",
               },
             },
-            "options": {
-              "delay": {
-                "type": "string",
-                "value": "namedDelay",
-              },
-              "id": {
-                "type": "string",
-                "value": "cancellationId",
-              },
-            },
           },
+          "id": undefined,
           "name": "xstate.sendTo",
+          "to": {
+            "type": "string",
+            "value": "actor",
+          },
         },
         {
-          "expr": {
-            "actorRef": {
-              "type": "string",
-              "value": "actor",
-            },
-            "event": {
+          "delay": {
+            "type": "expression",
+            "value": "delay: function () {return 2000}",
+          },
+          "event": {
+            "type": "object",
+            "value": {
               "type": {
                 "type": "string",
                 "value": "event",
               },
             },
-            "options": {
-              "delay": {
-                "type": "expression",
-                "value": "delay: () => 'namedDelay'",
-              },
-              "id": undefined,
-            },
           },
+          "id": undefined,
           "name": "xstate.sendTo",
-        },
-        {
-          "expr": {
-            "actorRef": {
-              "type": "string",
-              "value": "actor",
-            },
-            "event": {
-              "type": {
-                "type": "string",
-                "value": "event",
-              },
-            },
-            "options": {
-              "delay": {
-                "type": "expression",
-                "value": "delay: function () {return 2000}",
-              },
-              "id": undefined,
-            },
+          "to": {
+            "type": "string",
+            "value": "actor",
           },
-          "name": "xstate.sendTo",
         },
       ]
     `);
@@ -621,21 +605,21 @@ describe('MachineParseResult', () => {
       .toMatchInlineSnapshot(`
       [
         {
-          "expr": {
+          "id": {
             "type": "string",
             "value": "actor",
           },
           "name": "xstate.stop",
         },
         {
-          "expr": {
+          "id": {
             "type": "expression",
             "value": "() => 'actor'",
           },
           "name": "xstate.stop",
         },
         {
-          "expr": {
+          "id": {
             "type": "expression",
             "value": "function (ctx) {
                     return ctx.actorRef

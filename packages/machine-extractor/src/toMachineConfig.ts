@@ -258,14 +258,14 @@ export const getActionConfig = (
         actions.push({
           type: action.name || `SendTo ${Math.random().toFixed(3)}`,
           name: 'xstate.sendTo',
-          expr: extractSendToProperties(action, opts!.fileContent),
+          ...extractSendToProperties(action, opts!.fileContent),
         });
         return;
       case isBuiltinActionWithName(action, 'stop'):
         actions.push({
           type: action.name || `Stop ${Math.random().toFixed(3)}`,
           name: 'xstate.stop',
-          expr: extractStopProperties(action, opts!.fileContent),
+          id: extractStopProperties(action, opts!.fileContent),
         });
         return;
     }
