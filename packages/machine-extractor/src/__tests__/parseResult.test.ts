@@ -359,7 +359,7 @@ describe('MachineParseResult', () => {
     `);
   });
 
-  it.only('Should extract sendTo expression', () => {
+  it('Should extract sendTo expression', () => {
     const result = extractMachinesFromFile(`
     createMachine({
       initial: "a",
