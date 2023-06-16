@@ -1,5 +1,3 @@
-import omit from 'lodash.omit';
-import pick from 'lodash.pick';
 import { groupByUniqueName, MachineExtractResult } from '..';
 import { extractMachinesFromFile } from '../extractMachinesFromFile';
 
