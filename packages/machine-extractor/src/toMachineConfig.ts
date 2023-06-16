@@ -7,11 +7,11 @@ import {
 import { ActionNode, MaybeArrayOfActions } from './actions';
 import { CondNode } from './conds';
 import {
-  extractAssignment,
-  extractLogExpression,
-  extractRaisedEvent,
-  extractSendToProperties,
-  extractStopProperties,
+  extractAssignAction,
+  extractLogAction,
+  extractRaiseAction,
+  extractSendToAction,
+  extractStopAction,
   isBuiltinActionWithName,
 } from './extractAction';
 import { TMachineCallExpression } from './machineCallExpression';
@@ -206,6 +206,7 @@ export const getActionConfig = (
 ): Actions<any, any> => {
   const actions: Actions<any, any> = [];
 
+  // Todo: these actions should be extracted in `actions.ts`
   astActions?.forEach(action => {
     switch (true) {
       case action.declarationType === 'named':
@@ -233,39 +234,35 @@ export const getActionConfig = (
           }),
         });
         return;
+      // Todo: think about error reporting and how to handle invalid actions such as raise(2)
       case isBuiltinActionWithName(action, 'assign'):
         actions.push({
-          type: action.name || `Assignment ${Math.random().toFixed(3)}`,
-          name: 'xstate.assign',
-          assignment: extractAssignment(action, opts!.fileContent),
+          type: 'xstate.assign',
+          assignment: extractAssignAction(action, opts!.fileContent),
         });
         return;
       case isBuiltinActionWithName(action, 'raise'):
         actions.push({
-          type: action.name || `Raise ${Math.random().toFixed(3)}`,
-          name: 'xstate.raise',
-          event: extractRaisedEvent(action, opts!.fileContent),
+          type: 'xstate.raise',
+          event: extractRaiseAction(action, opts!.fileContent),
         });
         return;
       case isBuiltinActionWithName(action, 'log'):
         actions.push({
-          type: action.name || `Log ${Math.random().toFixed(3)}`,
-          name: 'xstate.log',
-          expr: extractLogExpression(action, opts!.fileContent),
+          type: 'xstate.log',
+          expr: extractLogAction(action, opts!.fileContent),
         });
         return;
       case isBuiltinActionWithName(action, 'sendTo'):
         actions.push({
-          type: action.name || `SendTo ${Math.random().toFixed(3)}`,
-          name: 'xstate.sendTo',
-          ...extractSendToProperties(action, opts!.fileContent),
+          type: 'xstate.sendTo',
+          ...extractSendToAction(action, opts!.fileContent),
         });
         return;
       case isBuiltinActionWithName(action, 'stop'):
         actions.push({
-          type: action.name || `Stop ${Math.random().toFixed(3)}`,
-          name: 'xstate.stop',
-          id: extractStopProperties(action, opts!.fileContent),
+          type: 'xstate.stop',
+          id: extractStopAction(action, opts!.fileContent),
         });
         return;
     }
