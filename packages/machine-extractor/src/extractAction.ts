@@ -14,6 +14,10 @@ export type JsonEntry =
 export type JsonValue = Pick<JsonEntry, 'value'>;
 type JsonType = Pick<JsonEntry, 'type'>;
 
+type ObjectProperyWithIdentifierKey = t.ObjectProperty & {
+  key: t.Identifier;
+};
+
 export function extractAssignAction(
   actionNode: ActionNode,
   fileContent: string,
@@ -30,7 +34,7 @@ export function extractAssignAction(
     // assign({})
     if (
       t.isObjectExpression(assigner) &&
-      assigner.properties.every(prop => t.isObjectProperty(prop))
+      assigner.properties.every((prop) => t.isObjectProperty(prop))
     ) {
       const assignment: {
         type: 'object';
@@ -40,7 +44,7 @@ export function extractAssignAction(
         value: {},
       };
 
-      assigner.properties.forEach(prop => {
+      assigner.properties.forEach((prop) => {
         // any regular object property and no spread elements or method or such
         if (t.isObjectProperty(prop)) {
           if (t.isIdentifier(prop.key)) {
@@ -133,7 +137,7 @@ export function extractRaiseAction(
     // raise({type: 'event'}) object with plain object properties
     if (
       t.isObjectExpression(arg) &&
-      arg.properties.every(prop => t.isObjectProperty(prop))
+      arg.properties.every((prop) => t.isObjectProperty(prop))
     ) {
       return extractEventObject(arg, fileContent);
     }
@@ -215,11 +219,7 @@ type SendToEventArg =
 type SendToActorRefArg =
   | { type: 'string' | 'expression'; value: string }
   | undefined;
-type SendToDelayArg =
-  | { type: 'string' | 'expression'; value: string }
-  | { type: 'number'; value: number }
-  | undefined;
-type SendToCancelationIdArg =
+type SendToOptionArg =
   | { type: 'string' | 'expression'; value: string }
   | { type: 'number'; value: number }
   | undefined;
@@ -230,14 +230,16 @@ export function extractSendToAction(
 ): {
   event: SendToEventArg;
   to: SendToActorRefArg;
-  delay: SendToDelayArg;
-  id: SendToCancelationIdArg;
+  delay: SendToOptionArg;
+  id: SendToOptionArg;
 } {
   const node = actionNode.node;
   let eventObject: SendToEventArg = undefined;
   let actorRef: SendToActorRefArg = undefined;
-  let delay: SendToDelayArg = undefined;
-  let id: SendToCancelationIdArg = undefined;
+  const options: { [key: string]: SendToOptionArg } = {
+    delay: undefined,
+    id: undefined,
+  };
   if (t.isCallExpression(node)) {
     const arg1 = node.arguments[0];
     const arg2 = node.arguments[1];
@@ -285,83 +287,40 @@ export function extractSendToAction(
 
     // Options
     if (t.isObjectExpression(arg3)) {
-      // delay = string | number | (ctx, e) => string | number
-      const foundDelay = arg3.properties.find(
-        prop =>
-          t.isObjectProperty(prop) &&
-          t.isIdentifier(prop.key) &&
-          prop.key.name === 'delay',
-      ) as t.ObjectProperty | undefined;
-      if (foundDelay) {
-        // delay: string
-        if (
-          t.isStringLiteral(foundDelay.value) ||
-          t.isBigIntLiteral(foundDelay.value)
-        ) {
-          delay = {
-            type: 'string',
-            value: foundDelay.value.value,
-          };
-        }
-        // delay: number
-        else if (t.isNumericLiteral(foundDelay.value)) {
-          delay = {
-            type: 'number',
-            value: foundDelay.value.value,
-          };
-        }
-        // delay: () => {} or anything else
-        else {
-          delay = {
-            type: 'expression',
-            value: fileContent.slice(
-              foundDelay.value.start!,
-              foundDelay.value.end!,
-            ),
-          };
-        }
-      }
-
-      const foundId = arg3.properties.find(
-        prop =>
-          t.isObjectProperty(prop) &&
-          t.isIdentifier(prop.key) &&
-          prop.key.name === 'id',
-      ) as t.ObjectProperty | undefined;
-      if (foundId) {
-        // id: string
-        if (
-          t.isStringLiteral(foundId.value) ||
-          t.isBigIntLiteral(foundId.value)
-        ) {
-          id = {
-            type: 'string',
-            value: foundId.value.value,
-          };
-        }
-        // id: number
-        else if (t.isNumericLiteral(foundId.value)) {
-          id = {
-            type: 'number',
-            value: foundId.value.value,
-          };
-        }
-        // id: () => {} or anything else
-        else {
-          id = {
-            type: 'expression',
-            value: fileContent.slice(foundId.value.start!, foundId.value.end!),
-          };
-        }
-      }
+      arg3.properties
+        .filter(
+          (prop): prop is ObjectProperyWithIdentifierKey =>
+            t.isObjectProperty(prop) && t.isIdentifier(prop.key),
+        )
+        .forEach((prop) => {
+          if (t.isStringLiteral(prop.value) || t.isBigIntLiteral(prop.value)) {
+            options[prop.key.name] = {
+              type: 'string',
+              value: prop.value.value,
+            };
+          } else if (t.isNumericLiteral(prop.value)) {
+            options[prop.key.name] = {
+              type: 'number',
+              value: prop.value.value,
+            };
+          }
+          // () => {} or anything else
+          else {
+            options[prop.key.name] = {
+              type: 'expression',
+              value: fileContent.slice(prop.value.start!, prop.value.end!),
+            };
+          }
+        });
     }
 
     // Todo: what to do with invalid actions? like the one that misses the actor or event?
+    // @ts-ignore
+    // Todo: Help me type this so options includes delay and id but could also include anything else
     return {
       event: eventObject,
       to: actorRef,
-      delay: delay,
-      id: id,
+      ...options,
     };
   }
 
@@ -401,7 +360,7 @@ function extractEventObject(
       type: 'object';
       value: Record<string, JsonEntry>;
     } {
-  if (!eventObject.properties.every(prop => t.isObjectProperty(prop))) {
+  if (!eventObject.properties.every((prop) => t.isObjectProperty(prop))) {
     return {
       type: 'expression',
       value: fileContent.slice(eventObject.start!, eventObject.end!),
@@ -409,7 +368,7 @@ function extractEventObject(
   }
 
   const extracted: Record<string, JsonEntry> = {};
-  eventObject.properties.forEach(prop => {
+  eventObject.properties.forEach((prop) => {
     if (t.isObjectProperty(prop)) {
       if (t.isIdentifier(prop.key)) {
         if (t.isLiteral(prop.value)) {
