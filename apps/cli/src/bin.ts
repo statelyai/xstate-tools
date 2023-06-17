@@ -42,20 +42,26 @@ function getPrettierInstance(cwd: string): typeof import('prettier') {
   }
 }
 
+// Used to prettify text before writing
+const prettify = async (
+  uri: string,
+  text: string,
+  { cwd }: { cwd: string },
+) => {
+  const prettierInstance = getPrettierInstance(cwd);
+  return prettierInstance.format(text, {
+    ...(await prettierInstance.resolveConfig(uri)),
+    parser: 'typescript',
+  });
+};
+
 const writeToTypegenFile = async (
   typegenUri: string,
   types: TypegenData[],
   { cwd }: { cwd: string },
 ) => {
-  const prettierInstance = getPrettierInstance(cwd);
-  await fs.writeFile(
-    typegenUri,
-    // // Prettier v3 returns a promise
-    await prettierInstance.format(getTypegenOutput(types), {
-      ...(await prettierInstance.resolveConfig(typegenUri)),
-      parser: 'typescript',
-    }),
-  );
+  const output = await prettify(typegenUri, getTypegenOutput(types), { cwd });
+  await fs.writeFile(typegenUri, output);
 };
 
 // TODO: just use the native one when support for node 12 gets dropped
@@ -110,7 +116,11 @@ const writeToFiles = async (uriArray: string[], { cwd }: { cwd: string }) => {
 
         const edits = getTsTypesEdits(types);
         if (edits.length > 0) {
-          const newFile = processFileEdits(fileContents, edits);
+          const newFile = await prettify(
+            uri,
+            processFileEdits(fileContents, edits),
+            { cwd },
+          );
           await fs.writeFile(uri, newFile);
         }
         console.log(`${uri} - success`);
