@@ -73,7 +73,16 @@ const program = new Command();
 
 program.version(version);
 
-const writeToFiles = async (uriArray: string[], { cwd }: { cwd: string }) => {
+const writeToFiles = async (
+  uriArray: string[],
+  {
+    cwd,
+    useDeclarationFileForTypegenData = false,
+  }: {
+    cwd: string;
+    useDeclarationFileForTypegenData: boolean | undefined;
+  },
+) => {
   /**
    * TODO - implement pretty readout
    */
@@ -89,7 +98,8 @@ const writeToFiles = async (uriArray: string[], { cwd }: { cwd: string }) => {
         }
 
         const typegenUri =
-          uri.slice(0, -path.extname(uri).length) + '.typegen.ts';
+          uri.slice(0, -path.extname(uri).length) +
+          `.typegen${useDeclarationFileForTypegenData ? '.d' : ''}.ts`;
 
         const types = extracted.machines
           .filter(
@@ -99,7 +109,9 @@ const writeToFiles = async (uriArray: string[], { cwd }: { cwd: string }) => {
               !!machineResult?.machineCallResult.definition?.tsTypes?.node,
           )
           .map((machineResult, index) =>
-            getTypegenData(path.basename(uri), index, machineResult),
+            getTypegenData(path.basename(uri), index, machineResult, {
+              useDeclarationFileForTypegenData,
+            }),
           );
 
         if (types.length) {
@@ -131,38 +143,52 @@ program
   .description('Generate TypeScript types from XState machines')
   .argument('<files>', 'The files to target, expressed as a glob pattern')
   .option('-w, --watch', 'Run the typegen in watch mode')
-  .action(async (filesPattern: string, opts: { watch?: boolean }) => {
-    const cwd = process.cwd();
-    if (opts.watch) {
-      // TODO: implement per path queuing to avoid tasks related to the same file from overlapping their execution
-      const processFile = (path: string) => {
-        if (path.endsWith('.typegen.ts')) {
-          return;
-        }
-        writeToFiles([path], { cwd }).catch(() => {});
-      };
-      // TODO: handle removals
-      watch(filesPattern, { awaitWriteFinish: true })
-        .on('add', processFile)
-        .on('change', processFile);
-    } else {
-      const tasks: Array<Promise<void>> = [];
-      // TODO: could this cleanup outdated typegen files?
-      watch(filesPattern, { persistent: false })
-        .on('add', (path) => {
-          if (path.endsWith('.typegen.ts')) {
+  .option(
+    '--useDeclarationFileForTypegenData',
+    "Generate typegen data into `.d.ts` files and use this extension in the import's source that refers to it.",
+  )
+  .action(
+    async (
+      filesPattern: string,
+      opts: { watch?: boolean; useDeclarationFileForTypegenData?: boolean },
+    ) => {
+      const cwd = process.cwd();
+      const { useDeclarationFileForTypegenData } = opts;
+      if (opts.watch) {
+        // TODO: implement per path queuing to avoid tasks related to the same file from overlapping their execution
+        const processFile = (path: string) => {
+          if (path.endsWith('.typegen.ts') || path.endsWith('.typegen.d.ts')) {
             return;
           }
-          tasks.push(writeToFiles([path], { cwd }));
-        })
-        .on('ready', async () => {
-          const settled = await allSettled(tasks);
-          if (settled.some((result) => result.status === 'rejected')) {
-            process.exit(1);
-          }
-          process.exit(0);
-        });
-    }
-  });
+          writeToFiles([path], { cwd, useDeclarationFileForTypegenData }).catch(
+            () => {},
+          );
+        };
+        // TODO: handle removals
+        watch(filesPattern, { awaitWriteFinish: true })
+          .on('add', processFile)
+          .on('change', processFile);
+      } else {
+        const tasks: Array<Promise<void>> = [];
+        // TODO: could this cleanup outdated typegen files?
+        watch(filesPattern, { persistent: false })
+          .on('add', (path) => {
+            if (path.endsWith('.typegen.ts')) {
+              return;
+            }
+            tasks.push(
+              writeToFiles([path], { cwd, useDeclarationFileForTypegenData }),
+            );
+          })
+          .on('ready', async () => {
+            const settled = await allSettled(tasks);
+            if (settled.some((result) => result.status === 'rejected')) {
+              process.exit(1);
+            }
+            process.exit(0);
+          });
+      }
+    },
+  );
 
 program.parse(process.argv);
