@@ -4,7 +4,7 @@ import { extractMachinesFromFile } from '../extractMachinesFromFile';
 function getTestMachineConfig(configStr: string) {
   const result = extractMachinesFromFile(configStr);
   const machine = result!.machines[0];
-  const config = machine?.toConfig()!;
+  const config = machine?.toConfig({ serializeInlineActions: true })!;
 
   return config;
 }
@@ -136,6 +136,120 @@ describe('MachineParseResult', () => {
       from: ['a'],
       to: ['b'],
     });
+  });
+
+  it('should extract inline custom action', () => {
+    const config = getTestMachineConfig(
+      `
+    createMachine({
+      initial: "a",
+      states: {
+        a: {
+          entry: [() => {
+            console.log('test')
+          }],
+          exit: [function() {}],
+        },
+        b: {
+          entry: [someVar],
+        }
+      },
+    });
+  `,
+    );
+    expect(config.states!.a.entry).toMatchInlineSnapshot(`
+      {
+        "type": "xstate.custom",
+        "value": {
+          "type": "expression",
+          "value": "() => {
+                  console.log('test')
+                }",
+        },
+      }
+    `);
+    expect(config.states!.a.exit).toMatchInlineSnapshot(`
+      {
+        "type": "xstate.custom",
+        "value": {
+          "type": "expression",
+          "value": "function() {}",
+        },
+      }
+    `);
+    expect(config.states!.b.entry).toMatchInlineSnapshot(`
+      {
+        "type": "xstate.custom",
+        "value": {
+          "type": "expression",
+          "value": "someVar",
+        },
+      }
+    `);
+  });
+
+  it('should extract unsupported builtin actions as custom actions for now', () => {
+    const config = getTestMachineConfig(
+      `
+    createMachine({
+      initial: "a",
+      states: {
+        a: {
+          entry: [forwardTo('some id')],
+          exit: [respond({ type: 'TOKEN' }, { delay: 10 })]
+        },
+        b: {
+          entry: [escalate({ message: 'This is some error' })],
+          exit: [pure((context, event) => {
+            return context.sampleActors.map((sampleActor) => {
+              return send('SOME_EVENT', { to: sampleActor });
+            });
+          })]
+        }
+      },
+    });
+  `,
+    );
+    expect(config.states!.a.entry).toMatchInlineSnapshot(`
+      {
+        "type": "xstate.custom",
+        "value": {
+          "type": "expression",
+          "value": "forwardTo('some id')",
+        },
+      }
+    `);
+    expect(config.states!.a.exit).toMatchInlineSnapshot(`
+      {
+        "type": "xstate.custom",
+        "value": {
+          "type": "expression",
+          "value": "respond({ type: 'TOKEN' }, { delay: 10 })",
+        },
+      }
+    `);
+    expect(config.states!.b.entry).toMatchInlineSnapshot(`
+      {
+        "type": "xstate.custom",
+        "value": {
+          "type": "expression",
+          "value": "escalate({ message: 'This is some error' })",
+        },
+      }
+    `);
+    expect(config.states!.b.exit).toMatchInlineSnapshot(`
+      {
+        "type": "xstate.custom",
+        "value": {
+          "type": "expression",
+          "value": "pure((context, event) => {
+                  return context.sampleActors.map((sampleActor) => {
+                    return send('SOME_EVENT', { to: sampleActor });
+                  });
+                })",
+        },
+      }
+    `);
   });
 
   it('should extract assign with a callback', () => {
@@ -1118,7 +1232,7 @@ describe('MachineParseResult', () => {
           ],
         },
       },
-    });    
+    });
   `);
 
     expect(config.states!.a.entry).toMatchInlineSnapshot(`
@@ -1143,7 +1257,7 @@ describe('MachineParseResult', () => {
           ],
         },
       },
-    });    
+    });
   `);
 
     expect(config.states!.a.entry).toMatchInlineSnapshot(`

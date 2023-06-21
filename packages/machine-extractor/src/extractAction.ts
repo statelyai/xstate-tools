@@ -346,10 +346,10 @@ function getLiteralType(value: t.ObjectProperty['value']) {
 // Todo: support namespace imports and aliased specifiers
 // import * as actions from 'xstate'; actions.sendTo
 // import {sendTo as x} from 'xstate'
-export const isBuiltinActionWithName = (actionNode: ActionNode, name: string) =>
-  t.isCallExpression(actionNode.node) &&
-  t.isIdentifier(actionNode.node.callee) &&
-  actionNode.node.callee.name === name;
+export const getActionCreatorName = (actionNode: ActionNode) =>
+  t.isCallExpression(actionNode.node) && t.isIdentifier(actionNode.node.callee)
+    ? actionNode.node.callee.name
+    : undefined;
 
 function extractEventObject(
   eventObject: t.ObjectExpression,
