@@ -1,5 +1,11 @@
 # @xstate/machine-extractor
 
+## 0.10.0
+
+### Minor Changes
+
+- [#334](https://github.com/statelyai/xstate-tools/pull/334) [`807edc7`](https://github.com/statelyai/xstate-tools/commit/807edc7d1e6a9f2d441facc99afa4a779f215f25) Thanks [@farskid](https://github.com/farskid)! - Removed `stringifyInlineImplementations` option. Builtin actions and other expressions can be now extracted with `serializeInlineActions`.
+
 ## 0.9.2
 
 ### Patch Changes
