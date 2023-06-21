@@ -1,9 +1,4 @@
-import {
-  Actions,
-  MachineConfig,
-  StateNodeConfig,
-  TransitionConfigOrTarget,
-} from 'xstate';
+import { ActionObject, ActionType, InvokeConfig, SingleOrArray } from 'xstate';
 import { ActionNode, MaybeArrayOfActions } from './actions';
 import { CondNode } from './conds';
 import {
@@ -12,7 +7,7 @@ import {
   extractRaiseAction,
   extractSendToAction,
   extractStopAction,
-  isBuiltinActionWithName,
+  isBuiltinActionWithName as isInlineBuiltinActionWithName,
 } from './extractAction';
 import { TMachineCallExpression } from './machineCallExpression';
 import { StateNodeReturn } from './stateNode';
@@ -41,11 +36,59 @@ export interface ToMachineConfigOptions {
   fileContent: string;
 }
 
+type ActionObjectWithoutType = Omit<ActionObject<any, any>, 'type'> & {
+  name: string;
+};
+
+type ActionConfigWithoutType = ActionType | ActionObjectWithoutType;
+type TransitionConfigWithoutType = {
+  actions?: SingleOrArray<ActionConfigWithoutType>;
+  target?: SingleOrArray<string>;
+  internal?: boolean;
+  cond?: string;
+  description?: string;
+};
+type StateNodeConfig = {
+  type?: string;
+  tags?: SingleOrArray<string>;
+  history?: boolean | string;
+  /**
+   * @deprecated use entry
+   */
+  onEntry?: SingleOrArray<ActionConfigWithoutType>;
+  entry?: SingleOrArray<ActionConfigWithoutType>;
+  /**
+   * @deprecated use exit
+   */
+  onExit?: SingleOrArray<ActionConfigWithoutType>;
+  exit?: SingleOrArray<ActionConfigWithoutType>;
+  on?: Record<string, TransitionConfigWithoutType>;
+  after?: Record<string, TransitionConfigWithoutType>;
+  always?: SingleOrArray<TransitionConfigWithoutType>;
+  onDone?: SingleOrArray<TransitionConfigWithoutType>;
+  onError?: SingleOrArray<TransitionConfigWithoutType>;
+  invoke?: SingleOrArray<InvokeConfig<any, any>>;
+  meta?: {
+    /**
+     * @deprecated use state.description instead
+     */
+    description?: string;
+    [other: string]: any;
+  };
+  description?: string;
+  states?: Record<string, StateNodeConfig>;
+};
+type MachineConfig = {
+  context?: Record<string, any>;
+  id?: string;
+  initial?: string;
+} & StateNodeConfig;
+
 const parseStateNode = (
   astResult: StateNodeReturn,
   opts: ToMachineConfigOptions | undefined,
-): StateNodeConfig<any, any, any> => {
-  const config: MachineConfig<any, any, any> = {};
+): MachineConfig => {
+  const config: MachineConfig = {};
 
   if (astResult?.id) {
     config.id = astResult.id.value;
@@ -73,7 +116,7 @@ const parseStateNode = (
   }
 
   if (astResult.tags) {
-    const tags = astResult.tags.map(tag => tag.value);
+    const tags = astResult.tags.map((tag) => tag.value);
 
     if (tags.length === 1) {
       config.tags = tags[0];
@@ -85,7 +128,7 @@ const parseStateNode = (
   if (astResult.on) {
     config.on = {};
 
-    astResult.on.properties.forEach(onProperty => {
+    astResult.on.properties.forEach((onProperty) => {
       (config.on as any)[onProperty.key] = getTransitions(
         onProperty.result,
         opts,
@@ -96,7 +139,7 @@ const parseStateNode = (
   if (astResult.after) {
     config.after = {};
 
-    astResult.after.properties.forEach(afterProperty => {
+    astResult.after.properties.forEach((afterProperty) => {
       (config.after as any)[afterProperty.key] = getTransitions(
         afterProperty.result,
         opts,
@@ -111,7 +154,7 @@ const parseStateNode = (
   if (astResult.states) {
     const states: typeof config.states = {};
 
-    astResult.states.properties.forEach(state => {
+    astResult.states.properties.forEach((state) => {
       states[state.key] = parseStateNode(state.result, opts);
     });
 
@@ -139,7 +182,7 @@ const parseStateNode = (
   if (astResult.invoke) {
     const invokes: typeof config.invoke = [];
 
-    astResult.invoke.forEach(invoke => {
+    astResult.invoke.forEach((invoke) => {
       if (!invoke.src) {
         return;
       }
@@ -155,7 +198,7 @@ const parseStateNode = (
           src = invoke.src.inlineDeclarationId;
       }
 
-      const toPush: typeof invokes[number] = {
+      const toPush: (typeof invokes)[number] = {
         src: src || (() => () => {}),
       };
 
@@ -195,7 +238,7 @@ const parseStateNode = (
 export const toMachineConfig = (
   result: TMachineCallExpression,
   opts?: ToMachineConfigOptions,
-): MachineConfig<any, any, any> | undefined => {
+): MachineConfig | undefined => {
   if (!result?.definition) return undefined;
   return parseStateNode(result?.definition, opts);
 };
@@ -203,29 +246,19 @@ export const toMachineConfig = (
 export const getActionConfig = (
   astActions: GetParserResult<typeof MaybeArrayOfActions>,
   opts: ToMachineConfigOptions | undefined,
-): Actions<any, any> => {
-  const actions: Actions<any, any> = [];
+): SingleOrArray<ActionConfigWithoutType> => {
+  const actions: ActionConfigWithoutType[] = [];
 
   // Todo: these actions should be extracted in `actions.ts`
-  astActions?.forEach(action => {
+  astActions?.forEach((action) => {
     switch (true) {
       case action.declarationType === 'named':
         actions.push(action.name);
         return;
-      case opts?.anonymizeInlineImplementations:
-        actions.push({
-          type: 'anonymous',
-        });
-        return;
-      case opts?.hashInlineImplementations:
-        actions.push({
-          type: action.inlineDeclarationId,
-        });
-        return;
       case !!action.chooseConditions:
         actions.push({
-          type: 'xstate.choose',
-          conds: action.chooseConditions!.map(condition => {
+          name: 'xstate.choose',
+          conds: action.chooseConditions!.map((condition) => {
             const cond = getCondition(condition.conditionNode, opts);
             return {
               ...(cond && { cond }),
@@ -235,36 +268,47 @@ export const getActionConfig = (
         });
         return;
       // Todo: think about error reporting and how to handle invalid actions such as raise(2)
-      case isBuiltinActionWithName(action, 'assign'):
+      case isInlineBuiltinActionWithName(action, 'assign'):
         actions.push({
-          type: 'xstate.assign',
+          name: 'xstate.assign',
           assignment: extractAssignAction(action, opts!.fileContent),
         });
         return;
-      case isBuiltinActionWithName(action, 'raise'):
+      case isInlineBuiltinActionWithName(action, 'raise'):
         actions.push({
-          type: 'xstate.raise',
+          name: 'xstate.raise',
           event: extractRaiseAction(action, opts!.fileContent),
         });
         return;
-      case isBuiltinActionWithName(action, 'log'):
+      case isInlineBuiltinActionWithName(action, 'log'):
         actions.push({
-          type: 'xstate.log',
+          name: 'xstate.log',
           expr: extractLogAction(action, opts!.fileContent),
         });
         return;
-      case isBuiltinActionWithName(action, 'sendTo'):
+      case isInlineBuiltinActionWithName(action, 'sendTo'):
         actions.push({
-          type: 'xstate.sendTo',
+          name: 'xstate.sendTo',
           ...extractSendToAction(action, opts!.fileContent),
         });
         return;
-      case isBuiltinActionWithName(action, 'stop'):
+      case isInlineBuiltinActionWithName(action, 'stop'):
         actions.push({
-          type: 'xstate.stop',
+          name: 'xstate.stop',
           id: extractStopAction(action, opts!.fileContent),
         });
         return;
+      default:
+        actions.push({
+          name: 'xstate.custom',
+          value: {
+            type: 'expression',
+            value: opts!.fileContent.slice(
+              action.node.start!,
+              action.node.end!,
+            ),
+          },
+        });
     }
   });
 
@@ -295,16 +339,16 @@ const getCondition = (
 export const getTransitions = (
   astTransitions: GetParserResult<typeof MaybeTransitionArray>,
   opts: ToMachineConfigOptions | undefined,
-): TransitionConfigOrTarget<any, any> => {
-  const transitions: TransitionConfigOrTarget<any, any> = [];
+): SingleOrArray<TransitionConfigWithoutType> => {
+  const transitions: TransitionConfigWithoutType[] = [];
 
-  astTransitions?.forEach(transition => {
-    const toPush: TransitionConfigOrTarget<any, any> = {};
+  astTransitions?.forEach((transition) => {
+    const toPush: TransitionConfigWithoutType = {};
     if (transition?.target && transition?.target?.length > 0) {
       if (transition.target.length === 1) {
         toPush.target = transition?.target[0].value;
       } else {
-        toPush.target = transition?.target.map(target => target.value);
+        toPush.target = transition?.target.map((target) => target.value);
       }
     }
     const cond = getCondition(transition?.cond, opts);
