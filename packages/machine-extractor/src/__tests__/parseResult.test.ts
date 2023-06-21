@@ -138,120 +138,6 @@ describe('MachineParseResult', () => {
     });
   });
 
-  it('should extract inline custom action', () => {
-    const config = getTestMachineConfig(
-      `
-    createMachine({
-      initial: "a",
-      states: {
-        a: {
-          entry: [() => {
-            console.log('test')
-          }],
-          exit: [function() {}],
-        },
-        b: {
-          entry: [someVar],
-        }
-      },
-    });
-  `,
-    );
-    expect(config.states!.a.entry).toMatchInlineSnapshot(`
-      {
-        "name": "xstate.custom",
-        "value": {
-          "type": "expression",
-          "value": "() => {
-                  console.log('test')
-                }",
-        },
-      }
-    `);
-    expect(config.states!.a.exit).toMatchInlineSnapshot(`
-      {
-        "name": "xstate.custom",
-        "value": {
-          "type": "expression",
-          "value": "function() {}",
-        },
-      }
-    `);
-    expect(config.states!.b.entry).toMatchInlineSnapshot(`
-      {
-        "name": "xstate.custom",
-        "value": {
-          "type": "expression",
-          "value": "someVar",
-        },
-      }
-    `);
-  });
-
-  it('should extract unsupported builtin actions as custom actions for now', () => {
-    const config = getTestMachineConfig(
-      `
-    createMachine({
-      initial: "a",
-      states: {
-        a: {
-          entry: [forwardTo('some id')],
-          exit: [respond({ type: 'TOKEN' }, { delay: 10 })]
-        },
-        b: {
-          entry: [escalate({ message: 'This is some error' })],
-          exit: [pure((context, event) => {
-            return context.sampleActors.map((sampleActor) => {
-              return send('SOME_EVENT', { to: sampleActor });
-            });
-          })]
-        }
-      },
-    });
-  `,
-    );
-    expect(config.states!.a.entry).toMatchInlineSnapshot(`
-      {
-        "name": "xstate.custom",
-        "value": {
-          "type": "expression",
-          "value": "forwardTo('some id')",
-        },
-      }
-    `);
-    expect(config.states!.a.exit).toMatchInlineSnapshot(`
-      {
-        "name": "xstate.custom",
-        "value": {
-          "type": "expression",
-          "value": "respond({ type: 'TOKEN' }, { delay: 10 })",
-        },
-      }
-    `);
-    expect(config.states!.b.entry).toMatchInlineSnapshot(`
-      {
-        "name": "xstate.custom",
-        "value": {
-          "type": "expression",
-          "value": "escalate({ message: 'This is some error' })",
-        },
-      }
-    `);
-    expect(config.states!.b.exit).toMatchInlineSnapshot(`
-      {
-        "name": "xstate.custom",
-        "value": {
-          "type": "expression",
-          "value": "pure((context, event) => {
-                  return context.sampleActors.map((sampleActor) => {
-                    return send('SOME_EVENT', { to: sampleActor });
-                  });
-                })",
-        },
-      }
-    `);
-  });
-
   it('should extract assign with a callback', () => {
     const config = getTestMachineConfig(`
     createMachine({
@@ -288,7 +174,7 @@ describe('MachineParseResult', () => {
                     };
                   }",
         },
-        "name": "xstate.assign",
+        "type": "xstate.assign",
       }
     `);
     expect(config.states!.a.exit).toMatchInlineSnapshot(`
@@ -302,7 +188,7 @@ describe('MachineParseResult', () => {
                   };
                 }",
         },
-        "name": "xstate.assign",
+        "type": "xstate.assign",
       }
     `);
   });
@@ -365,7 +251,7 @@ describe('MachineParseResult', () => {
             },
           },
         },
-        "name": "xstate.assign",
+        "type": "xstate.assign",
       }
     `);
   });
@@ -389,7 +275,7 @@ describe('MachineParseResult', () => {
           "type": "expression",
           "value": "{...someVar, count: 1}",
         },
-        "name": "xstate.assign",
+        "type": "xstate.assign",
       }
     `);
     expect(config.states!.a.exit).toMatchInlineSnapshot(`
@@ -398,7 +284,7 @@ describe('MachineParseResult', () => {
           "type": "expression",
           "value": "anotherVar",
         },
-        "name": "xstate.assign",
+        "type": "xstate.assign",
       }
     `);
   });
@@ -426,7 +312,7 @@ describe('MachineParseResult', () => {
           "type": "expression",
           "value": "(ctx, evt) => {}",
         },
-        "name": "xstate.raise",
+        "type": "xstate.raise",
       }
     `);
     expect(config.states!.a.exit).toMatchInlineSnapshot(`
@@ -435,7 +321,7 @@ describe('MachineParseResult', () => {
           "type": "expression",
           "value": "function() {}",
         },
-        "name": "xstate.raise",
+        "type": "xstate.raise",
       }
     `);
   });
@@ -480,7 +366,7 @@ describe('MachineParseResult', () => {
             },
           },
         },
-        "name": "xstate.raise",
+        "type": "xstate.raise",
       }
     `);
   });
@@ -509,7 +395,7 @@ describe('MachineParseResult', () => {
             },
           },
         },
-        "name": "xstate.raise",
+        "type": "xstate.raise",
       }
     `);
   });
@@ -534,7 +420,7 @@ describe('MachineParseResult', () => {
           "type": "expression",
           "value": "{...someVar, bar: 'foo'}",
         },
-        "name": "xstate.raise",
+        "type": "xstate.raise",
       }
     `);
   });
@@ -559,7 +445,7 @@ describe('MachineParseResult', () => {
           "type": "string",
           "value": "Some string",
         },
-        "name": "xstate.log",
+        "type": "xstate.log",
       }
     `);
   });
@@ -587,7 +473,7 @@ describe('MachineParseResult', () => {
           "type": "expression",
           "value": "log(() => {})",
         },
-        "name": "xstate.log",
+        "type": "xstate.log",
       }
     `);
     expect(config.states!.a.exit).toMatchInlineSnapshot(`
@@ -596,7 +482,7 @@ describe('MachineParseResult', () => {
           "type": "expression",
           "value": "log(function() {})",
         },
-        "name": "xstate.log",
+        "type": "xstate.log",
       }
     `);
   });
@@ -628,11 +514,11 @@ describe('MachineParseResult', () => {
           },
         },
         "id": undefined,
-        "name": "xstate.sendTo",
         "to": {
           "type": "string",
           "value": "actor",
         },
+        "type": "xstate.sendTo",
       }
     `);
   });
@@ -667,11 +553,11 @@ describe('MachineParseResult', () => {
           },
         },
         "id": undefined,
-        "name": "xstate.sendTo",
         "to": {
           "type": "expression",
           "value": "() => {}",
         },
+        "type": "xstate.sendTo",
       }
     `);
     expect(config.states!.a.exit).toMatchInlineSnapshot(`
@@ -687,11 +573,11 @@ describe('MachineParseResult', () => {
           },
         },
         "id": undefined,
-        "name": "xstate.sendTo",
         "to": {
           "type": "expression",
           "value": "function() {}",
         },
+        "type": "xstate.sendTo",
       }
     `);
   });
@@ -723,11 +609,11 @@ describe('MachineParseResult', () => {
           },
         },
         "id": undefined,
-        "name": "xstate.sendTo",
         "to": {
           "type": "expression",
           "value": "someVar",
         },
+        "type": "xstate.sendTo",
       }
     `);
   });
@@ -759,11 +645,11 @@ describe('MachineParseResult', () => {
           },
         },
         "id": undefined,
-        "name": "xstate.sendTo",
         "to": {
           "type": "expression",
           "value": "() => {}",
         },
+        "type": "xstate.sendTo",
       }
     `);
   });
@@ -799,11 +685,11 @@ describe('MachineParseResult', () => {
           },
         },
         "id": undefined,
-        "name": "xstate.sendTo",
         "to": {
           "type": "expression",
           "value": "() => {}",
         },
+        "type": "xstate.sendTo",
       }
     `);
   });
@@ -833,11 +719,11 @@ describe('MachineParseResult', () => {
           "value": "{...someVar, type: 'event'}",
         },
         "id": undefined,
-        "name": "xstate.sendTo",
         "to": {
           "type": "expression",
           "value": "() => {}",
         },
+        "type": "xstate.sendTo",
       }
     `);
     expect(config.states!.a.exit).toMatchInlineSnapshot(`
@@ -848,11 +734,11 @@ describe('MachineParseResult', () => {
           "value": "someEvent",
         },
         "id": undefined,
-        "name": "xstate.sendTo",
         "to": {
           "type": "expression",
           "value": "() => {}",
         },
+        "type": "xstate.sendTo",
       }
     `);
   });
@@ -887,11 +773,11 @@ describe('MachineParseResult', () => {
           },
         },
         "id": undefined,
-        "name": "xstate.sendTo",
         "to": {
           "type": "string",
           "value": "actor",
         },
+        "type": "xstate.sendTo",
       }
     `);
   });
@@ -926,11 +812,11 @@ describe('MachineParseResult', () => {
           },
         },
         "id": undefined,
-        "name": "xstate.sendTo",
         "to": {
           "type": "string",
           "value": "actor",
         },
+        "type": "xstate.sendTo",
       }
     `);
   });
@@ -968,11 +854,11 @@ describe('MachineParseResult', () => {
           },
         },
         "id": undefined,
-        "name": "xstate.sendTo",
         "to": {
           "type": "string",
           "value": "actor",
         },
+        "type": "xstate.sendTo",
       }
     `);
     expect(config.states!.a.exit).toMatchInlineSnapshot(`
@@ -991,11 +877,11 @@ describe('MachineParseResult', () => {
           },
         },
         "id": undefined,
-        "name": "xstate.sendTo",
         "to": {
           "type": "string",
           "value": "actor",
         },
+        "type": "xstate.sendTo",
       }
     `);
   });
@@ -1030,11 +916,11 @@ describe('MachineParseResult', () => {
           },
         },
         "id": undefined,
-        "name": "xstate.sendTo",
         "to": {
           "type": "string",
           "value": "actor",
         },
+        "type": "xstate.sendTo",
       }
     `);
   });
@@ -1069,11 +955,11 @@ describe('MachineParseResult', () => {
           "type": "string",
           "value": "namedId",
         },
-        "name": "xstate.sendTo",
         "to": {
           "type": "string",
           "value": "actor",
         },
+        "type": "xstate.sendTo",
       }
     `);
   });
@@ -1108,11 +994,11 @@ describe('MachineParseResult', () => {
           "type": "number",
           "value": 234,
         },
-        "name": "xstate.sendTo",
         "to": {
           "type": "string",
           "value": "actor",
         },
+        "type": "xstate.sendTo",
       }
     `);
   });
@@ -1150,11 +1036,11 @@ describe('MachineParseResult', () => {
           "type": "expression",
           "value": "() => {}",
         },
-        "name": "xstate.sendTo",
         "to": {
           "type": "string",
           "value": "actor",
         },
+        "type": "xstate.sendTo",
       }
     `);
     expect(config.states!.a.exit).toMatchInlineSnapshot(`
@@ -1173,11 +1059,11 @@ describe('MachineParseResult', () => {
           "type": "expression",
           "value": "function() {}",
         },
-        "name": "xstate.sendTo",
         "to": {
           "type": "string",
           "value": "actor",
         },
+        "type": "xstate.sendTo",
       }
     `);
   });
@@ -1212,11 +1098,11 @@ describe('MachineParseResult', () => {
           "type": "expression",
           "value": "somevar",
         },
-        "name": "xstate.sendTo",
         "to": {
           "type": "string",
           "value": "actor",
         },
+        "type": "xstate.sendTo",
       }
     `);
   });
@@ -1241,7 +1127,7 @@ describe('MachineParseResult', () => {
           "type": "string",
           "value": "actor",
         },
-        "name": "xstate.stop",
+        "type": "xstate.stop",
       }
     `);
   });
@@ -1266,7 +1152,7 @@ describe('MachineParseResult', () => {
           "type": "expression",
           "value": "2n",
         },
-        "name": "xstate.stop",
+        "type": "xstate.stop",
       }
     `);
   });
