@@ -1,5 +1,5 @@
-import { ActionObject, ActionType, InvokeConfig, SingleOrArray } from 'xstate';
-import { ActionNode, MaybeArrayOfActions } from './actions';
+import { InvokeConfig, SingleOrArray } from 'xstate';
+import { MaybeArrayOfActions } from './actions';
 import { CondNode } from './conds';
 import {
   extractAssignAction,
@@ -36,13 +36,13 @@ export interface ToMachineConfigOptions {
   fileContent: string;
 }
 
-type ActionObjectWithoutType = Omit<ActionObject<any, any>, 'type'> & {
+type ActionObject = {
   name: string;
+  [other: string]: any;
 };
 
-type ActionConfigWithoutType = ActionType | ActionObjectWithoutType;
-type TransitionConfigWithoutType = {
-  actions?: SingleOrArray<ActionConfigWithoutType>;
+type TransitionConfig = {
+  actions?: SingleOrArray<ActionObject>;
   target?: SingleOrArray<string>;
   internal?: boolean;
   cond?: string;
@@ -55,18 +55,18 @@ type StateNodeConfig = {
   /**
    * @deprecated use entry
    */
-  onEntry?: SingleOrArray<ActionConfigWithoutType>;
-  entry?: SingleOrArray<ActionConfigWithoutType>;
+  onEntry?: SingleOrArray<ActionObject>;
+  entry?: SingleOrArray<ActionObject>;
   /**
    * @deprecated use exit
    */
-  onExit?: SingleOrArray<ActionConfigWithoutType>;
-  exit?: SingleOrArray<ActionConfigWithoutType>;
-  on?: Record<string, TransitionConfigWithoutType>;
-  after?: Record<string, TransitionConfigWithoutType>;
-  always?: SingleOrArray<TransitionConfigWithoutType>;
-  onDone?: SingleOrArray<TransitionConfigWithoutType>;
-  onError?: SingleOrArray<TransitionConfigWithoutType>;
+  onExit?: SingleOrArray<ActionObject>;
+  exit?: SingleOrArray<ActionObject>;
+  on?: Record<string, TransitionConfig>;
+  after?: Record<string, TransitionConfig>;
+  always?: SingleOrArray<TransitionConfig>;
+  onDone?: SingleOrArray<TransitionConfig>;
+  onError?: SingleOrArray<TransitionConfig>;
   invoke?: SingleOrArray<InvokeConfig<any, any>>;
   meta?: {
     /**
@@ -246,14 +246,14 @@ export const toMachineConfig = (
 export const getActionConfig = (
   astActions: GetParserResult<typeof MaybeArrayOfActions>,
   opts: ToMachineConfigOptions | undefined,
-): SingleOrArray<ActionConfigWithoutType> => {
-  const actions: ActionConfigWithoutType[] = [];
+): SingleOrArray<ActionObject> => {
+  const actions: ActionObject[] = [];
 
   // Todo: these actions should be extracted in `actions.ts`
   astActions?.forEach((action) => {
     switch (true) {
       case action.declarationType === 'named':
-        actions.push(action.name);
+        actions.push({ name: action.name });
         return;
       case !!action.chooseConditions:
         actions.push({
@@ -339,11 +339,11 @@ const getCondition = (
 export const getTransitions = (
   astTransitions: GetParserResult<typeof MaybeTransitionArray>,
   opts: ToMachineConfigOptions | undefined,
-): SingleOrArray<TransitionConfigWithoutType> => {
-  const transitions: TransitionConfigWithoutType[] = [];
+): SingleOrArray<TransitionConfig> => {
+  const transitions: TransitionConfig[] = [];
 
   astTransitions?.forEach((transition) => {
-    const toPush: TransitionConfigWithoutType = {};
+    const toPush: TransitionConfig = {};
     if (transition?.target && transition?.target?.length > 0) {
       if (transition.target.length === 1) {
         toPush.target = transition?.target[0].value;
