@@ -94,6 +94,20 @@ const writeToFiles = async (uriArray: string[], { cwd }: { cwd: string }) => {
           return;
         }
 
+        // Find the first import statement and check what quote style it uses
+        // We will consider that the quote style to use for our import statement
+        const quoteMatch = fileContents.match(/import\s(.|\n)*?(['"])/);
+        // Default quote style to "
+        let quoteStyle = '"';
+        if (quoteMatch !== null && quoteMatch.length > 2) {
+          // Get the second group from the match
+          quoteStyle = quoteMatch[2];
+          // Ensure that the quote is either a ' or "
+          if (quoteStyle !== '"' && quoteStyle !== "'") {
+            quoteStyle = '"';
+          }
+        }
+
         const typegenUri =
           uri.slice(0, -path.extname(uri).length) + '.typegen.ts';
 
@@ -114,13 +128,9 @@ const writeToFiles = async (uriArray: string[], { cwd }: { cwd: string }) => {
           await removeFile(typegenUri);
         }
 
-        const edits = getTsTypesEdits(types);
+        const edits = getTsTypesEdits(types, quoteStyle);
         if (edits.length > 0) {
-          const newFile = await prettify(
-            uri,
-            processFileEdits(fileContents, edits),
-            { cwd },
-          );
+          const newFile = processFileEdits(fileContents, edits);
           await fs.writeFile(uri, newFile);
         }
         console.log(`${uri} - success`);
