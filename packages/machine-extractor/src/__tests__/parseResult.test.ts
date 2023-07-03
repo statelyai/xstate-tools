@@ -1270,4 +1270,33 @@ describe('MachineParseResult', () => {
       }
     `);
   });
+
+  it('should extract named actions as actions', () => {
+    const config = getTestMachineConfig(
+      `
+    createMachine({
+      initial: "a",
+      entry: [
+        'string',
+        { type: 'object' },
+        { type: 'params', params: { foo: 'bar' } }
+      ]
+    });
+  `,
+    );
+    expect(config.entry).toMatchInlineSnapshot(`
+      [
+        "string",
+        {
+          "type": "object",
+        },
+        {
+          "type": "params",
+          "params": {
+            "foo": "bar",
+          },
+        },
+      ]
+    `);
+  });
 });
