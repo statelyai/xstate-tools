@@ -279,29 +279,23 @@ describe('MachineParseResult', () => {
 
     expect(config.states!.a.entry).toMatchInlineSnapshot(`
       {
-        "assignment": {
-          "type": "expression",
-          "value": "(ctx, e) => {
+        "assignment": "{{(ctx, e) => {
                     const val = e.data;
                     return {
                       count: val + ctx.count,
                     };
-                  }",
-        },
+                  }}}",
         "type": "xstate.assign",
       }
     `);
     expect(config.states!.a.exit).toMatchInlineSnapshot(`
       {
-        "assignment": {
-          "type": "expression",
-          "value": "function (ctx, e) {
+        "assignment": "{{function (ctx, e) {
                   const val = e.data;
                   return {
                     count: val + ctx.count,
                   };
-                }",
-        },
+                }}}",
         "type": "xstate.assign",
       }
     `);
@@ -322,7 +316,7 @@ describe('MachineParseResult', () => {
                 },
                 c: 2,
                 d: 'some string',
-                e: [1,2,3],
+                e: [1,2,3, [4,[5]]],
                 f: {f1: {}}
               }
             )
@@ -335,35 +329,14 @@ describe('MachineParseResult', () => {
     expect(config.states!.a.entry).toMatchInlineSnapshot(`
       {
         "assignment": {
-          "type": "object",
-          "value": {
-            "a": {
-              "type": "expression",
-              "value": "ctx => ctx.count + 1",
-            },
-            "b": {
-              "type": "expression",
-              "value": "function (ctx, e) {
+          "a": "{{ctx => ctx.count + 1}}",
+          "b": "{{function (ctx, e) {
                         return ctx.whatever + e.anotherWhatever
-                      }",
-            },
-            "c": {
-              "type": "number",
-              "value": 2,
-            },
-            "d": {
-              "type": "string",
-              "value": "some string",
-            },
-            "e": {
-              "type": "expression",
-              "value": "[1,2,3]",
-            },
-            "f": {
-              "type": "expression",
-              "value": "{f1: {}}",
-            },
-          },
+                      }}}",
+          "c": 2,
+          "d": "some string",
+          "e": "{{[1,2,3, [4,[5]]]}}",
+          "f": "{{{f1: {}}}}",
         },
         "type": "xstate.assign",
       }
@@ -385,19 +358,13 @@ describe('MachineParseResult', () => {
 
     expect(config.states!.a.entry).toMatchInlineSnapshot(`
       {
-        "assignment": {
-          "type": "expression",
-          "value": "{...someVar, count: 1}",
-        },
+        "assignment": "{{{...someVar, count: 1}}}",
         "type": "xstate.assign",
       }
     `);
     expect(config.states!.a.exit).toMatchInlineSnapshot(`
       {
-        "assignment": {
-          "type": "expression",
-          "value": "anotherVar",
-        },
+        "assignment": "{{anotherVar}}",
         "type": "xstate.assign",
       }
     `);
@@ -422,19 +389,13 @@ describe('MachineParseResult', () => {
 
     expect(config.states!.a.entry).toMatchInlineSnapshot(`
       {
-        "event": {
-          "type": "expression",
-          "value": "(ctx, evt) => {}",
-        },
+        "event": "{{(ctx, evt) => {}}}",
         "type": "xstate.raise",
       }
     `);
     expect(config.states!.a.exit).toMatchInlineSnapshot(`
       {
-        "event": {
-          "type": "expression",
-          "value": "function() {}",
-        },
+        "event": "{{function() {}}}",
         "type": "xstate.raise",
       }
     `);
@@ -456,29 +417,11 @@ describe('MachineParseResult', () => {
     expect(config.states!.a.entry).toMatchInlineSnapshot(`
       {
         "event": {
-          "type": "object",
-          "value": {
-            "bar": {
-              "type": "boolean",
-              "value": true,
-            },
-            "baz": {
-              "type": "expression",
-              "value": "[1,2,3]",
-            },
-            "foo": {
-              "type": "string",
-              "value": "foo",
-            },
-            "obj": {
-              "type": "expression",
-              "value": "{prop: {prop2: 2}}",
-            },
-            "type": {
-              "type": "string",
-              "value": "Some event",
-            },
-          },
+          "bar": true,
+          "baz": "{{[1,2,3]}}",
+          "foo": "foo",
+          "obj": "{{{prop: {prop2: 2}}}}",
+          "type": "Some event",
         },
         "type": "xstate.raise",
       }
@@ -501,13 +444,7 @@ describe('MachineParseResult', () => {
     expect(config.states!.a.entry).toMatchInlineSnapshot(`
       {
         "event": {
-          "type": "object",
-          "value": {
-            "type": {
-              "type": "string",
-              "value": "Event type",
-            },
-          },
+          "type": "Event type",
         },
         "type": "xstate.raise",
       }
@@ -530,10 +467,7 @@ describe('MachineParseResult', () => {
 
     expect(config.states!.a.entry).toMatchInlineSnapshot(`
       {
-        "event": {
-          "type": "expression",
-          "value": "{...someVar, bar: 'foo'}",
-        },
+        "event": "{{{...someVar, bar: 'foo'}}}",
         "type": "xstate.raise",
       }
     `);
@@ -555,10 +489,7 @@ describe('MachineParseResult', () => {
 
     expect(config.states!.a.entry).toMatchInlineSnapshot(`
       {
-        "expr": {
-          "type": "string",
-          "value": "Some string",
-        },
+        "expr": "Some string",
         "type": "xstate.log",
       }
     `);
@@ -583,19 +514,13 @@ describe('MachineParseResult', () => {
 
     expect(config.states!.a.entry).toMatchInlineSnapshot(`
       {
-        "expr": {
-          "type": "expression",
-          "value": "log(() => {})",
-        },
+        "expr": "{{log(() => {})}}",
         "type": "xstate.log",
       }
     `);
     expect(config.states!.a.exit).toMatchInlineSnapshot(`
       {
-        "expr": {
-          "type": "expression",
-          "value": "log(function() {})",
-        },
+        "expr": "{{log(function() {})}}",
         "type": "xstate.log",
       }
     `);
@@ -617,21 +542,12 @@ describe('MachineParseResult', () => {
 
     expect(config.states!.a.entry).toMatchInlineSnapshot(`
       {
-        "delay": undefined,
+        "delay": 0,
         "event": {
-          "type": "object",
-          "value": {
-            "type": {
-              "type": "string",
-              "value": "event",
-            },
-          },
+          "type": "event",
         },
-        "id": undefined,
-        "to": {
-          "type": "string",
-          "value": "actor",
-        },
+        "id": "",
+        "to": "actor",
         "type": "xstate.sendTo",
       }
     `);
@@ -656,41 +572,23 @@ describe('MachineParseResult', () => {
 
     expect(config.states!.a.entry).toMatchInlineSnapshot(`
       {
-        "delay": undefined,
+        "delay": 0,
         "event": {
-          "type": "object",
-          "value": {
-            "type": {
-              "type": "string",
-              "value": "event",
-            },
-          },
+          "type": "event",
         },
-        "id": undefined,
-        "to": {
-          "type": "expression",
-          "value": "() => {}",
-        },
+        "id": "",
+        "to": "{{() => {}}}",
         "type": "xstate.sendTo",
       }
     `);
     expect(config.states!.a.exit).toMatchInlineSnapshot(`
       {
-        "delay": undefined,
+        "delay": 0,
         "event": {
-          "type": "object",
-          "value": {
-            "type": {
-              "type": "string",
-              "value": "event",
-            },
-          },
+          "type": "event",
         },
-        "id": undefined,
-        "to": {
-          "type": "expression",
-          "value": "function() {}",
-        },
+        "id": "",
+        "to": "{{function() {}}}",
         "type": "xstate.sendTo",
       }
     `);
@@ -712,21 +610,12 @@ describe('MachineParseResult', () => {
 
     expect(config.states!.a.entry).toMatchInlineSnapshot(`
       {
-        "delay": undefined,
+        "delay": 0,
         "event": {
-          "type": "object",
-          "value": {
-            "type": {
-              "type": "string",
-              "value": "event",
-            },
-          },
+          "type": "event",
         },
-        "id": undefined,
-        "to": {
-          "type": "expression",
-          "value": "someVar",
-        },
+        "id": "",
+        "to": "{{someVar}}",
         "type": "xstate.sendTo",
       }
     `);
@@ -748,21 +637,12 @@ describe('MachineParseResult', () => {
 
     expect(config.states!.a.entry).toMatchInlineSnapshot(`
       {
-        "delay": undefined,
+        "delay": 0,
         "event": {
-          "type": "object",
-          "value": {
-            "type": {
-              "type": "string",
-              "value": "event",
-            },
-          },
+          "type": "event",
         },
-        "id": undefined,
-        "to": {
-          "type": "expression",
-          "value": "() => {}",
-        },
+        "id": "",
+        "to": "{{() => {}}}",
         "type": "xstate.sendTo",
       }
     `);
@@ -784,25 +664,13 @@ describe('MachineParseResult', () => {
 
     expect(config.states!.a.entry).toMatchInlineSnapshot(`
       {
-        "delay": undefined,
+        "delay": 0,
         "event": {
-          "type": "object",
-          "value": {
-            "type": {
-              "type": "string",
-              "value": "event type",
-            },
-            "userId": {
-              "type": "number",
-              "value": 2,
-            },
-          },
+          "type": "event type",
+          "userId": 2,
         },
-        "id": undefined,
-        "to": {
-          "type": "expression",
-          "value": "() => {}",
-        },
+        "id": "",
+        "to": "{{() => {}}}",
         "type": "xstate.sendTo",
       }
     `);
@@ -827,31 +695,19 @@ describe('MachineParseResult', () => {
 
     expect(config.states!.a.entry).toMatchInlineSnapshot(`
       {
-        "delay": undefined,
-        "event": {
-          "type": "expression",
-          "value": "{...someVar, type: 'event'}",
-        },
-        "id": undefined,
-        "to": {
-          "type": "expression",
-          "value": "() => {}",
-        },
+        "delay": 0,
+        "event": "{{{...someVar, type: 'event'}}}",
+        "id": "",
+        "to": "{{() => {}}}",
         "type": "xstate.sendTo",
       }
     `);
     expect(config.states!.a.exit).toMatchInlineSnapshot(`
       {
-        "delay": undefined,
-        "event": {
-          "type": "expression",
-          "value": "someEvent",
-        },
-        "id": undefined,
-        "to": {
-          "type": "expression",
-          "value": "() => {}",
-        },
+        "delay": 0,
+        "event": "{{someEvent}}",
+        "id": "",
+        "to": "{{() => {}}}",
         "type": "xstate.sendTo",
       }
     `);
@@ -873,24 +729,12 @@ describe('MachineParseResult', () => {
 
     expect(config.states!.a.entry).toMatchInlineSnapshot(`
       {
-        "delay": {
-          "type": "string",
-          "value": "namedDelay",
-        },
+        "delay": "namedDelay",
         "event": {
-          "type": "object",
-          "value": {
-            "type": {
-              "type": "string",
-              "value": "event",
-            },
-          },
+          "type": "event",
         },
-        "id": undefined,
-        "to": {
-          "type": "string",
-          "value": "actor",
-        },
+        "id": "",
+        "to": "actor",
         "type": "xstate.sendTo",
       }
     `);
@@ -912,24 +756,12 @@ describe('MachineParseResult', () => {
 
     expect(config.states!.a.entry).toMatchInlineSnapshot(`
       {
-        "delay": {
-          "type": "number",
-          "value": 234,
-        },
+        "delay": 234,
         "event": {
-          "type": "object",
-          "value": {
-            "type": {
-              "type": "string",
-              "value": "event",
-            },
-          },
+          "type": "event",
         },
-        "id": undefined,
-        "to": {
-          "type": "string",
-          "value": "actor",
-        },
+        "id": "",
+        "to": "actor",
         "type": "xstate.sendTo",
       }
     `);
@@ -954,47 +786,23 @@ describe('MachineParseResult', () => {
 
     expect(config.states!.a.entry).toMatchInlineSnapshot(`
       {
-        "delay": {
-          "type": "expression",
-          "value": "() => {}",
-        },
+        "delay": "{{() => {}}}",
         "event": {
-          "type": "object",
-          "value": {
-            "type": {
-              "type": "string",
-              "value": "event",
-            },
-          },
+          "type": "event",
         },
-        "id": undefined,
-        "to": {
-          "type": "string",
-          "value": "actor",
-        },
+        "id": "",
+        "to": "actor",
         "type": "xstate.sendTo",
       }
     `);
     expect(config.states!.a.exit).toMatchInlineSnapshot(`
       {
-        "delay": {
-          "type": "expression",
-          "value": "function() {}",
-        },
+        "delay": "{{function() {}}}",
         "event": {
-          "type": "object",
-          "value": {
-            "type": {
-              "type": "string",
-              "value": "event",
-            },
-          },
+          "type": "event",
         },
-        "id": undefined,
-        "to": {
-          "type": "string",
-          "value": "actor",
-        },
+        "id": "",
+        "to": "actor",
         "type": "xstate.sendTo",
       }
     `);
@@ -1016,24 +824,12 @@ describe('MachineParseResult', () => {
 
     expect(config.states!.a.entry).toMatchInlineSnapshot(`
       {
-        "delay": {
-          "type": "expression",
-          "value": "somevar",
-        },
+        "delay": "{{somevar}}",
         "event": {
-          "type": "object",
-          "value": {
-            "type": {
-              "type": "string",
-              "value": "event",
-            },
-          },
+          "type": "event",
         },
-        "id": undefined,
-        "to": {
-          "type": "string",
-          "value": "actor",
-        },
+        "id": "",
+        "to": "actor",
         "type": "xstate.sendTo",
       }
     `);
@@ -1055,24 +851,12 @@ describe('MachineParseResult', () => {
 
     expect(config.states!.a.entry).toMatchInlineSnapshot(`
       {
-        "delay": undefined,
+        "delay": 0,
         "event": {
-          "type": "object",
-          "value": {
-            "type": {
-              "type": "string",
-              "value": "event",
-            },
-          },
+          "type": "event",
         },
-        "id": {
-          "type": "string",
-          "value": "namedId",
-        },
-        "to": {
-          "type": "string",
-          "value": "actor",
-        },
+        "id": "namedId",
+        "to": "actor",
         "type": "xstate.sendTo",
       }
     `);
@@ -1094,24 +878,12 @@ describe('MachineParseResult', () => {
 
     expect(config.states!.a.entry).toMatchInlineSnapshot(`
       {
-        "delay": undefined,
+        "delay": 0,
         "event": {
-          "type": "object",
-          "value": {
-            "type": {
-              "type": "string",
-              "value": "event",
-            },
-          },
+          "type": "event",
         },
-        "id": {
-          "type": "number",
-          "value": 234,
-        },
-        "to": {
-          "type": "string",
-          "value": "actor",
-        },
+        "id": 234,
+        "to": "actor",
         "type": "xstate.sendTo",
       }
     `);
@@ -1136,47 +908,23 @@ describe('MachineParseResult', () => {
 
     expect(config.states!.a.entry).toMatchInlineSnapshot(`
       {
-        "delay": undefined,
+        "delay": 0,
         "event": {
-          "type": "object",
-          "value": {
-            "type": {
-              "type": "string",
-              "value": "event",
-            },
-          },
+          "type": "event",
         },
-        "id": {
-          "type": "expression",
-          "value": "() => {}",
-        },
-        "to": {
-          "type": "string",
-          "value": "actor",
-        },
+        "id": "{{() => {}}}",
+        "to": "actor",
         "type": "xstate.sendTo",
       }
     `);
     expect(config.states!.a.exit).toMatchInlineSnapshot(`
       {
-        "delay": undefined,
+        "delay": 0,
         "event": {
-          "type": "object",
-          "value": {
-            "type": {
-              "type": "string",
-              "value": "event",
-            },
-          },
+          "type": "event",
         },
-        "id": {
-          "type": "expression",
-          "value": "function() {}",
-        },
-        "to": {
-          "type": "string",
-          "value": "actor",
-        },
+        "id": "{{function() {}}}",
+        "to": "actor",
         "type": "xstate.sendTo",
       }
     `);
@@ -1198,24 +946,12 @@ describe('MachineParseResult', () => {
 
     expect(config.states!.a.entry).toMatchInlineSnapshot(`
       {
-        "delay": undefined,
+        "delay": 0,
         "event": {
-          "type": "object",
-          "value": {
-            "type": {
-              "type": "string",
-              "value": "event",
-            },
-          },
+          "type": "event",
         },
-        "id": {
-          "type": "expression",
-          "value": "somevar",
-        },
-        "to": {
-          "type": "string",
-          "value": "actor",
-        },
+        "id": "{{somevar}}",
+        "to": "actor",
         "type": "xstate.sendTo",
       }
     `);
@@ -1237,10 +973,7 @@ describe('MachineParseResult', () => {
 
     expect(config.states!.a.entry).toMatchInlineSnapshot(`
       {
-        "id": {
-          "type": "string",
-          "value": "actor",
-        },
+        "id": "actor",
         "type": "xstate.stop",
       }
     `);
@@ -1262,10 +995,7 @@ describe('MachineParseResult', () => {
 
     expect(config.states!.a.entry).toMatchInlineSnapshot(`
       {
-        "id": {
-          "type": "expression",
-          "value": "2n",
-        },
+        "id": "{{2n}}",
         "type": "xstate.stop",
       }
     `);

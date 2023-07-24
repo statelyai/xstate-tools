@@ -49,7 +49,7 @@ export function extractAssignAction(
               assignment[prop.key.name] = `{{${fileContent.slice(
                 prop.value.start!,
                 prop.value.end!,
-              )}}}` satisfies JsonExpressionString;
+              )}}}`;
             } else if (t.isLiteral(prop.value)) {
               /**
                * assign({prop: literal value})
@@ -62,7 +62,7 @@ export function extractAssignAction(
                 assignment[prop.key.name] = `{{${fileContent.slice(
                   prop.value.start!,
                   prop.value.end!,
-                )}}}` satisfies JsonExpressionString;
+                )}}}`;
               } else if (t.isTemplateLiteral(prop.value)) {
                 assignment[prop.key.name] =
                   prop.value.quasis[0].value.cooked ??
@@ -79,7 +79,7 @@ export function extractAssignAction(
               assignment[prop.key.name] = `{{${fileContent.slice(
                 prop.value.start!,
                 prop.value.end!,
-              )}}}` satisfies JsonExpressionString;
+              )}}}`;
             }
           }
         }
@@ -93,10 +93,7 @@ export function extractAssignAction(
     // assign({...someVar})
     // assign(someVar)
     // or anything else
-    return {
-      type: 'expression',
-      value: fileContent.slice(assigner.start!, assigner.end!),
-    };
+    return `{{${fileContent.slice(assigner.start!, assigner.end!)}}}`;
   }
 
   throw Error(`Unsupported assign action`);
@@ -126,10 +123,7 @@ export function extractRaiseAction(
     }
 
     // raise(() => {}) or anything else
-    return `{{${fileContent.slice(
-      arg.start!,
-      arg.end!,
-    )}}}` satisfies JsonExpressionString;
+    return `{{${fileContent.slice(arg.start!, arg.end!)}}}`;
   }
 
   throw Error(`Unsupported raise action`);
@@ -149,10 +143,7 @@ export function extractLogAction(
     }
 
     // log((ctx, evt) => {}) or anything else
-    return `{{${fileContent.slice(
-      node.start!,
-      node.end!,
-    )}}}` satisfies JsonExpressionString;
+    return `{{${fileContent.slice(node.start!, node.end!)}}}`;
   }
 
   throw Error(`Unsupported log action`);
@@ -172,10 +163,7 @@ export function extractStopAction(
     }
 
     // stop(() => {}) or anything else
-    return `{{${fileContent.slice(
-      arg.start!,
-      arg.end!,
-    )}}}` satisfies JsonExpressionString;
+    return `{{${fileContent.slice(arg.start!, arg.end!)}}}`;
   }
 
   throw Error('Unsupported stop action');
@@ -214,10 +202,7 @@ export function extractSendToAction(
     }
     // sendTo((ctx, e) => actorRef) or anything else
     else {
-      actorRef = `{{${fileContent.slice(
-        arg1.start!,
-        arg1.end!,
-      )}}}` satisfies JsonExpressionString;
+      actorRef = `{{${fileContent.slice(arg1.start!, arg1.end!)}}}`;
     }
 
     // Event
@@ -235,10 +220,7 @@ export function extractSendToAction(
 
     // sendTo(, (ctx, e) => Record<string, any>) or anything else
     else {
-      eventObject = `{{${fileContent.slice(
-        arg2.start!,
-        arg2.end!,
-      )}}}` satisfies JsonExpressionString;
+      eventObject = `{{${fileContent.slice(arg2.start!, arg2.end!)}}}`;
     }
 
     // Options
@@ -292,10 +274,7 @@ function extractEventObject(
   fileContent: string,
 ): JsonExpressionString | Record<string, JsonItem> {
   if (!eventObject.properties.every((prop) => t.isObjectProperty(prop))) {
-    return `{{${fileContent.slice(
-      eventObject.start!,
-      eventObject.end!,
-    )}}}` satisfies JsonExpressionString;
+    return `{{${fileContent.slice(eventObject.start!, eventObject.end!)}}}`;
   }
 
   const extracted: Record<string, JsonItem> = {};
@@ -311,7 +290,7 @@ function extractEventObject(
             extracted[prop.key.name] = `{{${fileContent.slice(
               prop.value.start!,
               prop.value.end!,
-            )}}}` satisfies JsonExpressionString;
+            )}}}`;
           } else if (t.isTemplateLiteral(prop.value)) {
             extracted[prop.key.name] =
               prop.value.quasis[0].value.cooked ??
@@ -326,7 +305,7 @@ function extractEventObject(
           extracted[prop.key.name] = `{{${fileContent.slice(
             prop.value.start!,
             prop.value.end!,
-          )}}}` satisfies JsonExpressionString;
+          )}}}`;
         } else {
           console.warn(
             `Unsupported property value of type ${prop.value.type} in assignment`,
