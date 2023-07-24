@@ -46,8 +46,10 @@ export function extractAssignAction(
               t.isArrayExpression(prop.value) ||
               t.isObjectExpression(prop.value)
             ) {
-              assignment[prop.key.name] =
-                `{{fileContent.slice(prop.value.start!, prop.value.end!)}}` satisfies JsonExpressionString;
+              assignment[prop.key.name] = `{{${fileContent.slice(
+                prop.value.start!,
+                prop.value.end!,
+              )}}}` satisfies JsonExpressionString;
             } else if (t.isLiteral(prop.value)) {
               /**
                * assign({prop: literal value})
@@ -57,10 +59,10 @@ export function extractAssignAction(
                 isTemplateLiteralWithExpressions(prop.value) ||
                 t.isNullLiteral(prop.value)
               ) {
-                assignment[prop.key.name] = `{{fileContent.slice(
+                assignment[prop.key.name] = `{{${fileContent.slice(
                   prop.value.start!,
                   prop.value.end!,
-                )}}` satisfies JsonExpressionString;
+                )}}}` satisfies JsonExpressionString;
               } else if (t.isTemplateLiteral(prop.value)) {
                 assignment[prop.key.name] =
                   prop.value.quasis[0].value.cooked ??
@@ -74,10 +76,10 @@ export function extractAssignAction(
                * assign({prop: function() {}})
                * or anything else
                */
-              assignment[prop.key.name] = `{{fileContent.slice(
+              assignment[prop.key.name] = `{{${fileContent.slice(
                 prop.value.start!,
                 prop.value.end!,
-              )}}` satisfies JsonExpressionString;
+              )}}}` satisfies JsonExpressionString;
             }
           }
         }
@@ -124,10 +126,10 @@ export function extractRaiseAction(
     }
 
     // raise(() => {}) or anything else
-    return `{{fileContent.slice(
+    return `{{${fileContent.slice(
       arg.start!,
       arg.end!,
-    )}}` satisfies JsonExpressionString;
+    )}}}` satisfies JsonExpressionString;
   }
 
   throw Error(`Unsupported raise action`);
@@ -179,20 +181,10 @@ export function extractStopAction(
   throw Error('Unsupported stop action');
 }
 
-type SendToEventArg =
-  | { type: 'expression'; value: string }
-  | {
-      type: 'object';
-      value: Record<string, JsonEntry>;
-    }
-  | undefined;
-type SendToActorRefArg =
-  | { type: 'string' | 'expression'; value: string }
-  | undefined;
-type SendToOptionArg =
-  | { type: 'string' | 'expression'; value: string }
-  | { type: 'number'; value: number }
-  | undefined;
+type SendToEventArg = JsonExpressionString | Record<string, JsonItem>;
+type SendToActorRefArg = string | JsonExpressionString;
+type SendToIdArg = string | JsonExpressionString;
+type SendToDelayArg = string | number | JsonExpressionString;
 
 export function extractSendToAction(
   actionNode: ActionNode,
@@ -200,15 +192,15 @@ export function extractSendToAction(
 ): {
   event: SendToEventArg;
   to: SendToActorRefArg;
-  delay: SendToOptionArg;
-  id: SendToOptionArg;
+  delay: SendToDelayArg;
+  id: SendToIdArg;
 } {
   const node = actionNode.node;
-  let eventObject: SendToEventArg = undefined;
-  let actorRef: SendToActorRefArg = undefined;
-  const options: { [key: string]: SendToOptionArg } = {
-    delay: undefined,
-    id: undefined,
+  let eventObject: SendToEventArg = {};
+  let actorRef: SendToActorRefArg = '';
+  const options: { id: SendToIdArg; delay: SendToDelayArg } = {
+    id: '',
+    delay: 0,
   };
   if (t.isCallExpression(node)) {
     const arg1 = node.arguments[0];
@@ -218,27 +210,21 @@ export function extractSendToAction(
     // Actor
     // sendTo('actorName')
     if (t.isStringLiteral(arg1)) {
-      actorRef = { type: 'string', value: arg1.value };
+      actorRef = arg1.value;
     }
     // sendTo((ctx, e) => actorRef) or anything else
     else {
-      actorRef = {
-        type: 'expression',
-        value: fileContent.slice(arg1.start!, arg1.end!),
-      };
+      actorRef = `{{${fileContent.slice(
+        arg1.start!,
+        arg1.end!,
+      )}}}` satisfies JsonExpressionString;
     }
 
     // Event
     // sendTo(, 'eventType')
     if (t.isStringLiteral(arg2)) {
       eventObject = {
-        type: 'object',
-        value: {
-          type: {
-            type: 'string',
-            value: arg2.value,
-          },
-        },
+        type: arg2.value,
       };
     }
 
@@ -249,10 +235,10 @@ export function extractSendToAction(
 
     // sendTo(, (ctx, e) => Record<string, any>) or anything else
     else {
-      eventObject = {
-        type: 'expression',
-        value: fileContent.slice(arg2.start!, arg2.end!),
-      };
+      eventObject = `{{${fileContent.slice(
+        arg2.start!,
+        arg2.end!,
+      )}}}` satisfies JsonExpressionString;
     }
 
     // Options
@@ -263,23 +249,18 @@ export function extractSendToAction(
             t.isObjectProperty(prop) && t.isIdentifier(prop.key),
         )
         .forEach((prop) => {
+          const name = prop.key.name;
           if (t.isStringLiteral(prop.value) || t.isBigIntLiteral(prop.value)) {
-            options[prop.key.name] = {
-              type: 'string',
-              value: prop.value.value,
-            };
+            options[name as 'id' | 'delay'] = prop.value.value;
           } else if (t.isNumericLiteral(prop.value)) {
-            options[prop.key.name] = {
-              type: 'number',
-              value: prop.value.value,
-            };
+            options[name as 'delay'] = prop.value.value;
           }
           // () => {} or anything else
           else {
-            options[prop.key.name] = {
-              type: 'expression',
-              value: fileContent.slice(prop.value.start!, prop.value.end!),
-            };
+            options[name as 'id' | 'delay'] = `{{${fileContent.slice(
+              prop.value.start!,
+              prop.value.end!,
+            )}}}` as JsonExpressionString;
           }
         });
     }
@@ -311,10 +292,10 @@ function extractEventObject(
   fileContent: string,
 ): JsonExpressionString | Record<string, JsonItem> {
   if (!eventObject.properties.every((prop) => t.isObjectProperty(prop))) {
-    return `{{fileContent.slice(
+    return `{{${fileContent.slice(
       eventObject.start!,
       eventObject.end!,
-    )}}` satisfies JsonExpressionString;
+    )}}}` satisfies JsonExpressionString;
   }
 
   const extracted: Record<string, JsonItem> = {};
@@ -327,10 +308,10 @@ function extractEventObject(
             isTemplateLiteralWithExpressions(prop.value) ||
             t.isNullLiteral(prop.value)
           ) {
-            extracted[prop.key.name] = `{{fileContent.slice(
+            extracted[prop.key.name] = `{{${fileContent.slice(
               prop.value.start!,
               prop.value.end!,
-            )}}` satisfies JsonExpressionString;
+            )}}}` satisfies JsonExpressionString;
           } else if (t.isTemplateLiteral(prop.value)) {
             extracted[prop.key.name] =
               prop.value.quasis[0].value.cooked ??
@@ -342,8 +323,10 @@ function extractEventObject(
           t.isArrayExpression(prop.value) ||
           t.isObjectExpression(prop.value)
         ) {
-          extracted[prop.key.name] =
-            `{{fileContent.slice(prop.value.start!, prop.value.end!)}}` satisfies JsonExpressionString;
+          extracted[prop.key.name] = `{{${fileContent.slice(
+            prop.value.start!,
+            prop.value.end!,
+          )}}}` satisfies JsonExpressionString;
         } else {
           console.warn(
             `Unsupported property value of type ${prop.value.type} in assignment`,
