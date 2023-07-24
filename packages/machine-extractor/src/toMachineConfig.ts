@@ -4,7 +4,7 @@ import {
   StateNodeConfig,
   TransitionConfigOrTarget,
 } from 'xstate';
-import { ActionNode, MaybeArrayOfActions } from './actions';
+import { MaybeArrayOfActions } from './actions';
 import { CondNode } from './conds';
 import {
   extractAssignAction,
@@ -277,13 +277,10 @@ export const getActionConfig = (
           default:
             actions.push({
               type: 'xstate.custom',
-              value: {
-                type: 'expression',
-                value: opts!.fileContent.slice(
-                  action.node.start!,
-                  action.node.end!,
-                ),
-              },
+              value: `{{${opts!.fileContent.slice(
+                action.node.start!,
+                action.node.end!,
+              )}}}`,
             });
             return;
         }

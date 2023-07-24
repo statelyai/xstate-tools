@@ -160,30 +160,21 @@ describe('MachineParseResult', () => {
     expect(config.states!.a.entry).toMatchInlineSnapshot(`
       {
         "type": "xstate.custom",
-        "value": {
-          "type": "expression",
-          "value": "() => {
+        "value": "{{() => {
                   console.log('test')
-                }",
-        },
+                }}}",
       }
     `);
     expect(config.states!.a.exit).toMatchInlineSnapshot(`
       {
         "type": "xstate.custom",
-        "value": {
-          "type": "expression",
-          "value": "function() {}",
-        },
+        "value": "{{function() {}}}",
       }
     `);
     expect(config.states!.b.entry).toMatchInlineSnapshot(`
       {
         "type": "xstate.custom",
-        "value": {
-          "type": "expression",
-          "value": "someVar",
-        },
+        "value": "{{someVar}}",
       }
     `);
   });
@@ -213,41 +204,29 @@ describe('MachineParseResult', () => {
     expect(config.states!.a.entry).toMatchInlineSnapshot(`
       {
         "type": "xstate.custom",
-        "value": {
-          "type": "expression",
-          "value": "forwardTo('some id')",
-        },
+        "value": "{{forwardTo('some id')}}",
       }
     `);
     expect(config.states!.a.exit).toMatchInlineSnapshot(`
       {
         "type": "xstate.custom",
-        "value": {
-          "type": "expression",
-          "value": "respond({ type: 'TOKEN' }, { delay: 10 })",
-        },
+        "value": "{{respond({ type: 'TOKEN' }, { delay: 10 })}}",
       }
     `);
     expect(config.states!.b.entry).toMatchInlineSnapshot(`
       {
         "type": "xstate.custom",
-        "value": {
-          "type": "expression",
-          "value": "escalate({ message: 'This is some error' })",
-        },
+        "value": "{{escalate({ message: 'This is some error' })}}",
       }
     `);
     expect(config.states!.b.exit).toMatchInlineSnapshot(`
       {
         "type": "xstate.custom",
-        "value": {
-          "type": "expression",
-          "value": "pure((context, event) => {
+        "value": "{{pure((context, event) => {
                   return context.sampleActors.map((sampleActor) => {
                     return send('SOME_EVENT', { to: sampleActor });
                   });
-                })",
-        },
+                })}}",
       }
     `);
   });
