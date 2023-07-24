@@ -13,7 +13,6 @@ export type JsonItem =
   | JsonObject
   | JsonItem[];
 type JsonExpressionString = `{{${string}}}`;
-
 type JsonObject = { [key: string]: JsonItem };
 
 type ObjectProperyWithIdentifierKey = t.ObjectProperty & {
@@ -104,12 +103,7 @@ export function extractAssignAction(
 export function extractRaiseAction(
   actionNode: ActionNode,
   fileContent: string,
-):
-  | { type: 'expression'; value: string }
-  | {
-      type: 'object';
-      value: Record<string, JsonEntry>;
-    } {
+): Record<string, JsonItem> | JsonExpressionString {
   const node = actionNode.node;
   if (t.isCallExpression(node)) {
     const arg = node.arguments[0];
@@ -125,16 +119,15 @@ export function extractRaiseAction(
     // raise('event')
     if (t.isStringLiteral(arg)) {
       return {
-        type: 'object',
-        value: { type: { type: 'string', value: arg.value } },
+        type: arg.value,
       };
     }
 
     // raise(() => {}) or anything else
-    return {
-      type: 'expression',
-      value: fileContent.slice(arg.start!, arg.end!),
-    };
+    return `{{fileContent.slice(
+      arg.start!,
+      arg.end!,
+    )}}` satisfies JsonExpressionString;
   }
 
   throw Error(`Unsupported raise action`);
@@ -307,22 +300,6 @@ export function extractSendToAction(
   throw Error(`Unsupported sendTo action`);
 }
 
-function getLiteralType(value: t.ObjectProperty['value']) {
-  if (t.isNumericLiteral(value) || t.isBigIntLiteral(value)) {
-    return 'number';
-  }
-  if (
-    (t.isStringLiteral(value) || t.isBigIntLiteral(value)) &&
-    !isTemplateLiteralWithExpressions(value)
-  ) {
-    return 'string';
-  }
-  if (t.isBooleanLiteral(value)) {
-    return 'boolean';
-  }
-  throw Error('Unsupported literal property value');
-}
-
 // Todo: support namespace imports and aliased specifiers
 // import * as actions from 'xstate'; actions.sendTo
 // import {sendTo as x} from 'xstate'
@@ -331,23 +308,19 @@ export const getActionCreatorName = (actionNode: ActionNode) =>
     ? actionNode.node.callee.name
     : undefined;
 
+// TODO: enforce return type to ActionEvent so `type` property is required
 function extractEventObject(
   eventObject: t.ObjectExpression,
   fileContent: string,
-):
-  | { type: 'expression'; value: string }
-  | {
-      type: 'object';
-      value: Record<string, JsonEntry>;
-    } {
+): JsonExpressionString | Record<string, JsonItem> {
   if (!eventObject.properties.every((prop) => t.isObjectProperty(prop))) {
-    return {
-      type: 'expression',
-      value: fileContent.slice(eventObject.start!, eventObject.end!),
-    };
+    return `{{fileContent.slice(
+      eventObject.start!,
+      eventObject.end!,
+    )}}` satisfies JsonExpressionString;
   }
 
-  const extracted: Record<string, JsonEntry> = {};
+  const extracted: Record<string, JsonItem> = {};
   eventObject.properties.forEach((prop) => {
     if (t.isObjectProperty(prop)) {
       if (t.isIdentifier(prop.key)) {
@@ -357,31 +330,23 @@ function extractEventObject(
             isTemplateLiteralWithExpressions(prop.value) ||
             t.isNullLiteral(prop.value)
           ) {
-            extracted[prop.key.name] = {
-              type: 'expression',
-              value: fileContent.slice(prop.value.start!, prop.value.end!),
-            };
+            extracted[prop.key.name] = `{{fileContent.slice(
+              prop.value.start!,
+              prop.value.end!,
+            )}}` satisfies JsonExpressionString;
           } else if (t.isTemplateLiteral(prop.value)) {
-            extracted[prop.key.name] = {
-              type: 'string',
-              value:
-                prop.value.quasis[0].value.cooked ??
-                prop.value.quasis[0].value.raw,
-            };
+            extracted[prop.key.name] =
+              prop.value.quasis[0].value.cooked ??
+              prop.value.quasis[0].value.raw;
           } else {
-            extracted[prop.key.name] = {
-              type: getLiteralType(prop.value),
-              value: prop.value.value,
-            } as Extract<JsonEntry, { type: 'string' | 'number' | 'boolean' }>;
+            extracted[prop.key.name] = prop.value.value;
           }
         } else if (
           t.isArrayExpression(prop.value) ||
           t.isObjectExpression(prop.value)
         ) {
-          extracted[prop.key.name] = {
-            type: 'expression',
-            value: fileContent.slice(prop.value.start!, prop.value.end!),
-          };
+          extracted[prop.key.name] =
+            `{{fileContent.slice(prop.value.start!, prop.value.end!)}}` satisfies JsonExpressionString;
         } else {
           console.warn(
             `Unsupported property value of type ${prop.value.type} in assignment`,
@@ -392,7 +357,7 @@ function extractEventObject(
     }
   });
 
-  return { type: 'object', value: extracted };
+  return extracted;
 }
 
 function isTemplateLiteralWithExpressions(node: t.Literal): boolean {
