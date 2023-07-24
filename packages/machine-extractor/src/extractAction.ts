@@ -136,24 +136,21 @@ export function extractRaiseAction(
 export function extractLogAction(
   actionNode: ActionNode,
   fileContent: string,
-): { type: 'string' | 'expression'; value: string } {
+): string | JsonExpressionString {
   const node = actionNode.node;
   if (t.isCallExpression(node)) {
     const arg = node.arguments[0];
 
     // log('string')
     if (t.isStringLiteral(arg)) {
-      return {
-        type: 'string',
-        value: arg.value,
-      };
+      return arg.value;
     }
 
     // log((ctx, evt) => {}) or anything else
-    return {
-      type: 'expression',
-      value: fileContent.slice(node.start!, node.end!),
-    };
+    return `{{${fileContent.slice(
+      node.start!,
+      node.end!,
+    )}}}` satisfies JsonExpressionString;
   }
 
   throw Error(`Unsupported log action`);
@@ -173,7 +170,10 @@ export function extractStopAction(
     }
 
     // stop(() => {}) or anything else
-    return `{{fileContent.slice(arg.start!, arg.end!)}}` satisfies JsonExpressionString;
+    return `{{${fileContent.slice(
+      arg.start!,
+      arg.end!,
+    )}}}` satisfies JsonExpressionString;
   }
 
   throw Error('Unsupported stop action');
