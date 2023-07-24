@@ -162,21 +162,18 @@ export function extractLogAction(
 export function extractStopAction(
   actionNode: ActionNode,
   fileContent: string,
-): { type: 'string' | 'expression'; value: string } {
+): string | JsonExpressionString {
   const node = actionNode.node;
   if (t.isCallExpression(node)) {
     const arg = node.arguments[0];
 
     // stop('id')
     if (t.isStringLiteral(arg)) {
-      return { type: 'string', value: arg.value };
+      return arg.value;
     }
 
     // stop(() => {}) or anything else
-    return {
-      type: 'expression',
-      value: fileContent.slice(arg.start!, arg.end!),
-    };
+    return `{{fileContent.slice(arg.start!, arg.end!)}}` satisfies JsonExpressionString;
   }
 
   throw Error('Unsupported stop action');
