@@ -3,16 +3,18 @@ import { ActionNode } from './actions';
 
 // These types are copied over from studio blocks.
 // array and object are extracted as expressions so Studio render them correctly when exporting
-export type JsonEntry =
-  | { type: 'string'; value: string }
-  | { type: 'number'; value: number }
-  | { type: 'bigint'; value: string }
-  | { type: 'boolean'; value: boolean }
-  | { type: 'null'; value: null }
-  | { type: 'undefined'; value: undefined }
-  | { type: 'expression'; value: string };
-export type JsonValue = Pick<JsonEntry, 'value'>;
-type JsonType = Pick<JsonEntry, 'type'>;
+export type JsonItem =
+  | string
+  | number
+  | bigint
+  | boolean
+  | null
+  | undefined
+  | JsonObject
+  | JsonItem[];
+type JsonExpressionString = `{{${string}}}`;
+
+type JsonObject = { [key: string]: JsonItem };
 
 type ObjectProperyWithIdentifierKey = t.ObjectProperty & {
   key: t.Identifier;
@@ -21,12 +23,7 @@ type ObjectProperyWithIdentifierKey = t.ObjectProperty & {
 export function extractAssignAction(
   actionNode: ActionNode,
   fileContent: string,
-):
-  | {
-      type: 'object';
-      value: Record<string, JsonEntry>;
-    }
-  | { type: 'expression'; value: string } {
+): Record<string, JsonItem | JsonExpressionString> | JsonExpressionString {
   const node = actionNode.node;
   if (t.isCallExpression(node)) {
     const assigner = node.arguments[0];
@@ -36,13 +33,7 @@ export function extractAssignAction(
       t.isObjectExpression(assigner) &&
       assigner.properties.every((prop) => t.isObjectProperty(prop))
     ) {
-      const assignment: {
-        type: 'object';
-        value: Record<string, JsonEntry>;
-      } = {
-        type: 'object',
-        value: {},
-      };
+      const assignment: Record<string, JsonItem> = {};
 
       assigner.properties.forEach((prop) => {
         // any regular object property and no spread elements or method or such
@@ -56,10 +47,8 @@ export function extractAssignAction(
               t.isArrayExpression(prop.value) ||
               t.isObjectExpression(prop.value)
             ) {
-              assignment.value[prop.key.name] = {
-                type: 'expression',
-                value: fileContent.slice(prop.value.start!, prop.value.end!),
-              };
+              assignment[prop.key.name] =
+                `{{fileContent.slice(prop.value.start!, prop.value.end!)}}` satisfies JsonExpressionString;
             } else if (t.isLiteral(prop.value)) {
               /**
                * assign({prop: literal value})
@@ -69,25 +58,16 @@ export function extractAssignAction(
                 isTemplateLiteralWithExpressions(prop.value) ||
                 t.isNullLiteral(prop.value)
               ) {
-                assignment.value[prop.key.name] = {
-                  type: 'expression',
-                  value: fileContent.slice(prop.value.start!, prop.value.end!),
-                };
+                assignment[prop.key.name] = `{{fileContent.slice(
+                  prop.value.start!,
+                  prop.value.end!,
+                )}}` satisfies JsonExpressionString;
               } else if (t.isTemplateLiteral(prop.value)) {
-                assignment.value[prop.key.name] = {
-                  type: 'string',
-                  value:
-                    prop.value.quasis[0].value.cooked ??
-                    prop.value.quasis[0].value.raw,
-                };
+                assignment[prop.key.name] =
+                  prop.value.quasis[0].value.cooked ??
+                  prop.value.quasis[0].value.raw;
               } else {
-                assignment.value[prop.key.name] = {
-                  type: getLiteralType(prop.value),
-                  value: prop.value.value,
-                } as Extract<
-                  JsonEntry,
-                  { type: 'string' | 'number' | 'boolean' }
-                >;
+                assignment[prop.key.name] = prop.value.value;
               }
             } else {
               /**
@@ -95,10 +75,10 @@ export function extractAssignAction(
                * assign({prop: function() {}})
                * or anything else
                */
-              assignment.value[prop.key.name] = {
-                type: 'expression',
-                value: fileContent.slice(prop.value.start!, prop.value.end!),
-              };
+              assignment[prop.key.name] = `{{fileContent.slice(
+                prop.value.start!,
+                prop.value.end!,
+              )}}` satisfies JsonExpressionString;
             }
           }
         }
