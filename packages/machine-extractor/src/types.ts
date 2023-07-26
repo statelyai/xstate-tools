@@ -39,3 +39,16 @@ export interface FileExtractResult<
 }
 
 export type DeclarationType = 'named' | 'inline' | 'identifier' | 'unknown';
+
+// These types are copied over from studio blocks.
+// array and object are extracted as expressions so Studio render them correctly when exporting
+export type JsonItem =
+  | string
+  | number
+  | bigint
+  | boolean
+  | null
+  | JsonObject
+  | JsonItem[];
+export type JsonExpressionString = `{{${string}}}`;
+export type JsonObject = { [key: string]: JsonItem };

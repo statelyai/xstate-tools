@@ -11,7 +11,7 @@ import {
   TemplateLiteral,
 } from './scalars';
 import { maybeTsAsExpression } from './tsAsExpression';
-import { AnyParser, ParserContext } from './types';
+import { AnyParser, JsonExpressionString, ParserContext } from './types';
 import { unionType } from './unionType';
 import { wrapParserResult } from './wrapParserResult';
 
@@ -432,4 +432,8 @@ function hash(str: string): string {
     )
     .toString(32)
     .substring(1, 10);
+}
+
+export function toJsonExpressionString(code: string): JsonExpressionString {
+  return `{{${code}}}`;
 }

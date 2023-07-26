@@ -17,7 +17,7 @@ import {
 import { TMachineCallExpression } from './machineCallExpression';
 import { StateNodeReturn } from './stateNode';
 import { MaybeTransitionArray } from './transitions';
-import { GetParserResult } from './utils';
+import { GetParserResult, toJsonExpressionString } from './utils';
 
 export interface ToMachineConfigOptions {
   /**
@@ -277,10 +277,9 @@ export const getActionConfig = (
           default:
             actions.push({
               type: 'xstate.custom',
-              value: `{{${opts!.fileContent.slice(
-                action.node.start!,
-                action.node.end!,
-              )}}}`,
+              params: toJsonExpressionString(
+                opts!.fileContent.slice(action.node.start!, action.node.end!),
+              ),
             });
             return;
         }
