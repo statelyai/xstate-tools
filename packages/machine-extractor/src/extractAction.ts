@@ -1,6 +1,14 @@
 import * as t from '@babel/types';
 import { ActionNode } from './actions';
-import { JsonExpressionString, JsonItem } from './types';
+import {
+  ExtractedLogAction,
+  ExtractorAssignAction,
+  ExtractorRaiseAction,
+  ExtractorSendToAction,
+  ExtractorStopAction,
+  JsonExpressionString,
+  JsonItem,
+} from './types';
 import { toJsonExpressionString } from './utils';
 
 type ObjectProperyWithIdentifierKey = t.ObjectProperty & {
@@ -10,7 +18,7 @@ type ObjectProperyWithIdentifierKey = t.ObjectProperty & {
 export function extractAssignAction(
   actionNode: ActionNode,
   fileContent: string,
-): Record<string, JsonItem | JsonExpressionString> | JsonExpressionString {
+): ExtractorAssignAction['action']['assignment'] {
   const node = actionNode.node;
   if (t.isCallExpression(node)) {
     const assigner = node.arguments[0];
@@ -29,13 +37,22 @@ export function extractAssignAction(
             if (
               /**
                * assign({prop: []})
+               */
+              t.isArrayExpression(prop.value)
+            ) {
+              assignment[prop.key.name] = extractArrayRecursively(
+                prop.value,
+                fileContent,
+              );
+            } else if (
+              /**
                * assign({prop: {}})
                */
-              t.isArrayExpression(prop.value) ||
               t.isObjectExpression(prop.value)
             ) {
-              assignment[prop.key.name] = toJsonExpressionString(
-                fileContent.slice(prop.value.start!, prop.value.end!),
+              assignment[prop.key.name] = extractObjectRecursively(
+                prop.value,
+                fileContent,
               );
             } else if (t.isLiteral(prop.value)) {
               /**
@@ -89,7 +106,7 @@ export function extractAssignAction(
 export function extractRaiseAction(
   actionNode: ActionNode,
   fileContent: string,
-): Record<string, JsonItem> | JsonExpressionString {
+): ExtractorRaiseAction['action']['event'] {
   const node = actionNode.node;
   if (t.isCallExpression(node)) {
     const arg = node.arguments[0];
@@ -119,7 +136,7 @@ export function extractRaiseAction(
 export function extractLogAction(
   actionNode: ActionNode,
   fileContent: string,
-): string | JsonExpressionString {
+): ExtractedLogAction['action']['expr'] {
   const node = actionNode.node;
   if (t.isCallExpression(node)) {
     const arg = node.arguments[0];
@@ -139,7 +156,7 @@ export function extractLogAction(
 export function extractStopAction(
   actionNode: ActionNode,
   fileContent: string,
-): string | JsonExpressionString {
+): ExtractorStopAction['action']['id'] {
   const node = actionNode.node;
   if (t.isCallExpression(node)) {
     const arg = node.arguments[0];
@@ -164,12 +181,7 @@ type SendToDelayArg = string | number | JsonExpressionString;
 export function extractSendToAction(
   actionNode: ActionNode,
   fileContent: string,
-): {
-  event: SendToEventArg;
-  to: SendToActorRefArg;
-  delay: SendToDelayArg;
-  id: SendToIdArg;
-} {
+): Omit<ExtractorSendToAction['action'], 'type'> {
   const node = actionNode.node;
   let eventObject: SendToEventArg = {};
   let actorRef: SendToActorRefArg = '';
@@ -258,19 +270,47 @@ export const getActionCreatorName = (actionNode: ActionNode) =>
     ? actionNode.node.callee.name
     : undefined;
 
-// TODO: enforce return type to ActionEvent so `type` property is required
-function extractEventObject(
-  eventObject: t.ObjectExpression,
-  fileContent: string,
-): JsonExpressionString | Record<string, JsonItem> {
-  if (!eventObject.properties.every((prop) => t.isObjectProperty(prop))) {
-    return toJsonExpressionString(
-      fileContent.slice(eventObject.start!, eventObject.end!),
-    );
-  }
+const isNull = (node: t.Node | null): node is null => t.isNullLiteral(node);
 
+export function extractArrayRecursively(
+  array: t.ArrayExpression,
+  fileContent: string,
+): JsonItem[] {
+  const extracted: JsonItem[] = [];
+  array.elements.forEach((elem) => {
+    if (isNull(elem)) {
+      extracted.push(null);
+    } else if (t.isArrayExpression(elem)) {
+      extracted.push(extractArrayRecursively(elem, fileContent));
+    } else if (t.isObjectExpression(elem)) {
+      extracted.push(extractObjectRecursively(elem, fileContent));
+    } else {
+      if (t.isLiteral(elem)) {
+        if (
+          t.isRegExpLiteral(elem) ||
+          isTemplateLiteralWithExpressions(elem) ||
+          t.isNullLiteral(elem)
+        ) {
+          extracted.push(fileContent.slice(elem.start!, elem.end!));
+        } else if (t.isTemplateLiteral(elem)) {
+          extracted.push(
+            elem.quasis[0].value.cooked ?? elem.quasis[0].value.raw,
+          );
+        } else {
+          extracted.push(elem.value);
+        }
+      }
+    }
+  });
+  return extracted;
+}
+
+export function extractObjectRecursively(
+  object: t.ObjectExpression,
+  fileContent: string,
+) {
   const extracted: Record<string, JsonItem> = {};
-  eventObject.properties.forEach((prop) => {
+  object.properties.forEach((prop) => {
     if (t.isObjectProperty(prop)) {
       if (t.isIdentifier(prop.key)) {
         if (t.isLiteral(prop.value)) {
@@ -279,8 +319,9 @@ function extractEventObject(
             isTemplateLiteralWithExpressions(prop.value) ||
             t.isNullLiteral(prop.value)
           ) {
-            extracted[prop.key.name] = toJsonExpressionString(
-              fileContent.slice(prop.value.start!, prop.value.end!),
+            extracted[prop.key.name] = fileContent.slice(
+              prop.value.start!,
+              prop.value.end!,
             );
           } else if (t.isTemplateLiteral(prop.value)) {
             extracted[prop.key.name] =
@@ -289,12 +330,15 @@ function extractEventObject(
           } else {
             extracted[prop.key.name] = prop.value.value;
           }
-        } else if (
-          t.isArrayExpression(prop.value) ||
-          t.isObjectExpression(prop.value)
-        ) {
-          extracted[prop.key.name] = toJsonExpressionString(
-            fileContent.slice(prop.value.start!, prop.value.end!),
+        } else if (t.isArrayExpression(prop.value)) {
+          extracted[prop.key.name] = extractArrayRecursively(
+            prop.value,
+            fileContent,
+          );
+        } else if (t.isObjectExpression(prop.value)) {
+          extracted[prop.key.name] = extractObjectRecursively(
+            prop.value,
+            fileContent,
           );
         } else {
           console.warn(
@@ -305,10 +349,23 @@ function extractEventObject(
       }
     }
   });
-
   return extracted;
 }
 
-function isTemplateLiteralWithExpressions(node: t.Literal): boolean {
+// TODO: enforce return type to ActionEvent so `type` property is required
+export function extractEventObject(
+  eventObject: t.ObjectExpression,
+  fileContent: string,
+): JsonExpressionString | Record<string, JsonItem> {
+  if (!eventObject.properties.every((prop) => t.isObjectProperty(prop))) {
+    return toJsonExpressionString(
+      fileContent.slice(eventObject.start!, eventObject.end!),
+    );
+  }
+
+  return extractObjectRecursively(eventObject, fileContent);
+}
+
+function isTemplateLiteralWithExpressions(node: t.Node): boolean {
   return t.isTemplateLiteral(node) && node.expressions.length > 0;
 }

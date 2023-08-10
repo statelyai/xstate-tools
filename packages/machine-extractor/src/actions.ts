@@ -129,7 +129,7 @@ export const ChooseAction = wrapParserResult(
     const conditions: ParsedChooseCondition[] = [];
 
     result.argument1Result?.forEach((arg1Result) => {
-      const toPush: typeof conditions[number] = {
+      const toPush: (typeof conditions)[number] = {
         condition: {
           actions: [],
         },

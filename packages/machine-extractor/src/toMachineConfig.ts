@@ -1,14 +1,11 @@
-import {
-  Actions,
-  MachineConfig,
-  StateNodeConfig,
-  TransitionConfigOrTarget,
-} from 'xstate';
+import * as t from '@babel/types';
 import { MaybeArrayOfActions } from './actions';
 import { CondNode } from './conds';
 import {
   extractAssignAction,
+  extractEventObject,
   extractLogAction,
+  extractObjectRecursively,
   extractRaiseAction,
   extractSendToAction,
   extractStopAction,
@@ -17,6 +14,15 @@ import {
 import { TMachineCallExpression } from './machineCallExpression';
 import { StateNodeReturn } from './stateNode';
 import { MaybeTransitionArray } from './transitions';
+import {
+  ExtractorMachineConfig,
+  ExtractorStateNodeConfig,
+  InvokeNodeConfig,
+  JsonItem,
+  MachineAction,
+  MaybeArray,
+  TransitionNodeConfig,
+} from './types';
 import { GetParserResult, toJsonExpressionString } from './utils';
 
 export interface ToMachineConfigOptions {
@@ -51,8 +57,8 @@ export interface ToMachineConfigOptions {
 const parseStateNode = (
   astResult: StateNodeReturn,
   opts: ToMachineConfigOptions | undefined,
-): StateNodeConfig<any, any, any> => {
-  const config: MachineConfig<any, any, any> = {};
+): ExtractorStateNodeConfig => {
+  const config: ExtractorMachineConfig = {};
 
   if (astResult?.id) {
     config.id = astResult.id.value;
@@ -162,7 +168,7 @@ const parseStateNode = (
           src = invoke.src.inlineDeclarationId;
       }
 
-      const toPush: (typeof invokes)[number] = {
+      const toPush: InvokeNodeConfig = {
         src: src || (() => () => {}),
       };
 
@@ -202,7 +208,7 @@ const parseStateNode = (
 export const toMachineConfig = (
   result: TMachineCallExpression,
   opts?: ToMachineConfigOptions,
-): MachineConfig<any, any, any> | undefined => {
+): ExtractorMachineConfig | undefined => {
   if (!result?.definition) return undefined;
   return parseStateNode(result?.definition, opts);
 };
@@ -210,80 +216,199 @@ export const toMachineConfig = (
 export const getActionConfig = (
   astActions: GetParserResult<typeof MaybeArrayOfActions>,
   opts: ToMachineConfigOptions | undefined,
-): Actions<any, any> => {
-  const actions: Actions<any, any> = [];
+) => {
+  const actions: MachineAction[] = [];
+
+  // if (t.isObjectExpression(node)) {
+  //   for (const prop of node.properties) {
+  //     if (t.isObjectProperty(prop)) {
+  //       if (t.isIdentifier(prop.key) && prop.key.name === ) {
+
+  //       }
+  //     }
+  //   }
+  // }
+
+  if (opts?.serializeInlineActions) {
+    // Todo: think about error reporting and how to handle invalid actions such as raise(2)
+    astActions.forEach((action) => {
+      // console.log({
+      //   declarationType: action.declarationType,
+      //   name: action.name,
+      // });
+      switch (action.declarationType) {
+        case 'inline':
+          if (t.isCallExpression(action.node)) {
+            if (
+              t.isIdentifier(action.node.callee) &&
+              action.node.callee.name === 'assign'
+            ) {
+              actions.push({
+                kind: 'builtin',
+                action: {
+                  type: 'xstate.assign',
+                  assignment: extractAssignAction(action, opts.fileContent),
+                },
+              });
+            }
+          } else {
+            actions.push({
+              kind: 'inline',
+              action: {
+                expr: toJsonExpressionString(
+                  opts.fileContent.slice(action.node.start!, action.node.end!),
+                ),
+              },
+            });
+          }
+          return;
+        case 'identifier':
+          actions.push({
+            kind: 'inline',
+            action: {
+              expr: toJsonExpressionString(
+                opts.fileContent.slice(action.node.start!, action.node.end!),
+              ),
+            },
+          });
+          return;
+        case 'unknown': {
+          // console.log(action.node);
+          if (t.isObjectExpression(action.node)) {
+            for (const prop of action.node.properties) {
+              if (t.isObjectProperty(prop)) {
+                if (t.isIdentifier(prop.key) && prop.key.name === 'type') {
+                  if (
+                    t.isStringLiteral(prop.value) &&
+                    ![
+                      'xstate.assign',
+                      'xstate.raise',
+                      'xstate.stop',
+                      'xstate.sendTo',
+                      'xstate.log',
+                    ].includes(prop.value.value)
+                  ) {
+                    actions.push({
+                      kind: 'named',
+                      action: {
+                        type: prop.value.value,
+                        ...(extractObjectRecursively(
+                          action.node,
+                          opts.fileContent,
+                        ) as Record<string, JsonItem>),
+                      },
+                    });
+                  }
+                }
+              }
+            }
+          } else {
+            actions.push({
+              kind: 'inline',
+              action: {
+                expr: toJsonExpressionString(
+                  opts.fileContent.slice(action.node.start!, action.node.end!),
+                ),
+              },
+            });
+          }
+          return;
+        }
+        case 'named': {
+          switch (action.name) {
+            case 'assign': {
+              actions.push({
+                kind: 'builtin',
+                action: {
+                  type: 'xstate.assign',
+                  assignment: extractAssignAction(action, opts.fileContent),
+                },
+              });
+              return;
+            }
+            case 'raise':
+              actions.push({
+                kind: 'builtin',
+                action: {
+                  type: 'xstate.raise',
+                  event: extractRaiseAction(action, opts!.fileContent),
+                },
+              });
+              return;
+            case 'log':
+              actions.push({
+                kind: 'builtin',
+                action: {
+                  type: 'xstate.log',
+                  expr: extractLogAction(action, opts!.fileContent),
+                },
+              });
+              return;
+            case 'sendTo':
+              actions.push({
+                kind: 'builtin',
+                action: {
+                  type: 'xstate.sendTo',
+                  ...extractSendToAction(action, opts!.fileContent),
+                },
+              });
+              return;
+            case 'stop':
+              actions.push({
+                kind: 'builtin',
+                action: {
+                  type: 'xstate.stop',
+                  id: extractStopAction(action, opts!.fileContent),
+                },
+              });
+              return;
+            default:
+              actions.push({
+                kind: 'named',
+                // Todo: handle params
+                action: { type: action.name, params: {} },
+              });
+          }
+        }
+        default: {
+          console.log('unhandled action', action);
+        }
+      }
+    });
+    return actions;
+  }
 
   // Todo: these actions should be extracted in `actions.ts`
   astActions?.forEach((action) => {
     switch (true) {
       case action.declarationType === 'named':
-        actions.push(action.name);
+        actions.push({ kind: 'named', action: { type: action.name } });
         return;
-      case opts?.anonymizeInlineImplementations:
-        actions.push({
-          type: 'anonymous',
-        });
-        return;
-      case opts?.hashInlineImplementations:
-        actions.push({
-          type: action.inlineDeclarationId,
-        });
-        return;
-      case !!action.chooseConditions:
-        actions.push({
-          type: 'xstate.choose',
-          conds: action.chooseConditions!.map((condition) => {
-            const cond = getCondition(condition.conditionNode, opts);
-            return {
-              ...(cond && { cond }),
-              actions: getActionConfig(condition.actionNodes, opts),
-            };
-          }),
-        });
-        return;
-      case opts?.serializeInlineActions: {
-        switch (getActionCreatorName(action)) {
-          // Todo: think about error reporting and how to handle invalid actions such as raise(2)
-          case 'assign':
-            actions.push({
-              type: 'xstate.assign',
-              assignment: extractAssignAction(action, opts!.fileContent),
-            });
-            return;
-          case 'raise':
-            actions.push({
-              type: 'xstate.raise',
-              event: extractRaiseAction(action, opts!.fileContent),
-            });
-            return;
-          case 'log':
-            actions.push({
-              type: 'xstate.log',
-              expr: extractLogAction(action, opts!.fileContent),
-            });
-            return;
-          case 'sendTo':
-            actions.push({
-              type: 'xstate.sendTo',
-              ...extractSendToAction(action, opts!.fileContent),
-            });
-            return;
-          case 'stop':
-            actions.push({
-              type: 'xstate.stop',
-              id: extractStopAction(action, opts!.fileContent),
-            });
-            return;
-          default:
-            actions.push({
-              type: 'xstate.custom',
-              params: toJsonExpressionString(
-                opts!.fileContent.slice(action.node.start!, action.node.end!),
-              ),
-            });
-            return;
-        }
-      }
+      // case opts?.anonymizeInlineImplementations:
+      //   actions.push({
+      //     type: 'anonymous',
+      //   });
+      //   return;
+      // case opts?.hashInlineImplementations:
+      //   actions.push({
+      //     type: action.inlineDeclarationId,
+      //   });
+      //   return;
+      // case !!action.chooseConditions:
+      //   actions.push({
+      //     kind: 'builtin',
+      //     action: {
+      //       type: 'xstate.choose',
+      //       conds: action.chooseConditions!.map((condition) => {
+      //         const cond = getCondition(condition.conditionNode, opts);
+      //         return {
+      //           ...(cond && { cond }),
+      //           actions: getActionConfig(condition.actionNodes, opts),
+      //         };
+      //       }),
+      //     },
+      //   });
+      //   return;
     }
   });
 
@@ -314,11 +439,11 @@ const getCondition = (
 export const getTransitions = (
   astTransitions: GetParserResult<typeof MaybeTransitionArray>,
   opts: ToMachineConfigOptions | undefined,
-): TransitionConfigOrTarget<any, any> => {
-  const transitions: TransitionConfigOrTarget<any, any> = [];
+): MaybeArray<TransitionNodeConfig> => {
+  const transitions: TransitionNodeConfig[] = [];
 
   astTransitions?.forEach((transition) => {
-    const toPush: TransitionConfigOrTarget<any, any> = {};
+    const toPush: TransitionNodeConfig = {};
     if (transition?.target && transition?.target?.length > 0) {
       if (transition.target.length === 1) {
         toPush.target = transition?.target[0].value;
