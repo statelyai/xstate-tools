@@ -232,35 +232,84 @@ export const getActionConfig = (
   if (opts?.serializeInlineActions) {
     // Todo: think about error reporting and how to handle invalid actions such as raise(2)
     astActions.forEach((action) => {
-      // console.log({
-      //   declarationType: action.declarationType,
-      //   name: action.name,
-      // });
+      console.log(action, {
+        declarationType: action.declarationType,
+        name: action.name,
+      });
       switch (action.declarationType) {
+        case 'named': {
+          actions.push({
+            kind: 'named',
+            // Todo: handle params
+            action: { type: action.name, params: {} },
+          });
+          return;
+        }
         case 'inline':
           if (t.isCallExpression(action.node)) {
-            if (
-              t.isIdentifier(action.node.callee) &&
-              action.node.callee.name === 'assign'
-            ) {
-              actions.push({
-                kind: 'builtin',
-                action: {
-                  type: 'xstate.assign',
-                  assignment: extractAssignAction(action, opts.fileContent),
-                },
-              });
+            if (t.isIdentifier(action.node.callee)) {
+              switch (action.node.callee.name) {
+                case 'assign': {
+                  actions.push({
+                    kind: 'builtin',
+                    action: {
+                      type: 'xstate.assign',
+                      assignment: extractAssignAction(action, opts.fileContent),
+                    },
+                  });
+                  return;
+                }
+                case 'raise': {
+                  actions.push({
+                    kind: 'builtin',
+                    action: {
+                      type: 'xstate.raise',
+                      event: extractRaiseAction(action, opts.fileContent),
+                    },
+                  });
+                  return;
+                }
+                case 'log': {
+                  actions.push({
+                    kind: 'builtin',
+                    action: {
+                      type: 'xstate.log',
+                      expr: extractLogAction(action, opts!.fileContent),
+                    },
+                  });
+                  return;
+                }
+                case 'sendTo': {
+                  actions.push({
+                    kind: 'builtin',
+                    action: {
+                      type: 'xstate.sendTo',
+                      ...extractSendToAction(action, opts!.fileContent),
+                    },
+                  });
+                  return;
+                }
+                case 'stop': {
+                  actions.push({
+                    kind: 'builtin',
+                    action: {
+                      type: 'xstate.stop',
+                      id: extractStopAction(action, opts!.fileContent),
+                    },
+                  });
+                  return;
+                }
+              }
             }
-          } else {
-            actions.push({
-              kind: 'inline',
-              action: {
-                expr: toJsonExpressionString(
-                  opts.fileContent.slice(action.node.start!, action.node.end!),
-                ),
-              },
-            });
           }
+          actions.push({
+            kind: 'inline',
+            action: {
+              expr: toJsonExpressionString(
+                opts.fileContent.slice(action.node.start!, action.node.end!),
+              ),
+            },
+          });
           return;
         case 'identifier':
           actions.push({
@@ -298,77 +347,21 @@ export const getActionConfig = (
                         ) as Record<string, JsonItem>),
                       },
                     });
+                    return;
                   }
                 }
               }
             }
-          } else {
-            actions.push({
-              kind: 'inline',
-              action: {
-                expr: toJsonExpressionString(
-                  opts.fileContent.slice(action.node.start!, action.node.end!),
-                ),
-              },
-            });
           }
+          actions.push({
+            kind: 'inline',
+            action: {
+              expr: toJsonExpressionString(
+                opts.fileContent.slice(action.node.start!, action.node.end!),
+              ),
+            },
+          });
           return;
-        }
-        case 'named': {
-          switch (action.name) {
-            case 'assign': {
-              actions.push({
-                kind: 'builtin',
-                action: {
-                  type: 'xstate.assign',
-                  assignment: extractAssignAction(action, opts.fileContent),
-                },
-              });
-              return;
-            }
-            case 'raise':
-              actions.push({
-                kind: 'builtin',
-                action: {
-                  type: 'xstate.raise',
-                  event: extractRaiseAction(action, opts!.fileContent),
-                },
-              });
-              return;
-            case 'log':
-              actions.push({
-                kind: 'builtin',
-                action: {
-                  type: 'xstate.log',
-                  expr: extractLogAction(action, opts!.fileContent),
-                },
-              });
-              return;
-            case 'sendTo':
-              actions.push({
-                kind: 'builtin',
-                action: {
-                  type: 'xstate.sendTo',
-                  ...extractSendToAction(action, opts!.fileContent),
-                },
-              });
-              return;
-            case 'stop':
-              actions.push({
-                kind: 'builtin',
-                action: {
-                  type: 'xstate.stop',
-                  id: extractStopAction(action, opts!.fileContent),
-                },
-              });
-              return;
-            default:
-              actions.push({
-                kind: 'named',
-                // Todo: handle params
-                action: { type: action.name, params: {} },
-              });
-          }
         }
         default: {
           console.log('unhandled action', action);

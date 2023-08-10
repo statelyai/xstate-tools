@@ -220,6 +220,74 @@ export const AssignAction = wrapParserResult(
   },
 );
 
+interface SendToArg {
+  node: t.Node;
+  value: {} | (() => {});
+}
+
+const SendToArgObject = createParser({
+  babelMatcher: t.isObjectExpression,
+  parseNode: (node, context) => {
+    return {
+      node,
+      value: {},
+    };
+  },
+});
+
+const SendToArgFunction = createParser({
+  babelMatcher: isFunctionOrArrowFunctionExpression,
+  parseNode: (node, context) => {
+    const value = function anonymous() {
+      return {};
+    };
+    value.toJSON = () => {
+      return {};
+    };
+
+    return {
+      node,
+      value,
+    };
+  },
+});
+
+const SendToFirstSecondArg = unionType<SendToArg>([
+  SendToArgObject,
+  SendToArgFunction,
+]);
+
+export const SendToAction = wrapParserResult(
+  namedFunctionCall(
+    'sendTo',
+    SendToFirstSecondArg,
+    SendToFirstSecondArg,
+    objectTypeWithKnownKeys({
+      delay: unionType<{ node: t.Node; value: string | number }>([
+        NumericLiteral,
+        StringLiteral,
+      ]),
+      id: StringLiteral,
+    }),
+  ),
+  (result, node, context): ActionNode => {
+    const defaultAction = function anonymous() {
+      return {};
+    };
+    defaultAction.toJSON = () => {
+      return {};
+    };
+
+    return {
+      node: result.node,
+      action: assign(result.argument1Result?.value || defaultAction),
+      name: '',
+      declarationType: 'inline',
+      inlineDeclarationId: context.getNodeHash(node),
+    };
+  },
+);
+
 export const SendActionSecondArg = objectTypeWithKnownKeys({
   to: StringLiteral,
   delay: unionType<{ node: t.Node; value: string | number }>([
@@ -302,6 +370,7 @@ const NamedAction = unionType([
   StartAction,
   StopAction,
   SendParentAction,
+  SendToAction,
 ]);
 
 const BasicAction = unionType([

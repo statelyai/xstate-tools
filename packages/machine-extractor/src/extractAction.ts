@@ -147,7 +147,7 @@ export function extractLogAction(
     }
 
     // log((ctx, evt) => {}) or anything else
-    return toJsonExpressionString(fileContent.slice(node.start!, node.end!));
+    return toJsonExpressionString(fileContent.slice(arg.start!, arg.end!));
   }
 
   throw Error(`Unsupported log action`);
@@ -185,10 +185,7 @@ export function extractSendToAction(
   const node = actionNode.node;
   let eventObject: SendToEventArg = {};
   let actorRef: SendToActorRefArg = '';
-  const options: { id: SendToIdArg; delay: SendToDelayArg } = {
-    id: '',
-    delay: 0,
-  };
+  const options: { id?: SendToIdArg; delay?: SendToDelayArg } = {};
   if (t.isCallExpression(node)) {
     const arg1 = node.arguments[0];
     const arg2 = node.arguments[1];

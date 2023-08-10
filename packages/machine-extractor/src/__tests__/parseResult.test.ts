@@ -1,4 +1,4 @@
-import { groupByUniqueName, MachineExtractResult } from '..';
+import { groupByUniqueName } from '..';
 import { extractMachinesFromFile } from '../extractMachinesFromFile';
 
 function getTestMachineConfig(configStr: string) {
@@ -138,20 +138,15 @@ describe('MachineParseResult', () => {
     });
   });
 
-  it('should extract inline custom action', () => {
+  it('should extract inline expressions as inline actions', () => {
     const config = getTestMachineConfig(
       `
     createMachine({
       initial: "a",
       states: {
         a: {
-          entry: [() => {
-            console.log('test')
-          }],
-          exit: [function() {}],
-        },
-        b: {
-          entry: [someVar],
+          entry: [() => {}],
+          exit: [someVar]
         }
       },
     });
@@ -161,25 +156,13 @@ describe('MachineParseResult', () => {
       [
         {
           "action": {
-            "expr": "{{() => {
-                  console.log('test')
-                }}}",
+            "expr": "{{() => {}}}",
           },
           "kind": "inline",
         },
       ]
     `);
     expect(config.states!.a.exit).toMatchInlineSnapshot(`
-      [
-        {
-          "action": {
-            "expr": "{{function() {}}}",
-          },
-          "kind": "inline",
-        },
-      ]
-    `);
-    expect(config.states!.b.entry).toMatchInlineSnapshot(`
       [
         {
           "action": {
@@ -191,179 +174,43 @@ describe('MachineParseResult', () => {
     `);
   });
 
-  it('should extract new action structure', () => {
-    const testObject = {
-      str: 'string value',
-      num: 20.5,
-      bool: true,
-      arr: [1, [2], { a: [3] }],
-      obj: {
-        a: 1,
-        b: [2, { c: 3 }],
-        d: {
-          e: 'E',
-        },
+  it('should extract action objects as inline actions', () => {
+    const config = getTestMachineConfig(
+      `
+    createMachine({
+      initial: "a",
+      states: {
+        a: {
+          entry: [{type: someIdentifier, params: {foo: 'bar'}}],
+          exit: [{type: 'xstate.assign', assignment: {foo: 'bar', baz: () => {}}}]
+        }
       },
-      func: () => {},
-    };
-    const config = getTestMachineConfig(`createMachine({
-      entry: [
-        () => {},
-        {type: 'custom name', params: {
-          str: 'string value',
-          num: 20.5,
-          bool: true,
-          arr: [1, [2], { a: [3] }],
-          obj: {
-            a: 1,
-            b: [2, { c: 3 }],
-            d: {
-              e: 'E',
-            },
-          },
-          // func: () => {}
-        }},
-        {type: someIdentifier, params: {
-          str: 'string value',
-          num: 20.5,
-          bool: true,
-          arr: [1, [2], { a: [3] }],
-          obj: {
-            a: 1,
-            b: [2, { c: 3 }],
-            d: {
-              e: 'E',
-            },
-          },
-          // func: () => {}
-        }},
-        {type: 'xstate.assign', assignment: {
-          str: 'string value',
-          num: 20.5,
-          bool: true,
-          arr: [1, [2], { a: [3] }],
-          obj: {
-            a: 1,
-            b: [2, { c: 3 }],
-            d: {
-              e: 'E',
-            },
-          },
-          // func: () => {}
-        }},
-        anotherIdentifier,
-        assign({
-          str: 'string value',
-          num: 20.5,
-          bool: true,
-          arr: [1, [2], { a: [3] }],
-          obj: {
-            a: 1,
-            b: [2, { c: 3 }],
-            d: {
-              e: 'E',
-            },
-          },
-          // func: () => {}
-        }),
-        assign(anythingOtherThanPlainObject),
-      ]
-    })`);
-
-    expect(config.entry).toMatchInlineSnapshot(`
+    });
+  `,
+    );
+    expect(config.states!.a.entry).toMatchInlineSnapshot(`
       [
         {
           "action": {
-            "expr": "{{() => {}}}",
+            "expr": "{{{type: someIdentifier, params: {foo: 'bar'}}}}",
           },
           "kind": "inline",
         },
+      ]
+    `);
+    expect(config.states!.a.exit).toMatchInlineSnapshot(`
+      [
         {
           "action": {
-            "params": {
-              "arr": [
-                1,
-                [
-                  2,
-                ],
-                {
-                  "a": [
-                    3,
-                  ],
-                },
-              ],
-              "bool": true,
-              "num": 20.5,
-              "obj": {
-                "a": 1,
-                "b": [
-                  2,
-                  {
-                    "c": 3,
-                  },
-                ],
-                "d": {
-                  "e": "E",
-                },
-              },
-              "str": "string value",
-            },
-            "type": "custom name",
-          },
-          "kind": "named",
-        },
-        {
-          "action": {
-            "expr": "{{anotherIdentifier}}",
+            "expr": "{{{type: 'xstate.assign', assignment: {foo: 'bar', baz: () => {}}}}}",
           },
           "kind": "inline",
-        },
-        {
-          "action": {
-            "assignment": {
-              "arr": [
-                1,
-                [
-                  2,
-                ],
-                {
-                  "a": [
-                    3,
-                  ],
-                },
-              ],
-              "bool": true,
-              "num": 20.5,
-              "obj": {
-                "a": 1,
-                "b": [
-                  2,
-                  {
-                    "c": 3,
-                  },
-                ],
-                "d": {
-                  "e": "E",
-                },
-              },
-              "str": "string value",
-            },
-            "type": "xstate.assign",
-          },
-          "kind": "builtin",
-        },
-        {
-          "action": {
-            "assignment": "{{anythingOtherThanPlainObject}}",
-            "type": "xstate.assign",
-          },
-          "kind": "builtin",
         },
       ]
     `);
   });
 
-  it('should extract unsupported builtin actions as custom actions for now', () => {
+  it('should extract builtin actions unsupported by Stately Studio, as inline actions', () => {
     const config = getTestMachineConfig(
       `
     createMachine({
@@ -385,10 +232,50 @@ describe('MachineParseResult', () => {
     });
   `,
     );
-    expect(config.states!.a.entry).toMatchInlineSnapshot(`[]`);
-    expect(config.states!.a.exit).toMatchInlineSnapshot(`[]`);
-    expect(config.states!.b.entry).toMatchInlineSnapshot(`[]`);
-    expect(config.states!.b.exit).toMatchInlineSnapshot(`[]`);
+    expect(config.states!.a.entry).toMatchInlineSnapshot(`
+      [
+        {
+          "action": {
+            "expr": "{{forwardTo('some id')}}",
+          },
+          "kind": "inline",
+        },
+      ]
+    `);
+    expect(config.states!.a.exit).toMatchInlineSnapshot(`
+      [
+        {
+          "action": {
+            "expr": "{{respond({ type: 'TOKEN' }, { delay: 10 })}}",
+          },
+          "kind": "inline",
+        },
+      ]
+    `);
+    expect(config.states!.b.entry).toMatchInlineSnapshot(`
+      [
+        {
+          "action": {
+            "expr": "{{escalate({ message: 'This is some error' })}}",
+          },
+          "kind": "inline",
+        },
+      ]
+    `);
+    expect(config.states!.b.exit).toMatchInlineSnapshot(`
+      [
+        {
+          "action": {
+            "expr": "{{pure((context, event) => {
+                  return context.sampleActors.map((sampleActor) => {
+                    return send('SOME_EVENT', { to: sampleActor });
+                  });
+                })}}",
+          },
+          "kind": "inline",
+        },
+      ]
+    `);
   });
 
   it('should extract assign with a callback', () => {
@@ -563,8 +450,28 @@ describe('MachineParseResult', () => {
     });
   `);
 
-    expect(config.states!.a.entry).toMatchInlineSnapshot(`[]`);
-    expect(config.states!.a.exit).toMatchInlineSnapshot(`[]`);
+    expect(config.states!.a.entry).toMatchInlineSnapshot(`
+      [
+        {
+          "action": {
+            "event": "{{(ctx, evt) => {}}}",
+            "type": "xstate.raise",
+          },
+          "kind": "builtin",
+        },
+      ]
+    `);
+    expect(config.states!.a.exit).toMatchInlineSnapshot(`
+      [
+        {
+          "action": {
+            "event": "{{function() {}}}",
+            "type": "xstate.raise",
+          },
+          "kind": "builtin",
+        },
+      ]
+    `);
   });
   it('should extract raise with an object', () => {
     const config = getTestMachineConfig(`
@@ -573,14 +480,47 @@ describe('MachineParseResult', () => {
       states: {
         a: {
           entry: [
-            raise({type: 'Some event', foo: 'foo', bar: true, baz: [1,2,3], obj: {prop: {prop2: 2}}}),
+            raise({type: 'Some event', foo: 'foo', bar: true, baz: [1,[2],{a: 3},null, 'some string', true], obj: {prop: {prop2: [2]}}}),
           ],
         }
       }
     });
   `);
 
-    expect(config.states!.a.entry).toMatchInlineSnapshot(`[]`);
+    expect(config.states!.a.entry).toMatchInlineSnapshot(`
+      [
+        {
+          "action": {
+            "event": {
+              "bar": true,
+              "baz": [
+                1,
+                [
+                  2,
+                ],
+                {
+                  "a": 3,
+                },
+                null,
+                "some string",
+                true,
+              ],
+              "foo": "foo",
+              "obj": {
+                "prop": {
+                  "prop2": [
+                    2,
+                  ],
+                },
+              },
+              "type": "Some event",
+            },
+            "type": "xstate.raise",
+          },
+          "kind": "builtin",
+        },
+      ]
+    `);
   });
   it('should extract raise with a string', () => {
     const config = getTestMachineConfig(`
@@ -596,7 +536,19 @@ describe('MachineParseResult', () => {
     });
   `);
 
-    expect(config.states!.a.entry).toMatchInlineSnapshot(`[]`);
+    expect(config.states!.a.entry).toMatchInlineSnapshot(`
+      [
+        {
+          "action": {
+            "event": {
+              "type": "Event type",
+            },
+            "type": "xstate.raise",
+          },
+          "kind": "builtin",
+        },
+      ]
+    `);
   });
   it('should extract raise with any other expressions', () => {
     const config = getTestMachineConfig(`
@@ -613,7 +565,28 @@ describe('MachineParseResult', () => {
     });
   `);
 
-    expect(config.states!.a.entry).toMatchInlineSnapshot(`[]`);
+    expect(config.states!.a.entry).toMatchInlineSnapshot(`
+      [
+        {
+          "action": {
+            "event": "{{{...someVar, bar: 'foo'}}}",
+            "type": "xstate.raise",
+          },
+          "kind": "builtin",
+        },
+      ]
+    `);
+    expect(config.states!.a.exit).toMatchInlineSnapshot(`
+          [
+            {
+              "action": {
+                "event": "{{someVar}}",
+                "type": "xstate.raise",
+              },
+              "kind": "builtin",
+            },
+          ]
+      `);
   });
 
   it('should extract log with a string', () => {
@@ -630,7 +603,17 @@ describe('MachineParseResult', () => {
     });
   `);
 
-    expect(config.states!.a.entry).toMatchInlineSnapshot(`[]`);
+    expect(config.states!.a.entry).toMatchInlineSnapshot(`
+      [
+        {
+          "action": {
+            "expr": "Some string",
+            "type": "xstate.log",
+          },
+          "kind": "builtin",
+        },
+      ]
+    `);
   });
 
   it('should extract log with a callback', () => {
@@ -650,8 +633,28 @@ describe('MachineParseResult', () => {
     });
   `);
 
-    expect(config.states!.a.entry).toMatchInlineSnapshot(`[]`);
-    expect(config.states!.a.exit).toMatchInlineSnapshot(`[]`);
+    expect(config.states!.a.entry).toMatchInlineSnapshot(`
+      [
+        {
+          "action": {
+            "expr": "{{() => {}}}",
+            "type": "xstate.log",
+          },
+          "kind": "builtin",
+        },
+      ]
+    `);
+    expect(config.states!.a.exit).toMatchInlineSnapshot(`
+      [
+        {
+          "action": {
+            "expr": "{{function() {}}}",
+            "type": "xstate.log",
+          },
+          "kind": "builtin",
+        },
+      ]
+    `);
   });
 
   it('should extract sendTo with a string actor id', () => {
@@ -672,9 +675,13 @@ describe('MachineParseResult', () => {
       [
         {
           "action": {
-            "expr": "{{sendTo('actor', 'event')}}",
+            "event": {
+              "type": "event",
+            },
+            "to": "actor",
+            "type": "xstate.sendTo",
           },
-          "kind": "inline",
+          "kind": "builtin",
         },
       ]
     `);
@@ -701,9 +708,13 @@ describe('MachineParseResult', () => {
       [
         {
           "action": {
-            "expr": "{{sendTo(() => {}, 'event')}}",
+            "event": {
+              "type": "event",
+            },
+            "to": "{{() => {}}}",
+            "type": "xstate.sendTo",
           },
-          "kind": "inline",
+          "kind": "builtin",
         },
       ]
     `);
@@ -711,9 +722,13 @@ describe('MachineParseResult', () => {
       [
         {
           "action": {
-            "expr": "{{sendTo(function() {}, 'event')}}",
+            "event": {
+              "type": "event",
+            },
+            "to": "{{function() {}}}",
+            "type": "xstate.sendTo",
           },
-          "kind": "inline",
+          "kind": "builtin",
         },
       ]
     `);
@@ -737,9 +752,13 @@ describe('MachineParseResult', () => {
       [
         {
           "action": {
-            "expr": "{{sendTo(someVar, 'event')}}",
+            "event": {
+              "type": "event",
+            },
+            "to": "{{someVar}}",
+            "type": "xstate.sendTo",
           },
-          "kind": "inline",
+          "kind": "builtin",
         },
       ]
     `);
@@ -763,9 +782,13 @@ describe('MachineParseResult', () => {
       [
         {
           "action": {
-            "expr": "{{sendTo(() => {}, 'event')}}",
+            "event": {
+              "type": "event",
+            },
+            "to": "{{() => {}}}",
+            "type": "xstate.sendTo",
           },
-          "kind": "inline",
+          "kind": "builtin",
         },
       ]
     `);
@@ -778,7 +801,7 @@ describe('MachineParseResult', () => {
       states: {
         a: {
           entry: [
-            sendTo(() => {}, {type: 'event type', userId: 2})
+            sendTo(() => {}, {type: 'event type', userId: 2, arr: [1, [2], {a: 3}], obj: {a: [{b: 2}]}})
           ]
         }
       }
@@ -789,9 +812,30 @@ describe('MachineParseResult', () => {
       [
         {
           "action": {
-            "expr": "{{sendTo(() => {}, {type: 'event type', userId: 2})}}",
+            "event": {
+              "arr": [
+                1,
+                [
+                  2,
+                ],
+                {
+                  "a": 3,
+                },
+              ],
+              "obj": {
+                "a": [
+                  {
+                    "b": 2,
+                  },
+                ],
+              },
+              "type": "event type",
+              "userId": 2,
+            },
+            "to": "{{() => {}}}",
+            "type": "xstate.sendTo",
           },
-          "kind": "inline",
+          "kind": "builtin",
         },
       ]
     `);
@@ -818,9 +862,11 @@ describe('MachineParseResult', () => {
       [
         {
           "action": {
-            "expr": "{{sendTo(() => {}, {...someVar, type: 'event'})}}",
+            "event": "{{{...someVar, type: 'event'}}}",
+            "to": "{{() => {}}}",
+            "type": "xstate.sendTo",
           },
-          "kind": "inline",
+          "kind": "builtin",
         },
       ]
     `);
@@ -828,9 +874,11 @@ describe('MachineParseResult', () => {
       [
         {
           "action": {
-            "expr": "{{sendTo(() => {}, someEvent)}}",
+            "event": "{{someEvent}}",
+            "to": "{{() => {}}}",
+            "type": "xstate.sendTo",
           },
-          "kind": "inline",
+          "kind": "builtin",
         },
       ]
     `);
@@ -854,9 +902,14 @@ describe('MachineParseResult', () => {
       [
         {
           "action": {
-            "expr": "{{sendTo('actor', 'event', {delay: 'namedDelay'})}}",
+            "delay": "namedDelay",
+            "event": {
+              "type": "event",
+            },
+            "to": "actor",
+            "type": "xstate.sendTo",
           },
-          "kind": "inline",
+          "kind": "builtin",
         },
       ]
     `);
@@ -880,9 +933,14 @@ describe('MachineParseResult', () => {
       [
         {
           "action": {
-            "expr": "{{sendTo('actor', 'event', {delay: 2.34e2})}}",
+            "delay": 234,
+            "event": {
+              "type": "event",
+            },
+            "to": "actor",
+            "type": "xstate.sendTo",
           },
-          "kind": "inline",
+          "kind": "builtin",
         },
       ]
     `);
@@ -909,9 +967,14 @@ describe('MachineParseResult', () => {
       [
         {
           "action": {
-            "expr": "{{sendTo('actor', 'event', {delay: () => {}})}}",
+            "delay": "{{() => {}}}",
+            "event": {
+              "type": "event",
+            },
+            "to": "actor",
+            "type": "xstate.sendTo",
           },
-          "kind": "inline",
+          "kind": "builtin",
         },
       ]
     `);
@@ -919,9 +982,14 @@ describe('MachineParseResult', () => {
       [
         {
           "action": {
-            "expr": "{{sendTo('actor', 'event', {delay: function() {}})}}",
+            "delay": "{{function() {}}}",
+            "event": {
+              "type": "event",
+            },
+            "to": "actor",
+            "type": "xstate.sendTo",
           },
-          "kind": "inline",
+          "kind": "builtin",
         },
       ]
     `);
@@ -945,9 +1013,14 @@ describe('MachineParseResult', () => {
       [
         {
           "action": {
-            "expr": "{{sendTo('actor', 'event', {delay: somevar})}}",
+            "delay": "{{somevar}}",
+            "event": {
+              "type": "event",
+            },
+            "to": "actor",
+            "type": "xstate.sendTo",
           },
-          "kind": "inline",
+          "kind": "builtin",
         },
       ]
     `);
@@ -971,9 +1044,14 @@ describe('MachineParseResult', () => {
       [
         {
           "action": {
-            "expr": "{{sendTo('actor', 'event', {id: 'namedId'})}}",
+            "event": {
+              "type": "event",
+            },
+            "id": "namedId",
+            "to": "actor",
+            "type": "xstate.sendTo",
           },
-          "kind": "inline",
+          "kind": "builtin",
         },
       ]
     `);
@@ -997,9 +1075,14 @@ describe('MachineParseResult', () => {
       [
         {
           "action": {
-            "expr": "{{sendTo('actor', 'event', {id: 2.34e2})}}",
+            "event": {
+              "type": "event",
+            },
+            "id": 234,
+            "to": "actor",
+            "type": "xstate.sendTo",
           },
-          "kind": "inline",
+          "kind": "builtin",
         },
       ]
     `);
@@ -1026,9 +1109,14 @@ describe('MachineParseResult', () => {
       [
         {
           "action": {
-            "expr": "{{sendTo('actor', 'event', {id: () => {}})}}",
+            "event": {
+              "type": "event",
+            },
+            "id": "{{() => {}}}",
+            "to": "actor",
+            "type": "xstate.sendTo",
           },
-          "kind": "inline",
+          "kind": "builtin",
         },
       ]
     `);
@@ -1036,9 +1124,14 @@ describe('MachineParseResult', () => {
       [
         {
           "action": {
-            "expr": "{{sendTo('actor', 'event', {id: function() {}})}}",
+            "event": {
+              "type": "event",
+            },
+            "id": "{{function() {}}}",
+            "to": "actor",
+            "type": "xstate.sendTo",
           },
-          "kind": "inline",
+          "kind": "builtin",
         },
       ]
     `);
@@ -1062,9 +1155,14 @@ describe('MachineParseResult', () => {
       [
         {
           "action": {
-            "expr": "{{sendTo('actor', 'event', {id: somevar})}}",
+            "event": {
+              "type": "event",
+            },
+            "id": "{{somevar}}",
+            "to": "actor",
+            "type": "xstate.sendTo",
           },
-          "kind": "inline",
+          "kind": "builtin",
         },
       ]
     `);
@@ -1084,7 +1182,17 @@ describe('MachineParseResult', () => {
     });
   `);
 
-    expect(config.states!.a.entry).toMatchInlineSnapshot(`[]`);
+    expect(config.states!.a.entry).toMatchInlineSnapshot(`
+      [
+        {
+          "action": {
+            "id": "actor",
+            "type": "xstate.stop",
+          },
+          "kind": "builtin",
+        },
+      ]
+    `);
   });
 
   it('Should extract stop with a number id', () => {
@@ -1101,6 +1209,16 @@ describe('MachineParseResult', () => {
     });
   `);
 
-    expect(config.states!.a.entry).toMatchInlineSnapshot(`[]`);
+    expect(config.states!.a.entry).toMatchInlineSnapshot(`
+      [
+        {
+          "action": {
+            "id": "{{2n}}",
+            "type": "xstate.stop",
+          },
+          "kind": "builtin",
+        },
+      ]
+    `);
   });
 });
