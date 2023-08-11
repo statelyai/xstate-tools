@@ -11,9 +11,12 @@ import {
 } from './types';
 import { toJsonExpressionString } from './utils';
 
-type ObjectProperyWithIdentifierKey = t.ObjectProperty & {
-  key: t.Identifier;
-};
+interface SendToOptionObjectPropertyKey extends t.Identifier {
+  name: 'id' | 'delay';
+}
+interface SendToOptionObjectProperty extends t.ObjectProperty {
+  key: SendToOptionObjectPropertyKey;
+}
 
 export function extractAssignAction(
   actionNode: ActionNode,
@@ -227,19 +230,21 @@ export function extractSendToAction(
     if (t.isObjectExpression(arg3)) {
       arg3.properties
         .filter(
-          (prop): prop is ObjectProperyWithIdentifierKey =>
-            t.isObjectProperty(prop) && t.isIdentifier(prop.key),
+          (prop): prop is SendToOptionObjectProperty =>
+            t.isObjectProperty(prop) &&
+            t.isIdentifier(prop.key) &&
+            ['id', 'delay'].includes(prop.key.name),
         )
         .forEach((prop) => {
           const name = prop.key.name;
           if (t.isStringLiteral(prop.value) || t.isBigIntLiteral(prop.value)) {
-            options[name as 'id' | 'delay'] = prop.value.value;
+            options[name] = prop.value.value;
           } else if (t.isNumericLiteral(prop.value)) {
             options[name as 'delay'] = prop.value.value;
           }
           // () => {} or anything else
           else {
-            options[name as 'id' | 'delay'] = toJsonExpressionString(
+            options[name] = toJsonExpressionString(
               fileContent.slice(prop.value.start!, prop.value.end!),
             );
           }
