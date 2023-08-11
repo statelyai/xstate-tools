@@ -219,189 +219,129 @@ export const getActionConfig = (
 ) => {
   const actions: MachineAction[] = [];
 
-  // if (t.isObjectExpression(node)) {
-  //   for (const prop of node.properties) {
-  //     if (t.isObjectProperty(prop)) {
-  //       if (t.isIdentifier(prop.key) && prop.key.name === ) {
-
-  //       }
-  //     }
-  //   }
-  // }
-
-  if (opts?.serializeInlineActions) {
-    // Todo: think about error reporting and how to handle invalid actions such as raise(2)
-    astActions.forEach((action) => {
-      console.log(action, {
-        declarationType: action.declarationType,
-        name: action.name,
-      });
-      switch (action.declarationType) {
-        case 'named': {
+  // Todo: think about error reporting and how to handle invalid actions such as raise(2)
+  astActions.forEach((action) => {
+    switch (action.declarationType) {
+      case 'named': {
+        actions.push({
+          kind: 'named',
+          action: { type: action.name, params: {} },
+        });
+        return;
+      }
+      case 'unknown': {
+        actions.push({
+          kind: 'inline',
+          action: {
+            expr: toJsonExpressionString(
+              opts!.fileContent.slice(action.node.start!, action.node.end!),
+            ),
+          },
+        });
+        return;
+      }
+      case 'object': {
+        if (action.name) {
           actions.push({
             kind: 'named',
-            // Todo: handle params
-            action: { type: action.name, params: {} },
+            action: {
+              type: action.name,
+              // Extracts the rest of action object properties including params, etc
+              // TODO: Should we only allow params?
+              ...(extractObjectRecursively(
+                action.node as t.ObjectExpression,
+                opts!.fileContent,
+              ) as Record<string, JsonItem>),
+            },
           });
-          return;
-        }
-        case 'inline':
-          if (t.isCallExpression(action.node)) {
-            if (t.isIdentifier(action.node.callee)) {
-              switch (action.node.callee.name) {
-                case 'assign': {
-                  actions.push({
-                    kind: 'builtin',
-                    action: {
-                      type: 'xstate.assign',
-                      assignment: extractAssignAction(action, opts.fileContent),
-                    },
-                  });
-                  return;
-                }
-                case 'raise': {
-                  actions.push({
-                    kind: 'builtin',
-                    action: {
-                      type: 'xstate.raise',
-                      event: extractRaiseAction(action, opts.fileContent),
-                    },
-                  });
-                  return;
-                }
-                case 'log': {
-                  actions.push({
-                    kind: 'builtin',
-                    action: {
-                      type: 'xstate.log',
-                      expr: extractLogAction(action, opts!.fileContent),
-                    },
-                  });
-                  return;
-                }
-                case 'sendTo': {
-                  actions.push({
-                    kind: 'builtin',
-                    action: {
-                      type: 'xstate.sendTo',
-                      ...extractSendToAction(action, opts!.fileContent),
-                    },
-                  });
-                  return;
-                }
-                case 'stop': {
-                  actions.push({
-                    kind: 'builtin',
-                    action: {
-                      type: 'xstate.stop',
-                      id: extractStopAction(action, opts!.fileContent),
-                    },
-                  });
-                  return;
-                }
-              }
-            }
-          }
+        } else {
           actions.push({
             kind: 'inline',
             action: {
               expr: toJsonExpressionString(
-                opts.fileContent.slice(action.node.start!, action.node.end!),
+                opts!.fileContent.slice(action.node.start!, action.node.end!),
               ),
             },
           });
-          return;
-        case 'identifier':
-          actions.push({
-            kind: 'inline',
-            action: {
-              expr: toJsonExpressionString(
-                opts.fileContent.slice(action.node.start!, action.node.end!),
-              ),
-            },
-          });
-          return;
-        case 'unknown': {
-          // console.log(action.node);
-          if (t.isObjectExpression(action.node)) {
-            for (const prop of action.node.properties) {
-              if (t.isObjectProperty(prop)) {
-                if (t.isIdentifier(prop.key) && prop.key.name === 'type') {
-                  if (
-                    t.isStringLiteral(prop.value) &&
-                    ![
-                      'xstate.assign',
-                      'xstate.raise',
-                      'xstate.stop',
-                      'xstate.sendTo',
-                      'xstate.log',
-                    ].includes(prop.value.value)
-                  ) {
-                    actions.push({
-                      kind: 'named',
-                      action: {
-                        type: prop.value.value,
-                        ...(extractObjectRecursively(
-                          action.node,
-                          opts.fileContent,
-                        ) as Record<string, JsonItem>),
-                      },
-                    });
-                    return;
-                  }
-                }
-              }
-            }
-          }
-          actions.push({
-            kind: 'inline',
-            action: {
-              expr: toJsonExpressionString(
-                opts.fileContent.slice(action.node.start!, action.node.end!),
-              ),
-            },
-          });
-          return;
         }
-        default: {
-          console.log('unhandled action', action);
-        }
-      }
-    });
-    return actions;
-  }
-
-  // Todo: these actions should be extracted in `actions.ts`
-  astActions?.forEach((action) => {
-    switch (true) {
-      case action.declarationType === 'named':
-        actions.push({ kind: 'named', action: { type: action.name } });
         return;
-      // case opts?.anonymizeInlineImplementations:
-      //   actions.push({
-      //     type: 'anonymous',
-      //   });
-      //   return;
-      // case opts?.hashInlineImplementations:
-      //   actions.push({
-      //     type: action.inlineDeclarationId,
-      //   });
-      //   return;
-      // case !!action.chooseConditions:
-      //   actions.push({
-      //     kind: 'builtin',
-      //     action: {
-      //       type: 'xstate.choose',
-      //       conds: action.chooseConditions!.map((condition) => {
-      //         const cond = getCondition(condition.conditionNode, opts);
-      //         return {
-      //           ...(cond && { cond }),
-      //           actions: getActionConfig(condition.actionNodes, opts),
-      //         };
-      //       }),
-      //     },
-      //   });
-      //   return;
+      }
+      case 'inline':
+        switch (action.name) {
+          case 'assign': {
+            actions.push({
+              kind: 'builtin',
+              action: {
+                type: 'xstate.assign',
+                assignment: extractAssignAction(action, opts!.fileContent),
+              },
+            });
+            return;
+          }
+          case 'raise': {
+            actions.push({
+              kind: 'builtin',
+              action: {
+                type: 'xstate.raise',
+                event: extractRaiseAction(action, opts!.fileContent),
+              },
+            });
+            return;
+          }
+          case 'log': {
+            actions.push({
+              kind: 'builtin',
+              action: {
+                type: 'xstate.log',
+                expr: extractLogAction(action, opts!.fileContent),
+              },
+            });
+            return;
+          }
+          case 'sendTo': {
+            actions.push({
+              kind: 'builtin',
+              action: {
+                type: 'xstate.sendTo',
+                ...extractSendToAction(action, opts!.fileContent),
+              },
+            });
+            return;
+          }
+          case 'stop': {
+            actions.push({
+              kind: 'builtin',
+              action: {
+                type: 'xstate.stop',
+                id: extractStopAction(action, opts!.fileContent),
+              },
+            });
+            return;
+          }
+          default:
+            actions.push({
+              kind: 'inline',
+              action: {
+                expr: toJsonExpressionString(
+                  opts!.fileContent.slice(action.node.start!, action.node.end!),
+                ),
+              },
+            });
+        }
+        return;
+      case 'identifier':
+        actions.push({
+          kind: 'inline',
+          action: {
+            expr: toJsonExpressionString(
+              opts!.fileContent.slice(action.node.start!, action.node.end!),
+            ),
+          },
+        });
+        return;
+      default: {
+        console.log('unhandled action', action);
+      }
     }
   });
 

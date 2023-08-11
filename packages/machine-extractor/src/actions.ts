@@ -99,6 +99,52 @@ export const ActionAsString = maybeTsAsExpression(
   ),
 );
 
+// List of builtin XState actions that are treated specially in Studio UI
+const SUPPORTED_BUILTIN_ACTIONS = [
+  'xstate.assign',
+  'xstate.log',
+  'xstate.raise',
+  'xstate.stop',
+  'xstate.sendTo',
+];
+
+/**
+ * {type: 'custom name', params: {foo: 'bar'}} Must be extracted as named action
+ * {type: someIdentifier, params: {foo: 'bar'}} Must be extracted as inline action
+ * {type: 'xstate.assign', assignment: {foo: 'bar', baz: () => {}}} Must be extracted as inline action
+ */
+export const ActionAsObjectExpression = createParser({
+  babelMatcher: t.isObjectExpression,
+  parseNode: (node, context): ActionNode => {
+    const id = context.getNodeHash(node);
+    for (const prop of node.properties) {
+      if (t.isObjectProperty(prop)) {
+        if (
+          t.isIdentifier(prop.key) &&
+          prop.key.name === 'type' &&
+          t.isStringLiteral(prop.value) &&
+          !SUPPORTED_BUILTIN_ACTIONS.includes(prop.value.value)
+        ) {
+          return {
+            action: id,
+            node,
+            name: prop.value.value,
+            declarationType: 'object',
+            inlineDeclarationId: id,
+          };
+        }
+      }
+    }
+    return {
+      action: id,
+      node,
+      name: '',
+      declarationType: 'inline',
+      inlineDeclarationId: id,
+    };
+  },
+});
+
 export const ActionAsNode = createParser({
   babelMatcher: t.isNode,
   parseNode: (node, context): ActionNode => {
@@ -156,7 +202,7 @@ export const ChooseAction = wrapParserResult(
       node: node,
       action: choose(conditions.map((condition) => condition.condition)),
       chooseConditions: conditions,
-      name: '',
+      name: 'choose',
       declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
@@ -213,7 +259,7 @@ export const AssignAction = wrapParserResult(
     return {
       node: result.node,
       action: assign(result.argument1Result?.value || defaultAction),
-      name: '',
+      name: 'assign',
       declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
@@ -281,7 +327,7 @@ export const SendToAction = wrapParserResult(
     return {
       node: result.node,
       action: assign(result.argument1Result?.value || defaultAction),
-      name: '',
+      name: 'sendTo',
       declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
@@ -306,7 +352,7 @@ export const SendAction = wrapParserResult(
   (result, node, context): ActionNode => {
     return {
       node: result.node,
-      name: '',
+      name: 'send',
       action: send(
         result.argument1Result?.value ??
           (() => {
@@ -346,7 +392,7 @@ export const ForwardToAction = wrapParserResult(
           to: result.argument2Result.to.value,
         }),
       }),
-      name: '',
+      name: 'forwardTo',
       declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
@@ -376,6 +422,7 @@ const NamedAction = unionType([
 const BasicAction = unionType([
   ActionAsFunctionExpression,
   ActionAsString,
+  ActionAsObjectExpression,
   ActionAsIdentifier,
   ActionAsNode,
 ]);

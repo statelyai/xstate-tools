@@ -78,7 +78,12 @@ export interface FileExtractResult<
   file: t.File;
 }
 
-export type DeclarationType = 'named' | 'inline' | 'identifier' | 'unknown';
+export type DeclarationType =
+  | 'named'
+  | 'inline'
+  | 'identifier'
+  | 'object'
+  | 'unknown';
 
 type BaseBuiltinAction<P extends object> = {
   kind: 'builtin';
@@ -104,9 +109,6 @@ export type ExtractorSendToAction = BaseBuiltinAction<{
 export type ExtractorStopAction = BaseBuiltinAction<{
   id: string | JsonExpressionString;
 }>;
-// export type ChooseAction = BaseBuiltinAction<{
-//   conds: any[];
-// }>;
 
 export type NamedAction = {
   kind: 'named';

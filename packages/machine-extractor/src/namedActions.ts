@@ -31,7 +31,7 @@ export const AfterAction = wrapParserResult(
     return {
       node: result.node,
       action: after(result.argument1Result?.value || ''),
-      name: '',
+      name: 'after',
       declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
@@ -44,7 +44,7 @@ export const CancelAction = wrapParserResult(
     return {
       node: result.node,
       action: cancel(''),
-      name: '',
+      name: 'cancel',
       declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
@@ -57,7 +57,7 @@ export const DoneAction = wrapParserResult(
     return {
       node: result.node,
       action: done(''),
-      name: '',
+      name: 'done',
       declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
@@ -70,7 +70,7 @@ export const EscalateAction = wrapParserResult(
     return {
       node: result.node,
       action: escalate(''),
-      name: '',
+      name: 'escalate',
       declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
@@ -83,7 +83,7 @@ export const LogAction = wrapParserResult(
     return {
       node: result.node,
       action: log(),
-      name: '',
+      name: 'log',
       declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
@@ -96,7 +96,7 @@ export const PureAction = wrapParserResult(
     return {
       node: result.node,
       action: pure(() => []),
-      name: '',
+      name: 'pure',
       declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
@@ -109,7 +109,7 @@ export const RaiseAction = wrapParserResult(
     return {
       node: result.node,
       action: raise(''),
-      name: '',
+      name: 'raise',
       declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
@@ -122,7 +122,7 @@ export const RespondAction = wrapParserResult(
     return {
       node: result.node,
       action: respond(''),
-      name: '',
+      name: 'respond',
       declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
@@ -135,7 +135,7 @@ export const SendParentAction = wrapParserResult(
     return {
       node: result.node,
       action: sendParent(''),
-      name: '',
+      name: 'sendParent',
       declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
@@ -148,7 +148,7 @@ export const SendUpdateAction = wrapParserResult(
     return {
       node: result.node,
       action: sendUpdate(),
-      name: '',
+      name: 'sendUpdate',
       declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
@@ -161,7 +161,7 @@ export const StartAction = wrapParserResult(
     return {
       node: result.node,
       action: start(''),
-      name: '',
+      name: 'start',
       declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
@@ -174,7 +174,7 @@ export const StopAction = wrapParserResult(
     return {
       node: result.node,
       action: stop(''),
-      name: '',
+      name: 'stop',
       declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
