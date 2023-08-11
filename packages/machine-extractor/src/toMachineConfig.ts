@@ -3,13 +3,11 @@ import { MaybeArrayOfActions } from './actions';
 import { CondNode } from './conds';
 import {
   extractAssignAction,
-  extractEventObject,
   extractLogAction,
   extractObjectRecursively,
   extractRaiseAction,
   extractSendToAction,
   extractStopAction,
-  getActionCreatorName,
 } from './extractAction';
 import { TMachineCallExpression } from './machineCallExpression';
 import { StateNodeReturn } from './stateNode';
