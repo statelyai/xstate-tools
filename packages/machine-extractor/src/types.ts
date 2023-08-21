@@ -3,43 +3,46 @@ import { MachineExtractResult } from './MachineExtractResult';
 
 export type MaybeArray<T> = T | T[];
 
-export type TransitionNodeConfig = {
+export type ExtractrorTransitionNodeConfig = {
   target?: MaybeArray<string>;
-  actions?: MaybeArray<MachineAction>;
+  actions?: MaybeArray<ExtractorMachineAction>;
   internal?: boolean;
   cond?: string;
   description?: string;
+  meta?: Record<string, any>;
 };
 
-export type InvokeNodeConfig = {
+export type ExtractorInvokeNodeConfig = {
   src?: string | Function;
   id?: string;
   autoForward?: boolean;
   forward?: boolean;
-  onDone?: MaybeArray<TransitionNodeConfig>;
-  onError?: MaybeArray<TransitionNodeConfig>;
+  onDone?: MaybeArray<ExtractrorTransitionNodeConfig>;
+  onError?: MaybeArray<ExtractrorTransitionNodeConfig>;
 };
 
 export type ExtractorStateNodeConfig = {
   id?: string;
   initial?: string;
-  type?: string;
-  entry?: MaybeArray<MachineAction>;
-  onEntry?: MaybeArray<MachineAction>;
-  exit?: MaybeArray<MachineAction>;
-  onExit?: MaybeArray<MachineAction>;
+  type?: 'parallel' | 'history' | 'final';
+  entry?: MaybeArray<ExtractorMachineAction>;
+  onEntry?: MaybeArray<ExtractorMachineAction>;
+  exit?: MaybeArray<ExtractorMachineAction>;
+  onExit?: MaybeArray<ExtractorMachineAction>;
   tags?: MaybeArray<string>;
-  on?: Record<string, TransitionNodeConfig | string>;
-  after?: Record<PropertyKey, TransitionNodeConfig | string>;
-  always?: MaybeArray<TransitionNodeConfig | string>;
-  history?: string | boolean;
+  on?: Record<string, MaybeArray<ExtractrorTransitionNodeConfig>>;
+  after?: Record<PropertyKey, MaybeArray<ExtractrorTransitionNodeConfig>>;
+  always?: MaybeArray<ExtractrorTransitionNodeConfig>;
+  history?: 'shallow' | 'deep' | boolean;
   states?: Record<string, ExtractorStateNodeConfig>;
   meta?: Record<string, any>;
-  invoke?: MaybeArray<InvokeNodeConfig | string>;
+  invoke?: MaybeArray<ExtractorInvokeNodeConfig>;
   description?: string;
-  onDone?: MaybeArray<TransitionNodeConfig | string>;
+  onDone?: MaybeArray<ExtractrorTransitionNodeConfig>;
 };
-export type ExtractorMachineConfig = ExtractorStateNodeConfig;
+export type ExtractorMachineConfig = ExtractorStateNodeConfig & {
+  predictableActionArguments?: boolean;
+};
 
 export type Location = t.SourceLocation | null;
 
@@ -125,14 +128,13 @@ export type BuiltinAction =
   | ExtractorSendToAction
   | ExtractorStopAction;
 
-export type MachineAction = NamedAction | InlineAction | BuiltinAction;
+export type ExtractorMachineAction = NamedAction | InlineAction | BuiltinAction;
 
 // These types are copied over from studio blocks.
 // array and object are extracted as expressions so Studio render them correctly when exporting
 export type JsonItem =
   | string
   | number
-  | bigint
   | boolean
   | null
   | JsonObject

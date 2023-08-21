@@ -13,13 +13,13 @@ import { TMachineCallExpression } from './machineCallExpression';
 import { StateNodeReturn } from './stateNode';
 import { MaybeTransitionArray } from './transitions';
 import {
+  ExtractorInvokeNodeConfig,
+  ExtractorMachineAction,
   ExtractorMachineConfig,
   ExtractorStateNodeConfig,
-  InvokeNodeConfig,
+  ExtractrorTransitionNodeConfig,
   JsonItem,
-  MachineAction,
   MaybeArray,
-  TransitionNodeConfig,
 } from './types';
 import { GetParserResult, toJsonExpressionString } from './utils';
 
@@ -166,7 +166,7 @@ const parseStateNode = (
           src = invoke.src.inlineDeclarationId;
       }
 
-      const toPush: InvokeNodeConfig = {
+      const toPush: ExtractorInvokeNodeConfig = {
         src: src || (() => () => {}),
       };
 
@@ -215,7 +215,7 @@ export const getActionConfig = (
   astActions: GetParserResult<typeof MaybeArrayOfActions>,
   opts: ToMachineConfigOptions | undefined,
 ) => {
-  const actions: MachineAction[] = [];
+  const actions: ExtractorMachineAction[] = [];
 
   // Todo: think about error reporting and how to handle invalid actions such as raise(2)
   astActions.forEach((action) => {
@@ -370,11 +370,11 @@ const getCondition = (
 export const getTransitions = (
   astTransitions: GetParserResult<typeof MaybeTransitionArray>,
   opts: ToMachineConfigOptions | undefined,
-): MaybeArray<TransitionNodeConfig> => {
-  const transitions: TransitionNodeConfig[] = [];
+): MaybeArray<ExtractrorTransitionNodeConfig> => {
+  const transitions: ExtractrorTransitionNodeConfig[] = [];
 
   astTransitions?.forEach((transition) => {
-    const toPush: TransitionNodeConfig = {};
+    const toPush: ExtractrorTransitionNodeConfig = {};
     if (transition?.target && transition?.target?.length > 0) {
       if (transition.target.length === 1) {
         toPush.target = transition?.target[0].value;
