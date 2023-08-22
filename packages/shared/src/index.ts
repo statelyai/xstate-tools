@@ -11,7 +11,6 @@ export * from './getTypegenData';
 export * from './getTypegenOutput';
 export * from './introspectMachine';
 export * from './isCursorInPosition';
-export * from './modifyLiveMachineSource';
 export * from './processFileEdits';
 export * from './resolveUriToFilePrefix';
 export * from './skyTypes';

@@ -3,6 +3,7 @@
 import {
   extractLiveMachinesFromFile,
   extractMachinesFromFile,
+  modifyLiveMachineSource,
 } from '@xstate/machine-extractor';
 import {
   SkyConfig,
@@ -11,7 +12,6 @@ import {
   getTsTypesEdits,
   getTypegenData,
   getTypegenOutput,
-  modifyLiveMachineSource,
   processFileEdits,
   writeToFetchedMachineFile,
 } from '@xstate/tools-shared';
