@@ -13,5 +13,9 @@
     "exactOptionalPropertyTypes": true
   },
   "include": ["src"],
-  "exclude": ["node_modules", "src/__tests__/__examples__"]
+  "exclude": [
+    "node_modules",
+    "src/__tests__/__examples__",
+    "src/__tests__/__liveMachines__"
+  ]
 }

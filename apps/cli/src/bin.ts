@@ -180,6 +180,7 @@ const writeLiveMachinesToFiles = async (opts: {
   host: string | undefined;
 }) => {
   try {
+    console.error(`Processing ${opts.uri}`);
     if (doesFetchedMachineFileExist(opts.uri)) {
       console.log('Fetched machine file already exists, skipping');
       return;
@@ -198,12 +199,20 @@ const writeLiveMachinesToFiles = async (opts: {
           apiKey &&
           apiKey.length > 0
         ) {
-          const configResponse = await fetch(
+          console.error(`Fetching ${machineVersionId}`);
+          const url = new URL(
             `${
               opts.host ?? 'https://stately.ai'
-            }/registry/api/v1/connect/create-live-machine?machineVersionId=${machineVersionId}`,
-            { headers: { Authorization: `apikey ${apiKey}` } },
+            }/registry/api/sky/workflow-machine-config`,
           );
+          url.searchParams.set('workflowId', machineVersionId);
+          url.searchParams.set('addTsTypes', 'true');
+          url.searchParams.set('addSchema', 'true');
+          url.searchParams.set('wrapInCreateMachine', 'true');
+          url.searchParams.set('xstateVersion', '4');
+          const configResponse = await fetch(url, {
+            headers: { Authorization: `Bearer ${apiKey}` },
+          });
           const skyConfig = (await configResponse.json()) as SkyConfig;
 
           await writeToFetchedMachineFile({
@@ -246,10 +255,15 @@ program
       const host = opts.host ?? process.env.STATELY_HOST;
       const envApiKey = process.env.STATELY_API_KEY;
       const apiKey = opts.apiKey ?? envApiKey;
+      console.debug('Running generate');
+      console.debug('apiKey', apiKey);
+      console.debug('envApiKey', envApiKey);
 
       if (opts.watch) {
         const processFile = (uri: string) => {
-          writeLiveMachinesToFiles({ uri, apiKey, host }).catch(() => {});
+          writeLiveMachinesToFiles({ uri, apiKey, host }).catch((e) => {
+            console.error(e);
+          });
         };
         watch(filesPattern, { awaitWriteFinish: true })
           .on('add', processFile)

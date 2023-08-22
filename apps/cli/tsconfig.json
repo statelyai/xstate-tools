@@ -11,6 +11,6 @@
     "module": "esnext",
     "types": ["vite/client"]
   },
-  "include": ["src"],
+  "include": ["src", "../../packages/shared/src/skyTypes.ts"],
   "exclude": ["src/__tests__/__examples__"]
 }
