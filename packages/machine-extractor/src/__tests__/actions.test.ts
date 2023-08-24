@@ -1023,7 +1023,7 @@ describe('extract actions', () => {
     `);
   });
 
-  it('should extract sendTo with a number id', () => {
+  it('should extract sendTo with a number id as string id', () => {
     const config = getTestMachineConfig(`
 	  createMachine({
 		initial: "a",
@@ -1043,7 +1043,7 @@ describe('extract actions', () => {
           "event": {
             "type": "event",
           },
-          "id": 234,
+          "id": "234",
           "to": "actor",
           "type": "xstate.sendTo",
         },
@@ -1144,6 +1144,31 @@ describe('extract actions', () => {
       {
         "action": {
           "id": "actor",
+          "type": "xstate.stop",
+        },
+        "kind": "builtin",
+      }
+    `);
+  });
+
+  it('Should extract stop with a number id as string id', () => {
+    const config = getTestMachineConfig(`
+	  createMachine({
+		initial: "a",
+		states: {
+		  a: {
+			entry: [
+			  stop(234)
+			],
+		  },
+		},
+	  });
+	`);
+
+    expect(config.states!.a.entry).toMatchInlineSnapshot(`
+      {
+        "action": {
+          "id": "{{234}}",
           "type": "xstate.stop",
         },
         "kind": "builtin",
