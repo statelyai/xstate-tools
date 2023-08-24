@@ -240,7 +240,12 @@ export function extractSendToAction(
           if (t.isStringLiteral(prop.value) || t.isBigIntLiteral(prop.value)) {
             options[name] = prop.value.value;
           } else if (t.isNumericLiteral(prop.value)) {
-            options[name as 'delay'] = prop.value.value;
+            // TODO: We need a unified way of handling invalid inputs. For now, let's just handle convert number ID to stringified number
+            if (name === 'id') {
+              options[name] = prop.value.value.toString();
+            } else {
+              options[name] = prop.value.value;
+            }
           }
           // () => {} or anything else
           else {
