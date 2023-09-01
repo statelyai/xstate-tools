@@ -1,3 +1,4 @@
+import traverse from '@babel/traverse';
 import * as t from '@babel/types';
 import { ActionNode } from './actions';
 import {
@@ -36,56 +37,54 @@ export function extractAssignAction(
       assigner.properties.forEach((prop) => {
         // any regular object property and no spread elements or method or such
         if (t.isObjectProperty(prop)) {
-          if (t.isIdentifier(prop.key)) {
+          if (
+            /**
+             * assign({prop: []})
+             */
+            t.isArrayExpression(prop.value)
+          ) {
+            assignment[getObjectPropertyKey(prop)] = extractArrayRecursively(
+              prop.value,
+              fileContent,
+            );
+          } else if (
+            /**
+             * assign({prop: {}})
+             */
+            t.isObjectExpression(prop.value)
+          ) {
+            assignment[getObjectPropertyKey(prop)] = extractObjectRecursively(
+              prop.value,
+              fileContent,
+            );
+          } else if (t.isLiteral(prop.value)) {
+            /**
+             * assign({prop: literal value})
+             */
             if (
-              /**
-               * assign({prop: []})
-               */
-              t.isArrayExpression(prop.value)
+              t.isRegExpLiteral(prop.value) ||
+              isTemplateLiteralWithExpressions(prop.value) ||
+              t.isNullLiteral(prop.value)
             ) {
-              assignment[prop.key.name] = extractArrayRecursively(
-                prop.value,
-                fileContent,
-              );
-            } else if (
-              /**
-               * assign({prop: {}})
-               */
-              t.isObjectExpression(prop.value)
-            ) {
-              assignment[prop.key.name] = extractObjectRecursively(
-                prop.value,
-                fileContent,
-              );
-            } else if (t.isLiteral(prop.value)) {
-              /**
-               * assign({prop: literal value})
-               */
-              if (
-                t.isRegExpLiteral(prop.value) ||
-                isTemplateLiteralWithExpressions(prop.value) ||
-                t.isNullLiteral(prop.value)
-              ) {
-                assignment[prop.key.name] = toJsonExpressionString(
-                  fileContent.slice(prop.value.start!, prop.value.end!),
-                );
-              } else if (t.isTemplateLiteral(prop.value)) {
-                assignment[prop.key.name] =
-                  prop.value.quasis[0].value.cooked ??
-                  prop.value.quasis[0].value.raw;
-              } else {
-                assignment[prop.key.name] = prop.value.value;
-              }
-            } else {
-              /**
-               * assign({prop: () => {}})
-               * assign({prop: function() {}})
-               * or anything else
-               */
-              assignment[prop.key.name] = toJsonExpressionString(
+              assignment[getObjectPropertyKey(prop)] = toJsonExpressionString(
                 fileContent.slice(prop.value.start!, prop.value.end!),
               );
+            } else if (t.isTemplateLiteral(prop.value)) {
+              assignment[getObjectPropertyKey(prop)] =
+                prop.value.quasis[0].value.cooked ??
+                prop.value.quasis[0].value.raw;
+            } else {
+              assignment[getObjectPropertyKey(prop)] = prop.value.value;
             }
+          } else {
+            /**
+             * assign({prop: () => {}})
+             * assign({prop: function() {}})
+             * or anything else
+             */
+            assignment[getObjectPropertyKey(prop)] = toJsonExpressionString(
+              fileContent.slice(prop.value.start!, prop.value.end!),
+            );
           }
         }
       });
@@ -232,11 +231,10 @@ export function extractSendToAction(
         .filter(
           (prop): prop is SendToOptionObjectProperty =>
             t.isObjectProperty(prop) &&
-            t.isIdentifier(prop.key) &&
-            ['id', 'delay'].includes(prop.key.name),
+            ['id', 'delay'].includes(getObjectPropertyKey(prop)),
         )
         .forEach((prop) => {
-          const name = prop.key.name;
+          const name = getObjectPropertyKey(prop) as 'id' | 'delay';
           if (t.isStringLiteral(prop.value) || t.isBigIntLiteral(prop.value)) {
             options[name] = prop.value.value;
           } else if (t.isNumericLiteral(prop.value)) {
@@ -276,6 +274,16 @@ export const getActionCreatorName = (actionNode: ActionNode) =>
   t.isCallExpression(actionNode.node) && t.isIdentifier(actionNode.node.callee)
     ? actionNode.node.callee.name
     : undefined;
+
+const getObjectPropertyKey = (prop: t.ObjectProperty): string => {
+  if (t.isIdentifier(prop.key)) {
+    return prop.key.name;
+  }
+  if (t.isStringLiteral(prop.key) || t.isNumericLiteral(prop.key)) {
+    return prop.key.value.toString();
+  }
+  throw Error(`Can not access prop.key for property ${JSON.stringify(prop)}`);
+};
 
 const isNull = (node: t.Node | null): node is null => t.isNullLiteral(node);
 
@@ -317,42 +325,40 @@ export function extractObjectRecursively(
   fileContent: string,
 ) {
   const extracted: Record<string, JsonItem> = {};
+
   object.properties.forEach((prop) => {
     if (t.isObjectProperty(prop)) {
-      if (t.isIdentifier(prop.key)) {
-        if (t.isLiteral(prop.value)) {
-          if (
-            t.isRegExpLiteral(prop.value) ||
-            isTemplateLiteralWithExpressions(prop.value) ||
-            t.isNullLiteral(prop.value)
-          ) {
-            extracted[prop.key.name] = fileContent.slice(
-              prop.value.start!,
-              prop.value.end!,
-            );
-          } else if (t.isTemplateLiteral(prop.value)) {
-            extracted[prop.key.name] =
-              prop.value.quasis[0].value.cooked ??
-              prop.value.quasis[0].value.raw;
-          } else {
-            extracted[prop.key.name] = prop.value.value;
-          }
-        } else if (t.isArrayExpression(prop.value)) {
-          extracted[prop.key.name] = extractArrayRecursively(
-            prop.value,
-            fileContent,
+      if (t.isLiteral(prop.value)) {
+        if (
+          t.isRegExpLiteral(prop.value) ||
+          isTemplateLiteralWithExpressions(prop.value) ||
+          t.isNullLiteral(prop.value)
+        ) {
+          extracted[getObjectPropertyKey(prop)] = fileContent.slice(
+            prop.value.start!,
+            prop.value.end!,
           );
-        } else if (t.isObjectExpression(prop.value)) {
-          extracted[prop.key.name] = extractObjectRecursively(
-            prop.value,
-            fileContent,
-          );
+        } else if (t.isTemplateLiteral(prop.value)) {
+          extracted[getObjectPropertyKey(prop)] =
+            prop.value.quasis[0].value.cooked ?? prop.value.quasis[0].value.raw;
         } else {
-          console.warn(
-            `Unsupported property value of type ${prop.value.type} in assignment`,
-            { key: prop.key.name, value: prop.value },
-          );
+          extracted[getObjectPropertyKey(prop)] = prop.value.value;
         }
+      } else if (t.isArrayExpression(prop.value)) {
+        extracted[getObjectPropertyKey(prop)] = extractArrayRecursively(
+          prop.value,
+          fileContent,
+        );
+      } else if (t.isObjectExpression(prop.value)) {
+        extracted[getObjectPropertyKey(prop)] = extractObjectRecursively(
+          prop.value,
+          fileContent,
+        );
+      } else {
+        console.warn(
+          `Unsupported property value of type ${prop.value.type} in assignment`,
+          { key: getObjectPropertyKey(prop), value: prop.value },
+        );
       }
     }
   });
