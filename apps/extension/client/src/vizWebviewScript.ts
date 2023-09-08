@@ -1,20 +1,21 @@
 import { inspect } from '@xstate/inspect';
+import { ExtractorMachineConfig } from '@xstate/machine-extractor';
 import { assign, createMachine, interpret, MachineConfig } from 'xstate';
 
 export interface WebViewMachineContext {
-  config: MachineConfig<any, any, any>;
+  config: ExtractorMachineConfig;
   guardsToMock: string[];
 }
 
 export type VizWebviewMachineEvent =
   | {
       type: 'RECEIVE_SERVICE';
-      config: MachineConfig<any, any, any>;
+      config: ExtractorMachineConfig;
       guardsToMock: string[];
     }
   | {
       type: 'UPDATE';
-      config: MachineConfig<any, any, any>;
+      config: ExtractorMachineConfig;
       guardsToMock: string[];
     };
 

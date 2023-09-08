@@ -1,4 +1,4 @@
-import { MachineEdit } from '@xstate/machine-extractor';
+import { ExtractorMachineConfig, MachineEdit } from '@xstate/machine-extractor';
 import {
   ImplementationsMetadata,
   resolveUriToFilePrefix,
@@ -6,7 +6,7 @@ import {
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { ColorThemeKind } from 'vscode';
-import { createMachine, interpret, MachineConfig } from 'xstate';
+import { MachineConfig, createMachine, interpret } from 'xstate';
 import { forwardTo } from 'xstate/lib/actions';
 import { registerDisposable } from './registerDisposable';
 import { TypeSafeLanguageClient } from './typeSafeLanguageClient';
@@ -59,7 +59,7 @@ async function getWebviewHtml(
     implementations,
     layoutString,
   }: {
-    config: MachineConfig<any, any, any>;
+    config: ExtractorMachineConfig;
     layoutString: string | null;
     implementations: ImplementationsMetadata;
   },
@@ -115,7 +115,7 @@ type WebviewClosed = { type: 'WEBVIEW_CLOSED' };
 
 type EditMachine = {
   type: 'EDIT_MACHINE';
-  config: MachineConfig<any, any, any>;
+  config: ExtractorMachineConfig;
   index: number;
   uri: string;
   layoutString: string | null;
@@ -124,7 +124,7 @@ type EditMachine = {
 
 type DisplayedMachineUpdated = {
   type: 'DISPLAYED_MACHINE_UPDATED';
-  config: MachineConfig<any, any, any>;
+  config: ExtractorMachineConfig;
   layoutString: string | null;
   implementations: ImplementationsMetadata;
 };

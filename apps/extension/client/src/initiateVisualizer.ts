@@ -1,3 +1,4 @@
+import { ExtractorMachineConfig } from '@xstate/machine-extractor';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { MachineConfig } from 'xstate';
@@ -18,7 +19,7 @@ export const initiateVisualizer = (
   };
 
   const startService = (
-    config: MachineConfig<any, any, any>,
+    config: ExtractorMachineConfig,
     machineIndex: number,
     uri: string,
     guardsToMock: string[],
