@@ -11,5 +11,5 @@ export const createLiveMachine = <T extends AnyStateMachine>(
   },
   fetchedConfig: FetchedSkyConfigFile<T>,
 ) => {
-  return fetchedConfig.fetchedMachine;
+  return fetchedConfig.machine;
 };

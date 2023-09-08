@@ -203,9 +203,9 @@ const writeLiveMachinesToFiles = async (opts: {
           const url = new URL(
             `${
               opts.host ?? 'https://stately.ai'
-            }/registry/api/sky/workflow-machine-config`,
+            }/registry/api/sky/actor-config`,
           );
-          url.searchParams.set('workflowId', machineVersionId);
+          url.searchParams.set('actorId', machineVersionId);
           url.searchParams.set('addTsTypes', 'true');
           url.searchParams.set('addSchema', 'true');
           url.searchParams.set('wrapInCreateMachine', 'true');
