@@ -275,7 +275,7 @@ export const getActionCreatorName = (actionNode: ActionNode) =>
     ? actionNode.node.callee.name
     : undefined;
 
-const getObjectPropertyKey = (prop: t.ObjectProperty): string => {
+export const getObjectPropertyKey = (prop: t.ObjectProperty): string => {
   if (t.isIdentifier(prop.key)) {
     return prop.key.name;
   }

@@ -3,6 +3,7 @@ import { Action, ChooseCondition } from 'xstate';
 import { assign, choose, forwardTo, send } from 'xstate/lib/actions';
 import { Cond, CondNode } from './conds';
 import { createParser } from './createParser';
+import { getObjectPropertyKey } from './extractAction';
 import { maybeIdentifierTo } from './identifiers';
 import {
   AfterAction,
@@ -124,8 +125,7 @@ export const ActionAsObjectExpression = createParser({
     for (const prop of node.properties) {
       if (t.isObjectProperty(prop)) {
         if (
-          t.isIdentifier(prop.key) &&
-          prop.key.name === 'type' &&
+          getObjectPropertyKey(prop) === 'type' &&
           t.isStringLiteral(prop.value) &&
           !SUPPORTED_BUILTIN_ACTIONS.includes(prop.value.value)
         ) {
