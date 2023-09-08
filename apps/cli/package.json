@@ -7,7 +7,7 @@
   "scripts": {
     "prepare": "yarn build",
     "lint": "tsc",
-    "test": "jest generate",
+    "test": "jest",
     "build": "esbuild src/bin.ts --outdir=bin --platform=node --format=cjs --sourcemap  --bundle --loader:.node=file",
     "copy": "cp -r bin ../../../sky-demo-app/node_modules/@xstate/cli"
   },

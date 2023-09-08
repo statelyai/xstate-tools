@@ -9,8 +9,8 @@
     "target": "es2015",
     "exactOptionalPropertyTypes": true,
     "module": "esnext",
-    "types": ["vite/client"]
+    "types": ["vite/client", "jest"]
   },
-  "include": ["src", "../../packages/shared/src/skyTypes.ts"],
-  "exclude": ["src/__tests__/__examples__"]
+  "include": ["src"],
+  "exclude": ["src/__tests__/__examples__", "src/__tests__/__liveMachines__"]
 }
