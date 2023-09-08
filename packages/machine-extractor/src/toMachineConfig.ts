@@ -4,14 +4,29 @@ import {
   StateNodeConfig,
   TransitionConfigOrTarget,
 } from 'xstate';
-import { MaybeArrayOfActions } from './actions';
+import { ActionNode, MaybeArrayOfActions } from './actions';
 import { CondNode } from './conds';
+import {
+  extractAssignAction,
+  extractLogAction,
+  extractRaiseAction,
+  extractSendToAction,
+  extractStopAction,
+  getActionCreatorName,
+} from './extractAction';
 import { TMachineCallExpression } from './machineCallExpression';
 import { StateNodeReturn } from './stateNode';
 import { MaybeTransitionArray } from './transitions';
 import { GetParserResult } from './utils';
 
 export interface ToMachineConfigOptions {
+  /**
+   * Whether to attempt builtin actions and inline expressions extraction.
+   *
+   * @default false
+   */
+  serializeInlineActions?: boolean;
+
   /**
    * Whether or not to hash inline implementations, which
    * allow for parsing inline implementations as code.
@@ -27,10 +42,6 @@ export interface ToMachineConfigOptions {
    * @default false
    */
   anonymizeInlineImplementations?: boolean;
-  /**
-   * If true, actions will be extracted as expressions
-   */
-  stringifyInlineImplementations?: boolean;
   /**
    * Original source code text
    */
@@ -202,6 +213,7 @@ export const getActionConfig = (
 ): Actions<any, any> => {
   const actions: Actions<any, any> = [];
 
+  // Todo: these actions should be extracted in `actions.ts`
   astActions?.forEach((action) => {
     switch (true) {
       case action.declarationType === 'named':
@@ -217,11 +229,6 @@ export const getActionConfig = (
           type: action.inlineDeclarationId,
         });
         return;
-      case opts?.stringifyInlineImplementations:
-        actions.push(
-          opts!.fileContent.slice(action.node.start!, action.node.end!),
-        );
-        return;
       case !!action.chooseConditions:
         actions.push({
           type: 'xstate.choose',
@@ -234,6 +241,53 @@ export const getActionConfig = (
           }),
         });
         return;
+      case opts?.serializeInlineActions: {
+        switch (getActionCreatorName(action)) {
+          // Todo: think about error reporting and how to handle invalid actions such as raise(2)
+          case 'assign':
+            actions.push({
+              type: 'xstate.assign',
+              assignment: extractAssignAction(action, opts!.fileContent),
+            });
+            return;
+          case 'raise':
+            actions.push({
+              type: 'xstate.raise',
+              event: extractRaiseAction(action, opts!.fileContent),
+            });
+            return;
+          case 'log':
+            actions.push({
+              type: 'xstate.log',
+              expr: extractLogAction(action, opts!.fileContent),
+            });
+            return;
+          case 'sendTo':
+            actions.push({
+              type: 'xstate.sendTo',
+              ...extractSendToAction(action, opts!.fileContent),
+            });
+            return;
+          case 'stop':
+            actions.push({
+              type: 'xstate.stop',
+              id: extractStopAction(action, opts!.fileContent),
+            });
+            return;
+          default:
+            actions.push({
+              type: 'xstate.custom',
+              value: {
+                type: 'expression',
+                value: opts!.fileContent.slice(
+                  action.node.start!,
+                  action.node.end!,
+                ),
+              },
+            });
+            return;
+        }
+      }
     }
   });
 
