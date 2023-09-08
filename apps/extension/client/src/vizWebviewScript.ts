@@ -1,5 +1,6 @@
 import { inspect } from '@xstate/inspect';
 import { ExtractorMachineConfig } from '@xstate/machine-extractor';
+import { forEachAction } from '@xstate/tools-shared';
 import { assign, createMachine, interpret, MachineConfig } from 'xstate';
 
 export interface WebViewMachineContext {
@@ -93,9 +94,21 @@ const machine = createMachine<WebViewMachineContext, VizWebviewMachineEvent>({
                 guards[guard] = () => true;
               });
 
+              forEachAction(context.config, (action) => {
+                if (!action) return;
+                if (action.kind === 'inline') {
+                  return { type: 'inline' };
+                }
+                return action.action.type;
+              });
+
               const machine = createMachine(
                 {
-                  ...context.config,
+                  ...(context.config as unknown as MachineConfig<
+                    any,
+                    any,
+                    any
+                  >),
                   context: {},
                 },
                 {
