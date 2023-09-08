@@ -1,5 +1,6 @@
 import { MachineExtractResult } from '@xstate/machine-extractor';
 import { AnyStateMachine, createMachine } from 'xstate';
+import { forEachAction } from './forEachAction';
 
 function stubAllWith<T>(value: T): Record<string, T> {
   return new Proxy(
@@ -13,10 +14,21 @@ function stubAllWith<T>(value: T): Record<string, T> {
 export function createIntrospectableMachine(
   machineResult: MachineExtractResult,
 ): AnyStateMachine {
+  const config = machineResult.toConfig()!;
+
+  forEachAction(config, (action) => {
+    if (action?.kind === 'named') {
+      return action.action;
+    }
+    if (action?.kind === 'builtin' && action.action.type === 'xstate.choose') {
+      return action.action;
+    }
+    return;
+  });
   // xstate-ignore-next-line
   return createMachine(
     {
-      ...machineResult.toConfig(),
+      ...(config as any),
       context: {},
       predictableActionArguments: true,
     },

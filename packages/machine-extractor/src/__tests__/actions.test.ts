@@ -3,7 +3,7 @@ import { extractMachinesFromFile } from '../extractMachinesFromFile';
 function getTestMachineConfig(configStr: string) {
   const result = extractMachinesFromFile(configStr);
   const machine = result!.machines[0];
-  const config = machine?.toConfig({ serializeInlineActions: true })!;
+  const config = machine?.toConfig()!;
 
   return config;
 }
@@ -177,43 +177,6 @@ describe('extract actions', () => {
 				return send('SOME_EVENT', { to: sampleActor });
 			  });
 			})]
-		  },
-		  c: {
-			entry: [choose([
-				{
-				  cond: 'cond1',
-				  actions: [
-					// selected when "cond1" is true
-					log('cond1 chosen!')
-				  ]
-				},
-				{
-				  cond: 'cond2',
-				  actions: [
-					// selected when "cond1" is false and "cond2" is true
-					log((context, event) => {
-					  /* ... */
-					}),
-					log('another action')
-				  ]
-				},
-				{
-				  cond: (context, event) => {
-					// some condition
-					return false;
-				  },
-				  actions: [
-					(context, event) => {
-					  // some other action
-					}
-				  ]
-				},
-				{
-				  actions: [
-					log('fall-through action')
-				  ]
-				}
-			  ])]
 		  }
 		},
 	  });
@@ -251,49 +214,6 @@ describe('extract actions', () => {
       				return send('SOME_EVENT', { to: sampleActor });
       			  });
       			})}}",
-        },
-        "kind": "inline",
-      }
-    `);
-
-    expect(config.states!.c.entry).toMatchInlineSnapshot(`
-      {
-        "action": {
-          "expr": "{{choose([
-      				{
-      				  cond: 'cond1',
-      				  actions: [
-      					// selected when "cond1" is true
-      					log('cond1 chosen!')
-      				  ]
-      				},
-      				{
-      				  cond: 'cond2',
-      				  actions: [
-      					// selected when "cond1" is false and "cond2" is true
-      					log((context, event) => {
-      					  /* ... */
-      					}),
-      					log('another action')
-      				  ]
-      				},
-      				{
-      				  cond: (context, event) => {
-      					// some condition
-      					return false;
-      				  },
-      				  actions: [
-      					(context, event) => {
-      					  // some other action
-      					}
-      				  ]
-      				},
-      				{
-      				  actions: [
-      					log('fall-through action')
-      				  ]
-      				}
-      			  ])}}",
         },
         "kind": "inline",
       }

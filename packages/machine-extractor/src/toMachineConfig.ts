@@ -25,28 +25,6 @@ import { GetParserResult, toJsonExpressionString } from './utils';
 
 export interface ToMachineConfigOptions {
   /**
-   * Whether to attempt builtin actions and inline expressions extraction.
-   *
-   * @default false
-   */
-  serializeInlineActions?: boolean;
-
-  /**
-   * Whether or not to hash inline implementations, which
-   * allow for parsing inline implementations as code.
-   *
-   * @default false
-   */
-  hashInlineImplementations?: boolean;
-
-  /**
-   * Whether to use a static string in place of inline implementations.
-   * This makes it easier to compare two different configs with `deepEqual`
-   *
-   * @default false
-   */
-  anonymizeInlineImplementations?: boolean;
-  /**
    * Original source code text
    */
   fileContent: string;
@@ -154,17 +132,9 @@ const parseStateNode = (
       if (!invoke.src) {
         return;
       }
-      let src: string | undefined;
-
-      switch (true) {
-        case invoke.src.declarationType === 'named':
-          src = invoke.src.value;
-          break;
-        case opts?.anonymizeInlineImplementations:
-          src = 'anonymous';
-        case opts?.hashInlineImplementations:
-          src = invoke.src.inlineDeclarationId;
-      }
+      // For now, we'll treat "anonymous" as if this is an inline expression
+      let src: string | undefined =
+        invoke.src.declarationType === 'named' ? invoke.src.value : undefined;
 
       const toPush: ExtractorInvokeNodeConfig = {
         src: src || (() => () => {}),
@@ -316,6 +286,23 @@ export const getActionConfig = (
             });
             return;
           }
+          case 'choose': {
+            actions.push({
+              kind: 'builtin',
+              action: {
+                type: 'xstate.choose',
+                conds: action.chooseConditions!.map((condition) => {
+                  const cond = getCondition(condition.conditionNode, opts);
+                  return {
+                    ...(cond && { cond }),
+                    // TODO: extract cond.actions with getActionConfig
+                    actions: condition.actionNodes.map((ac) => ac.action),
+                  };
+                }),
+              },
+            });
+            return;
+          }
           default:
             actions.push({
               kind: 'inline',
@@ -357,14 +344,7 @@ const getCondition = (
   if (!condNode) {
     return;
   }
-  switch (true) {
-    case condNode.declarationType === 'named':
-      return condNode.name;
-    case opts?.anonymizeInlineImplementations:
-      return 'anonymous';
-    case opts?.hashInlineImplementations:
-      return condNode.inlineDeclarationId;
-  }
+  return condNode.declarationType === 'named' ? condNode.name : undefined;
 };
 
 export const getTransitions = (

@@ -1,4 +1,5 @@
 import * as t from '@babel/types';
+import { Action } from 'xstate';
 import { MachineExtractResult } from './MachineExtractResult';
 
 export type MaybeArray<T> = T | T[];
@@ -42,6 +43,7 @@ export type ExtractorStateNodeConfig = {
 };
 export type ExtractorMachineConfig = ExtractorStateNodeConfig & {
   predictableActionArguments?: boolean;
+  preserveActionOrder?: boolean;
 };
 
 export type Location = t.SourceLocation | null;
@@ -112,6 +114,12 @@ export type ExtractorSendToAction = BaseBuiltinAction<{
 export type ExtractorStopAction = BaseBuiltinAction<{
   id: string | JsonExpressionString;
 }>;
+export type ExtractorChooseAction = BaseBuiltinAction<{
+  conds: {
+    actions: Action<any, any>[];
+    cond?: string | JsonExpressionString;
+  }[];
+}>;
 
 export type NamedAction = {
   kind: 'named';
@@ -126,7 +134,8 @@ export type BuiltinAction =
   | ExtractorRaiseAction
   | ExtractedLogAction
   | ExtractorSendToAction
-  | ExtractorStopAction;
+  | ExtractorStopAction
+  | ExtractorChooseAction;
 
 export type ExtractorMachineAction = NamedAction | InlineAction | BuiltinAction;
 

@@ -1,7 +1,10 @@
-import { getRangeFromSourceLocation } from '@xstate/tools-shared';
+import {
+  forEachAction,
+  getRangeFromSourceLocation,
+} from '@xstate/tools-shared';
 import { TextDocumentIdentifier } from 'vscode-languageserver';
 import { Position, Range } from 'vscode-languageserver-textdocument';
-import { createMachine } from 'xstate';
+import { MachineConfig, createMachine } from 'xstate';
 import { getCursorHoverType } from './getCursorHoverType';
 import { CachedDocument } from './types';
 
@@ -22,7 +25,14 @@ export const getReferences = (
       const config = cursorHover.machine.toConfig();
       if (!config) return [];
 
-      const fullMachine = createMachine(config);
+      // Actions don't matter here so we stub them out
+      forEachAction(config, () => {
+        return { type: 'anonymous' };
+      });
+
+      const fullMachine = createMachine(
+        config as unknown as MachineConfig<any, any, any>,
+      );
 
       const state = fullMachine.getStateNodeByPath(cursorHover.state.path);
 
@@ -55,7 +65,15 @@ export const getReferences = (
     if (cursorHover?.type === 'INITIAL') {
       const config = cursorHover.machine.toConfig();
       if (!config) return [];
-      const fullMachine = createMachine(config);
+
+      // Actions don't matter here so we stub them out
+      forEachAction(config, () => {
+        return { type: 'anonymous' };
+      });
+
+      const fullMachine = createMachine(
+        config as unknown as MachineConfig<any, any, any>,
+      );
 
       const state = fullMachine.getStateNodeByPath(cursorHover.state.path);
 
