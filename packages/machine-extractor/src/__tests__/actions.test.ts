@@ -9,7 +9,106 @@ function getTestMachineConfig(configStr: string) {
 }
 
 describe('extract actions', () => {
-  it('Ensures actions are extracted with the correct `kind`', () => {
+  it('Inline functions should be extracted as inline actions', () => {
+    const config = getTestMachineConfig(`createMachine({
+			entry: [
+			  () => {}
+			]
+		  })`);
+    expect(config.entry).toMatchInlineSnapshot(`
+      {
+        "action": {
+          "expr": "{{() => {}}}",
+        },
+        "kind": "inline",
+      }
+    `);
+  });
+  it('Action object with custom "type" that is not a builtin XState action name should be extracted as named action', () => {
+    const config = getTestMachineConfig(`createMachine({
+      entry: [
+        {type: 'custom name', params: {foo: 'bar', arr: [1, [2], [{a: 3}]], obj: {a: {b: [{c: 1}]}}}},
+      ]
+      })`);
+
+    expect(config.entry).toMatchInlineSnapshot(`
+      {
+        "action": {
+          "params": {
+            "arr": [
+              1,
+              [
+                2,
+              ],
+              [
+                {
+                  "a": 3,
+                },
+              ],
+            ],
+            "foo": "bar",
+            "obj": {
+              "a": {
+                "b": [
+                  {
+                    "c": 1,
+                  },
+                ],
+              },
+            },
+          },
+          "type": "custom name",
+        },
+        "kind": "named",
+      }
+    `);
+  });
+  it('Action object with custom "type" that is a builtin XState action name should be extracted as inline action', () => {
+    const config = getTestMachineConfig(`createMachine({
+      entry: [
+        {type: 'xstate.assign', assignment: {foo: 'bar', baz: () => {}}},
+      ]
+      })`);
+    expect(config.entry).toMatchInlineSnapshot(`
+      {
+        "action": {
+          "expr": "{{{type: 'xstate.assign', assignment: {foo: 'bar', baz: () => {}}}}}",
+        },
+        "kind": "inline",
+      }
+    `);
+  });
+  it('Action object with custom "type" that is an identifier should be extracted as inline action', () => {
+    const config = getTestMachineConfig(`createMachine({
+        entry: [
+          {type: someIdentifier, params: {foo: 'bar'}},
+        ]
+        })`);
+    expect(config.entry).toMatchInlineSnapshot(`
+      {
+        "action": {
+          "expr": "{{{type: someIdentifier, params: {foo: 'bar'}}}}",
+        },
+        "kind": "inline",
+      }
+    `);
+  });
+  it('Action as an identifier should be extracted as inline action', () => {
+    const config = getTestMachineConfig(`createMachine({
+        entry: [
+          anotherIdentifier
+        ]
+        })`);
+    expect(config.entry).toMatchInlineSnapshot(`
+      {
+        "action": {
+          "expr": "{{anotherIdentifier}}",
+        },
+        "kind": "inline",
+      }
+    `);
+  });
+  it.skip('Ensures actions are extracted with the correct `kind`', () => {
     const config = getTestMachineConfig(`createMachine({
 			entry: [
 			  () => {},
