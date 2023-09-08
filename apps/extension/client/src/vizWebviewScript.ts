@@ -1,6 +1,7 @@
 import { inspect } from '@xstate/inspect';
 import { ExtractorMachineConfig } from '@xstate/machine-extractor';
-import { forEachAction } from '@xstate/tools-shared';
+// Importing directly from @xstate/tools-shared breaks this package
+import { forEachAction } from '@xstate/tools-shared/src/forEachAction';
 import { assign, createMachine, interpret, MachineConfig } from 'xstate';
 
 export interface WebViewMachineContext {
