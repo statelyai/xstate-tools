@@ -1096,7 +1096,7 @@ describe('extract actions', () => {
     `);
   });
 
-  it('Should extract stop with a number id', () => {
+  it('Should extract stop with a bigint id', () => {
     const config = getTestMachineConfig(`
 	  createMachine({
 		initial: "a",
