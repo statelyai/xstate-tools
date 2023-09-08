@@ -189,29 +189,11 @@ export const getActionConfig = (
 
   // Todo: think about error reporting and how to handle invalid actions such as raise(2)
   astActions.forEach((action) => {
-    switch (action.declarationType) {
-      case 'named': {
-        actions.push({
-          kind: 'named',
-          action: { type: action.name, params: {} },
-        });
-        return;
-      }
-      case 'unknown': {
-        actions.push({
-          kind: 'inline',
-          action: {
-            expr: toJsonExpressionString(
-              opts!.fileContent.slice(action.node.start!, action.node.end!),
-            ),
-          },
-        });
-        return;
-      }
-      case 'object': {
-        if (action.name) {
+    switch (action.kind) {
+      case 'named':
+        if (action.declarationType === 'object') {
           actions.push({
-            kind: 'named',
+            kind: action.kind,
             action: {
               type: action.name,
               // Extracts the rest of action object properties including params, etc
@@ -224,21 +206,26 @@ export const getActionConfig = (
           });
         } else {
           actions.push({
-            kind: 'inline',
-            action: {
-              expr: toJsonExpressionString(
-                opts!.fileContent.slice(action.node.start!, action.node.end!),
-              ),
-            },
+            kind: action.kind,
+            action: { type: action.name, params: {} },
           });
         }
         return;
-      }
       case 'inline':
+        actions.push({
+          kind: action.kind,
+          action: {
+            expr: toJsonExpressionString(
+              opts!.fileContent.slice(action.node.start!, action.node.end!),
+            ),
+          },
+        });
+        return;
+      case 'builtin':
         switch (action.name) {
           case 'assign': {
             actions.push({
-              kind: 'builtin',
+              kind: action.kind,
               action: {
                 type: 'xstate.assign',
                 assignment: extractAssignAction(action, opts!.fileContent),
@@ -248,7 +235,7 @@ export const getActionConfig = (
           }
           case 'raise': {
             actions.push({
-              kind: 'builtin',
+              kind: action.kind,
               action: {
                 type: 'xstate.raise',
                 event: extractRaiseAction(action, opts!.fileContent),
@@ -258,7 +245,7 @@ export const getActionConfig = (
           }
           case 'log': {
             actions.push({
-              kind: 'builtin',
+              kind: action.kind,
               action: {
                 type: 'xstate.log',
                 expr: extractLogAction(action, opts!.fileContent),
@@ -268,7 +255,7 @@ export const getActionConfig = (
           }
           case 'sendTo': {
             actions.push({
-              kind: 'builtin',
+              kind: action.kind,
               action: {
                 type: 'xstate.sendTo',
                 ...extractSendToAction(action, opts!.fileContent),
@@ -278,7 +265,7 @@ export const getActionConfig = (
           }
           case 'stop': {
             actions.push({
-              kind: 'builtin',
+              kind: action.kind,
               action: {
                 type: 'xstate.stop',
                 id: extractStopAction(action, opts!.fileContent),
@@ -288,7 +275,7 @@ export const getActionConfig = (
           }
           case 'choose': {
             actions.push({
-              kind: 'builtin',
+              kind: action.kind,
               action: {
                 type: 'xstate.choose',
                 conds: action.chooseConditions!.map((condition) => {
@@ -303,30 +290,11 @@ export const getActionConfig = (
             });
             return;
           }
-          default:
-            actions.push({
-              kind: 'inline',
-              action: {
-                expr: toJsonExpressionString(
-                  opts!.fileContent.slice(action.node.start!, action.node.end!),
-                ),
-              },
-            });
         }
         return;
-      case 'identifier':
-        actions.push({
-          kind: 'inline',
-          action: {
-            expr: toJsonExpressionString(
-              opts!.fileContent.slice(action.node.start!, action.node.end!),
-            ),
-          },
-        });
-        return;
-      default: {
-        console.log('unhandled action', action);
-      }
+      default:
+        console.error(action);
+        throw Error('Unsupported kind property on parsed action');
     }
   });
 

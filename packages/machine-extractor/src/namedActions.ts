@@ -32,6 +32,7 @@ export const AfterAction = wrapParserResult(
       node: result.node,
       action: after(result.argument1Result?.value || ''),
       name: 'after',
+      kind: 'inline', // TODO: change when Studio has special UI form for this action and it's included in SUPPORTED_BUILTIN_ACTIONS
       declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
@@ -45,6 +46,7 @@ export const CancelAction = wrapParserResult(
       node: result.node,
       action: cancel(''),
       name: 'cancel',
+      kind: 'inline', // TODO: change when Studio has special UI form for this action and it's included in SUPPORTED_BUILTIN_ACTIONS
       declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
@@ -58,6 +60,7 @@ export const DoneAction = wrapParserResult(
       node: result.node,
       action: done(''),
       name: 'done',
+      kind: 'inline', // TODO: change when Studio has special UI form for this action and it's included in SUPPORTED_BUILTIN_ACTIONS
       declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
@@ -71,6 +74,7 @@ export const EscalateAction = wrapParserResult(
       node: result.node,
       action: escalate(''),
       name: 'escalate',
+      kind: 'inline', // TODO: change when Studio has special UI form for this action and it's included in SUPPORTED_BUILTIN_ACTIONS
       declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
@@ -84,6 +88,7 @@ export const LogAction = wrapParserResult(
       node: result.node,
       action: log(),
       name: 'log',
+      kind: 'builtin',
       declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
@@ -97,6 +102,7 @@ export const PureAction = wrapParserResult(
       node: result.node,
       action: pure(() => []),
       name: 'pure',
+      kind: 'inline', // TODO: change when Studio has special UI form for this action and it's included in SUPPORTED_BUILTIN_ACTIONS
       declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
@@ -110,6 +116,7 @@ export const RaiseAction = wrapParserResult(
       node: result.node,
       action: raise(''),
       name: 'raise',
+      kind: 'builtin',
       declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
@@ -123,6 +130,7 @@ export const RespondAction = wrapParserResult(
       node: result.node,
       action: respond(''),
       name: 'respond',
+      kind: 'inline', // TODO: change when Studio has special UI form for this action and it's included in SUPPORTED_BUILTIN_ACTIONS
       declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
@@ -136,6 +144,7 @@ export const SendParentAction = wrapParserResult(
       node: result.node,
       action: sendParent(''),
       name: 'sendParent',
+      kind: 'inline', // TODO: change when Studio has special UI form for this action and it's included in SUPPORTED_BUILTIN_ACTIONS
       declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
@@ -149,6 +158,7 @@ export const SendUpdateAction = wrapParserResult(
       node: result.node,
       action: sendUpdate(),
       name: 'sendUpdate',
+      kind: 'inline', // TODO: change when Studio has special UI form for this action and it's included in SUPPORTED_BUILTIN_ACTIONS
       declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
@@ -162,6 +172,7 @@ export const StartAction = wrapParserResult(
       node: result.node,
       action: start(''),
       name: 'start',
+      kind: 'inline', // TODO: change when Studio has special UI form for this action and it's included in SUPPORTED_BUILTIN_ACTIONS
       declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
@@ -175,6 +186,7 @@ export const StopAction = wrapParserResult(
       node: result.node,
       action: stop(''),
       name: 'stop',
+      kind: 'builtin',
       declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
