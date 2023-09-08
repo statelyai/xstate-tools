@@ -21,9 +21,6 @@ const LiveNodeObject: AnyParser<LiveNodeReturn> = objectTypeWithKnownKeys(
   () => ({
     machineVersionId: StringLiteral,
     apiKey: StringLiteral,
-
-    // TODO: do we need something like this for fetchedMachine?
-    // tsTypes: TsTypes,
   }),
 );
 
