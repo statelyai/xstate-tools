@@ -99,7 +99,7 @@ If you choose to enable file nesting using the prompt, we will set the file nest
 
 If you choose not to enable it, we will set `xstate.nestTypegenFiles` to false and won't ask again.
 
-You can read about this in more detail in our blog post: [Nesting XState typegen files](https://stately.ai/blog/nesting-xstate-typegen-files).
+You can read about this in more detail in our blog post: [Nesting XState typegen files](https://stately.ai/blog/nesting-typegen-files).
 
 ### Refactors
 
