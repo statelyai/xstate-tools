@@ -2,10 +2,10 @@ import { NotificationMap, RequestMap } from '@xstate/tools-shared';
 import * as vscode from 'vscode';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import {
-  createConnection,
   HandlerResult,
   ProposedFeatures,
   TextDocuments,
+  createConnection,
 } from 'vscode-languageserver/node';
 
 function _createTypeSafeConnection() {

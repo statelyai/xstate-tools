@@ -1,20 +1,25 @@
 import { inspect } from '@xstate/inspect';
+import { ExtractorMachineConfig } from '@xstate/machine-extractor';
+// we had to create a temp entry point for this function
+// because otherwise we start pulling recast into this browser-oriented file
+// unfortunately, recast assumes that it's running in node and requires `'os'`
+import { forEachAction } from '@xstate/tools-shared/forEachAction';
 import { assign, createMachine, interpret, MachineConfig } from 'xstate';
 
 export interface WebViewMachineContext {
-  config: MachineConfig<any, any, any>;
+  config: ExtractorMachineConfig;
   guardsToMock: string[];
 }
 
 export type VizWebviewMachineEvent =
   | {
       type: 'RECEIVE_SERVICE';
-      config: MachineConfig<any, any, any>;
+      config: ExtractorMachineConfig;
       guardsToMock: string[];
     }
   | {
       type: 'UPDATE';
-      config: MachineConfig<any, any, any>;
+      config: ExtractorMachineConfig;
       guardsToMock: string[];
     };
 
@@ -92,9 +97,21 @@ const machine = createMachine<WebViewMachineContext, VizWebviewMachineEvent>({
                 guards[guard] = () => true;
               });
 
+              forEachAction(context.config, (action) => {
+                if (!action) return;
+                if (action.kind === 'inline') {
+                  return { type: 'inline' };
+                }
+                return action.action.type;
+              });
+
               const machine = createMachine(
                 {
-                  ...context.config,
+                  ...(context.config as unknown as MachineConfig<
+                    any,
+                    any,
+                    any
+                  >),
                   context: {},
                 },
                 {
