@@ -1,7 +1,9 @@
 import { inspect } from '@xstate/inspect';
 import { ExtractorMachineConfig } from '@xstate/machine-extractor';
-// Importing directly from @xstate/tools-shared breaks this package
-import { forEachAction } from '@xstate/tools-shared/src/forEachAction';
+// we had to create a temp entry point for this function
+// because otherwise we start pulling recast into this browser-oriented file
+// unfortunately, recast assumes that it's running in node and requires `'os'`
+import { forEachAction } from '@xstate/tools-shared/forEachAction';
 import { assign, createMachine, interpret, MachineConfig } from 'xstate';
 
 export interface WebViewMachineContext {
