@@ -1,5 +1,4 @@
 import {
-  ExtractorChooseAction,
   ExtractorInvokeNodeConfig,
   ExtractorMachineAction,
   ExtractorMachineConfig,
@@ -85,7 +84,7 @@ const replaceOrDeleteActions = <T>(
   prop: keyof T,
   visitor: (action: ExtractorMachineAction | undefined) => any,
 ) => {
-  const entity = host[prop] as MaybeArray<ExtractorChooseAction>;
+  const entity = host[prop] as MaybeArray<ExtractorMachineAction>;
   if (Array.isArray(entity)) {
     for (let i = 0; i < entity.length; i++) {
       const val = visitor(entity[i]);
