@@ -20,8 +20,12 @@ export function createIntrospectableMachine(
     if (action?.kind === 'named') {
       return action.action;
     }
-    if (action?.kind === 'builtin' && action.action.type === 'xstate.choose') {
-      return action.action;
+    // Special case choose actions for typegen
+    if (action?.kind === 'inline' && action.action.__tempStatelyChooseConds) {
+      return {
+        type: 'xstate.choose',
+        conds: action.action.__tempStatelyChooseConds,
+      };
     }
     return;
   });

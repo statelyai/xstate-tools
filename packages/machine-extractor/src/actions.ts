@@ -175,7 +175,6 @@ const ChooseFirstArg = arrayOf(
     actions: maybeArrayOf(ActionAsString),
   }),
 );
-
 export const ChooseAction = wrapParserResult(
   namedFunctionCall('choose', ChooseFirstArg),
   (result, node, context): ActionNode => {
@@ -210,7 +209,7 @@ export const ChooseAction = wrapParserResult(
       action: choose(conditions.map((condition) => condition.condition)),
       chooseConditions: conditions,
       name: 'choose',
-      kind: 'builtin',
+      kind: 'inline',
       declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };

@@ -114,30 +114,38 @@ export type ExtractorSendToAction = BaseBuiltinAction<{
 export type ExtractorStopAction = BaseBuiltinAction<{
   id: string | JsonExpressionString;
 }>;
-export type ExtractorChooseAction = BaseBuiltinAction<{
-  conds: {
-    actions: Action<any, any>[];
-    cond?: string | JsonExpressionString;
-  }[];
-}>;
 
-export type NamedAction = {
+export type ExtractorNamedAction = {
   kind: 'named';
   action: { type: string; params?: JsonObject };
 };
-export type InlineAction = {
+export type ExtractorInlineAction = {
   kind: 'inline';
-  action: { expr: JsonExpressionString };
+  action: {
+    expr: JsonExpressionString;
+    /**
+     * Typegen still needs XState actions next to conditions in the shape below to work with choose actions.
+     * Studio still renders choose actions as inline actions with the `expr` above.
+     * TODO: When Studio wants to support choose in the UI and choose actions need to be extracted with the new action shape,
+     * we need to tweak typegen to work with the new shape too and remove the below property.
+     */
+    __tempStatelyChooseConds?: {
+      actions: Action<any, any>[];
+      cond?: string;
+    }[];
+  };
 };
 export type BuiltinAction =
   | ExtractorAssignAction
   | ExtractorRaiseAction
   | ExtractedLogAction
   | ExtractorSendToAction
-  | ExtractorStopAction
-  | ExtractorChooseAction;
+  | ExtractorStopAction;
 
-export type ExtractorMachineAction = NamedAction | InlineAction | BuiltinAction;
+export type ExtractorMachineAction =
+  | ExtractorNamedAction
+  | ExtractorInlineAction
+  | BuiltinAction;
 
 // These types are copied over from studio blocks.
 // array and object are extracted as expressions so Studio render them correctly when exporting

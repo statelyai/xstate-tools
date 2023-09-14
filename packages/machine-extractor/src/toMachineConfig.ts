@@ -212,12 +212,26 @@ export const getActionConfig = (
         }
         return;
       case 'inline':
+        const __tempStatelyChooseConds =
+          action.name === 'choose'
+            ? action.chooseConditions!.map((condition) => {
+                const cond = getCondition(condition.conditionNode, opts);
+                return {
+                  ...(cond && { cond }),
+                  // TODO: extract cond.actions with getActionConfig
+                  actions: condition.actionNodes.map((node) => node.action),
+                };
+              })
+            : [];
         actions.push({
           kind: action.kind,
           action: {
             expr: toJsonExpressionString(
               opts!.fileContent.slice(action.node.start!, action.node.end!),
             ),
+            ...(__tempStatelyChooseConds.length > 0 && {
+              __tempStatelyChooseConds,
+            }),
           },
         });
         return;
@@ -269,23 +283,6 @@ export const getActionConfig = (
               action: {
                 type: 'xstate.stop',
                 id: extractStopAction(action, opts!.fileContent),
-              },
-            });
-            return;
-          }
-          case 'choose': {
-            actions.push({
-              kind: action.kind,
-              action: {
-                type: 'xstate.choose',
-                conds: action.chooseConditions!.map((condition) => {
-                  const cond = getCondition(condition.conditionNode, opts);
-                  return {
-                    ...(cond && { cond }),
-                    // TODO: extract cond.actions with getActionConfig
-                    actions: condition.actionNodes.map((ac) => ac.action),
-                  };
-                }),
               },
             });
             return;
