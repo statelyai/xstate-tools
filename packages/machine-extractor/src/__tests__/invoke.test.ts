@@ -12,11 +12,7 @@ describe('Invoke', () => {
       })
     `);
 
-    const config = JSON.stringify(
-      result!.machines[0]!.toConfig({
-        hashInlineImplementations: true,
-      }),
-    );
+    const config = JSON.stringify(result!.machines[0]!.toConfig());
 
     expect(config).toContain(id);
   });

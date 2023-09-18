@@ -1,10 +1,10 @@
 {
   "name": "@xstate/tools-shared",
-  "version": "3.0.1",
+  "version": "4.0.0",
   "main": "dist/xstate-tools-shared.cjs.js",
   "license": "MIT",
   "dependencies": {
-    "@xstate/machine-extractor": "^0.10.0"
+    "@xstate/machine-extractor": "^0.11.0"
   },
   "scripts": {
     "lint": "tsc",
@@ -22,5 +22,11 @@
     "prettier": "^2.8.7",
     "typescript": "^5.0.4",
     "xstate": "^4.33.4"
+  },
+  "preconstruct": {
+    "entrypoints": [
+      "./index.ts",
+      "./forEachAction.ts"
+    ]
   }
 }

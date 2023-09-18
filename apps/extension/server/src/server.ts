@@ -334,9 +334,7 @@ async function handleDocumentChange(textDocument: TextDocument): Promise<void> {
           });
         }
 
-        const updatedConfig = machineResult.toConfig({
-          hashInlineImplementations: true,
-        });
+        const updatedConfig = machineResult.toConfig();
         const previousMachineResult =
           previouslyCachedDocument?.extractionResults[
             displayedMachine.machineIndex
@@ -344,14 +342,7 @@ async function handleDocumentChange(textDocument: TextDocument): Promise<void> {
         if (
           updatedConfig &&
           previousMachineResult &&
-          !deepEqual(
-            previousMachineResult.toConfig({
-              anonymizeInlineImplementations: true,
-            }),
-            machineResult.toConfig({
-              anonymizeInlineImplementations: true,
-            }),
-          )
+          !deepEqual(previousMachineResult.toConfig(), machineResult.toConfig())
         ) {
           connection.sendNotification('displayedMachineUpdated', {
             config: updatedConfig,
@@ -698,9 +689,7 @@ connection.onRequest('getMachineAtIndex', ({ uri, machineIndex }) => {
   }
 
   return {
-    config: machineResult.toConfig({
-      hashInlineImplementations: true,
-    })!,
+    config: machineResult.toConfig()!,
     layoutString: machineResult.getLayoutComment()?.value || null,
     implementations: getInlineImplementations(
       machineResult,
@@ -749,9 +738,7 @@ connection.onRequest('getMachineAtCursorPosition', ({ uri, position }) => {
     cachedDocument.extractionResults[machineResultIndex].machineResult;
 
   return {
-    config: machineResult.toConfig({
-      hashInlineImplementations: true,
-    })!,
+    config: machineResult.toConfig()!,
     machineIndex: machineResultIndex,
     layoutString: machineResult.getLayoutComment()?.value || null,
     implementations: getInlineImplementations(

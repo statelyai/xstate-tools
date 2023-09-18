@@ -3,6 +3,7 @@ import { Action, ChooseCondition } from 'xstate';
 import { assign, choose, forwardTo, send } from 'xstate/lib/actions';
 import { Cond, CondNode } from './conds';
 import { createParser } from './createParser';
+import { getObjectPropertyKey } from './extractAction';
 import { maybeIdentifierTo } from './identifiers';
 import {
   AfterAction,
@@ -35,6 +36,7 @@ export interface ActionNode {
   node: t.Node;
   action: Action<any, any>;
   name: string;
+  kind: 'inline' | 'named' | 'builtin';
   chooseConditions?: ParsedChooseCondition[];
   declarationType: DeclarationType;
   inlineDeclarationId: string;
@@ -54,6 +56,7 @@ export const ActionAsIdentifier = maybeTsAsExpression(
         action: node.name,
         node,
         name: node.name,
+        kind: 'inline',
         declarationType: 'identifier',
         inlineDeclarationId: context.getNodeHash(node),
       };
@@ -74,6 +77,7 @@ export const ActionAsFunctionExpression = maybeTsAsExpression(
           node,
           action,
           name: '',
+          kind: 'inline',
           declarationType: 'inline',
           inlineDeclarationId: id,
         };
@@ -91,6 +95,7 @@ export const ActionAsString = maybeTsAsExpression(
           action: node.value,
           node,
           name: node.value,
+          kind: 'named',
           declarationType: 'named',
           inlineDeclarationId: context.getNodeHash(node),
         };
@@ -98,6 +103,53 @@ export const ActionAsString = maybeTsAsExpression(
     }),
   ),
 );
+
+// List of builtin XState actions that are treated specially in Studio UI
+const SUPPORTED_BUILTIN_ACTIONS = [
+  'xstate.assign',
+  'xstate.log',
+  'xstate.raise',
+  'xstate.stop',
+  'xstate.sendTo',
+];
+
+/**
+ * {type: 'custom name', params: {foo: 'bar'}} Must be extracted as named action
+ * {type: someIdentifier, params: {foo: 'bar'}} Must be extracted as inline action
+ * {type: 'xstate.assign', assignment: {foo: 'bar', baz: () => {}}} Must be extracted as inline action
+ */
+export const ActionAsObjectExpression = createParser({
+  babelMatcher: t.isObjectExpression,
+  parseNode: (node, context): ActionNode => {
+    const id = context.getNodeHash(node);
+    for (const prop of node.properties) {
+      if (t.isObjectProperty(prop)) {
+        if (
+          getObjectPropertyKey(prop) === 'type' &&
+          t.isStringLiteral(prop.value) &&
+          !SUPPORTED_BUILTIN_ACTIONS.includes(prop.value.value)
+        ) {
+          return {
+            action: id,
+            node,
+            name: prop.value.value,
+            kind: 'named',
+            declarationType: 'object',
+            inlineDeclarationId: id,
+          };
+        }
+      }
+    }
+    return {
+      action: id,
+      node,
+      name: '',
+      kind: 'inline',
+      declarationType: 'inline',
+      inlineDeclarationId: id,
+    };
+  },
+});
 
 export const ActionAsNode = createParser({
   babelMatcher: t.isNode,
@@ -107,6 +159,7 @@ export const ActionAsNode = createParser({
       action: id,
       node,
       name: '',
+      kind: 'inline',
       declarationType: 'unknown',
       inlineDeclarationId: id,
     };
@@ -122,14 +175,13 @@ const ChooseFirstArg = arrayOf(
     actions: maybeArrayOf(ActionAsString),
   }),
 );
-
 export const ChooseAction = wrapParserResult(
   namedFunctionCall('choose', ChooseFirstArg),
   (result, node, context): ActionNode => {
     const conditions: ParsedChooseCondition[] = [];
 
     result.argument1Result?.forEach((arg1Result) => {
-      const toPush: typeof conditions[number] = {
+      const toPush: (typeof conditions)[number] = {
         condition: {
           actions: [],
         },
@@ -156,7 +208,8 @@ export const ChooseAction = wrapParserResult(
       node: node,
       action: choose(conditions.map((condition) => condition.condition)),
       chooseConditions: conditions,
-      name: '',
+      name: 'choose',
+      kind: 'inline',
       declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
@@ -213,7 +266,77 @@ export const AssignAction = wrapParserResult(
     return {
       node: result.node,
       action: assign(result.argument1Result?.value || defaultAction),
-      name: '',
+      name: 'assign',
+      kind: 'builtin',
+      declarationType: 'inline',
+      inlineDeclarationId: context.getNodeHash(node),
+    };
+  },
+);
+
+interface SendToArg {
+  node: t.Node;
+  value: {} | (() => {});
+}
+
+const SendToArgObject = createParser({
+  babelMatcher: t.isObjectExpression,
+  parseNode: (node, context) => {
+    return {
+      node,
+      value: {},
+    };
+  },
+});
+
+const SendToArgFunction = createParser({
+  babelMatcher: isFunctionOrArrowFunctionExpression,
+  parseNode: (node, context) => {
+    const value = function anonymous() {
+      return {};
+    };
+    value.toJSON = () => {
+      return {};
+    };
+
+    return {
+      node,
+      value,
+    };
+  },
+});
+
+const SendToFirstSecondArg = unionType<SendToArg>([
+  SendToArgObject,
+  SendToArgFunction,
+]);
+
+export const SendToAction = wrapParserResult(
+  namedFunctionCall(
+    'sendTo',
+    SendToFirstSecondArg,
+    SendToFirstSecondArg,
+    objectTypeWithKnownKeys({
+      delay: unionType<{ node: t.Node; value: string | number }>([
+        NumericLiteral,
+        StringLiteral,
+      ]),
+      id: StringLiteral,
+    }),
+  ),
+  (result, node, context): ActionNode => {
+    const defaultAction = function anonymous() {
+      return {};
+    };
+    defaultAction.toJSON = () => {
+      return {};
+    };
+
+    return {
+      node: result.node,
+      action: assign(result.argument1Result?.value || defaultAction),
+      name: 'sendTo',
+      kind: 'builtin',
       declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
@@ -238,7 +361,8 @@ export const SendAction = wrapParserResult(
   (result, node, context): ActionNode => {
     return {
       node: result.node,
-      name: '',
+      name: 'send',
+      kind: 'inline', // TODO: change when Studio has special UI form for this action and it's included in SUPPORTED_BUILTIN_ACTIONS
       action: send(
         result.argument1Result?.value ??
           (() => {
@@ -278,7 +402,8 @@ export const ForwardToAction = wrapParserResult(
           to: result.argument2Result.to.value,
         }),
       }),
-      name: '',
+      name: 'forwardTo',
+      kind: 'inline', // TODO: change when Studio has special UI form for this action and it's included in SUPPORTED_BUILTIN_ACTIONS
       declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
@@ -302,11 +427,13 @@ const NamedAction = unionType([
   StartAction,
   StopAction,
   SendParentAction,
+  SendToAction,
 ]);
 
 const BasicAction = unionType([
   ActionAsFunctionExpression,
   ActionAsString,
+  ActionAsObjectExpression,
   ActionAsIdentifier,
   ActionAsNode,
 ]);

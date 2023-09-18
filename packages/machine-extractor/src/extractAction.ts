@@ -1,32 +1,28 @@
+import traverse from '@babel/traverse';
 import * as t from '@babel/types';
 import { ActionNode } from './actions';
+import {
+  ExtractedLogAction,
+  ExtractorAssignAction,
+  ExtractorRaiseAction,
+  ExtractorSendToAction,
+  ExtractorStopAction,
+  JsonExpressionString,
+  JsonItem,
+} from './types';
+import { toJsonExpressionString } from './utils';
 
-// These types are copied over from studio blocks.
-// array and object are extracted as expressions so Studio render them correctly when exporting
-export type JsonEntry =
-  | { type: 'string'; value: string }
-  | { type: 'number'; value: number }
-  | { type: 'bigint'; value: string }
-  | { type: 'boolean'; value: boolean }
-  | { type: 'null'; value: null }
-  | { type: 'undefined'; value: undefined }
-  | { type: 'expression'; value: string };
-export type JsonValue = Pick<JsonEntry, 'value'>;
-type JsonType = Pick<JsonEntry, 'type'>;
-
-type ObjectProperyWithIdentifierKey = t.ObjectProperty & {
-  key: t.Identifier;
-};
+interface SendToOptionObjectPropertyKey extends t.Identifier {
+  name: 'id' | 'delay';
+}
+interface SendToOptionObjectProperty extends t.ObjectProperty {
+  key: SendToOptionObjectPropertyKey;
+}
 
 export function extractAssignAction(
   actionNode: ActionNode,
   fileContent: string,
-):
-  | {
-      type: 'object';
-      value: Record<string, JsonEntry>;
-    }
-  | { type: 'expression'; value: string } {
+): ExtractorAssignAction['action']['assignment'] {
   const node = actionNode.node;
   if (t.isCallExpression(node)) {
     const assigner = node.arguments[0];
@@ -36,70 +32,59 @@ export function extractAssignAction(
       t.isObjectExpression(assigner) &&
       assigner.properties.every((prop) => t.isObjectProperty(prop))
     ) {
-      const assignment: {
-        type: 'object';
-        value: Record<string, JsonEntry>;
-      } = {
-        type: 'object',
-        value: {},
-      };
+      const assignment: Record<string, JsonItem> = {};
 
       assigner.properties.forEach((prop) => {
         // any regular object property and no spread elements or method or such
         if (t.isObjectProperty(prop)) {
-          if (t.isIdentifier(prop.key)) {
+          if (
+            /**
+             * assign({prop: []})
+             */
+            t.isArrayExpression(prop.value)
+          ) {
+            assignment[getObjectPropertyKey(prop)] = extractArrayRecursively(
+              prop.value,
+              fileContent,
+            );
+          } else if (
+            /**
+             * assign({prop: {}})
+             */
+            t.isObjectExpression(prop.value)
+          ) {
+            assignment[getObjectPropertyKey(prop)] = extractObjectRecursively(
+              prop.value,
+              fileContent,
+            );
+          } else if (t.isLiteral(prop.value)) {
+            /**
+             * assign({prop: literal value})
+             */
             if (
-              /**
-               * assign({prop: []})
-               * assign({prop: {}})
-               */
-              t.isArrayExpression(prop.value) ||
-              t.isObjectExpression(prop.value)
+              t.isRegExpLiteral(prop.value) ||
+              isTemplateLiteralWithExpressions(prop.value) ||
+              t.isNullLiteral(prop.value)
             ) {
-              assignment.value[prop.key.name] = {
-                type: 'expression',
-                value: fileContent.slice(prop.value.start!, prop.value.end!),
-              };
-            } else if (t.isLiteral(prop.value)) {
-              /**
-               * assign({prop: literal value})
-               */
-              if (
-                t.isRegExpLiteral(prop.value) ||
-                isTemplateLiteralWithExpressions(prop.value) ||
-                t.isNullLiteral(prop.value)
-              ) {
-                assignment.value[prop.key.name] = {
-                  type: 'expression',
-                  value: fileContent.slice(prop.value.start!, prop.value.end!),
-                };
-              } else if (t.isTemplateLiteral(prop.value)) {
-                assignment.value[prop.key.name] = {
-                  type: 'string',
-                  value:
-                    prop.value.quasis[0].value.cooked ??
-                    prop.value.quasis[0].value.raw,
-                };
-              } else {
-                assignment.value[prop.key.name] = {
-                  type: getLiteralType(prop.value),
-                  value: prop.value.value,
-                } as Extract<
-                  JsonEntry,
-                  { type: 'string' | 'number' | 'boolean' }
-                >;
-              }
+              assignment[getObjectPropertyKey(prop)] = toJsonExpressionString(
+                fileContent.slice(prop.value.start!, prop.value.end!),
+              );
+            } else if (t.isTemplateLiteral(prop.value)) {
+              assignment[getObjectPropertyKey(prop)] =
+                prop.value.quasis[0].value.cooked ??
+                prop.value.quasis[0].value.raw;
             } else {
-              /**
-               * assign({prop: () => {}})
-               * assign({prop: function() {}})
-               * or anything else
-               */
-              assignment.value[prop.key.name] = {
-                type: 'expression',
-                value: fileContent.slice(prop.value.start!, prop.value.end!),
-              };
+              assignment[getObjectPropertyKey(prop)] = prop.value.value;
             }
+          } else {
+            /**
+             * assign({prop: () => {}})
+             * assign({prop: function() {}})
+             * or anything else
+             */
+            assignment[getObjectPropertyKey(prop)] = toJsonExpressionString(
+              fileContent.slice(prop.value.start!, prop.value.end!),
+            );
           }
         }
       });
@@ -112,10 +97,9 @@ export function extractAssignAction(
     // assign({...someVar})
     // assign(someVar)
     // or anything else
-    return {
-      type: 'expression',
-      value: fileContent.slice(assigner.start!, assigner.end!),
-    };
+    return toJsonExpressionString(
+      fileContent.slice(assigner.start!, assigner.end!),
+    );
   }
 
   throw Error(`Unsupported assign action`);
@@ -124,12 +108,7 @@ export function extractAssignAction(
 export function extractRaiseAction(
   actionNode: ActionNode,
   fileContent: string,
-):
-  | { type: 'expression'; value: string }
-  | {
-      type: 'object';
-      value: Record<string, JsonEntry>;
-    } {
+): ExtractorRaiseAction['action']['event'] {
   const node = actionNode.node;
   if (t.isCallExpression(node)) {
     const arg = node.arguments[0];
@@ -145,16 +124,12 @@ export function extractRaiseAction(
     // raise('event')
     if (t.isStringLiteral(arg)) {
       return {
-        type: 'object',
-        value: { type: { type: 'string', value: arg.value } },
+        type: arg.value,
       };
     }
 
     // raise(() => {}) or anything else
-    return {
-      type: 'expression',
-      value: fileContent.slice(arg.start!, arg.end!),
-    };
+    return toJsonExpressionString(fileContent.slice(arg.start!, arg.end!));
   }
 
   throw Error(`Unsupported raise action`);
@@ -163,24 +138,18 @@ export function extractRaiseAction(
 export function extractLogAction(
   actionNode: ActionNode,
   fileContent: string,
-): { type: 'string' | 'expression'; value: string } {
+): ExtractedLogAction['action']['expr'] {
   const node = actionNode.node;
   if (t.isCallExpression(node)) {
     const arg = node.arguments[0];
 
     // log('string')
     if (t.isStringLiteral(arg)) {
-      return {
-        type: 'string',
-        value: arg.value,
-      };
+      return arg.value;
     }
 
     // log((ctx, evt) => {}) or anything else
-    return {
-      type: 'expression',
-      value: fileContent.slice(node.start!, node.end!),
-    };
+    return toJsonExpressionString(fileContent.slice(arg.start!, arg.end!));
   }
 
   throw Error(`Unsupported log action`);
@@ -189,57 +158,36 @@ export function extractLogAction(
 export function extractStopAction(
   actionNode: ActionNode,
   fileContent: string,
-): { type: 'string' | 'expression'; value: string } {
+): ExtractorStopAction['action']['id'] {
   const node = actionNode.node;
   if (t.isCallExpression(node)) {
     const arg = node.arguments[0];
 
     // stop('id')
     if (t.isStringLiteral(arg)) {
-      return { type: 'string', value: arg.value };
+      return arg.value;
     }
 
     // stop(() => {}) or anything else
-    return {
-      type: 'expression',
-      value: fileContent.slice(arg.start!, arg.end!),
-    };
+    return toJsonExpressionString(fileContent.slice(arg.start!, arg.end!));
   }
 
   throw Error('Unsupported stop action');
 }
 
-type SendToEventArg =
-  | { type: 'expression'; value: string }
-  | {
-      type: 'object';
-      value: Record<string, JsonEntry>;
-    }
-  | undefined;
-type SendToActorRefArg =
-  | { type: 'string' | 'expression'; value: string }
-  | undefined;
-type SendToOptionArg =
-  | { type: 'string' | 'expression'; value: string }
-  | { type: 'number'; value: number }
-  | undefined;
+type SendToEventArg = JsonExpressionString | Record<string, JsonItem>;
+type SendToActorRefArg = string | JsonExpressionString;
+type SendToIdArg = string | JsonExpressionString;
+type SendToDelayArg = string | number | JsonExpressionString;
 
 export function extractSendToAction(
   actionNode: ActionNode,
   fileContent: string,
-): {
-  event: SendToEventArg;
-  to: SendToActorRefArg;
-  delay: SendToOptionArg;
-  id: SendToOptionArg;
-} {
+): Omit<ExtractorSendToAction['action'], 'type'> {
   const node = actionNode.node;
-  let eventObject: SendToEventArg = undefined;
-  let actorRef: SendToActorRefArg = undefined;
-  const options: { [key: string]: SendToOptionArg } = {
-    delay: undefined,
-    id: undefined,
-  };
+  let eventObject: SendToEventArg = {};
+  let actorRef: SendToActorRefArg = '';
+  const options: { id?: SendToIdArg; delay?: SendToDelayArg } = {};
   if (t.isCallExpression(node)) {
     const arg1 = node.arguments[0];
     const arg2 = node.arguments[1];
@@ -248,27 +196,20 @@ export function extractSendToAction(
     // Actor
     // sendTo('actorName')
     if (t.isStringLiteral(arg1)) {
-      actorRef = { type: 'string', value: arg1.value };
+      actorRef = arg1.value;
     }
     // sendTo((ctx, e) => actorRef) or anything else
     else {
-      actorRef = {
-        type: 'expression',
-        value: fileContent.slice(arg1.start!, arg1.end!),
-      };
+      actorRef = toJsonExpressionString(
+        fileContent.slice(arg1.start!, arg1.end!),
+      );
     }
 
     // Event
     // sendTo(, 'eventType')
     if (t.isStringLiteral(arg2)) {
       eventObject = {
-        type: 'object',
-        value: {
-          type: {
-            type: 'string',
-            value: arg2.value,
-          },
-        },
+        type: arg2.value,
       };
     }
 
@@ -279,37 +220,36 @@ export function extractSendToAction(
 
     // sendTo(, (ctx, e) => Record<string, any>) or anything else
     else {
-      eventObject = {
-        type: 'expression',
-        value: fileContent.slice(arg2.start!, arg2.end!),
-      };
+      eventObject = toJsonExpressionString(
+        fileContent.slice(arg2.start!, arg2.end!),
+      );
     }
 
     // Options
     if (t.isObjectExpression(arg3)) {
       arg3.properties
         .filter(
-          (prop): prop is ObjectProperyWithIdentifierKey =>
-            t.isObjectProperty(prop) && t.isIdentifier(prop.key),
+          (prop): prop is SendToOptionObjectProperty =>
+            t.isObjectProperty(prop) &&
+            ['id', 'delay'].includes(getObjectPropertyKey(prop)),
         )
         .forEach((prop) => {
+          const name = getObjectPropertyKey(prop) as 'id' | 'delay';
           if (t.isStringLiteral(prop.value) || t.isBigIntLiteral(prop.value)) {
-            options[prop.key.name] = {
-              type: 'string',
-              value: prop.value.value,
-            };
+            options[name] = prop.value.value;
           } else if (t.isNumericLiteral(prop.value)) {
-            options[prop.key.name] = {
-              type: 'number',
-              value: prop.value.value,
-            };
+            // TODO: We need a unified way of handling invalid inputs. For now, let's just handle convert number ID to stringified number
+            if (name === 'id') {
+              options[name] = prop.value.value.toString();
+            } else {
+              options[name] = prop.value.value;
+            }
           }
           // () => {} or anything else
           else {
-            options[prop.key.name] = {
-              type: 'expression',
-              value: fileContent.slice(prop.value.start!, prop.value.end!),
-            };
+            options[name] = toJsonExpressionString(
+              fileContent.slice(prop.value.start!, prop.value.end!),
+            );
           }
         });
     }
@@ -327,22 +267,6 @@ export function extractSendToAction(
   throw Error(`Unsupported sendTo action`);
 }
 
-function getLiteralType(value: t.ObjectProperty['value']) {
-  if (t.isNumericLiteral(value) || t.isBigIntLiteral(value)) {
-    return 'number';
-  }
-  if (
-    (t.isStringLiteral(value) || t.isBigIntLiteral(value)) &&
-    !isTemplateLiteralWithExpressions(value)
-  ) {
-    return 'string';
-  }
-  if (t.isBooleanLiteral(value)) {
-    return 'boolean';
-  }
-  throw Error('Unsupported literal property value');
-}
-
 // Todo: support namespace imports and aliased specifiers
 // import * as actions from 'xstate'; actions.sendTo
 // import {sendTo as x} from 'xstate'
@@ -351,70 +275,110 @@ export const getActionCreatorName = (actionNode: ActionNode) =>
     ? actionNode.node.callee.name
     : undefined;
 
-function extractEventObject(
-  eventObject: t.ObjectExpression,
-  fileContent: string,
-):
-  | { type: 'expression'; value: string }
-  | {
-      type: 'object';
-      value: Record<string, JsonEntry>;
-    } {
-  if (!eventObject.properties.every((prop) => t.isObjectProperty(prop))) {
-    return {
-      type: 'expression',
-      value: fileContent.slice(eventObject.start!, eventObject.end!),
-    };
+export const getObjectPropertyKey = (prop: t.ObjectProperty): string => {
+  if (t.isIdentifier(prop.key)) {
+    return prop.key.name;
   }
+  if (t.isStringLiteral(prop.key) || t.isNumericLiteral(prop.key)) {
+    return prop.key.value.toString();
+  }
+  throw Error(`Can not access prop.key for property ${JSON.stringify(prop)}`);
+};
 
-  const extracted: Record<string, JsonEntry> = {};
-  eventObject.properties.forEach((prop) => {
-    if (t.isObjectProperty(prop)) {
-      if (t.isIdentifier(prop.key)) {
-        if (t.isLiteral(prop.value)) {
-          if (
-            t.isRegExpLiteral(prop.value) ||
-            isTemplateLiteralWithExpressions(prop.value) ||
-            t.isNullLiteral(prop.value)
-          ) {
-            extracted[prop.key.name] = {
-              type: 'expression',
-              value: fileContent.slice(prop.value.start!, prop.value.end!),
-            };
-          } else if (t.isTemplateLiteral(prop.value)) {
-            extracted[prop.key.name] = {
-              type: 'string',
-              value:
-                prop.value.quasis[0].value.cooked ??
-                prop.value.quasis[0].value.raw,
-            };
-          } else {
-            extracted[prop.key.name] = {
-              type: getLiteralType(prop.value),
-              value: prop.value.value,
-            } as Extract<JsonEntry, { type: 'string' | 'number' | 'boolean' }>;
-          }
-        } else if (
-          t.isArrayExpression(prop.value) ||
-          t.isObjectExpression(prop.value)
+const isNull = (node: t.Node | null): node is null => t.isNullLiteral(node);
+
+export function extractArrayRecursively(
+  array: t.ArrayExpression,
+  fileContent: string,
+): JsonItem[] {
+  const extracted: JsonItem[] = [];
+  array.elements.forEach((elem) => {
+    if (isNull(elem)) {
+      extracted.push(null);
+    } else if (t.isArrayExpression(elem)) {
+      extracted.push(extractArrayRecursively(elem, fileContent));
+    } else if (t.isObjectExpression(elem)) {
+      extracted.push(extractObjectRecursively(elem, fileContent));
+    } else {
+      if (t.isLiteral(elem)) {
+        if (
+          t.isRegExpLiteral(elem) ||
+          isTemplateLiteralWithExpressions(elem) ||
+          t.isNullLiteral(elem)
         ) {
-          extracted[prop.key.name] = {
-            type: 'expression',
-            value: fileContent.slice(prop.value.start!, prop.value.end!),
-          };
-        } else {
-          console.warn(
-            `Unsupported property value of type ${prop.value.type} in assignment`,
-            { key: prop.key.name, value: prop.value },
+          extracted.push(fileContent.slice(elem.start!, elem.end!));
+        } else if (t.isTemplateLiteral(elem)) {
+          extracted.push(
+            elem.quasis[0].value.cooked ?? elem.quasis[0].value.raw,
           );
+        } else {
+          extracted.push(elem.value);
         }
       }
     }
   });
-
-  return { type: 'object', value: extracted };
+  return extracted;
 }
 
-function isTemplateLiteralWithExpressions(node: t.Literal): boolean {
+export function extractObjectRecursively(
+  object: t.ObjectExpression,
+  fileContent: string,
+) {
+  const extracted: Record<string, JsonItem> = {};
+
+  object.properties.forEach((prop) => {
+    if (t.isObjectProperty(prop)) {
+      if (t.isLiteral(prop.value)) {
+        if (
+          t.isRegExpLiteral(prop.value) ||
+          isTemplateLiteralWithExpressions(prop.value) ||
+          t.isNullLiteral(prop.value)
+        ) {
+          extracted[getObjectPropertyKey(prop)] = fileContent.slice(
+            prop.value.start!,
+            prop.value.end!,
+          );
+        } else if (t.isTemplateLiteral(prop.value)) {
+          extracted[getObjectPropertyKey(prop)] =
+            prop.value.quasis[0].value.cooked ?? prop.value.quasis[0].value.raw;
+        } else {
+          extracted[getObjectPropertyKey(prop)] = prop.value.value;
+        }
+      } else if (t.isArrayExpression(prop.value)) {
+        extracted[getObjectPropertyKey(prop)] = extractArrayRecursively(
+          prop.value,
+          fileContent,
+        );
+      } else if (t.isObjectExpression(prop.value)) {
+        extracted[getObjectPropertyKey(prop)] = extractObjectRecursively(
+          prop.value,
+          fileContent,
+        );
+      } else {
+        console.warn(
+          `Unsupported property value of type ${prop.value.type} in assignment`,
+          { key: getObjectPropertyKey(prop), value: prop.value },
+        );
+      }
+    }
+  });
+  return extracted;
+}
+
+// TODO: enforce return type to ActionEvent so `type` property is required
+export function extractEventObject(
+  eventObject: t.ObjectExpression,
+  fileContent: string,
+): JsonExpressionString | Record<string, JsonItem> {
+  if (!eventObject.properties.every((prop) => t.isObjectProperty(prop))) {
+    return toJsonExpressionString(
+      fileContent.slice(eventObject.start!, eventObject.end!),
+    );
+  }
+
+  return extractObjectRecursively(eventObject, fileContent);
+}
+
+function isTemplateLiteralWithExpressions(node: t.Node): boolean {
   return t.isTemplateLiteral(node) && node.expressions.length > 0;
 }

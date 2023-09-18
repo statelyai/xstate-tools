@@ -31,7 +31,8 @@ export const AfterAction = wrapParserResult(
     return {
       node: result.node,
       action: after(result.argument1Result?.value || ''),
-      name: '',
+      name: 'after',
+      kind: 'inline', // TODO: change when Studio has special UI form for this action and it's included in SUPPORTED_BUILTIN_ACTIONS
       declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
@@ -44,7 +45,8 @@ export const CancelAction = wrapParserResult(
     return {
       node: result.node,
       action: cancel(''),
-      name: '',
+      name: 'cancel',
+      kind: 'inline', // TODO: change when Studio has special UI form for this action and it's included in SUPPORTED_BUILTIN_ACTIONS
       declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
@@ -57,7 +59,8 @@ export const DoneAction = wrapParserResult(
     return {
       node: result.node,
       action: done(''),
-      name: '',
+      name: 'done',
+      kind: 'inline', // TODO: change when Studio has special UI form for this action and it's included in SUPPORTED_BUILTIN_ACTIONS
       declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
@@ -70,7 +73,8 @@ export const EscalateAction = wrapParserResult(
     return {
       node: result.node,
       action: escalate(''),
-      name: '',
+      name: 'escalate',
+      kind: 'inline', // TODO: change when Studio has special UI form for this action and it's included in SUPPORTED_BUILTIN_ACTIONS
       declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
@@ -83,7 +87,8 @@ export const LogAction = wrapParserResult(
     return {
       node: result.node,
       action: log(),
-      name: '',
+      name: 'log',
+      kind: 'builtin',
       declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
@@ -96,7 +101,8 @@ export const PureAction = wrapParserResult(
     return {
       node: result.node,
       action: pure(() => []),
-      name: '',
+      name: 'pure',
+      kind: 'inline', // TODO: change when Studio has special UI form for this action and it's included in SUPPORTED_BUILTIN_ACTIONS
       declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
@@ -109,7 +115,8 @@ export const RaiseAction = wrapParserResult(
     return {
       node: result.node,
       action: raise(''),
-      name: '',
+      name: 'raise',
+      kind: 'builtin',
       declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
@@ -122,7 +129,8 @@ export const RespondAction = wrapParserResult(
     return {
       node: result.node,
       action: respond(''),
-      name: '',
+      name: 'respond',
+      kind: 'inline', // TODO: change when Studio has special UI form for this action and it's included in SUPPORTED_BUILTIN_ACTIONS
       declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
@@ -135,7 +143,8 @@ export const SendParentAction = wrapParserResult(
     return {
       node: result.node,
       action: sendParent(''),
-      name: '',
+      name: 'sendParent',
+      kind: 'inline', // TODO: change when Studio has special UI form for this action and it's included in SUPPORTED_BUILTIN_ACTIONS
       declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
@@ -148,7 +157,8 @@ export const SendUpdateAction = wrapParserResult(
     return {
       node: result.node,
       action: sendUpdate(),
-      name: '',
+      name: 'sendUpdate',
+      kind: 'inline', // TODO: change when Studio has special UI form for this action and it's included in SUPPORTED_BUILTIN_ACTIONS
       declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
@@ -161,7 +171,8 @@ export const StartAction = wrapParserResult(
     return {
       node: result.node,
       action: start(''),
-      name: '',
+      name: 'start',
+      kind: 'inline', // TODO: change when Studio has special UI form for this action and it's included in SUPPORTED_BUILTIN_ACTIONS
       declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
@@ -174,7 +185,8 @@ export const StopAction = wrapParserResult(
     return {
       node: result.node,
       action: stop(''),
-      name: '',
+      name: 'stop',
+      kind: 'builtin',
       declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
