@@ -337,8 +337,10 @@ export const getTransitions = (
     if (transition?.description) {
       toPush.description = transition?.description.value;
     }
-    // XState transitions are external by default
-    toPush.internal = transition?.internal?.value ?? false;
+    // XState transitions are external by default so only add `internal` if its true
+    if (transition.internal?.value === true) {
+      toPush.internal = true;
+    }
 
     transitions.push(toPush);
   });

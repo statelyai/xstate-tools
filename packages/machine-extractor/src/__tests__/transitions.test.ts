@@ -1,7 +1,7 @@
 import { extractMachinesFromFile } from '..';
 
 describe('Internal transitions', () => {
-  it('Should keep internal property on transitions', () => {
+  it('Should keep internal property on internal transitions', () => {
     const result = extractMachinesFromFile(`
       createMachine({
         initial: 'a',
@@ -78,7 +78,37 @@ describe('Internal transitions', () => {
     `);
   });
 
-  it('Should mark transition as external if internal property is missing', () => {
+  it('Should leave out internal property if transition is has internal set to false', () => {
+    const result = extractMachinesFromFile(`
+      createMachine({
+        initial: 'a',
+		states: {
+			a: {
+				on: {
+          baz: {
+            internal: false
+          }
+				}
+			}
+		}
+      })
+    `);
+
+    expect(result?.machines[0]?.toConfig()).toMatchInlineSnapshot(`
+      {
+        "initial": "a",
+        "states": {
+          "a": {
+            "on": {
+              "baz": {},
+            },
+          },
+        },
+      }
+    `);
+  });
+
+  it('Should leave out internal property if transition is missing internal property', () => {
     const result = extractMachinesFromFile(`
       createMachine({
         initial: 'a',
@@ -88,7 +118,7 @@ describe('Internal transitions', () => {
 					foo: {
 						target: 'b'
 					},
-					bar: 'c'
+					bar: 'c',
 				}
 			}
 		}
@@ -102,53 +132,9 @@ describe('Internal transitions', () => {
           "a": {
             "on": {
               "bar": {
-                "internal": false,
                 "target": "c",
               },
               "foo": {
-                "internal": false,
-                "target": "b",
-              },
-            },
-          },
-        },
-      }
-    `);
-  });
-
-  it('Should mark transition as external if internal property is set to false', () => {
-    const result = extractMachinesFromFile(`
-      createMachine({
-        initial: 'a',
-		states: {
-			a: {
-				on: {
-					foo: {
-						target: 'b',
-						internal: false
-					},
-					bar: {
-						target: 'c',
-						internal: true
-					}
-				}
-			}
-		}
-      })
-    `);
-
-    expect(result?.machines[0]?.toConfig()).toMatchInlineSnapshot(`
-      {
-        "initial": "a",
-        "states": {
-          "a": {
-            "on": {
-              "bar": {
-                "internal": true,
-                "target": "c",
-              },
-              "foo": {
-                "internal": false,
                 "target": "b",
               },
             },
