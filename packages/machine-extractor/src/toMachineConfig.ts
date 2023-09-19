@@ -33,6 +33,7 @@ export interface ToMachineConfigOptions {
 const parseStateNode = (
   astResult: StateNodeReturn,
   opts: ToMachineConfigOptions | undefined,
+  isRootNode: boolean,
 ): ExtractorStateNodeConfig => {
   const config: ExtractorMachineConfig = {};
 
@@ -46,6 +47,13 @@ const parseStateNode = (
 
   if (astResult?.type) {
     config.type = astResult.type.value as any;
+  }
+
+  if (isRootNode && t.isObjectExpression(astResult.context?.node)) {
+    config.context = extractObjectRecursively(
+      astResult.context!.node,
+      opts!.fileContent,
+    );
   }
 
   if (astResult.entry) {
@@ -101,7 +109,7 @@ const parseStateNode = (
     const states: typeof config.states = {};
 
     astResult.states.properties.forEach((state) => {
-      states[state.key] = parseStateNode(state.result, opts);
+      states[state.key] = parseStateNode(state.result, opts, false);
     });
 
     config.states = states;
@@ -178,7 +186,7 @@ export const toMachineConfig = (
   opts?: ToMachineConfigOptions,
 ): ExtractorMachineConfig | undefined => {
   if (!result?.definition) return undefined;
-  return parseStateNode(result?.definition, opts);
+  return parseStateNode(result?.definition, opts, true);
 };
 
 export const getActionConfig = (

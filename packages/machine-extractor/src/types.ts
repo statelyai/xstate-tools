@@ -44,6 +44,7 @@ export type ExtractorStateNodeConfig = {
 export type ExtractorMachineConfig = ExtractorStateNodeConfig & {
   predictableActionArguments?: boolean;
   preserveActionOrder?: boolean;
+  context?: Record<string, any>;
 };
 
 export type Location = t.SourceLocation | null;
