@@ -1,6 +1,6 @@
 import { MaybeArrayOfActions } from './actions';
 import { Cond } from './conds';
-import { StringLiteral, TemplateLiteral } from './scalars';
+import { BooleanLiteral, StringLiteral, TemplateLiteral } from './scalars';
 import { unionType } from './unionType';
 import {
   GetParserResult,
@@ -20,6 +20,7 @@ const TransitionObject = objectTypeWithKnownKeys({
   actions: MaybeArrayOfActions,
   cond: Cond,
   description: unionType([StringLiteral, TemplateLiteral]),
+  internal: BooleanLiteral,
 });
 
 const TransitionConfigOrTargetLiteral = unionType([
