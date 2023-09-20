@@ -127,20 +127,14 @@ export interface Typegen0 {
   };
   invokeSrcNameMap: {};
   missingImplementations: {
-    actions: "a" | "b" | "c";
+    actions: never;
     delays: never;
-    guards: "cond1";
+    guards: never;
     services: never;
   };
-  eventsCausingActions: {
-    a: "FOO";
-    b: "FOO";
-    c: "FOO";
-  };
+  eventsCausingActions: {};
   eventsCausingDelays: {};
-  eventsCausingGuards: {
-    cond1: "FOO";
-  };
+  eventsCausingGuards: {};
   eventsCausingServices: {};
   matchesStates: "a" | "b";
   tags: never;
