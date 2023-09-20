@@ -1,7 +1,7 @@
 import { extractMachinesFromFile } from '..';
 
 describe('Context', () => {
-  it('Should be able to parse machine context into an object', () => {
+  it('Should be able to extract machine context into an object', () => {
     const result = extractMachinesFromFile(`
       createMachine({
         context: {
