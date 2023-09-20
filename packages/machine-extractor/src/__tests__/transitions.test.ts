@@ -1,7 +1,7 @@
 import { extractMachinesFromFile } from '..';
 
 describe('Internal transitions', () => {
-  it('Should keep internal property on internal transitions', () => {
+  it('Should keep explicitly provied internal property on transitions', () => {
     const result = extractMachinesFromFile(`
       createMachine({
         initial: 'a',
@@ -16,7 +16,7 @@ describe('Internal transitions', () => {
 				invoke: {
 					src: 'actor',
 					onDone: {
-						internal: true
+						internal: false
 					},
 					onError: {internal: true}
 				}
@@ -28,7 +28,7 @@ describe('Internal transitions', () => {
 						internal: true
 					}
 				},
-				always: {target: 'a', internal: true},
+				always: {target: 'a', internal: false},
 				onDone: {
 					internal: true
 				}
@@ -44,7 +44,7 @@ describe('Internal transitions', () => {
           "a": {
             "invoke": {
               "onDone": {
-                "internal": true,
+                "internal": false,
               },
               "onError": {
                 "internal": true,
@@ -66,41 +66,11 @@ describe('Internal transitions', () => {
               },
             },
             "always": {
-              "internal": true,
+              "internal": false,
               "target": "a",
             },
             "onDone": {
               "internal": true,
-            },
-          },
-        },
-      }
-    `);
-  });
-
-  it('Should leave out internal property if transition is has internal set to false', () => {
-    const result = extractMachinesFromFile(`
-      createMachine({
-        initial: 'a',
-		states: {
-			a: {
-				on: {
-          baz: {
-            internal: false
-          }
-				}
-			}
-		}
-      })
-    `);
-
-    expect(result?.machines[0]?.toConfig()).toMatchInlineSnapshot(`
-      {
-        "initial": "a",
-        "states": {
-          "a": {
-            "on": {
-              "baz": {},
             },
           },
         },
