@@ -127,14 +127,20 @@ export interface Typegen0 {
   };
   invokeSrcNameMap: {};
   missingImplementations: {
-    actions: never;
+    actions: "a" | "b" | "c";
     delays: never;
-    guards: never;
+    guards: "cond1";
     services: never;
   };
-  eventsCausingActions: {};
+  eventsCausingActions: {
+    a: "FOO";
+    b: "FOO";
+    c: "FOO";
+  };
   eventsCausingDelays: {};
-  eventsCausingGuards: {};
+  eventsCausingGuards: {
+    cond1: "FOO";
+  };
   eventsCausingServices: {};
   matchesStates: "a" | "b";
   tags: never;
@@ -413,7 +419,7 @@ export interface Typegen0 {
     services: never;
   };
   eventsCausingActions: {
-    exitA: "xstate.stop";
+    exitA: "FOO" | "xstate.stop";
   };
   eventsCausingDelays: {};
   eventsCausingGuards: {};
