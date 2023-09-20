@@ -74,4 +74,18 @@ describe('Context parsing', () => {
       }
     `);
   });
+
+  it('Should extract lazy context as an expression string', () => {
+    const result = extractMachinesFromFile(`
+      createMachine({
+        context: () => ({})
+      })
+    `);
+
+    expect(result?.machines[0]?.toConfig()).toMatchInlineSnapshot(`
+      {
+        "context": "{{() => ({})}}",
+      }
+    `);
+  });
 });

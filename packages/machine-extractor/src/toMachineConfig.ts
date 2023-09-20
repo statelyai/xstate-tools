@@ -183,6 +183,13 @@ const parseRootStateNode = (
       astResult.context!.node,
       opts!.fileContent,
     );
+  } else if (astResult.context) {
+    config.context = toJsonExpressionString(
+      opts!.fileContent.slice(
+        astResult.context.node.start!,
+        astResult.context.node.end!,
+      ),
+    );
   }
   return config;
 };
