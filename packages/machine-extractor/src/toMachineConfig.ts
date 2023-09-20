@@ -358,6 +358,10 @@ export const getTransitions = (
     if (transition?.description) {
       toPush.description = transition?.description.value;
     }
+    // Only add `internal` if its present
+    if (typeof transition.internal?.value === 'boolean') {
+      toPush.internal = transition.internal.value;
+    }
 
     transitions.push(toPush);
   });
