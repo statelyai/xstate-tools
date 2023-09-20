@@ -33,7 +33,6 @@ export interface ToMachineConfigOptions {
 const parseStateNode = (
   astResult: StateNodeReturn,
   opts: ToMachineConfigOptions | undefined,
-  isRootNode: boolean,
 ): ExtractorStateNodeConfig => {
   const config: ExtractorMachineConfig = {};
 
@@ -47,13 +46,6 @@ const parseStateNode = (
 
   if (astResult?.type) {
     config.type = astResult.type.value as any;
-  }
-
-  if (isRootNode && t.isObjectExpression(astResult.context?.node)) {
-    config.context = extractObjectRecursively(
-      astResult.context!.node,
-      opts!.fileContent,
-    );
   }
 
   if (astResult.entry) {
@@ -109,7 +101,7 @@ const parseStateNode = (
     const states: typeof config.states = {};
 
     astResult.states.properties.forEach((state) => {
-      states[state.key] = parseStateNode(state.result, opts, false);
+      states[state.key] = parseStateNode(state.result, opts);
     });
 
     config.states = states;
@@ -181,12 +173,26 @@ const parseStateNode = (
   return config;
 };
 
+const parseRootStateNode = (
+  astResult: StateNodeReturn,
+  opts: ToMachineConfigOptions | undefined,
+): ExtractorStateNodeConfig => {
+  const config: ExtractorMachineConfig = parseStateNode(astResult, opts);
+  if (t.isObjectExpression(astResult.context?.node)) {
+    config.context = extractObjectRecursively(
+      astResult.context!.node,
+      opts!.fileContent,
+    );
+  }
+  return config;
+};
+
 export const toMachineConfig = (
   result: TMachineCallExpression,
   opts?: ToMachineConfigOptions,
 ): ExtractorMachineConfig | undefined => {
   if (!result?.definition) return undefined;
-  return parseStateNode(result?.definition, opts, true);
+  return parseRootStateNode(result?.definition, opts);
 };
 
 export const getActionConfig = (
