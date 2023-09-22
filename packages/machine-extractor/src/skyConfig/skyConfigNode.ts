@@ -11,17 +11,16 @@ type WithValueNodes<T> = {
   [K in keyof T]: T[K] & { _valueNode?: t.Node };
 };
 
-export type LiveNodeReturn = WithValueNodes<{
-  machineVersionId?: GetParserResult<typeof StringLiteral>;
+export type SkyConfigNodeReturn = WithValueNodes<{
+  versionId?: GetParserResult<typeof StringLiteral>;
   apiKey?: GetParserResult<typeof StringLiteral>;
 }> &
   Pick<ObjectPropertyInfo, 'node'>;
 
-const LiveNodeObject: AnyParser<LiveNodeReturn> = objectTypeWithKnownKeys(
-  () => ({
-    machineVersionId: StringLiteral,
+const SkyConfigNodeObject: AnyParser<SkyConfigNodeReturn> =
+  objectTypeWithKnownKeys(() => ({
+    versionId: StringLiteral,
     apiKey: StringLiteral,
-  }),
-);
+  }));
 
-export const LiveNode = LiveNodeObject;
+export const LiveNode = SkyConfigNodeObject;

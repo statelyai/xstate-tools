@@ -1,8 +1,8 @@
 import * as t from '@babel/types';
 import { hashedId } from '../utils';
-import { LiveMachineCallExpression } from './liveMachineCallExpression';
+import { SkyConfigCallExpression } from './skyConfigCallExpression';
 
-export function getLiveMachineExtractResult({
+export function getSkyConfigExtractResult({
   file,
   fileContent,
   node,
@@ -11,12 +11,12 @@ export function getLiveMachineExtractResult({
   fileContent: string;
   node: t.CallExpression;
 }) {
-  const liveMachineCallResult = LiveMachineCallExpression.parse(node, {
+  const skyConfigCallResult = SkyConfigCallExpression.parse(node, {
     file,
     getNodeHash: (node: t.Node): string => {
       const fileText = fileContent.substring(node.start!, node.end!);
       return hashedId(fileText);
     },
   });
-  return liveMachineCallResult && liveMachineCallResult.definition;
+  return skyConfigCallResult && skyConfigCallResult.definition;
 }

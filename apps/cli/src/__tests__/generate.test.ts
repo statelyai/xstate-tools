@@ -1,7 +1,7 @@
 import { execSync } from 'child_process';
 import * as path from 'path';
 
-describe('generate', () => {
+describe('connect', () => {
   const examplesPath = path.resolve(__dirname, '__liveMachines__');
 
   execSync('yarn build', {
@@ -9,7 +9,7 @@ describe('generate', () => {
     stdio: 'ignore',
   });
 
-  execSync('node ../../bin/bin.js generate "./__liveMachines__/*.ts"', {
+  execSync('node ../../bin/bin.js connect "./__liveMachines__/*.ts"', {
     cwd: __dirname,
   });
 

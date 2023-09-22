@@ -1,19 +1,19 @@
 #!/usr/bin/env node
 
 import {
-  extractLiveMachinesFromFile,
   extractMachinesFromFile,
-  modifyLiveMachineSource,
+  extractSkyConfigFromFile,
+  modifySkyConfigSource,
 } from '@xstate/machine-extractor';
 import {
   SkyConfig,
   TypegenData,
-  doesFetchedMachineFileExist,
+  doesSkyConfigExist,
   getTsTypesEdits,
   getTypegenData,
   getTypegenOutput,
   processFileEdits,
-  writeToFetchedMachineFile,
+  writeSkyConfig,
 } from '@xstate/tools-shared';
 import { watch } from 'chokidar';
 import { Command } from 'commander';
@@ -174,24 +174,24 @@ program
     }
   });
 
-const writeLiveMachinesToFiles = async (opts: {
+const writeSkyConfigToFiles = async (opts: {
   uri: string;
   apiKey: string | undefined;
   host: string | undefined;
 }) => {
   try {
     console.error(`Processing ${opts.uri}`);
-    if (doesFetchedMachineFileExist(opts.uri)) {
-      console.log('Fetched machine file already exists, skipping');
+    if (doesSkyConfigExist(opts.uri)) {
+      console.log('SkyConfig for machine already exists, skipping');
       return;
     }
 
     const fileContents = await fs.readFile(opts.uri, 'utf8');
-    const parseResult = extractLiveMachinesFromFile(fileContents);
+    const parseResult = extractSkyConfigFromFile(fileContents);
     if (!parseResult) return;
     await Promise.all(
-      parseResult.liveMachines.map(async (liveMachine) => {
-        const machineVersionId = liveMachine?.machineVersionId?.value;
+      parseResult.skyConfigs.map(async (liveMachine) => {
+        const machineVersionId = liveMachine?.versionId?.value;
         const apiKey = liveMachine?.apiKey?.value ?? opts.apiKey;
         if (
           machineVersionId &&
@@ -206,22 +206,21 @@ const writeLiveMachinesToFiles = async (opts: {
             }/registry/api/sky/actor-config`,
           );
           url.searchParams.set('actorId', machineVersionId);
-          url.searchParams.set('addTsTypes', 'true');
+          url.searchParams.set('addTsTypes', 'false');
           url.searchParams.set('addSchema', 'true');
           url.searchParams.set('wrapInCreateMachine', 'true');
-          url.searchParams.set('xstateVersion', '4');
+          url.searchParams.set('xstateVersion', '5');
           const configResponse = await fetch(url, {
             headers: { Authorization: `Bearer ${apiKey}` },
           });
           const skyConfig = (await configResponse.json()) as SkyConfig;
 
-          await writeToFetchedMachineFile({
+          await writeSkyConfig({
             filePath: opts.uri,
             skyConfig,
-            createTypeGenFile: writeToFiles,
           });
 
-          await modifyLiveMachineSource({ filePath: opts.uri });
+          await modifySkyConfigSource({ filePath: opts.uri });
         }
       }),
     );
@@ -236,12 +235,12 @@ const writeLiveMachinesToFiles = async (opts: {
 };
 
 program
-  .command('generate')
+  .command('connect')
   .description(
-    'Generate will fetch machine configs, and setup interactions with the Stately Studio',
+    'Get your machine configs from the Stately Studio, and write them to local files',
   )
   .argument('<files>', 'The files to target, expressed as a glob pattern')
-  .option('-w, --watch', 'Run generate in watch mode')
+  .option('-w, --watch', 'Run connect in watch mode')
   .option(
     '-k, --api-key <key>',
     'API key to use for interacting with the Stately Studio',
@@ -255,13 +254,13 @@ program
       const host = opts.host ?? process.env.STATELY_HOST;
       const envApiKey = process.env.STATELY_API_KEY;
       const apiKey = opts.apiKey ?? envApiKey;
-      console.debug('Running generate');
+      console.debug('Running connect');
       console.debug('apiKey', apiKey);
       console.debug('envApiKey', envApiKey);
 
       if (opts.watch) {
         const processFile = (uri: string) => {
-          writeLiveMachinesToFiles({ uri, apiKey, host }).catch((e) => {
+          writeSkyConfigToFiles({ uri, apiKey, host }).catch((e) => {
             console.error(e);
           });
         };
@@ -272,7 +271,7 @@ program
         const tasks: Array<Promise<void>> = [];
         watch(filesPattern, { persistent: false })
           .on('add', (uri) => {
-            tasks.push(writeLiveMachinesToFiles({ uri, apiKey, host }));
+            tasks.push(writeSkyConfigToFiles({ uri, apiKey, host }));
           })
           .on('ready', async () => {
             const settled = await allSettled(tasks);

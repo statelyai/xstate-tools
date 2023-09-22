@@ -7,7 +7,7 @@ export interface SkyConfig {
   prettyConfigString: string;
 }
 
-export interface FetchedSkyConfigFile<T extends AnyStateMachine> {
+export interface SkyConfigFile<T extends AnyStateMachine> {
   machine: T;
   actorId: string;
 }
