@@ -419,7 +419,7 @@ export interface Typegen0 {
     services: never;
   };
   eventsCausingActions: {
-    exitA: "xstate.stop";
+    exitA: "FOO" | "xstate.stop";
   };
   eventsCausingDelays: {};
   eventsCausingGuards: {};

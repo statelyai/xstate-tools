@@ -173,12 +173,33 @@ const parseStateNode = (
   return config;
 };
 
+const parseRootStateNode = (
+  astResult: StateNodeReturn,
+  opts: ToMachineConfigOptions | undefined,
+): ExtractorStateNodeConfig => {
+  const config: ExtractorMachineConfig = parseStateNode(astResult, opts);
+  if (t.isObjectExpression(astResult.context?.node)) {
+    config.context = extractObjectRecursively(
+      astResult.context!.node,
+      opts!.fileContent,
+    );
+  } else if (astResult.context) {
+    config.context = toJsonExpressionString(
+      opts!.fileContent.slice(
+        astResult.context.node.start!,
+        astResult.context.node.end!,
+      ),
+    );
+  }
+  return config;
+};
+
 export const toMachineConfig = (
   result: TMachineCallExpression,
   opts?: ToMachineConfigOptions,
 ): ExtractorMachineConfig | undefined => {
   if (!result?.definition) return undefined;
-  return parseStateNode(result?.definition, opts);
+  return parseRootStateNode(result?.definition, opts);
 };
 
 export const getActionConfig = (
@@ -336,6 +357,10 @@ export const getTransitions = (
     }
     if (transition?.description) {
       toPush.description = transition?.description.value;
+    }
+    // Only add `internal` if its present
+    if (typeof transition.internal?.value === 'boolean') {
+      toPush.internal = transition.internal.value;
     }
 
     transitions.push(toPush);

@@ -21,8 +21,8 @@
   },
   "dependencies": {
     "@babel/core": "^7.21.4",
-    "@xstate/machine-extractor": "^0.11.0",
-    "@xstate/tools-shared": "^4.0.0",
+    "@xstate/machine-extractor": "^0.12.0",
+    "@xstate/tools-shared": "^4.0.1",
     "chokidar": "^3.5.3",
     "commander": "^8.0.0",
     "dotenv": "^16.0.3",

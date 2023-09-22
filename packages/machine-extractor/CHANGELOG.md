@@ -1,5 +1,12 @@
 # @xstate/machine-extractor
 
+## 0.12.0
+
+### Minor Changes
+
+- 5d47848: Extract `internal` property on transitions
+- d885182: Extract machine context into an object
+
 ## 0.11.0
 
 ### Minor Changes
