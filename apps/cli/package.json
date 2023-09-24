@@ -22,7 +22,7 @@
     "@xstate/tools-shared": "^4.0.1",
     "chokidar": "^3.5.3",
     "commander": "^8.0.0",
-    "prettier": "^2.8.7",
+    "prettier": "^3.0.3",
     "xstate": "^4.33.4"
   },
   "author": "Stately Team",

@@ -42,49 +42,6 @@
       "packages/*"
     ]
   },
-  "turbo": {
-    "globalDependencies": [
-      "package.json"
-    ],
-    "pipeline": {
-      "lint": {
-        "outputs": []
-      },
-      "test": {
-        "outputs": []
-      },
-      "build": {
-        "outputs": [
-          "dist/**"
-        ],
-        "cache": false
-      },
-      "webview:viz:build": {
-        "outputs": [
-          "scripts/vizWebview.js"
-        ],
-        "cache": false
-      },
-      "vscode:build:dev": {
-        "dependsOn": [
-          "webview:viz:build"
-        ],
-        "outputs": [
-          "dist/**"
-        ],
-        "cache": false
-      },
-      "vscode:build:prod": {
-        "dependsOn": [
-          "webview:viz:build"
-        ],
-        "outputs": [
-          "dist/**"
-        ],
-        "cache": false
-      }
-    }
-  },
   "dependencies": {
     "@babel/core": "^7.21.4",
     "@babel/plugin-transform-modules-commonjs": "^7.21.2",
@@ -102,8 +59,9 @@
     "husky": "^8.0.1",
     "lint-staged": ">=10",
     "patch-package": "^6.4.7",
-    "prettier": "^2.8.7",
-    "turbo": "^1.1.2",
+    "prettier": "^3.0.3",
+    "prettier-plugin-organize-imports": "^3.2.3",
+    "turbo": "^1.10.14",
     "typescript": "^5.0.4"
   }
 }

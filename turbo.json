@@ -1,0 +1,29 @@
+{
+  "globalDependencies": ["package.json"],
+  "pipeline": {
+    "lint": {
+      "outputs": []
+    },
+    "test": {
+      "outputs": []
+    },
+    "build": {
+      "outputs": ["dist/**"],
+      "cache": false
+    },
+    "webview:viz:build": {
+      "outputs": ["scripts/vizWebview.js"],
+      "cache": false
+    },
+    "vscode:build:dev": {
+      "dependsOn": ["webview:viz:build"],
+      "outputs": ["dist/**"],
+      "cache": false
+    },
+    "vscode:build:prod": {
+      "dependsOn": ["webview:viz:build"],
+      "outputs": ["dist/**"],
+      "cache": false
+    }
+  }
+}
