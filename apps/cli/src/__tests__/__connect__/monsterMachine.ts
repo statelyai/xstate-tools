@@ -1,15 +1,17 @@
 import { fetchFromStately } from '@xstate/machine-extractor';
 import { interpret } from 'xstate';
+import { skyConfig } from './monsterMachine.sky';
 
-const apiKey = import.meta.env.VITE_SKY_API_KEY as string;
-
-const skyUrl = 'https://sky.dev.stately.ai/njmprd';
-const expanded =
-  'https://dev.stately.ai/registry/editor/8868f598-5567-478f-9beb-c559ba5bbfce?machineId=95013cc0-f7a7-4ec4-8d8c-79ea8fee7642&version=28125c1f-bebe-4da3-aadf-f5aca6081d34';
-const url = '5175233c-b197-4ed1-ac8d-3fe63a87c856';
+// const apiKey = import.meta.env.VITE_SKY_API_KEY as string;
 
 // Scenario 1: Create a machine from the Studio
-const machine = fetchFromStately({ url });
+const machine = fetchFromStately(
+  {
+    url: 'https://sky.dev.stately.ai/th413d',
+    xstateVersion: '4',
+  },
+  skyConfig,
+);
 
 // const machine2 = createLiveActor({ machineVersionId });
 
@@ -20,7 +22,7 @@ const machine = fetchFromStately({ url });
 // );
 
 const actor = interpret(machine).start();
-actor.send({ type: 'toggle' });
+actor.send({ type: 'INSERT_COINS' });
 
 // //
 // const { isReady, ...snapshot } = actor.getSnapshot();

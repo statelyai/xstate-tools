@@ -1,15 +1,22 @@
 import { execSync } from 'child_process';
+import * as fs from 'fs';
+import * as minimatch from 'minimatch';
 import * as path from 'path';
 
 describe('connect', () => {
-  const examplesPath = path.resolve(__dirname, '__liveMachines__');
+  const examplesPath = path.resolve(__dirname, '__connect__');
+  const examplesFiles = fs.readdirSync(examplesPath);
+
+  minimatch
+    .match(examplesFiles, '*.sky.ts')
+    .map((file) => fs.unlinkSync(path.join(examplesPath, file)));
 
   execSync('yarn build', {
     cwd: __dirname,
     stdio: 'ignore',
   });
 
-  execSync('node ../../bin/bin.js connect "./__liveMachines__/*.ts"', {
+  execSync('node ../../bin/bin.js connect "./__connect__/*.ts"', {
     cwd: __dirname,
   });
 

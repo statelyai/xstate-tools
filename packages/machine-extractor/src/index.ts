@@ -7,7 +7,7 @@ export * from './getMachineNodesFromFile';
 export * from './groupByUniqueName';
 export * from './skyConfig/createSkyConfigHelper';
 export * from './skyConfig/extractSkyConfigFromFile';
-export * from './skyConfig/modifyLiveMachineSource';
+export * from './skyConfig/modifySkyConfigSource';
 export * from './skyConfig/skyConfigUtils';
 export * from './stateNode';
 export * from './types';

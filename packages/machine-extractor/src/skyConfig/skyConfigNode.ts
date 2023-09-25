@@ -12,15 +12,17 @@ type WithValueNodes<T> = {
 };
 
 export type SkyConfigNodeReturn = WithValueNodes<{
-  versionId?: GetParserResult<typeof StringLiteral>;
+  url?: GetParserResult<typeof StringLiteral>;
   apiKey?: GetParserResult<typeof StringLiteral>;
+  xstateVersion?: GetParserResult<typeof StringLiteral>;
 }> &
   Pick<ObjectPropertyInfo, 'node'>;
 
 const SkyConfigNodeObject: AnyParser<SkyConfigNodeReturn> =
   objectTypeWithKnownKeys(() => ({
-    versionId: StringLiteral,
+    url: StringLiteral,
     apiKey: StringLiteral,
+    xstateVersion: StringLiteral,
   }));
 
 export const LiveNode = SkyConfigNodeObject;

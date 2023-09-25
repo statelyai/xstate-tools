@@ -174,10 +174,56 @@ program
     }
   });
 
+/*
+ * This function is used to expand a skyUrl to the final config API URL
+ */
+async function skyUrlExpander(
+  skyUrl: string | undefined | null,
+): Promise<string | undefined> {
+  if (skyUrl && skyUrl.length > 0) {
+    try {
+      // Fetch the skyUrl, but don't automatically follow redirects
+      const skyResponse = await fetch(skyUrl, { redirect: 'manual' });
+
+      // If there is a potential redirect follow it
+      if (skyResponse.status === 307) {
+        return await skyUrlExpander(skyResponse.headers.get('Location'));
+      } else if (skyResponse.status === 200) {
+        // If there is no redirect, we have the final config API URL
+        return skyUrl;
+      }
+    } catch (error) {
+      console.error('skyUrlExpander error', error);
+      throw error;
+    }
+  }
+}
+
+async function fetchSkyConfig(skyUrl: string | undefined | null) {
+  const skyConfigUrl = await skyUrlExpander(skyUrl);
+  if (skyConfigUrl) {
+    const url = new URL(skyConfigUrl);
+    const actorId = url.searchParams.get('actorId');
+    if (actorId) {
+      return {
+        actorId,
+        origin: url.origin,
+      };
+    } else {
+      throw new Error(
+        `URL does not point to a valid workflow, please contact support@stately.ai with the URL ${skyUrl}`,
+      );
+    }
+  } else {
+    throw new Error(
+      `URL does not point to a valid workflow, please contact support@stately.ai with the URL ${skyUrl}`,
+    );
+  }
+}
+
 const writeSkyConfigToFiles = async (opts: {
   uri: string;
   apiKey: string | undefined;
-  host: string | undefined;
 }) => {
   try {
     console.error(`Processing ${opts.uri}`);
@@ -185,31 +231,26 @@ const writeSkyConfigToFiles = async (opts: {
       console.log('SkyConfig for machine already exists, skipping');
       return;
     }
-
     const fileContents = await fs.readFile(opts.uri, 'utf8');
     const parseResult = extractSkyConfigFromFile(fileContents);
     if (!parseResult) return;
     await Promise.all(
-      parseResult.skyConfigs.map(async (liveMachine) => {
-        const machineVersionId = liveMachine?.versionId?.value;
-        const apiKey = liveMachine?.apiKey?.value ?? opts.apiKey;
-        if (
-          machineVersionId &&
-          machineVersionId.length > 0 &&
-          apiKey &&
-          apiKey.length > 0
-        ) {
-          console.error(`Fetching ${machineVersionId}`);
+      parseResult.skyConfigs.map(async (config) => {
+        const skyUrl = config?.url?.value;
+        const skyInfo = await fetchSkyConfig(skyUrl);
+        const apiKey = config?.apiKey?.value ?? opts.apiKey;
+        if (skyInfo && apiKey && apiKey.length > 0) {
           const url = new URL(
-            `${
-              opts.host ?? 'https://stately.ai'
-            }/registry/api/sky/actor-config`,
+            `${skyInfo.origin}/registry/api/sky/actor-config`,
           );
-          url.searchParams.set('actorId', machineVersionId);
+          url.searchParams.set('actorId', skyInfo.actorId);
           url.searchParams.set('addTsTypes', 'false');
           url.searchParams.set('addSchema', 'true');
           url.searchParams.set('wrapInCreateMachine', 'true');
-          url.searchParams.set('xstateVersion', '5');
+          url.searchParams.set(
+            'xstateVersion',
+            config?.xstateVersion?.value ?? '5',
+          );
           const configResponse = await fetch(url, {
             headers: { Authorization: `Bearer ${apiKey}` },
           });
@@ -251,16 +292,12 @@ program
       filesPattern: string,
       opts: { watch?: boolean; apiKey?: string; host?: string },
     ) => {
-      const host = opts.host ?? process.env.STATELY_HOST;
       const envApiKey = process.env.STATELY_API_KEY;
       const apiKey = opts.apiKey ?? envApiKey;
-      console.debug('Running connect');
-      console.debug('apiKey', apiKey);
-      console.debug('envApiKey', envApiKey);
 
       if (opts.watch) {
         const processFile = (uri: string) => {
-          writeSkyConfigToFiles({ uri, apiKey, host }).catch((e) => {
+          writeSkyConfigToFiles({ uri, apiKey }).catch((e) => {
             console.error(e);
           });
         };
@@ -271,7 +308,7 @@ program
         const tasks: Array<Promise<void>> = [];
         watch(filesPattern, { persistent: false })
           .on('add', (uri) => {
-            tasks.push(writeSkyConfigToFiles({ uri, apiKey, host }));
+            tasks.push(writeSkyConfigToFiles({ uri, apiKey }));
           })
           .on('ready', async () => {
             const settled = await allSettled(tasks);

@@ -2,13 +2,12 @@
   "compilerOptions": {
     "target": "es2019",
     "lib": ["ES2019"],
-    "module": "esnext",
+    "module": "commonjs",
     "moduleResolution": "node",
     "sourceMap": true,
     "skipLibCheck": true,
     "strict": true,
-    "noEmit": true,
-    "types": ["vite/client"]
+    "noEmit": true
   },
   "include": ["*.ts"]
 }
