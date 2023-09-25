@@ -1,7 +1,6 @@
-import { AnyStateMachine } from 'xstate';
-import { SkyConfigFile } from './skyTypes';
+import { SkyAnyStateMachine, SkyConfigFile } from './skyTypes';
 
-export function fetchFromStately<T extends AnyStateMachine>(
+export function fetchFromStately<T extends SkyAnyStateMachine>(
   {
     apiKey,
     url,

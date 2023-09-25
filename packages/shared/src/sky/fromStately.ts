@@ -1,4 +1,4 @@
-import { AnyStateMachine } from 'xstate';
+import { AnyStateMachine, PromiseActorLogic } from 'xstate-beta';
 import { SkyConfigFile } from './skyTypes';
 
 // export declare function fromPromise<T, TInput>(
@@ -13,7 +13,7 @@ import { SkyConfigFile } from './skyTypes';
 // ): PromiseActorLogic<T, TInput>;
 
 // Share types with fromPromise
-export function fromStately<T extends AnyStateMachine>(
+export function fromStately<T extends AnyStateMachine, TInput>(
   {
     apiKey,
     url,
@@ -22,11 +22,14 @@ export function fromStately<T extends AnyStateMachine>(
     url: string;
   },
   skyConfig?: SkyConfigFile<T>,
-) {
+): PromiseActorLogic<T, TInput> {
   if (!skyConfig) {
     throw new Error(
       `You need to run xstate sky "src/**/*.ts?(x)" before you can use the Stately Sky actor with url ${url}`,
     );
   }
-  return skyConfig.machine;
+  return Promise.resolve(skyConfig.machine) as unknown as PromiseActorLogic<
+    T,
+    TInput
+  >;
 }
