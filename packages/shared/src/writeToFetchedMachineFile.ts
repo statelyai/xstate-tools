@@ -2,7 +2,7 @@ import { existsSync } from 'fs';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as prettier from 'prettier';
-import { SkyConfig } from './skyTypes';
+import { SkyConfig } from './connect/skyTypes';
 
 const getPathToSave = (filePath: string) =>
   filePath.slice(0, -path.extname(filePath).length) + '.sky.ts';
@@ -12,6 +12,7 @@ export const doesSkyConfigExist = (filePath: string) => {
   return existsSync(pathToSave);
 };
 
+// The exported code from the sky config file has an initial export statement that we don't want
 function removeLeadingExport(code: string) {
   const regex = /export (const machine = createMachine)/;
   return code.replace(regex, '$1');

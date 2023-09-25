@@ -1,3 +1,7 @@
+// TODO: everything here from `/connect` should come from the `@stately/connect` package
+export * from './connect/fetchFromStately';
+export * from './connect/fromStately';
+export * from './connect/skyTypes';
 export * from './createIntrospectableMachine';
 export * from './filterOutIgnoredMachines';
 export * from './forEachAction';
@@ -14,6 +18,5 @@ export * from './introspectMachine';
 export * from './isCursorInPosition';
 export * from './processFileEdits';
 export * from './resolveUriToFilePrefix';
-export * from './skyTypes';
 export * from './types';
 export * from './writeToFetchedMachineFile';

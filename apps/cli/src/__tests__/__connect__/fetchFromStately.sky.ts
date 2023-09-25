@@ -74,7 +74,7 @@ const machine = createMachine(
     },
     predictableActionArguments: true,
     preserveActionOrder: true,
-    tsTypes: {} as import('./monsterMachine.sky.typegen').Typegen0,
+    tsTypes: {} as import('./fetchFromStately.sky.typegen').Typegen0,
   },
   {
     actions: {},
