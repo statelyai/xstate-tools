@@ -9,7 +9,7 @@ import {
 } from '@xstate/tools-shared';
 import 'dotenv/config';
 import * as fs from 'fs/promises';
-import { fetch } from 'undici';
+import fetch from 'isomorphic-fetch';
 import { writeToFiles } from '../typegen/writeToFiles';
 import { fetchSkyConfig } from './skyUrlUtils';
 

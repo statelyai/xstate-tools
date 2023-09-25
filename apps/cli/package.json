@@ -12,6 +12,7 @@
     "copy-to-sky-demo": "cp -r bin ../../../sky-demo-app/node_modules/@xstate/cli"
   },
   "devDependencies": {
+    "@types/isomorphic-fetch": "^0.0.36",
     "@types/jest": "^27.4.0",
     "@types/node": "^16.0.1",
     "esbuild": "^0.14.48",
@@ -26,8 +27,8 @@
     "chokidar": "^3.5.3",
     "commander": "^8.0.0",
     "dotenv": "^16.0.3",
+    "isomorphic-fetch": "^3.0.0",
     "prettier": "^2.8.7",
-    "undici": "^5.22.1",
     "xstate": "^4.33.4"
   },
   "author": "Stately Team",

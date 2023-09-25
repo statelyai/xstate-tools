@@ -1,4 +1,4 @@
-import { fetch } from 'undici';
+import fetch from 'isomorphic-fetch';
 
 /*
  * This function is used to expand a skyUrl to the final config API URL
