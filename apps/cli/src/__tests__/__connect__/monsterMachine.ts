@@ -2,8 +2,6 @@ import { fetchFromStately } from '@xstate/machine-extractor';
 import { interpret } from 'xstate';
 import { skyConfig } from './monsterMachine.sky';
 
-// const apiKey = import.meta.env.VITE_SKY_API_KEY as string;
-
 // Scenario 1: Create a machine from the Studio
 const machine = fetchFromStately(
   {

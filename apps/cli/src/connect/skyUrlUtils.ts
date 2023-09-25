@@ -19,8 +19,7 @@ async function skyUrlExpander(
         return skyUrl;
       }
     } catch (error) {
-      console.error('skyUrlExpander error', error);
-      throw error;
+      console.error('Error while expaning short Sky URL', error);
     }
   }
 }
@@ -35,14 +34,9 @@ export async function fetchSkyConfig(skyUrl: string | undefined | null) {
         actorId,
         origin: url.origin,
       };
-    } else {
-      throw new Error(
-        `URL does not point to a valid workflow, please contact support@stately.ai with the URL ${skyUrl}`,
-      );
     }
-  } else {
-    throw new Error(
-      `URL does not point to a valid workflow, please contact support@stately.ai with the URL ${skyUrl}`,
-    );
   }
+  console.error(
+    `Error: URL does not point to a valid workflow, please contact support@stately.ai with the URL ${skyUrl}`,
+  );
 }

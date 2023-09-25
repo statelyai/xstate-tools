@@ -19,7 +19,6 @@ export const writeSkyConfigToFiles = async (opts: {
   writeToFiles: typeof writeToFiles;
 }) => {
   try {
-    console.error(`Processing ${opts.uri}`);
     if (doesSkyConfigExist(opts.uri)) {
       console.log('SkyConfig for machine already exists, skipping');
       return;
@@ -34,7 +33,13 @@ export const writeSkyConfigToFiles = async (opts: {
         const runTypeGen = xstateVersion === '4';
         const skyInfo = await fetchSkyConfig(skyUrl);
         const apiKey = config?.apiKey?.value ?? opts.apiKey;
-        if (skyInfo && apiKey && apiKey.length > 0) {
+        if (!apiKey) {
+          console.error(
+            'Error: API key is required to connect to Stately, but none was found. Read more here https://stately.ai/docs/sky.',
+          );
+          return;
+        }
+        if (skyInfo) {
           const url = new URL(
             `${skyInfo.origin}/registry/api/sky/actor-config`,
           );
