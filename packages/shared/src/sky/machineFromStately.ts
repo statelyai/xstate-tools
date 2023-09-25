@@ -1,10 +1,10 @@
 import { SkyAnyStateMachine, SkyConfigFile } from './skyTypes';
 
-export function fetchFromStately<T extends SkyAnyStateMachine>(
+export function machineFromStately<T extends SkyAnyStateMachine>(
   {
     apiKey,
     url,
-    xstateVersion,
+    xstateVersion = '5',
   }: {
     apiKey?: string;
     url: string;
