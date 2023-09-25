@@ -29,6 +29,7 @@ export const writeConfigToFiles = async (opts: {
     await Promise.all(
       parseResult.skyConfigs.map(async (config) => {
         const skyUrl = config?.url?.value;
+        // Detect this from the version of the `@stately/sky` package in the file
         const xstateVersion = config?.xstateVersion?.value ?? '5';
         const runTypeGen = xstateVersion === '4';
         const skyInfo = await fetchSkyConfig(skyUrl);
