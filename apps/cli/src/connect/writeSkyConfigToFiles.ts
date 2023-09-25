@@ -51,15 +51,20 @@ export const writeSkyConfigToFiles = async (opts: {
           const configResponse = await fetch(url, {
             headers: { Authorization: `Bearer ${apiKey}` },
           });
-          const skyConfig = (await configResponse.json()) as SkyConfig;
+          const responseText = await configResponse.text();
+          try {
+            const skyConfig = JSON.parse(responseText) as SkyConfig;
+            await writeSkyConfig({
+              filePath: opts.uri,
+              skyConfig,
+              createTypeGenFile: runTypeGen ? writeToFiles : undefined,
+            });
 
-          await writeSkyConfig({
-            filePath: opts.uri,
-            skyConfig,
-            createTypeGenFile: runTypeGen ? writeToFiles : undefined,
-          });
-
-          await modifySkyConfigSource({ filePath: opts.uri });
+            await modifySkyConfigSource({ filePath: opts.uri });
+          } catch (error) {
+            // If we couldn't parse the JSON it's likely an error
+            console.error(responseText);
+          }
         }
       }),
     );
