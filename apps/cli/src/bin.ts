@@ -237,6 +237,8 @@ const writeSkyConfigToFiles = async (opts: {
     await Promise.all(
       parseResult.skyConfigs.map(async (config) => {
         const skyUrl = config?.url?.value;
+        const xstateVersion = config?.xstateVersion?.value ?? '5';
+        const runTypeGen = xstateVersion === '4';
         const skyInfo = await fetchSkyConfig(skyUrl);
         const apiKey = config?.apiKey?.value ?? opts.apiKey;
         if (skyInfo && apiKey && apiKey.length > 0) {
@@ -244,13 +246,10 @@ const writeSkyConfigToFiles = async (opts: {
             `${skyInfo.origin}/registry/api/sky/actor-config`,
           );
           url.searchParams.set('actorId', skyInfo.actorId);
-          url.searchParams.set('addTsTypes', 'false');
+          url.searchParams.set('addTsTypes', runTypeGen ? 'true' : 'false');
           url.searchParams.set('addSchema', 'true');
           url.searchParams.set('wrapInCreateMachine', 'true');
-          url.searchParams.set(
-            'xstateVersion',
-            config?.xstateVersion?.value ?? '5',
-          );
+          url.searchParams.set('xstateVersion', xstateVersion);
           const configResponse = await fetch(url, {
             headers: { Authorization: `Bearer ${apiKey}` },
           });
@@ -259,6 +258,7 @@ const writeSkyConfigToFiles = async (opts: {
           await writeSkyConfig({
             filePath: opts.uri,
             skyConfig,
+            createTypeGenFile: runTypeGen ? writeToFiles : undefined,
           });
 
           await modifySkyConfigSource({ filePath: opts.uri });
