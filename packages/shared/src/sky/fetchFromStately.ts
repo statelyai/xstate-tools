@@ -15,7 +15,7 @@ export function fetchFromStately<T extends AnyStateMachine>(
 ) {
   if (!skyConfig) {
     throw new Error(
-      `You need to run xstate connect "src/**/*.ts?(x)" before you can use the Stately Sky actor with url ${url}`,
+      `You need to run xstate sky "src/**/*.ts?(x)" before you can use the Stately Sky actor with url ${url}`,
     );
   }
   return skyConfig.machine;

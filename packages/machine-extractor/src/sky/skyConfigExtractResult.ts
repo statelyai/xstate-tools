@@ -2,7 +2,7 @@ import * as t from '@babel/types';
 import { hashedId } from '../utils';
 import { SkyConfigCallExpression } from './skyConfigCallExpression';
 
-export function getSkyConfigExtractResult({
+export function skyConfigExtractResult({
   file,
   fileContent,
   node,

@@ -4,7 +4,7 @@ import { watch } from 'chokidar';
 import { Command } from 'commander';
 import 'dotenv/config';
 import { version } from '../package.json';
-import { writeSkyConfigToFiles } from './connect/writeSkyConfigToFiles';
+import { writeConfigToFiles } from './sky/writeConfigToFiles';
 import { writeToFiles } from './typegen/writeToFiles';
 import { allSettled } from './utils';
 
@@ -51,12 +51,12 @@ program
   });
 
 program
-  .command('connect')
+  .command('sky')
   .description(
     'Get your machine configs from the Stately Studio, and write them to local files',
   )
   .argument('<files>', 'The files to target, expressed as a glob pattern')
-  .option('-w, --watch', 'Run connect in watch mode')
+  .option('-w, --watch', 'Run sky in watch mode')
   .option(
     '-k, --api-key <key>',
     'API key to use for interacting with the Stately Studio',
@@ -72,7 +72,7 @@ program
 
       if (opts.watch) {
         const processFile = (uri: string) => {
-          writeSkyConfigToFiles({ uri, apiKey, writeToFiles }).catch((e) => {
+          writeConfigToFiles({ uri, apiKey, writeToFiles }).catch((e) => {
             console.error(e);
           });
         };
@@ -83,7 +83,7 @@ program
         const tasks: Array<Promise<void>> = [];
         watch(filesPattern, { persistent: false })
           .on('add', (uri) => {
-            tasks.push(writeSkyConfigToFiles({ uri, apiKey, writeToFiles }));
+            tasks.push(writeConfigToFiles({ uri, apiKey, writeToFiles }));
           })
           .on('ready', async () => {
             const settled = await allSettled(tasks);

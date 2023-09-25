@@ -1,8 +1,8 @@
 import { getMachineNodesFromFile } from '../getMachineNodesFromFile';
-import { getSkyConfigExtractResult } from './getSkyConfigExtractResult';
+import { skyConfigExtractResult } from './skyConfigExtractResult';
 import { ALLOWED_SKY_CONFIG_CALL_EXPRESSION_NAMES } from './skyConfigUtils';
 
-export const extractSkyConfigFromFile = (fileContent: string) => {
+export const skyConfigExtractFromFile = (fileContent: string) => {
   if (
     !ALLOWED_SKY_CONFIG_CALL_EXPRESSION_NAMES.some((name) =>
       fileContent.includes(name),
@@ -15,7 +15,7 @@ export const extractSkyConfigFromFile = (fileContent: string) => {
 
   return {
     skyConfigs: machineNodes.map((node) =>
-      getSkyConfigExtractResult({
+      skyConfigExtractResult({
         file,
         fileContent,
         node,

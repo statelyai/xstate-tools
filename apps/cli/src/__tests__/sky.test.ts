@@ -3,8 +3,8 @@ import * as fs from 'fs';
 import * as minimatch from 'minimatch';
 import * as path from 'path';
 
-describe('connect', () => {
-  const examplesPath = path.resolve(__dirname, '__connect__');
+describe('sky', () => {
+  const examplesPath = path.resolve(__dirname, '__sky__');
   const examplesFiles = fs.readdirSync(examplesPath);
 
   minimatch
@@ -16,7 +16,7 @@ describe('connect', () => {
     stdio: 'ignore',
   });
 
-  execSync('node ../../bin/bin.js connect "./__connect__/*.ts"', {
+  execSync('node ../../bin/bin.js sky "./__sky__/*.ts"', {
     cwd: __dirname,
   });
 

@@ -1,6 +1,6 @@
 import {
-  extractSkyConfigFromFile,
   modifySkyConfigSource,
+  skyConfigExtractFromFile,
 } from '@xstate/machine-extractor';
 import {
   SkyConfig,
@@ -11,9 +11,9 @@ import 'dotenv/config';
 import * as fs from 'fs/promises';
 import fetch from 'isomorphic-fetch';
 import { writeToFiles } from '../typegen/writeToFiles';
-import { fetchSkyConfig } from './skyUrlUtils';
+import { fetchSkyConfig } from './urlUtils';
 
-export const writeSkyConfigToFiles = async (opts: {
+export const writeConfigToFiles = async (opts: {
   uri: string;
   apiKey: string | undefined;
   writeToFiles: typeof writeToFiles;
@@ -24,7 +24,7 @@ export const writeSkyConfigToFiles = async (opts: {
       return;
     }
     const fileContents = await fs.readFile(opts.uri, 'utf8');
-    const parseResult = extractSkyConfigFromFile(fileContents);
+    const parseResult = skyConfigExtractFromFile(fileContents);
     if (!parseResult) return;
     await Promise.all(
       parseResult.skyConfigs.map(async (config) => {

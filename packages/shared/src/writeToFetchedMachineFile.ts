@@ -2,7 +2,7 @@ import { existsSync } from 'fs';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as prettier from 'prettier';
-import { SkyConfig } from './connect/skyTypes';
+import { SkyConfig } from './sky/skyTypes';
 
 const getPathToSave = (filePath: string) =>
   filePath.slice(0, -path.extname(filePath).length) + '.sky.ts';
