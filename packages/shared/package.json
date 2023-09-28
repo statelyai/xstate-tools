@@ -4,6 +4,7 @@
   "main": "dist/xstate-tools-shared.cjs.js",
   "license": "MIT",
   "dependencies": {
+    "@statelyai/sky": "0.0.2",
     "@xstate/machine-extractor": "^0.12.0"
   },
   "scripts": {

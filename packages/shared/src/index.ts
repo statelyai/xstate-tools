@@ -14,9 +14,5 @@ export * from './introspectMachine';
 export * from './isCursorInPosition';
 export * from './processFileEdits';
 export * from './resolveUriToFilePrefix';
-// TODO: everything here from `/sky` should come from the `@stately/sky` package
-export * from './sky/machineFromStately';
-export * from './sky/actorFromStately';
-export * from './sky/skyTypes';
 export * from './types';
 export * from './writeToFetchedMachineFile';

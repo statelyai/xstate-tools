@@ -1,12 +1,9 @@
+import { SkyConfig } from '@statelyai/sky';
 import {
   modifySkyConfigSource,
   skyConfigExtractFromFile,
 } from '@xstate/machine-extractor';
-import {
-  SkyConfig,
-  doesSkyConfigExist,
-  writeSkyConfig,
-} from '@xstate/tools-shared';
+import { doesSkyConfigExist, writeSkyConfig } from '@xstate/tools-shared';
 import 'dotenv/config';
 import * as fs from 'fs/promises';
 import fetch from 'isomorphic-fetch';
@@ -52,9 +49,8 @@ export const writeConfigToFiles = async (opts: {
           const configResponse = await fetch(url, {
             headers: { Authorization: `Bearer ${apiKey}` },
           });
-          const responseText = await configResponse.text();
           try {
-            const skyConfig = JSON.parse(responseText) as SkyConfig;
+            const skyConfig = (await configResponse.json()) as SkyConfig;
             await writeSkyConfig({
               filePath: opts.uri,
               skyConfig,
@@ -63,8 +59,7 @@ export const writeConfigToFiles = async (opts: {
 
             await modifySkyConfigSource({ filePath: opts.uri });
           } catch (error) {
-            // If we couldn't parse the JSON it's likely an error
-            console.error(responseText);
+            console.error(error);
           }
         }
       }),
