@@ -7,6 +7,7 @@ import {
 import {
   createIntrospectableMachine,
   filterOutIgnoredMachines,
+  forEachInvoke,
   getInlineImplementations,
   getRangeFromSourceLocation,
   getRawTextFromNode,
@@ -339,19 +340,29 @@ async function handleDocumentChange(textDocument: TextDocument): Promise<void> {
           previouslyCachedDocument?.extractionResults[
             displayedMachine.machineIndex
           ]?.machineResult;
-        if (
-          updatedConfig &&
-          previousMachineResult &&
-          !deepEqual(previousMachineResult.toConfig(), machineResult.toConfig())
-        ) {
-          connection.sendNotification('displayedMachineUpdated', {
-            config: updatedConfig,
-            layoutString: machineResult.getLayoutComment()?.value || null,
-            implementations: getInlineImplementations(machineResult, text),
-            namedGuards: machineResult
-              .getAllConds(['named'])
-              .map((elem) => elem.name),
+
+        if (updatedConfig && previousMachineResult) {
+          const prevConfig = previousMachineResult.toConfig()!;
+
+          // TODO: Remove me when invocations are extracted as objects
+          forEachInvoke(prevConfig, (invoke) => {
+            invoke.src = 'anonymous';
           });
+          // IMPORTANT: updatedConfig is being mutated
+          forEachInvoke(updatedConfig, (invoke) => {
+            invoke.src = 'anonymous';
+          });
+
+          if (!deepEqual(prevConfig, updatedConfig)) {
+            connection.sendNotification('displayedMachineUpdated', {
+              config: updatedConfig,
+              layoutString: machineResult.getLayoutComment()?.value || null,
+              implementations: getInlineImplementations(machineResult, text),
+              namedGuards: machineResult
+                .getAllConds(['named'])
+                .map((elem) => elem.name),
+            });
+          }
         }
       }
     }

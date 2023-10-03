@@ -25,7 +25,8 @@
   "preconstruct": {
     "entrypoints": [
       "./index.ts",
-      "./forEachAction.ts"
+      "./forEachAction.ts",
+      "./forEachInvoke.ts"
     ]
   }
 }
