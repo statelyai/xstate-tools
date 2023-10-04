@@ -98,7 +98,6 @@
   "scripts": {
     "lint": "tsc",
     "test": "jest --passWithNoTests",
-    "webview:viz:build": "esbuild src/vizWebviewScript.ts --bundle --outfile=scripts/vizWebview.js",
     "vscode:build": "esbuild --bundle --platform=\"node\" src/extension.ts --outfile=dist/index.js --external:vscode --format=cjs --sourcemap",
     "vscode:build:dev": "yarn vscode:build --define:process.env.NODE_ENV=\\\"development\\\"",
     "vscode:build:prod": "yarn vscode:build --define:process.env.NODE_ENV=\\\"production\\\""
