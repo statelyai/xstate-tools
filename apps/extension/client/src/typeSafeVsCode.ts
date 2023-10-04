@@ -1,12 +1,8 @@
 import * as vscode from 'vscode';
 
 export interface XStateCommands {
-  // those are related to the editor
   'stately-xstate.edit': [];
   'stately-xstate.edit-code-lens': [uri: string, machineIndex: number];
-  // those are related to the visualizer
-  'stately-xstate.visualize': [];
-  'stately-xstate.inspect': [uri: string, machineIndex: number];
 }
 
 export function registerCommand<Name extends keyof XStateCommands>(

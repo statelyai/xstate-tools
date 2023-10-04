@@ -45,11 +45,6 @@
   "contributes": {
     "commands": [
       {
-        "command": "stately-xstate.visualize",
-        "title": "Open Inspector",
-        "category": "XState"
-      },
-      {
         "command": "stately-xstate.edit",
         "title": "Open Visual Editor",
         "category": "XState"
@@ -90,7 +85,7 @@
             "active"
           ],
           "default": "beside",
-          "description": "Target for opening the Visual Editor and Inspector. Beside opens in a group next to the current file, while active opens in the current group of the current file."
+          "description": "Target for opening the Visual Editor. Beside opens in a group next to the current file, while active opens in the current group of the current file."
         }
       }
     },
