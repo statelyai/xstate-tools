@@ -17,10 +17,16 @@ const forEachInvokeRecur = (
   if (stateNode.invoke) {
     if (Array.isArray(stateNode.invoke)) {
       for (let i = 0; i < stateNode.invoke.length; i++) {
-        stateNode.invoke[i] = visitor(stateNode.invoke[i]);
+        stateNode.invoke[i] = {
+          ...stateNode.invoke[i],
+          ...visitor(stateNode.invoke[i]),
+        };
       }
     } else {
-      stateNode.invoke = visitor(stateNode.invoke);
+      stateNode.invoke = {
+        ...stateNode.invoke,
+        ...visitor(stateNode.invoke),
+      };
     }
   }
 

@@ -346,11 +346,17 @@ async function handleDocumentChange(textDocument: TextDocument): Promise<void> {
 
           // TODO: Remove me when invocations are extracted as objects
           forEachInvoke(prevConfig, (invoke) => {
-            invoke.src = 'anonymous';
+            return {
+              ...invoke,
+              src: 'anonymous',
+            };
           });
           // IMPORTANT: updatedConfig is being mutated
           forEachInvoke(updatedConfig, (invoke) => {
-            invoke.src = 'anonymous';
+            return {
+              ...invoke,
+              src: 'anonymous',
+            };
           });
 
           if (!deepEqual(prevConfig, updatedConfig)) {
