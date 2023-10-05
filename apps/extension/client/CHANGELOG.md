@@ -1,5 +1,11 @@
 # stately-vscode
 
+## 2.0.0
+
+### Major Changes
+
+- [`5a1b124`](https://github.com/statelyai/xstate-tools/commit/5a1b124a272c06fde3815763d75e506d0ca271a6) Thanks [@Andarist](https://github.com/Andarist)! - Removed support for the deprecated visualizer.
+
 ## 1.14.3
 
 ### Patch Changes
