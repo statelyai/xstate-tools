@@ -1,5 +1,11 @@
 # stately-vscode
 
+## 2.0.0
+
+### Major Changes
+
+- 89f275f: Removed support for the deprecated visualizer.
+
 ## 1.14.3
 
 ### Patch Changes
