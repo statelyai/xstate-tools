@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - 'main'
+      - 'extension-deploy'
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
