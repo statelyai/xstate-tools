@@ -6,5 +6,5 @@
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": ["@xstate/vscode-server", "@xstate/cli"]
+  "ignore": ["@xstate/vscode-server", "@xstate/cli", "stately-vscode"]
 }
