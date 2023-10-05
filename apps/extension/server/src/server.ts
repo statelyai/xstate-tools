@@ -194,14 +194,6 @@ connection.onCodeLens(({ textDocument }) => {
             arguments: [textDocument.uri, index],
           },
         },
-        {
-          range: getRangeFromSourceLocation(callee.loc!),
-          command: {
-            title: 'Open Inspector',
-            command: 'stately-xstate.inspect',
-            arguments: [textDocument.uri, index],
-          },
-        },
       ];
     },
   );
@@ -904,8 +896,6 @@ connection.onRequest('getNodePosition', ({ path }) => {
   ];
 });
 
-// TODO: editor and visualizer should have separate states for this
-// they can be opened for different machines at the same time
 connection.onRequest('setDisplayedMachine', ({ uri, machineIndex }) => {
   displayedMachine = { uri, machineIndex };
 });
