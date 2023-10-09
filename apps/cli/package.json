@@ -8,7 +8,7 @@
     "prepare": "yarn build",
     "lint": "tsc",
     "test": "jest",
-    "build": "esbuild src/bin.ts --outdir=bin --platform=node --format=cjs --sourcemap  --bundle --loader:.node=file"
+    "build": "esbuild src/bin.ts --outdir=bin --platform=node --format=cjs"
   },
   "devDependencies": {
     "@statelyai/sky": "0.0.2",
