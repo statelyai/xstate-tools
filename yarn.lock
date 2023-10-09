@@ -1913,10 +1913,10 @@
   dependencies:
     "@sinonjs/commons" "^1.7.0"
 
-"@statelyai/sky@0.0.2":
-  version "0.0.2"
-  resolved "https://registry.yarnpkg.com/@statelyai/sky/-/sky-0.0.2.tgz#5616f4342030e01fb6d86c9f4930a955f80d945c"
-  integrity sha512-iNwwN9EodogYFaUB4zc/Rv977vqIST7LbEJr3KniM7wckanU4NMg+5vXAGMNLLJEmqmJVBTwNrp0KC/a1C4orw==
+"@statelyai/sky@0.0.3":
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/@statelyai/sky/-/sky-0.0.3.tgz#5366e69af50409b03c805e2dba14fe156f879b99"
+  integrity sha512-oiSaDw36JFhsHcTkuTvvemaFEypgrBd23qtlvNUxgojBituTdX7lfDDuydUzCWmzL+yLzwfnjD3Su4nxs00mSw==
   dependencies:
     partykit "0.0.23"
     partysocket "0.0.8"

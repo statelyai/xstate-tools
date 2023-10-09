@@ -4,6 +4,7 @@ import { actorFromStately } from '@statelyai/sky';
 async function testActor() {
   const actor = await actorFromStately({
     url: 'https://sky.dev.stately.ai/th413d',
+    sessionId: 'my session',
   });
   actor.send({ type: 'INSERT_COINS' });
 }
