@@ -9,7 +9,7 @@
     "target": "es2015",
     "exactOptionalPropertyTypes": true,
     "module": "CommonJS",
-    "types": ["vite/client", "jest"]
+    "types": ["jest"]
   },
   "include": ["src"],
   "exclude": ["src/__tests__/__examples__", "src/__tests__/__sky__"]
