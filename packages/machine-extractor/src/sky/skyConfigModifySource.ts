@@ -1,13 +1,45 @@
+import * as parser from '@babel/parser';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as prettier from 'prettier';
 import * as recast from 'recast';
-import * as parser from 'recast/parsers/typescript';
+import * as typescript from 'recast/parsers/typescript';
 import { ALLOWED_SKY_CONFIG_CALL_EXPRESSION_NAMES } from './skyConfigUtils';
+
+const fileContents = `
+import { useStatelyActor } from '@statelyai/sky-react';
+import { EventFrom, StateFrom } from 'xstate';
+
+export function InternalOnboardingTest({ userId }: { userId: string }) {
+  const url = 'https://sky.dev.stately.ai/0x637p';
+  const [state, send] = useStatelyActor({ url, sessionId: userId });
+
+  const typedState = state as unknown as StateFrom<typeof skyConfig.machine>;
+  const typedSend = send as unknown as (
+    event: EventFrom<typeof skyConfig.machine>,
+  ) => void;
+
+  console.log(typedState.value);
+  return <div>hej</div>;
+}
+`;
+const ast = recast.parse(fileContents, {
+  parser: {
+    parse: (source: string) =>
+      parser.parse(source, {
+        sourceType: 'module',
+        plugins: ['jsx', ['typescript', {}]],
+      }),
+  },
+});
+
+ast; //?
 
 export const modifySkyConfigSource = async (opts: { filePath: string }) => {
   const fileContents = await fs.readFile(opts.filePath, 'utf8');
-  const ast = recast.parse(fileContents, { parser });
+  const ast = recast.parse(fileContents, {
+    parser: typescript,
+  });
   const b = recast.types.builders;
   const importIdentifier = 'skyConfig';
   const name = path

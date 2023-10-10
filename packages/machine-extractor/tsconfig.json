@@ -10,7 +10,8 @@
     "rootDir": "src",
     "noEmit": true,
     "skipLibCheck": true,
-    "exactOptionalPropertyTypes": true
+    "exactOptionalPropertyTypes": true,
+    "jsx": "react"
   },
   "include": ["src"],
   "exclude": ["node_modules"]
