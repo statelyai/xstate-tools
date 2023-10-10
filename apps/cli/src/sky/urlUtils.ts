@@ -19,7 +19,7 @@ async function skyUrlExpander(
         return skyUrl;
       }
     } catch (error) {
-      console.error('Error while expaning short Sky URL', error);
+      console.error('Error while expanding short Sky URL', error);
     }
   }
 }
