@@ -1,5 +1,11 @@
 # @xstate/cli
 
+## 0.5.3
+
+### Patch Changes
+
+- 2635a1c: Alpha test of `xstate sky` command for the upcoming Stately Sky release.
+
 ## 0.5.2
 
 ### Patch Changes
