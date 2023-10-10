@@ -4,12 +4,12 @@ import * as recast from 'recast';
 import { Action, Condition, MachineOptions } from 'xstate';
 import { choose } from 'xstate/lib/actions';
 import { DeclarationType } from '.';
+import { RecordOfArrays } from './RecordOfArrays';
 import { ActionNode, ParsedChooseCondition } from './actions';
 import { getMachineNodesFromFile } from './getMachineNodesFromFile';
 import { TMachineCallExpression } from './machineCallExpression';
-import { RecordOfArrays } from './RecordOfArrays';
 import { StateNodeReturn } from './stateNode';
-import { toMachineConfig, ToMachineConfigOptions } from './toMachineConfig';
+import { ToMachineConfigOptions, toMachineConfig } from './toMachineConfig';
 import { TransitionConfigNode } from './transitions';
 import { Comment } from './types';
 
@@ -1896,7 +1896,7 @@ function getPropByPath(ast: RecastObjectExpression, path: (string | number)[]) {
     );
   }
   const pathCopy = [...path];
-  let segment: typeof path[number] | undefined;
+  let segment: (typeof path)[number] | undefined;
   let current: RecastNode | undefined | null = ast;
   while ((segment = pathCopy.shift()) !== undefined) {
     if (typeof segment === 'string') {
@@ -1936,7 +1936,7 @@ function insertAtTransitionPath(
     );
   }
   const pathCopy = path.slice(0, -1);
-  let segment: typeof path[number] | undefined;
+  let segment: (typeof path)[number] | undefined;
   let current: RecastNode = ast;
 
   while ((segment = pathCopy.shift()) !== undefined) {
@@ -1991,7 +1991,7 @@ function getTransitionObject(
   path: TransitionPath,
 ) {
   const pathCopy = [...path];
-  let segment: typeof path[number] | undefined;
+  let segment: (typeof path)[number] | undefined;
   let current: RecastNode = obj;
 
   while ((segment = pathCopy.shift()) !== undefined) {
@@ -2435,7 +2435,7 @@ function getBestTargetDescriptor(
   {
     sourcePath,
     targetPath,
-  }: { sourcePath: string[]; targetPath: string[] | null },
+  }: { sourcePath: string[]; targetPath: string[] | null | undefined },
 ): string | null {
   if (!targetPath) {
     return null;
@@ -2673,7 +2673,7 @@ function getIndexForTransitionPathAppendant(
   // this function is supposed to ignore the last element (the index)
   // we only want check max existing index of this path in the given state object
   const pathCopy = path.slice(0, -1);
-  let segment: typeof path[number] | undefined;
+  let segment: (typeof path)[number] | undefined;
   let current: RecastNode = ast;
 
   while ((segment = pathCopy.shift()) !== undefined) {
@@ -2709,7 +2709,7 @@ function getIndexForTransitionPathAppendant(
 
 type TransitionAnchors = {
   source: string[];
-  target: string[] | null;
+  target: string[] | null | undefined;
 };
 
 function getTransitionExternalValue(

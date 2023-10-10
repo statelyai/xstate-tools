@@ -7,8 +7,10 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "target": "es2015",
-    "exactOptionalPropertyTypes": true
+    "exactOptionalPropertyTypes": true,
+    "module": "CommonJS",
+    "types": ["jest"]
   },
   "include": ["src"],
-  "exclude": ["src/__tests__/__examples__"]
+  "exclude": ["src/__tests__/__examples__", "src/__tests__/__sky__"]
 }

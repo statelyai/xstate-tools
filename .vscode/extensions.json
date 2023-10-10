@@ -22,7 +22,7 @@
     // Handy inline git details and much more
     "eamodio.gitlens",
 
-    // Get some better TypeScript errors by Matt 👏
-    "mattpocock.ts-error-translator"
+    // Pretty TypeScript errors
+    "yoavbls.pretty-ts-errors"
   ]
 }

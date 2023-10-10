@@ -2,6 +2,7 @@ import { parse } from '@babel/parser';
 import traverse from '@babel/traverse';
 import * as t from '@babel/types';
 import { ALLOWED_CALL_EXPRESSION_NAMES } from './machineCallExpression';
+import { ALLOWED_SKY_CONFIG_CALL_EXPRESSION_NAMES } from './sky/skyConfigUtils';
 
 export const getMachineNodesFromFile = (fileContent: string) => {
   const file = parse(fileContent, {
@@ -20,6 +21,12 @@ export const getMachineNodesFromFile = (fileContent: string) => {
   traverse(file, {
     CallExpression(path) {
       const node = path.node;
+      if (
+        t.isIdentifier(node.callee) &&
+        ALLOWED_SKY_CONFIG_CALL_EXPRESSION_NAMES.includes(node.callee.name)
+      ) {
+        machineNodes.push(node);
+      }
       if (
         t.isMemberExpression(node.callee) &&
         t.isIdentifier(node.callee.property) &&

@@ -8,9 +8,11 @@
     "prepare": "yarn build",
     "lint": "tsc",
     "test": "jest",
-    "build": "esbuild src/bin.ts --outdir=bin --platform=node --format=cjs"
+    "build": "esbuild src/bin.ts --outdir=bin --platform=node --format=cjs --bundle --loader:.node=file"
   },
   "devDependencies": {
+    "@statelyai/sky": "0.0.3",
+    "@types/isomorphic-fetch": "^0.0.36",
     "@types/jest": "^27.4.0",
     "@types/node": "^16.0.1",
     "esbuild": "^0.14.48",
@@ -22,8 +24,11 @@
     "@xstate/tools-shared": "^4.0.1",
     "chokidar": "^3.5.3",
     "commander": "^8.0.0",
+    "dotenv": "^16.0.3",
+    "isomorphic-fetch": "^3.0.0",
     "prettier": "^2.8.7",
-    "xstate": "^4.33.4"
+    "xstate": "^4.33.4",
+    "xstate-beta": "npm:xstate@beta"
   },
   "author": "Stately Team",
   "license": "MIT"
