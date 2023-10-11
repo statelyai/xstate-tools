@@ -1,5 +1,11 @@
 # @xstate/cli
 
+## 0.5.4
+
+### Patch Changes
+
+- 26421cf: Make the `xstate sky` command compatible with more React and TypeScript sources.
+
 ## 0.5.3
 
 ### Patch Changes
