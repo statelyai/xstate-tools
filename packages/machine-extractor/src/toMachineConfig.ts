@@ -1,47 +1,29 @@
-import {
-  Actions,
-  MachineConfig,
-  StateNodeConfig,
-  TransitionConfigOrTarget,
-} from 'xstate';
-import { ActionNode, MaybeArrayOfActions } from './actions';
+import * as t from '@babel/types';
+import { MaybeArrayOfActions } from './actions';
 import { CondNode } from './conds';
 import {
   extractAssignAction,
   extractLogAction,
+  extractObjectRecursively,
   extractRaiseAction,
   extractSendToAction,
   extractStopAction,
-  getActionCreatorName,
 } from './extractAction';
 import { TMachineCallExpression } from './machineCallExpression';
 import { StateNodeReturn } from './stateNode';
 import { MaybeTransitionArray } from './transitions';
-import { GetParserResult } from './utils';
+import {
+  ExtractorInvokeNodeConfig,
+  ExtractorMachineAction,
+  ExtractorMachineConfig,
+  ExtractorStateNodeConfig,
+  ExtractrorTransitionNodeConfig,
+  JsonItem,
+  MaybeArray,
+} from './types';
+import { GetParserResult, toJsonExpressionString } from './utils';
 
 export interface ToMachineConfigOptions {
-  /**
-   * Whether to attempt builtin actions and inline expressions extraction.
-   *
-   * @default false
-   */
-  serializeInlineActions?: boolean;
-
-  /**
-   * Whether or not to hash inline implementations, which
-   * allow for parsing inline implementations as code.
-   *
-   * @default false
-   */
-  hashInlineImplementations?: boolean;
-
-  /**
-   * Whether to use a static string in place of inline implementations.
-   * This makes it easier to compare two different configs with `deepEqual`
-   *
-   * @default false
-   */
-  anonymizeInlineImplementations?: boolean;
   /**
    * Original source code text
    */
@@ -51,8 +33,8 @@ export interface ToMachineConfigOptions {
 const parseStateNode = (
   astResult: StateNodeReturn,
   opts: ToMachineConfigOptions | undefined,
-): StateNodeConfig<any, any, any> => {
-  const config: MachineConfig<any, any, any> = {};
+): ExtractorStateNodeConfig => {
+  const config: ExtractorMachineConfig = {};
 
   if (astResult?.id) {
     config.id = astResult.id.value;
@@ -150,19 +132,11 @@ const parseStateNode = (
       if (!invoke.src) {
         return;
       }
-      let src: string | undefined;
+      // For now, we'll treat "anonymous" as if this is an inline expression
+      let src: string | undefined =
+        invoke.src.declarationType === 'named' ? invoke.src.value : undefined;
 
-      switch (true) {
-        case invoke.src.declarationType === 'named':
-          src = invoke.src.value;
-          break;
-        case opts?.anonymizeInlineImplementations:
-          src = 'anonymous';
-        case opts?.hashInlineImplementations:
-          src = invoke.src.inlineDeclarationId;
-      }
-
-      const toPush: (typeof invokes)[number] = {
+      const toPush: ExtractorInvokeNodeConfig = {
         src: src || (() => () => {}),
       };
 
@@ -199,95 +173,146 @@ const parseStateNode = (
   return config;
 };
 
+const parseRootStateNode = (
+  astResult: StateNodeReturn,
+  opts: ToMachineConfigOptions | undefined,
+): ExtractorStateNodeConfig => {
+  const config: ExtractorMachineConfig = parseStateNode(astResult, opts);
+  if (t.isObjectExpression(astResult.context?.node)) {
+    config.context = extractObjectRecursively(
+      astResult.context!.node,
+      opts!.fileContent,
+    );
+  } else if (astResult.context) {
+    config.context = toJsonExpressionString(
+      opts!.fileContent.slice(
+        astResult.context.node.start!,
+        astResult.context.node.end!,
+      ),
+    );
+  }
+  return config;
+};
+
 export const toMachineConfig = (
   result: TMachineCallExpression,
   opts?: ToMachineConfigOptions,
-): MachineConfig<any, any, any> | undefined => {
+): ExtractorMachineConfig | undefined => {
   if (!result?.definition) return undefined;
-  return parseStateNode(result?.definition, opts);
+  return parseRootStateNode(result?.definition, opts);
 };
 
 export const getActionConfig = (
   astActions: GetParserResult<typeof MaybeArrayOfActions>,
   opts: ToMachineConfigOptions | undefined,
-): Actions<any, any> => {
-  const actions: Actions<any, any> = [];
+) => {
+  const actions: ExtractorMachineAction[] = [];
 
-  // Todo: these actions should be extracted in `actions.ts`
-  astActions?.forEach((action) => {
-    switch (true) {
-      case action.declarationType === 'named':
-        actions.push(action.name);
+  // Todo: think about error reporting and how to handle invalid actions such as raise(2)
+  astActions.forEach((action) => {
+    switch (action.kind) {
+      case 'named':
+        if (action.declarationType === 'object') {
+          actions.push({
+            kind: action.kind,
+            action: {
+              type: action.name,
+              // Extracts the rest of action object properties including params, etc
+              // TODO: Should we only allow params?
+              ...(extractObjectRecursively(
+                action.node as t.ObjectExpression,
+                opts!.fileContent,
+              ) as Record<string, JsonItem>),
+            },
+          });
+        } else {
+          actions.push({
+            kind: action.kind,
+            action: { type: action.name, params: {} },
+          });
+        }
         return;
-      case opts?.anonymizeInlineImplementations:
+      case 'inline':
+        const __tempStatelyChooseConds =
+          action.name === 'choose'
+            ? action.chooseConditions!.map((condition) => {
+                const cond = getCondition(condition.conditionNode, opts);
+                return {
+                  ...(cond && { cond }),
+                  // TODO: extract cond.actions with getActionConfig
+                  actions: condition.actionNodes.map((node) => node.action),
+                };
+              })
+            : [];
         actions.push({
-          type: 'anonymous',
+          kind: action.kind,
+          action: {
+            expr: toJsonExpressionString(
+              opts!.fileContent.slice(action.node.start!, action.node.end!),
+            ),
+            ...(__tempStatelyChooseConds.length > 0 && {
+              __tempStatelyChooseConds,
+            }),
+          },
         });
         return;
-      case opts?.hashInlineImplementations:
-        actions.push({
-          type: action.inlineDeclarationId,
-        });
-        return;
-      case !!action.chooseConditions:
-        actions.push({
-          type: 'xstate.choose',
-          conds: action.chooseConditions!.map((condition) => {
-            const cond = getCondition(condition.conditionNode, opts);
-            return {
-              ...(cond && { cond }),
-              actions: getActionConfig(condition.actionNodes, opts),
-            };
-          }),
-        });
-        return;
-      case opts?.serializeInlineActions: {
-        switch (getActionCreatorName(action)) {
-          // Todo: think about error reporting and how to handle invalid actions such as raise(2)
-          case 'assign':
+      case 'builtin':
+        switch (action.name) {
+          case 'assign': {
             actions.push({
-              type: 'xstate.assign',
-              assignment: extractAssignAction(action, opts!.fileContent),
-            });
-            return;
-          case 'raise':
-            actions.push({
-              type: 'xstate.raise',
-              event: extractRaiseAction(action, opts!.fileContent),
-            });
-            return;
-          case 'log':
-            actions.push({
-              type: 'xstate.log',
-              expr: extractLogAction(action, opts!.fileContent),
-            });
-            return;
-          case 'sendTo':
-            actions.push({
-              type: 'xstate.sendTo',
-              ...extractSendToAction(action, opts!.fileContent),
-            });
-            return;
-          case 'stop':
-            actions.push({
-              type: 'xstate.stop',
-              id: extractStopAction(action, opts!.fileContent),
-            });
-            return;
-          default:
-            actions.push({
-              type: 'xstate.custom',
-              value: {
-                type: 'expression',
-                value: opts!.fileContent.slice(
-                  action.node.start!,
-                  action.node.end!,
-                ),
+              kind: action.kind,
+              action: {
+                type: 'xstate.assign',
+                assignment: extractAssignAction(action, opts!.fileContent),
               },
             });
             return;
+          }
+          case 'raise': {
+            actions.push({
+              kind: action.kind,
+              action: {
+                type: 'xstate.raise',
+                event: extractRaiseAction(action, opts!.fileContent),
+              },
+            });
+            return;
+          }
+          case 'log': {
+            actions.push({
+              kind: action.kind,
+              action: {
+                type: 'xstate.log',
+                expr: extractLogAction(action, opts!.fileContent),
+              },
+            });
+            return;
+          }
+          case 'sendTo': {
+            actions.push({
+              kind: action.kind,
+              action: {
+                type: 'xstate.sendTo',
+                ...extractSendToAction(action, opts!.fileContent),
+              },
+            });
+            return;
+          }
+          case 'stop': {
+            actions.push({
+              kind: action.kind,
+              action: {
+                type: 'xstate.stop',
+                id: extractStopAction(action, opts!.fileContent),
+              },
+            });
+            return;
+          }
         }
-      }
+        return;
+      default:
+        console.error(action);
+        throw Error('Unsupported kind property on parsed action');
     }
   });
 
@@ -305,24 +330,17 @@ const getCondition = (
   if (!condNode) {
     return;
   }
-  switch (true) {
-    case condNode.declarationType === 'named':
-      return condNode.name;
-    case opts?.anonymizeInlineImplementations:
-      return 'anonymous';
-    case opts?.hashInlineImplementations:
-      return condNode.inlineDeclarationId;
-  }
+  return condNode.declarationType === 'named' ? condNode.name : undefined;
 };
 
 export const getTransitions = (
   astTransitions: GetParserResult<typeof MaybeTransitionArray>,
   opts: ToMachineConfigOptions | undefined,
-): TransitionConfigOrTarget<any, any> => {
-  const transitions: TransitionConfigOrTarget<any, any> = [];
+): MaybeArray<ExtractrorTransitionNodeConfig> => {
+  const transitions: ExtractrorTransitionNodeConfig[] = [];
 
   astTransitions?.forEach((transition) => {
-    const toPush: TransitionConfigOrTarget<any, any> = {};
+    const toPush: ExtractrorTransitionNodeConfig = {};
     if (transition?.target && transition?.target?.length > 0) {
       if (transition.target.length === 1) {
         toPush.target = transition?.target[0].value;
@@ -340,7 +358,8 @@ export const getTransitions = (
     if (transition?.description) {
       toPush.description = transition?.description.value;
     }
-    if (typeof transition?.internal?.value === 'boolean') {
+    // Only add `internal` if its present
+    if (typeof transition.internal?.value === 'boolean') {
       toPush.internal = transition.internal.value;
     }
 

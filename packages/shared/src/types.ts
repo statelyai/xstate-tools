@@ -1,4 +1,4 @@
-import { MachineEdit } from '@xstate/machine-extractor';
+import { ExtractorMachineConfig, MachineEdit } from '@xstate/machine-extractor';
 import { MachineConfig } from 'xstate';
 import { TypegenData } from './getTypegenData';
 
@@ -61,7 +61,7 @@ export interface RequestMap {
   getMachineAtIndex: {
     params: { uri: string; machineIndex: number };
     result: {
-      config: MachineConfig<any, any, any>;
+      config: ExtractorMachineConfig;
       layoutString: string | null;
       implementations: ImplementationsMetadata;
       namedGuards: string[];
@@ -71,7 +71,7 @@ export interface RequestMap {
   getMachineAtCursorPosition: {
     params: { uri: string; position: CursorPosition };
     result: {
-      config: MachineConfig<any, any, any>;
+      config: ExtractorMachineConfig;
       machineIndex: number;
       layoutString: string | null;
       implementations: ImplementationsMetadata;
@@ -119,7 +119,7 @@ export interface RequestMap {
 
 export interface NotificationMap {
   displayedMachineUpdated: {
-    config: MachineConfig<any, any, any>;
+    config: ExtractorMachineConfig;
     layoutString: string | null;
     implementations: ImplementationsMetadata;
     namedGuards: string[];

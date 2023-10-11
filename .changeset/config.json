@@ -1,14 +1,10 @@
 {
   "$schema": "https://unpkg.com/@changesets/config@1.7.0/schema.json",
-  "changelog": [
-    "@changesets/changelog-github",
-    { "repo": "statelyai/xstate-tools" }
-  ],
   "commit": false,
   "fixed": [],
   "linked": [],
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": ["@xstate/vscode-server"]
+  "ignore": ["@xstate/vscode-server", "@xstate/cli", "stately-vscode"]
 }

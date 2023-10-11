@@ -111,7 +111,7 @@
   "dependencies": {
     "@types/lz-string": "^1.3.34",
     "@xstate/inspect": "^0.4.1",
-    "@xstate/tools-shared": "^3.0.0",
+    "@xstate/tools-shared": "^4.0.1",
     "isomorphic-fetch": "^3.0.0",
     "lz-string": "^1.4.4",
     "vscode-languageclient": "^7.0.0",

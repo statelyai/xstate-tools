@@ -1,5 +1,24 @@
 # @xstate/tools-shared
 
+## 4.0.1
+
+### Patch Changes
+
+- Updated dependencies [5d47848]
+- Updated dependencies [d885182]
+  - @xstate/machine-extractor@0.12.0
+
+## 4.0.0
+
+### Major Changes
+
+- 7c6d347: Introduces `forEachAction` traversal function that takes a state node config and traverses through it and applies a callback to each action. Useful for stubbing actions for use-cases such as choose actions for typegen.
+
+### Patch Changes
+
+- Updated dependencies [7c6d347]
+  - @xstate/machine-extractor@0.11.0
+
 ## 3.0.1
 
 ### Patch Changes

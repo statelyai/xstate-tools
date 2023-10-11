@@ -1,3 +1,4 @@
+export * from 'xstate/lib/types';
 export * from './MachineExtractResult';
 export * from './constants';
 export * from './extractMachinesFromFile';

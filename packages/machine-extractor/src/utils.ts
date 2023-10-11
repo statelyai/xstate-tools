@@ -11,7 +11,7 @@ import {
   TemplateLiteral,
 } from './scalars';
 import { maybeTsAsExpression } from './tsAsExpression';
-import { AnyParser, ParserContext } from './types';
+import { AnyParser, JsonExpressionString, ParserContext } from './types';
 import { unionType } from './unionType';
 import { wrapParserResult } from './wrapParserResult';
 
@@ -367,14 +367,20 @@ export const objectOf = <Result>(
  * Returns a parser for a named function and allows you to
  * parse its arguments
  */
-export const namedFunctionCall = <Argument1Result, Argument2Result>(
+export const namedFunctionCall = <
+  Argument1Result,
+  Argument2Result,
+  Argument3Result,
+>(
   name: string,
   argument1Parser: AnyParser<Argument1Result>,
   argument2Parser?: AnyParser<Argument2Result>,
+  argument3Parser?: AnyParser<Argument3Result>,
 ): AnyParser<{
   node: t.CallExpression;
   argument1Result: Argument1Result | undefined;
   argument2Result: Argument2Result | undefined;
+  argument3Result: Argument3Result | undefined;
 }> => {
   const namedFunctionParser = maybeTsAsExpression(
     maybeIdentifierTo(
@@ -404,6 +410,7 @@ export const namedFunctionCall = <Argument1Result, Argument2Result>(
         node,
         argument1Result: argument1Parser.parse(node.arguments[0], context),
         argument2Result: argument2Parser?.parse(node.arguments[1], context),
+        argument3Result: argument3Parser?.parse(node.arguments[2], context),
       };
     },
   };
@@ -432,4 +439,8 @@ function hash(str: string): string {
     )
     .toString(32)
     .substring(1, 10);
+}
+
+export function toJsonExpressionString(code: string): JsonExpressionString {
+  return `{{${code}}}`;
 }

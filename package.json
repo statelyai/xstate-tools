@@ -32,6 +32,7 @@
     "postinstall": "patch-package && preconstruct dev && manypkg check",
     "release": "(cd apps/extension/client && npx vsce package --yarn) && changeset publish && (cd apps/extension/client && (echo 'Attempt to publish extension to the Visual Studio Code Marketplace' && npx vsce publish --packagePath $(find . -iname *.vsix)) || true) && (echo 'Attempt to publish extension to the Open VSX Registry' && npx ovsx publish $(find . -iname *.vsix) || true) && node ./scripts/tag-extension.js",
     "deps:build": "preconstruct build",
+    "deps:dev": "preconstruct watch",
     "vscode:dev": "yarn turbo run vscode:build:dev --no-cache && cp apps/extension/server/dist/index.js apps/extension/client/dist/server.js",
     "vscode:prod": "yarn turbo run vscode:build:prod --no-cache && cp apps/extension/server/dist/index.js apps/extension/client/dist/server.js",
     "test": "jest"
