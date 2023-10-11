@@ -17,7 +17,7 @@ export const writeConfigToFiles = async (opts: {
 }) => {
   try {
     if (doesSkyConfigExist(opts.uri)) {
-      console.log('SkyConfig for machine already exists, skipping');
+      console.log(`${opts.uri} - skipping, sky config already exists`);
       return;
     }
     const fileContents = await fs.readFile(opts.uri, 'utf8');
@@ -58,6 +58,7 @@ export const writeConfigToFiles = async (opts: {
             });
 
             await modifySkyConfigSource({ filePath: opts.uri });
+            console.log(`${opts.uri} - updated with sky config`);
           } catch (error) {
             console.error(error);
           }

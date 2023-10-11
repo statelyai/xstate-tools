@@ -61,13 +61,12 @@ program
     '-k, --api-key <key>',
     'API key to use for interacting with the Stately Studio',
   )
-  .option('-h, --host <host>', 'URL pointing to the Stately Studio host')
   .action(
     async (
       filesPattern: string,
       opts: { watch?: boolean; apiKey?: string; host?: string },
     ) => {
-      const envApiKey = process.env.STATELY_API_KEY;
+      const envApiKey = process.env.SKY_API_KEY;
       const apiKey = opts.apiKey ?? envApiKey;
 
       if (opts.watch) {
