@@ -86,7 +86,7 @@ const replaceOrDeleteActions = <T>(
 ) => {
   const entity = host[prop] as MaybeArray<ExtractorMachineAction>;
   if (Array.isArray(entity)) {
-    for (let i = 0; i < entity.length; i++) {
+    for (let i = entity.length - 1; i >= 0; i--) {
       const val = visitor(entity[i]);
       if (val) {
         entity[i] = val;
