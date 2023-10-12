@@ -155,11 +155,10 @@ const forEachActionRecur = (
           replaceOrDeleteActions(doneTransition, 'actions', visitor);
         }
       }
-    }
-    /**
-     * invoke.onError transitions
-     */
-    if (event.startsWith('error.invoke')) {
+    } else if (event.startsWith('error.invoke')) {
+      /**
+       * invoke.onError transitions
+       */
       const index = parseInt(
         event.replace(/error\.invoke\..+:invocation\[(\d+)\]/, '$1'),
         10,
@@ -189,9 +188,8 @@ const forEachActionRecur = (
         }
       }
     }
-
     // Guarded transitions
-    if (Array.isArray(tr)) {
+    else if (Array.isArray(tr)) {
       tr.forEach((group) => {
         replaceOrDeleteActions(group, 'actions', visitor);
       });
