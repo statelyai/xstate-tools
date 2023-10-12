@@ -3,15 +3,26 @@ import { TextEdit } from '@xstate/tools-shared';
 import * as recast from 'recast';
 import { Action, Condition, MachineOptions } from 'xstate';
 import { choose } from 'xstate/lib/actions';
-import { DeclarationType } from '.';
+import { DeclarationType, JsonExpressionString } from '.';
+import { RecordOfArrays } from './RecordOfArrays';
 import { ActionNode, ParsedChooseCondition } from './actions';
 import { getMachineNodesFromFile } from './getMachineNodesFromFile';
 import { TMachineCallExpression } from './machineCallExpression';
-import { RecordOfArrays } from './RecordOfArrays';
 import { StateNodeReturn } from './stateNode';
-import { toMachineConfig, ToMachineConfigOptions } from './toMachineConfig';
+import { ToMachineConfigOptions, toMachineConfig } from './toMachineConfig';
 import { TransitionConfigNode } from './transitions';
-import { Comment } from './types';
+import {
+  Comment,
+  ExtractorAssignAction,
+  ExtractorBuiltinAction,
+  ExtractorInlineAction,
+  ExtractorLogAction,
+  ExtractorMachineAction,
+  ExtractorNamedAction,
+  ExtractorRaiseAction,
+  ExtractorSendToAction,
+  ExtractorStopAction,
+} from './types';
 
 function last<T extends ReadonlyArray<any>>(
   arr: T,
@@ -133,7 +144,10 @@ export type MachineEdit =
       type: 'edit_action';
       path: string[];
       actionPath: ActionPath;
-      name: string;
+      action:
+        | ExtractorInlineAction
+        | ExtractorNamedAction
+        | ExtractorBuiltinAction;
     }
   | {
       type: 'add_guard';
@@ -1424,11 +1438,7 @@ export class MachineExtractResult {
             recastDefinitionNode,
             edit.path,
           );
-          editAtActionPath(
-            stateObj,
-            edit.actionPath,
-            t.stringLiteral(edit.name),
-          );
+          editAtActionPath(stateObj, edit.actionPath, edit.action);
           break;
         }
         case 'add_guard': {
@@ -1896,7 +1906,7 @@ function getPropByPath(ast: RecastObjectExpression, path: (string | number)[]) {
     );
   }
   const pathCopy = [...path];
-  let segment: typeof path[number] | undefined;
+  let segment: (typeof path)[number] | undefined;
   let current: RecastNode | undefined | null = ast;
   while ((segment = pathCopy.shift()) !== undefined) {
     if (typeof segment === 'string') {
@@ -1936,7 +1946,7 @@ function insertAtTransitionPath(
     );
   }
   const pathCopy = path.slice(0, -1);
-  let segment: typeof path[number] | undefined;
+  let segment: (typeof path)[number] | undefined;
   let current: RecastNode = ast;
 
   while ((segment = pathCopy.shift()) !== undefined) {
@@ -1991,7 +2001,7 @@ function getTransitionObject(
   path: TransitionPath,
 ) {
   const pathCopy = [...path];
-  let segment: typeof path[number] | undefined;
+  let segment: (typeof path)[number] | undefined;
   let current: RecastNode = obj;
 
   while ((segment = pathCopy.shift()) !== undefined) {
@@ -2064,7 +2074,7 @@ function insertAtActionPath(
 function editAtActionPath(
   obj: RecastObjectExpression,
   path: ActionPath,
-  value: RecastNode,
+  action: ExtractorMachineAction,
 ) {
   if (typeof last(path) !== 'number') {
     throw new Error(
@@ -2072,12 +2082,88 @@ function editAtActionPath(
     );
   }
 
+  let actionNode: recast.types.namedTypes.CallExpression | undefined =
+    undefined;
+
+  if (isExtractorAssignAction(action)) {
+    if (isExpressionString(action.action.assignment)) {
+      actionNode = actionArgAsExpression(action.action.assignment);
+    } else {
+      actionNode = b.callExpression(b.identifier('assign'), [
+        actionArgAsObject(action.action.assignment),
+      ]);
+    }
+  } else if (isExtractorRaiseAction(action)) {
+    if (isExpressionString(action.action.event)) {
+      actionNode = actionArgAsExpression(action.action.event);
+    } else {
+      actionNode = b.callExpression(b.identifier('raise'), [
+        actionArgAsObject(action.action.event),
+      ]);
+    }
+  } else if (isExtractorLogAction(action)) {
+    actionNode = isExpressionString(action.action.expr)
+      ? actionArgAsExpression(action.action.expr)
+      : b.callExpression(b.identifier('log'), [
+          b.stringLiteral(action.action.expr),
+        ]);
+  } else if (isExtractorSendToAction(action)) {
+    const params = [
+      // to
+      isExpressionString(action.action.to)
+        ? actionArgAsExpression(action.action.to)
+        : b.stringLiteral(action.action.to),
+      // event
+      (() => {
+        if (isExpressionString(action.action.event)) {
+          return actionArgAsExpression(action.action.event);
+        } else {
+          return actionArgAsObject(action.action.event);
+        }
+      })(),
+    ];
+
+    const options = { id: action.action.id, delay: action.action.delay };
+    const optionsNode = b.objectExpression([]);
+
+    for (const key in options) {
+      const _key = key as 'id' | 'delay';
+      const value = options[_key];
+      if (value != undefined) {
+        optionsNode.properties.push(
+          b.property.from({
+            kind: 'init',
+            key: b.stringLiteral(_key),
+            value: isExpressionString(value)
+              ? actionArgAsExpression(value)
+              : typeof value === 'string'
+              ? b.stringLiteral(value)
+              : b.numericLiteral(value),
+          }),
+        );
+      }
+    }
+
+    if (optionsNode.properties.length > 0) {
+      params.push(optionsNode);
+    }
+
+    actionNode = b.callExpression(b.identifier('sendTo'), params);
+  } else if (isExtractorStopAction(action)) {
+    actionNode = isExpressionString(action.action.id)
+      ? recast.parse(action.action.id.replace(/\{\{(.+?)\}\}/g, '$1')).program
+          .body[0].expression
+      : b.callExpression(b.identifier('stop'), [
+          b.stringLiteral(action.action.id),
+        ]);
+  }
+
   if (path[0] === 'entry' || path[0] === 'exit') {
     editAtArrayifiableProperty({
       obj,
       property: path[0],
       index: path[1],
-      value,
+      value: actionNode!,
     });
     return;
   }
@@ -2091,7 +2177,7 @@ function editAtActionPath(
     obj: transition,
     property: 'actions',
     index: last(path),
-    value,
+    value: actionNode!,
   });
 }
 
@@ -2673,7 +2759,7 @@ function getIndexForTransitionPathAppendant(
   // this function is supposed to ignore the last element (the index)
   // we only want check max existing index of this path in the given state object
   const pathCopy = path.slice(0, -1);
-  let segment: typeof path[number] | undefined;
+  let segment: (typeof path)[number] | undefined;
   let current: RecastNode = ast;
 
   while ((segment = pathCopy.shift()) !== undefined) {
@@ -2795,4 +2881,66 @@ function consumeIndentationToNodeAtIndex(
     }
     indentation = `${char}${indentation}`;
   }
+}
+
+function isExtractorAssignAction(
+  action: ExtractorMachineAction,
+): action is ExtractorAssignAction {
+  return action.kind === 'builtin' && action.action.type === 'xstate.assign';
+}
+function isExtractorRaiseAction(
+  action: ExtractorMachineAction,
+): action is ExtractorRaiseAction {
+  return action.kind === 'builtin' && action.action.type === 'xstate.raise';
+}
+function isExtractorLogAction(
+  action: ExtractorMachineAction,
+): action is ExtractorLogAction {
+  return action.kind === 'builtin' && action.action.type === 'xstate.log';
+}
+function isExtractorStopAction(
+  action: ExtractorMachineAction,
+): action is ExtractorStopAction {
+  return action.kind === 'builtin' && action.action.type === 'xstate.stop';
+}
+function isExtractorSendToAction(
+  action: ExtractorMachineAction,
+): action is ExtractorSendToAction {
+  return action.kind === 'builtin' && action.action.type === 'xstate.sendTo';
+}
+
+function isExpressionString(value: any): value is JsonExpressionString {
+  return typeof value === 'string' && !!value.match(/^\{\{[\s\S]*\}\}$/);
+}
+function actionArgAsExpression(value: JsonExpressionString) {
+  return recast.parse(expressionStringToStringLiteral(value)).program.body[0]
+    .expression;
+}
+function actionArgAsObject(
+  arg: Record<PropertyKey, unknown>,
+): recast.types.namedTypes.ObjectExpression {
+  const actionObject = toObjectExpression(arg);
+  return b.objectExpression(
+    actionObject.properties
+      .filter((prop): prop is recast.types.namedTypes.ObjectProperty =>
+        t.isObjectProperty(prop),
+      )
+      .map((prop) => {
+        return b.property.from({
+          kind: 'init',
+          key: prop.key,
+          value:
+            t.isStringLiteral(prop.value) &&
+            isExpressionString(prop.value.value)
+              ? actionArgAsExpression(prop.value.value)
+              : prop.value,
+        });
+      }),
+  );
+}
+
+function expressionStringToStringLiteral(
+  expression: JsonExpressionString,
+): string {
+  return expression.replace(/^\{\{[\s\S]*\}\}$/, '$1');
 }

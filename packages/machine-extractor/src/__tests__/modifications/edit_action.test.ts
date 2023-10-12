@@ -18,7 +18,12 @@ describe('edit_action', () => {
           type: 'edit_action',
           path: [],
           actionPath: ['entry', 0],
-          name: 'getRaise',
+          action: {
+            kind: 'named',
+            action: {
+              type: 'getRaise',
+            },
+          },
         },
       ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
@@ -68,7 +73,12 @@ describe('edit_action', () => {
           type: 'edit_action',
           path: [],
           actionPath: ['exit', 0],
-          name: 'getRaise',
+          action: {
+            kind: 'named',
+            action: {
+              type: 'getRaise',
+            },
+          },
         },
       ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
@@ -93,7 +103,12 @@ describe('edit_action', () => {
           type: 'edit_action',
           path: [],
           actionPath: ['exit', 0],
-          name: 'getRaise',
+          action: {
+            kind: 'named',
+            action: {
+              type: 'getRaise',
+            },
+          },
         },
       ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
@@ -118,7 +133,12 @@ describe('edit_action', () => {
           type: 'edit_action',
           path: [],
           actionPath: ['entry', 1],
-          name: 'keepTheJob',
+          action: {
+            kind: 'named',
+            action: {
+              type: 'keepTheJob',
+            },
+          },
         },
       ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
@@ -141,7 +161,12 @@ describe('edit_action', () => {
           type: 'edit_action',
           path: [],
           actionPath: ['entry', 1],
-          name: 'keepTheJob',
+          action: {
+            kind: 'named',
+            action: {
+              type: 'keepTheJob',
+            },
+          },
         },
       ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
@@ -164,7 +189,12 @@ describe('edit_action', () => {
           type: 'edit_action',
           path: [],
           actionPath: ['exit', 1],
-          name: 'keepTheJob',
+          action: {
+            kind: 'named',
+            action: {
+              type: 'keepTheJob',
+            },
+          },
         },
       ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
@@ -187,7 +217,12 @@ describe('edit_action', () => {
           type: 'edit_action',
           path: [],
           actionPath: ['exit', 1],
-          name: 'keepTheJob',
+          action: {
+            kind: 'named',
+            action: {
+              type: 'keepTheJob',
+            },
+          },
         },
       ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
@@ -214,7 +249,12 @@ describe('edit_action', () => {
           type: 'edit_action',
           path: [],
           actionPath: ['on', 'CALL_HIM_MAYBE', 0, 0],
-          name: 'getRaise',
+          action: {
+            kind: 'named',
+            action: {
+              type: 'getRaise',
+            },
+          },
         },
       ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
@@ -245,7 +285,12 @@ describe('edit_action', () => {
           type: 'edit_action',
           path: [],
           actionPath: ['on', 'CALL_HIM_MAYBE', 0, 0],
-          name: 'getRaise',
+          action: {
+            kind: 'named',
+            action: {
+              type: 'getRaise',
+            },
+          },
         },
       ]).configEdit.newText,
     ).toMatchInlineSnapshot(`
@@ -278,7 +323,12 @@ describe('edit_action', () => {
           type: 'edit_action',
           path: [],
           actionPath: ['on', 'CALL_HIM_MAYBE', 1, 0],
-          name: 'getRaise',
+          action: {
+            kind: 'named',
+            action: {
+              type: 'getRaise',
+            },
+          },
         },
       ]).configEdit.newText,
     ).toMatchInlineSnapshot(`

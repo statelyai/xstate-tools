@@ -103,7 +103,7 @@ export type ExtractorAssignAction = BaseBuiltinAction<{
 export type ExtractorRaiseAction = BaseBuiltinAction<{
   event: Record<string, JsonItem> | JsonExpressionString;
 }>;
-export type ExtractedLogAction = BaseBuiltinAction<{
+export type ExtractorLogAction = BaseBuiltinAction<{
   expr: string | JsonExpressionString;
 }>;
 export type ExtractorSendToAction = BaseBuiltinAction<{
@@ -136,17 +136,17 @@ export type ExtractorInlineAction = {
     }[];
   };
 };
-export type BuiltinAction =
+export type ExtractorBuiltinAction =
   | ExtractorAssignAction
   | ExtractorRaiseAction
-  | ExtractedLogAction
+  | ExtractorLogAction
   | ExtractorSendToAction
   | ExtractorStopAction;
 
 export type ExtractorMachineAction =
   | ExtractorNamedAction
   | ExtractorInlineAction
-  | BuiltinAction;
+  | ExtractorBuiltinAction;
 
 // These types are copied over from studio blocks.
 // array and object are extracted as expressions so Studio render them correctly when exporting
