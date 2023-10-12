@@ -2082,8 +2082,41 @@ function editAtActionPath(
     );
   }
 
-  let actionNode: recast.types.namedTypes.CallExpression | undefined =
-    undefined;
+  let actionNode:
+    | recast.types.namedTypes.StringLiteral
+    | recast.types.namedTypes.ObjectExpression
+    | recast.types.namedTypes.CallExpression
+    | undefined = undefined;
+
+  if (isExtractorNamedAction(action)) {
+    const properties = [
+      b.property.from({
+        kind: 'init',
+        key: b.stringLiteral('type'),
+        value: b.stringLiteral(action.action.type),
+      }),
+    ];
+    if (action.action.params && Object.keys(action.action.params).length > 0) {
+      const paramsNode = b.objectExpression([]);
+      for (const key in action.action.params) {
+        paramsNode.properties.push(
+          b.property.from({
+            kind: 'init',
+            key: b.stringLiteral(key),
+            value: toValueNode(action.action.params[key]),
+          }),
+        );
+      }
+      properties.push(
+        b.property.from({
+          kind: 'init',
+          key: b.stringLiteral('params'),
+          value: paramsNode,
+        }),
+      );
+    }
+    actionNode = b.objectExpression(properties);
+  }
 
   if (isExtractorAssignAction(action)) {
     if (isExpressionString(action.action.assignment)) {
@@ -2151,8 +2184,7 @@ function editAtActionPath(
     actionNode = b.callExpression(b.identifier('sendTo'), params);
   } else if (isExtractorStopAction(action)) {
     actionNode = isExpressionString(action.action.id)
-      ? recast.parse(action.action.id.replace(/\{\{(.+?)\}\}/g, '$1')).program
-          .body[0].expression
+      ? actionArgAsExpression(action.action.id)
       : b.callExpression(b.identifier('stop'), [
           b.stringLiteral(action.action.id),
         ]);
@@ -2164,6 +2196,7 @@ function editAtActionPath(
       property: path[0],
       index: path[1],
       value: actionNode!,
+      op: isExtractorNamedAction(action) ? 'replace' : 'update',
     });
     return;
   }
@@ -2178,6 +2211,7 @@ function editAtActionPath(
     property: 'actions',
     index: last(path),
     value: actionNode!,
+    op: isExtractorNamedAction(action) ? 'replace' : 'update',
   });
 }
 
@@ -2341,11 +2375,13 @@ function editAtArrayifiableProperty({
   property,
   index,
   value,
+  op,
 }: {
   obj: RecastObjectExpression;
   property: string;
   index: number;
   value: RecastNode;
+  op: 'replace' | 'update';
 }) {
   const propIndex = findObjectPropertyIndex(obj, property);
   if (propIndex === -1) {
@@ -2357,13 +2393,14 @@ function editAtArrayifiableProperty({
 
   const unwrapped = unwrapSimplePropValue(obj.properties[propIndex])!;
   if (!n.ArrayExpression.check(unwrapped)) {
-    prop.value = updateItemType(unwrapped, value) as any;
+    prop.value =
+      op === 'update' ? (updateItemType(unwrapped, value) as any) : value;
     return;
   }
-  unwrapped.elements[index] = updateItemType(
-    unwrapped.elements[index]!,
-    value,
-  ) as any;
+  unwrapped.elements[index] =
+    op === 'update'
+      ? (updateItemType(unwrapped.elements[index]!, value) as any)
+      : value;
 }
 
 function updateItemType(item: RecastNode, newName: RecastNode) {
@@ -2491,27 +2528,7 @@ function toObjectExpression(
       if (Array.isArray(value)) {
         throw new Error('Converting arrays is not implemented');
       }
-      const valueNode = n.Node.check(value)
-        ? (value as any)
-        : typeof value === 'string'
-        ? b.stringLiteral(value)
-        : typeof value === 'boolean'
-        ? b.booleanLiteral(value)
-        : typeof value === 'number'
-        ? b.numericLiteral(value)
-        : typeof value === 'undefined'
-        ? b.identifier('undefined')
-        : value === null
-        ? b.nullLiteral()
-        : typeof value === 'object'
-        ? toObjectExpression(value as Record<string | number, unknown>)
-        : null;
-      if (!valueNode) {
-        throw new Error(
-          'Converting this type of a value to a node has not been implemented',
-        );
-      }
-      return b.objectProperty(safePropertyKey(key), valueNode);
+      return b.objectProperty(safePropertyKey(key), toValueNode(value));
     }),
   );
 }
@@ -2883,6 +2900,12 @@ function consumeIndentationToNodeAtIndex(
   }
 }
 
+function isExtractorNamedAction(
+  action: ExtractorMachineAction,
+): action is ExtractorNamedAction {
+  return action.kind === 'named';
+}
+
 function isExtractorAssignAction(
   action: ExtractorMachineAction,
 ): action is ExtractorAssignAction {
@@ -2943,4 +2966,35 @@ function expressionStringToStringLiteral(
   expression: JsonExpressionString,
 ): string {
   return expression.replace(/^\{\{[\s\S]*\}\}$/, '$1');
+}
+
+function toValueNode(
+  value: unknown,
+):
+  | recast.types.namedTypes.StringLiteral
+  | recast.types.namedTypes.NumericLiteral
+  | recast.types.namedTypes.BooleanLiteral
+  | recast.types.namedTypes.NullLiteral
+  | recast.types.namedTypes.ObjectExpression {
+  const valueNode = n.Node.check(value)
+    ? (value as any)
+    : typeof value === 'string'
+    ? b.stringLiteral(value)
+    : typeof value === 'boolean'
+    ? b.booleanLiteral(value)
+    : typeof value === 'number'
+    ? b.numericLiteral(value)
+    : typeof value === 'undefined'
+    ? b.identifier('undefined')
+    : value === null
+    ? b.nullLiteral()
+    : typeof value === 'object'
+    ? toObjectExpression(value as Record<string | number, unknown>)
+    : null;
+  if (!valueNode) {
+    throw new Error(
+      'Converting this type of a value to a node has not been implemented',
+    );
+  }
+  return valueNode;
 }
