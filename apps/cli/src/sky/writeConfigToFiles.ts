@@ -8,15 +8,18 @@ import 'dotenv/config';
 import * as fs from 'fs/promises';
 import fetch from 'isomorphic-fetch';
 import { writeToFiles } from '../typegen/writeToFiles';
+import { getPrettierInstance } from '../utils';
 import { fetchSkyConfig } from './urlUtils';
 
 export const writeConfigToFiles = async (opts: {
   uri: string;
   apiKey: string | undefined;
   writeToFiles: typeof writeToFiles;
+  forceFetch: boolean;
+  cwd: string;
 }) => {
   try {
-    if (doesSkyConfigExist(opts.uri)) {
+    if (!opts.forceFetch && doesSkyConfigExist(opts.uri)) {
       console.log(`${opts.uri} - skipping, sky config already exists`);
       return;
     }
@@ -57,8 +60,19 @@ export const writeConfigToFiles = async (opts: {
               createTypeGenFile: runTypeGen ? writeToFiles : undefined,
             });
 
-            await modifySkyConfigSource({ filePath: opts.uri });
-            console.log(`${opts.uri} - updated with sky config`);
+            const fileContents = await fs.readFile(opts.uri, 'utf8');
+            const code = await modifySkyConfigSource({
+              fileContents,
+              filePath: opts.uri,
+            });
+            if (code) {
+              const formattedCode = await getPrettierInstance(opts.cwd).format(
+                code,
+                { parser: 'typescript' },
+              );
+              await fs.writeFile(opts.uri, formattedCode);
+              console.log(`${opts.uri} - updated with sky config`);
+            }
           } catch (error) {
             console.error(error);
           }

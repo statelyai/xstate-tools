@@ -1,13 +1,13 @@
-import * as fs from 'fs/promises';
 import * as path from 'path';
-import * as prettier from 'prettier';
 import * as recast from 'recast';
 import * as babelTs from 'recast/parsers/babel-ts';
 import { ALLOWED_SKY_CONFIG_CALL_EXPRESSION_NAMES } from './skyConfigUtils';
 
-export const modifySkyConfigSource = async (opts: { filePath: string }) => {
-  const fileContents = await fs.readFile(opts.filePath, 'utf8');
-  const ast = recast.parse(fileContents, {
+export const modifySkyConfigSource = async (opts: {
+  fileContents: string;
+  filePath: string;
+}) => {
+  const ast = recast.parse(opts.fileContents, {
     parser: babelTs,
   });
   const b = recast.types.builders;
@@ -65,10 +65,6 @@ export const modifySkyConfigSource = async (opts: { filePath: string }) => {
       },
     });
 
-    const output = recast.print(ast).code;
-    await fs.writeFile(
-      opts.filePath,
-      prettier.format(output, { parser: 'typescript' }),
-    );
+    return recast.print(ast).code;
   }
 };
