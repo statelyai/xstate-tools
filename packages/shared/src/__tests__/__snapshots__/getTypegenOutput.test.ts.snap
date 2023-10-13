@@ -57,6 +57,150 @@ export interface Typegen0 {
 "
 `;
 
+exports[`getTypegenOutput actor-ondone-multiple-actions 1`] = `
+"// This file was automatically generated. Edits will be overwritten
+
+export interface Typegen0 {
+  "@@xstate/typegen": true;
+  internalEvents: {
+    "done.invoke.(machine).A:invocation[0]": {
+      type: "done.invoke.(machine).A:invocation[0]";
+      data: unknown;
+      __tip: "See the XState TS docs to learn how to strongly type this.";
+    };
+    "xstate.init": { type: "xstate.init" };
+  };
+  invokeSrcNameMap: {
+    getData: "done.invoke.(machine).A:invocation[0]";
+  };
+  missingImplementations: {
+    actions: never;
+    delays: never;
+    guards: never;
+    services: "getData";
+  };
+  eventsCausingActions: {
+    actionA: "done.invoke.(machine).A:invocation[0]";
+    actionB: "done.invoke.(machine).A:invocation[0]";
+  };
+  eventsCausingDelays: {};
+  eventsCausingGuards: {};
+  eventsCausingServices: {
+    getData: "xstate.init";
+  };
+  matchesStates: "A" | "DONE";
+  tags: never;
+}
+"
+`;
+
+exports[`getTypegenOutput actor-ondone-single-action 1`] = `
+"// This file was automatically generated. Edits will be overwritten
+
+export interface Typegen0 {
+  "@@xstate/typegen": true;
+  internalEvents: {
+    "done.invoke.(machine).A:invocation[0]": {
+      type: "done.invoke.(machine).A:invocation[0]";
+      data: unknown;
+      __tip: "See the XState TS docs to learn how to strongly type this.";
+    };
+    "xstate.init": { type: "xstate.init" };
+  };
+  invokeSrcNameMap: {
+    getData: "done.invoke.(machine).A:invocation[0]";
+  };
+  missingImplementations: {
+    actions: never;
+    delays: never;
+    guards: never;
+    services: "getData";
+  };
+  eventsCausingActions: {
+    actionA: "done.invoke.(machine).A:invocation[0]";
+  };
+  eventsCausingDelays: {};
+  eventsCausingGuards: {};
+  eventsCausingServices: {
+    getData: "xstate.init";
+  };
+  matchesStates: "A" | "DONE";
+  tags: never;
+}
+"
+`;
+
+exports[`getTypegenOutput actor-onerror-multiple-actions 1`] = `
+"// This file was automatically generated. Edits will be overwritten
+
+export interface Typegen0 {
+  "@@xstate/typegen": true;
+  internalEvents: {
+    "error.platform.(machine).A:invocation[0]": {
+      type: "error.platform.(machine).A:invocation[0]";
+      data: unknown;
+    };
+    "xstate.init": { type: "xstate.init" };
+  };
+  invokeSrcNameMap: {
+    getData: "done.invoke.(machine).A:invocation[0]";
+  };
+  missingImplementations: {
+    actions: never;
+    delays: never;
+    guards: never;
+    services: "getData";
+  };
+  eventsCausingActions: {
+    actionA: "error.platform.(machine).A:invocation[0]";
+    actionB: "error.platform.(machine).A:invocation[0]";
+  };
+  eventsCausingDelays: {};
+  eventsCausingGuards: {};
+  eventsCausingServices: {
+    getData: "xstate.init";
+  };
+  matchesStates: "A" | "ERROR";
+  tags: never;
+}
+"
+`;
+
+exports[`getTypegenOutput actor-onerror-single-action 1`] = `
+"// This file was automatically generated. Edits will be overwritten
+
+export interface Typegen0 {
+  "@@xstate/typegen": true;
+  internalEvents: {
+    "error.platform.(machine).A:invocation[0]": {
+      type: "error.platform.(machine).A:invocation[0]";
+      data: unknown;
+    };
+    "xstate.init": { type: "xstate.init" };
+  };
+  invokeSrcNameMap: {
+    getData: "done.invoke.(machine).A:invocation[0]";
+  };
+  missingImplementations: {
+    actions: never;
+    delays: never;
+    guards: never;
+    services: "getData";
+  };
+  eventsCausingActions: {
+    actionA: "error.platform.(machine).A:invocation[0]";
+  };
+  eventsCausingDelays: {};
+  eventsCausingGuards: {};
+  eventsCausingServices: {
+    getData: "xstate.init";
+  };
+  matchesStates: "A" | "ERROR";
+  tags: never;
+}
+"
+`;
+
 exports[`getTypegenOutput after-numeric-like-delay 1`] = `
 "// This file was automatically generated. Edits will be overwritten
 
