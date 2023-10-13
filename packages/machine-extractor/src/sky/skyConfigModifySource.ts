@@ -66,9 +66,14 @@ export const modifySkyConfigSource = async (opts: { filePath: string }) => {
     });
 
     const output = recast.print(ast).code;
+    const prettierConfig = await prettier.resolveConfig(opts.filePath);
+
     await fs.writeFile(
       opts.filePath,
-      prettier.format(output, { parser: 'typescript' }),
+      prettier.format(output, {
+        ...prettierConfig,
+        parser: 'typescript',
+      }),
     );
   }
 };
