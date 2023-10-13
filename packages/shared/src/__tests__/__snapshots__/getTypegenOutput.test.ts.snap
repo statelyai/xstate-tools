@@ -461,6 +461,33 @@ export interface Typegen0 {
 "
 `;
 
+exports[`getTypegenOutput entry-actions-named-mixed-with-inline 1`] = `
+"// This file was automatically generated. Edits will be overwritten
+
+export interface Typegen0 {
+  "@@xstate/typegen": true;
+  internalEvents: {
+    "xstate.init": { type: "xstate.init" };
+  };
+  invokeSrcNameMap: {};
+  missingImplementations: {
+    actions: "action3";
+    delays: never;
+    guards: never;
+    services: never;
+  };
+  eventsCausingActions: {
+    action3: "xstate.init";
+  };
+  eventsCausingDelays: {};
+  eventsCausingGuards: {};
+  eventsCausingServices: {};
+  matchesStates: undefined;
+  tags: never;
+}
+"
+`;
+
 exports[`getTypegenOutput entry-actions-receive-init-event 1`] = `
 "// This file was automatically generated. Edits will be overwritten
 
