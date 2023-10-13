@@ -1,6 +1,6 @@
 {
   "name": "@xstate/tools-shared",
-  "version": "4.0.1",
+  "version": "4.0.2",
   "main": "dist/xstate-tools-shared.cjs.js",
   "license": "MIT",
   "dependencies": {

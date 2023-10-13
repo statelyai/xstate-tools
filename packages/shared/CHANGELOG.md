@@ -1,5 +1,12 @@
 # @xstate/tools-shared
 
+## 4.0.2
+
+### Patch Changes
+
+- 0562617: Fixed an issue that could result in loss of information about multiple actions within `invoke.onDone`/`invoke.onError` transitions.
+- 6e6ce3b: Fixed an issue that could accidentally recognize `"undefined"` as a valid action type.
+
 ## 4.0.1
 
 ### Patch Changes
