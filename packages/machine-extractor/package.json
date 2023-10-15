@@ -12,7 +12,6 @@
     "@babel/parser": "^7.21.4",
     "@babel/traverse": "^7.21.4",
     "@babel/types": "^7.21.4",
-    "prettier": "^2.8.8",
     "recast": "^0.23.1"
   },
   "peerDependencies": {

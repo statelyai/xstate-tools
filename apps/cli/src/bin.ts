@@ -57,7 +57,7 @@ program
   )
   .argument('<files>', 'The files to target, expressed as a glob pattern')
   .option('-w, --watch', 'Run sky in watch mode')
-  .option('-f, --force', 'Always overwrite existing sky configs')
+  .option('-r, --refetch', 'Always refetch and overwrite existing sky configs')
   .option(
     '-k, --api-key <key>',
     'API key to use for interacting with the Stately Studio',
@@ -66,7 +66,7 @@ program
     async (
       filesPattern: string,
       opts: {
-        force?: boolean;
+        refetch?: boolean;
         watch?: boolean;
         apiKey?: string;
         host?: string;
@@ -80,7 +80,7 @@ program
           writeConfigToFiles({
             uri,
             apiKey,
-            forceFetch: opts.force === true,
+            forceFetch: opts.refetch === true,
             writeToFiles,
             cwd,
           }).catch((e) => {
@@ -98,7 +98,7 @@ program
               writeConfigToFiles({
                 uri,
                 apiKey,
-                forceFetch: opts.force === true,
+                forceFetch: opts.refetch === true,
                 writeToFiles,
                 cwd,
               }),

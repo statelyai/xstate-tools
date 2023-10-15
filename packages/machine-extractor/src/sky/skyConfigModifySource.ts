@@ -45,26 +45,27 @@ export const modifySkyConfigSource = async (opts: {
 
     // Add the import at the top of the file
     ast.program.body.unshift(importDeclaration);
-
-    recast.visit(ast, {
-      visitCallExpression(path) {
-        const node = path.node;
-        if (
-          node.callee.type === 'Identifier' &&
-          ALLOWED_SKY_CONFIG_CALL_EXPRESSION_NAMES.includes(node.callee.name)
-        ) {
-          const args = node.arguments;
-          const hasSkyConfig = args.some((arg) => {
-            return arg.type === 'Identifier' && arg.name === importIdentifier;
-          });
-          if (!hasSkyConfig) {
-            args.push(b.identifier(importIdentifier));
-          }
-        }
-        return false;
-      },
-    });
-
-    return recast.print(ast).code;
   }
+
+  // Add the skyConfig argument to the @statelyai/sky calls if it's not already present
+  recast.visit(ast, {
+    visitCallExpression(path) {
+      const node = path.node;
+      if (
+        node.callee.type === 'Identifier' &&
+        ALLOWED_SKY_CONFIG_CALL_EXPRESSION_NAMES.includes(node.callee.name)
+      ) {
+        const args = node.arguments;
+        const hasSkyConfig = args.some((arg) => {
+          return arg.type === 'Identifier' && arg.name === importIdentifier;
+        });
+        if (!hasSkyConfig) {
+          args.push(b.identifier(importIdentifier));
+        }
+      }
+      return false;
+    },
+  });
+
+  return recast.print(ast).code;
 };
