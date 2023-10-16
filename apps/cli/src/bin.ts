@@ -57,6 +57,7 @@ program
   )
   .argument('<files>', 'The files to target, expressed as a glob pattern')
   .option('-w, --watch', 'Run sky in watch mode')
+  .option('-r, --refetch', 'Always refetch and overwrite existing sky configs')
   .option(
     '-k, --api-key <key>',
     'API key to use for interacting with the Stately Studio',
@@ -64,14 +65,25 @@ program
   .action(
     async (
       filesPattern: string,
-      opts: { watch?: boolean; apiKey?: string; host?: string },
+      opts: {
+        refetch?: boolean;
+        watch?: boolean;
+        apiKey?: string;
+        host?: string;
+      },
     ) => {
+      const cwd = process.cwd();
       const envApiKey = process.env.SKY_API_KEY;
       const apiKey = opts.apiKey ?? envApiKey;
-
       if (opts.watch) {
         const processFile = (uri: string) => {
-          writeConfigToFiles({ uri, apiKey, writeToFiles }).catch((e) => {
+          writeConfigToFiles({
+            uri,
+            apiKey,
+            forceFetch: opts.refetch === true,
+            writeToFiles,
+            cwd,
+          }).catch((e) => {
             console.error(e);
           });
         };
@@ -82,7 +94,15 @@ program
         const tasks: Array<Promise<void>> = [];
         watch(filesPattern, { persistent: false })
           .on('add', (uri) => {
-            tasks.push(writeConfigToFiles({ uri, apiKey, writeToFiles }));
+            tasks.push(
+              writeConfigToFiles({
+                uri,
+                apiKey,
+                forceFetch: opts.refetch === true,
+                writeToFiles,
+                cwd,
+              }),
+            );
           })
           .on('ready', async () => {
             const settled = await allSettled(tasks);

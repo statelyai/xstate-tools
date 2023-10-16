@@ -9,6 +9,7 @@ import {
 import 'dotenv/config';
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { getPrettierInstance } from '../utils';
 
 async function removeFile(filePath: string) {
   try {
@@ -18,23 +19,6 @@ async function removeFile(filePath: string) {
       return;
     }
     throw e;
-  }
-}
-
-let prettier: typeof import('prettier') | undefined;
-
-function getPrettierInstance(cwd: string): typeof import('prettier') {
-  if (prettier) {
-    return prettier;
-  }
-  try {
-    return require(require.resolve('prettier', { paths: [cwd] }));
-  } catch (err) {
-    if (!err || (err as any).code !== 'MODULE_NOT_FOUND') {
-      throw err;
-    }
-    // we load our own prettier instance lazily on purpose to speed up the init time
-    return (prettier = require('prettier'));
   }
 }
 
