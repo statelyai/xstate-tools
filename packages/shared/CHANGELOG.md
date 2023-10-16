@@ -1,5 +1,12 @@
 # @xstate/tools-shared
 
+## 4.0.3
+
+### Patch Changes
+
+- Updated dependencies [8dc07c9]
+  - @xstate/machine-extractor@0.12.1
+
 ## 4.0.2
 
 ### Patch Changes

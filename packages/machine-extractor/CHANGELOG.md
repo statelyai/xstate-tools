@@ -1,5 +1,11 @@
 # @xstate/machine-extractor
 
+## 0.12.1
+
+### Patch Changes
+
+- 8dc07c9: Small internal change to the Sky-related helper
+
 ## 0.12.0
 
 ### Minor Changes
