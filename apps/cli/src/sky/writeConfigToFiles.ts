@@ -66,10 +66,11 @@ export const writeConfigToFiles = async (opts: {
               filePath: opts.uri,
             });
             if (code) {
-              const formattedCode = await getPrettierInstance(opts.cwd).format(
-                code,
-                { parser: 'typescript' },
-              );
+              const prettierInstance = getPrettierInstance(opts.cwd);
+              const formattedCode = await prettierInstance.format(code, {
+                ...(await prettierInstance.resolveConfig(opts.uri)),
+                parser: 'typescript',
+              });
               await fs.writeFile(opts.uri, formattedCode);
               console.log(`${opts.uri} - updated with sky config`);
             }
