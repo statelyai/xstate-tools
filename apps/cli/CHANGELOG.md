@@ -1,5 +1,11 @@
 # @xstate/cli
 
+## 0.5.6
+
+### Patch Changes
+
+- cf8c2b7: Fix problem with Prettier version conflicts for Sky configs.
+
 ## 0.5.5
 
 ### Patch Changes
