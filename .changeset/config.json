@@ -6,5 +6,8 @@
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": ["@xstate/vscode-server", "stately-vscode"]
+  "ignore": ["@xstate/vscode-server", "stately-vscode"],
+  "___experimentalUnsafeOptions_WILL_CHANGE_IN_PATCH": {
+    "updateInternalDependents": "always"
+  }
 }
