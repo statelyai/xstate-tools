@@ -1,6 +1,6 @@
 {
   "name": "@xstate/machine-extractor",
-  "version": "0.12.0",
+  "version": "0.12.1",
   "main": "dist/xstate-machine-extractor.cjs.js",
   "author": "Matt Pocock",
   "license": "MIT",
