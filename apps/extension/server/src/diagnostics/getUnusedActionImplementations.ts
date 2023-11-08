@@ -9,7 +9,7 @@ export const getUnusedActionImplementations: DiagnosticGetter = (
   machineResult,
 ) => {
   const allActions = getSetOfNames(
-    machineResult.getAllActions(['named']) || [],
+    machineResult.getAllActions(['named', 'object']) || [],
   );
 
   const unusedActions =
