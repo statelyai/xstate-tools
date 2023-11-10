@@ -4,11 +4,20 @@ import { MachineExtractResult } from './MachineExtractResult';
 
 export type MaybeArray<T> = T | T[];
 
+export type ExtractorInlineGuard = {
+  kind: 'inline';
+  guard: { expr: JsonExpressionString };
+};
+export type ExtractorNamedGuard = {
+  kind: 'named';
+  guard: { type: string; params?: Record<string, JsonItem> };
+};
+export type ExtractorMachineGuard = ExtractorInlineGuard | ExtractorNamedGuard;
 export type ExtractrorTransitionNodeConfig = {
   target?: MaybeArray<string>;
   actions?: MaybeArray<ExtractorMachineAction>;
   internal?: boolean;
-  cond?: string;
+  cond?: ExtractorMachineGuard;
   description?: string;
   meta?: Record<string, any>;
 };
@@ -103,7 +112,7 @@ export type ExtractorAssignAction = BaseBuiltinAction<{
 export type ExtractorRaiseAction = BaseBuiltinAction<{
   event: Record<string, JsonItem> | JsonExpressionString;
 }>;
-export type ExtractedLogAction = BaseBuiltinAction<{
+export type ExtractorLogAction = BaseBuiltinAction<{
   expr: string | JsonExpressionString;
 }>;
 export type ExtractorSendToAction = BaseBuiltinAction<{
@@ -132,21 +141,21 @@ export type ExtractorInlineAction = {
      */
     __tempStatelyChooseConds?: {
       actions: Action<any, any>[];
-      cond?: string;
+      cond?: ExtractorMachineGuard;
     }[];
   };
 };
-export type BuiltinAction =
+export type ExtractorBuiltinAction =
   | ExtractorAssignAction
   | ExtractorRaiseAction
-  | ExtractedLogAction
+  | ExtractorLogAction
   | ExtractorSendToAction
   | ExtractorStopAction;
 
 export type ExtractorMachineAction =
   | ExtractorNamedAction
   | ExtractorInlineAction
-  | BuiltinAction;
+  | ExtractorBuiltinAction;
 
 // These types are copied over from studio blocks.
 // array and object are extracted as expressions so Studio render them correctly when exporting

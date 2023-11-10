@@ -2,8 +2,8 @@ import traverse from '@babel/traverse';
 import * as t from '@babel/types';
 import { ActionNode } from './actions';
 import {
-  ExtractedLogAction,
   ExtractorAssignAction,
+  ExtractorLogAction,
   ExtractorRaiseAction,
   ExtractorSendToAction,
   ExtractorStopAction,
@@ -138,7 +138,7 @@ export function extractRaiseAction(
 export function extractLogAction(
   actionNode: ActionNode,
   fileContent: string,
-): ExtractedLogAction['action']['expr'] {
+): ExtractorLogAction['action']['expr'] {
   const node = actionNode.node;
   if (t.isCallExpression(node)) {
     const arg = node.arguments[0];

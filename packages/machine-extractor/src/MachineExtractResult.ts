@@ -518,8 +518,8 @@ export class MachineExtractResult {
 
     this.getTransitions().forEach((transition) => {
       if (
-        transition.config.cond?.declarationType &&
-        declarationTypes.includes(transition.config.cond?.declarationType)
+        transition.config.cond &&
+        declarationTypes.includes(transition.config.cond.kind)
       ) {
         conds.push({
           name: transition.config.cond.name,
@@ -536,10 +536,8 @@ export class MachineExtractResult {
       .forEach((action) => {
         action.node.chooseConditions?.forEach((chooseCondition) => {
           if (
-            chooseCondition.conditionNode?.declarationType &&
-            declarationTypes.includes(
-              chooseCondition.conditionNode?.declarationType,
-            )
+            chooseCondition.conditionNode &&
+            declarationTypes.includes(chooseCondition.conditionNode?.kind)
           ) {
             conds.push({
               name: chooseCondition.conditionNode.name,

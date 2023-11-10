@@ -9,6 +9,7 @@ export interface CondNode {
   node: t.Node;
   name: string;
   cond: Condition<any, any>;
+  kind: 'inline' | 'named';
   declarationType: DeclarationType;
   inlineDeclarationId: string;
 }
@@ -22,6 +23,7 @@ const CondAsFunctionExpression = createParser({
       cond: () => {
         return false;
       },
+      kind: 'inline',
       declarationType: 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
@@ -35,6 +37,7 @@ const CondAsStringLiteral = createParser({
       node,
       name: node.value,
       cond: node.value,
+      kind: 'named',
       declarationType: 'named',
       inlineDeclarationId: context.getNodeHash(node),
     };
@@ -68,6 +71,7 @@ const CondAsParametrizedGuard = createParser({
       node,
       name: propValue.value,
       cond: propValue.value,
+      kind: 'named',
       declarationType: 'named',
       inlineDeclarationId: id,
     };
@@ -82,6 +86,7 @@ const CondAsNode = createParser({
       node,
       name: '',
       cond: id,
+      kind: 'inline',
       declarationType: 'unknown',
       inlineDeclarationId: id,
     };

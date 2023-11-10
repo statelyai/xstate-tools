@@ -8,6 +8,7 @@ import {
   extractRaiseAction,
   extractSendToAction,
   extractStopAction,
+  getObjectPropertyKey,
 } from './extractAction';
 import { TMachineCallExpression } from './machineCallExpression';
 import { StateNodeReturn } from './stateNode';
@@ -16,9 +17,12 @@ import {
   ExtractorInvokeNodeConfig,
   ExtractorMachineAction,
   ExtractorMachineConfig,
+  ExtractorMachineGuard,
+  ExtractorNamedGuard,
   ExtractorStateNodeConfig,
   ExtractrorTransitionNodeConfig,
   JsonItem,
+  JsonObject,
   MaybeArray,
 } from './types';
 import { GetParserResult, toJsonExpressionString } from './utils';
@@ -326,11 +330,49 @@ export const getActionConfig = (
 const getCondition = (
   condNode: CondNode | undefined,
   opts: ToMachineConfigOptions | undefined,
-) => {
+): ExtractorMachineGuard | undefined => {
   if (!condNode) {
     return;
   }
-  return condNode.declarationType === 'named' ? condNode.name : undefined;
+  switch (condNode.kind) {
+    case 'named': {
+      const guard: ExtractorNamedGuard['guard'] = {
+        type: condNode.name,
+      };
+      if (t.isObjectExpression(condNode.node)) {
+        let paramsNode: t.ObjectExpression | undefined = undefined;
+        for (const val of condNode.node.properties) {
+          if (
+            t.isObjectExpression(val) &&
+            getObjectPropertyKey(val) === 'params'
+          ) {
+            paramsNode = val;
+          }
+        }
+        if (paramsNode) {
+          guard.params = extractObjectRecursively(
+            paramsNode,
+            opts!.fileContent,
+          );
+        }
+      }
+      return {
+        kind: 'named',
+        guard,
+      };
+    }
+    case 'inline': {
+      return {
+        kind: 'inline',
+        guard: {
+          expr: toJsonExpressionString(
+            opts!.fileContent.slice(condNode.node.start!, condNode.node.end!),
+          ),
+        },
+      };
+    }
+  }
+  // return condNode.declarationType === 'named' ? condNode.name : undefined;
 };
 
 export const getTransitions = (
