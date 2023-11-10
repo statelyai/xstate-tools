@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { extractMachinesFromFile } from './index';
+import { ExtractorMachineConfig, extractMachinesFromFile } from './index';
 
 const parseFileFromExamplesDir = (filename: string) => {
   const asString = fs
@@ -26,8 +26,17 @@ const serialise = (machine: any) => {
   return JSON.stringify(machine, null, 2);
 };
 
+function getTestMachineConfig(configStr: string): ExtractorMachineConfig {
+  const result = extractMachinesFromFile(configStr);
+  const machine = result!.machines[0];
+  const config = machine?.toConfig()!;
+
+  return config;
+}
+
 export const testUtils = {
   parseFileFromExamplesDir,
   withoutContext,
   serialise,
+  getTestMachineConfig,
 };

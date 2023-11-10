@@ -1,16 +1,9 @@
 import { extractMachinesFromFile } from '../extractMachinesFromFile';
-
-function getTestMachineConfig(configStr: string) {
-  const result = extractMachinesFromFile(configStr);
-  const machine = result!.machines[0];
-  const config = machine?.toConfig()!;
-
-  return config;
-}
+import { testUtils } from '../testUtils';
 
 describe('extract actions', () => {
   it('Inline functions should be extracted as inline actions', () => {
-    const config = getTestMachineConfig(`createMachine({
+    const config = testUtils.getTestMachineConfig(`createMachine({
 			entry: [
 			  () => {}
 			]
@@ -25,7 +18,7 @@ describe('extract actions', () => {
     `);
   });
   it('Action object with custom "type" that is not a builtin XState action name should be extracted as named action', () => {
-    const config = getTestMachineConfig(`createMachine({
+    const config = testUtils.getTestMachineConfig(`createMachine({
       entry: [
         {type: 'custom name', params: {foo: 'bar', arr: [1, [2], [{a: 3}]], obj: {a: {b: [{c: 1}]}}}},
       ]
@@ -64,7 +57,7 @@ describe('extract actions', () => {
     `);
   });
   it('Action object with custom "type" that is a builtin XState action name should be extracted as inline action', () => {
-    const config = getTestMachineConfig(`createMachine({
+    const config = testUtils.getTestMachineConfig(`createMachine({
       entry: [
         {type: 'xstate.assign', assignment: {foo: 'bar', baz: () => {}}},
       ]
@@ -79,7 +72,7 @@ describe('extract actions', () => {
     `);
   });
   it('Action object with custom "type" that is an identifier should be extracted as inline action', () => {
-    const config = getTestMachineConfig(`createMachine({
+    const config = testUtils.getTestMachineConfig(`createMachine({
         entry: [
           {type: someIdentifier, params: {foo: 'bar'}},
         ]
@@ -94,7 +87,7 @@ describe('extract actions', () => {
     `);
   });
   it('Action as an identifier should be extracted as inline action', () => {
-    const config = getTestMachineConfig(`createMachine({
+    const config = testUtils.getTestMachineConfig(`createMachine({
         entry: [
           anotherIdentifier
         ]
@@ -109,7 +102,7 @@ describe('extract actions', () => {
     `);
   });
   it.skip('Ensures actions are extracted with the correct `kind`', () => {
-    const config = getTestMachineConfig(`createMachine({
+    const config = testUtils.getTestMachineConfig(`createMachine({
 			entry: [
 			  () => {},
 			  {type: 'custom name', params: {foo: 'bar', arr: [1, [2], [{a: 3}]], obj: {a: {b: [{c: 1}]}}}},
@@ -196,7 +189,7 @@ describe('extract actions', () => {
     `);
   });
   it('should extract inline expressions as inline actions', () => {
-    const config = getTestMachineConfig(
+    const config = testUtils.getTestMachineConfig(
       `
 	  createMachine({
 		initial: "a",
@@ -228,7 +221,7 @@ describe('extract actions', () => {
   });
 
   it('should extract action objects as inline actions', () => {
-    const config = getTestMachineConfig(
+    const config = testUtils.getTestMachineConfig(
       `
 	  createMachine({
 		initial: "a",
@@ -260,7 +253,7 @@ describe('extract actions', () => {
   });
 
   it('should extract builtin actions unsupported by Stately Studio, as inline actions', () => {
-    const config = getTestMachineConfig(
+    const config = testUtils.getTestMachineConfig(
       `
 	  createMachine({
 		initial: "a",
@@ -320,7 +313,7 @@ describe('extract actions', () => {
   });
 
   it('should extract assign with a callback', () => {
-    const config = getTestMachineConfig(`
+    const config = testUtils.getTestMachineConfig(`
 	  createMachine({
 		initial: "a",
 		states: {
@@ -375,7 +368,7 @@ describe('extract actions', () => {
   });
 
   it('should extract assign with an object', () => {
-    const config = getTestMachineConfig(`
+    const config = testUtils.getTestMachineConfig(`
 	  createMachine({
 		initial: "a",
 		states: {
@@ -432,7 +425,7 @@ describe('extract actions', () => {
   });
 
   it('should extract assign with any other expression', () => {
-    const config = getTestMachineConfig(`
+    const config = testUtils.getTestMachineConfig(`
 	  createMachine({
 		initial: 'a',
 		states: {
@@ -465,7 +458,7 @@ describe('extract actions', () => {
   });
 
   it('should extract raise with a callback', () => {
-    const config = getTestMachineConfig(`
+    const config = testUtils.getTestMachineConfig(`
 	  createMachine({
 		initial: "a",
 		states: {
@@ -501,7 +494,7 @@ describe('extract actions', () => {
     `);
   });
   it('should extract raise with an object', () => {
-    const config = getTestMachineConfig(`
+    const config = testUtils.getTestMachineConfig(`
 	  createMachine({
 		initial: "a",
 		states: {
@@ -548,7 +541,7 @@ describe('extract actions', () => {
     `);
   });
   it('should extract raise with a string', () => {
-    const config = getTestMachineConfig(`
+    const config = testUtils.getTestMachineConfig(`
 	  createMachine({
 		initial: "a",
 		states: {
@@ -574,7 +567,7 @@ describe('extract actions', () => {
     `);
   });
   it('should extract raise with any other expressions', () => {
-    const config = getTestMachineConfig(`
+    const config = testUtils.getTestMachineConfig(`
 	  createMachine({
 		initial: "a",
 		states: {
@@ -609,7 +602,7 @@ describe('extract actions', () => {
   });
 
   it('should extract log with a string', () => {
-    const config = getTestMachineConfig(`
+    const config = testUtils.getTestMachineConfig(`
 	  createMachine({
 		initial: "a",
 		states: {
@@ -634,7 +627,7 @@ describe('extract actions', () => {
   });
 
   it('should extract log with a callback', () => {
-    const config = getTestMachineConfig(`
+    const config = testUtils.getTestMachineConfig(`
 	  createMachine({
 		initial: "a",
 		states: {
@@ -671,7 +664,7 @@ describe('extract actions', () => {
   });
 
   it('should extract sendTo with a string actor id', () => {
-    const config = getTestMachineConfig(`
+    const config = testUtils.getTestMachineConfig(`
 	  createMachine({
 		initial: "a",
 		states: {
@@ -699,7 +692,7 @@ describe('extract actions', () => {
   });
 
   it('should extract sendTo with a callback actor id', () => {
-    const config = getTestMachineConfig(`
+    const config = testUtils.getTestMachineConfig(`
 	  createMachine({
 		initial: "a",
 		states: {
@@ -742,7 +735,7 @@ describe('extract actions', () => {
   });
 
   it('should extract sendTo any expressions for actor id', () => {
-    const config = getTestMachineConfig(`
+    const config = testUtils.getTestMachineConfig(`
 	  createMachine({
 		initial: "a",
 		states: {
@@ -770,7 +763,7 @@ describe('extract actions', () => {
   });
 
   it('should extract sendTo with a string event', () => {
-    const config = getTestMachineConfig(`
+    const config = testUtils.getTestMachineConfig(`
 	  createMachine({
 		initial: "a",
 		states: {
@@ -798,7 +791,7 @@ describe('extract actions', () => {
   });
 
   it('should extract sendTo with a an object event', () => {
-    const config = getTestMachineConfig(`
+    const config = testUtils.getTestMachineConfig(`
 	  createMachine({
 		initial: "a",
 		states: {
@@ -843,7 +836,7 @@ describe('extract actions', () => {
   });
 
   it('should extract sendTo with any expressions for event', () => {
-    const config = getTestMachineConfig(`
+    const config = testUtils.getTestMachineConfig(`
 	  createMachine({
 		initial: "a",
 		states: {
@@ -882,7 +875,7 @@ describe('extract actions', () => {
   });
 
   it('should extract sendTo with a string delay', () => {
-    const config = getTestMachineConfig(`
+    const config = testUtils.getTestMachineConfig(`
 	  createMachine({
 		initial: "a",
 		states: {
@@ -911,7 +904,7 @@ describe('extract actions', () => {
   });
 
   it('should extract sendTo with a number delay', () => {
-    const config = getTestMachineConfig(`
+    const config = testUtils.getTestMachineConfig(`
 	  createMachine({
 		initial: "a",
 		states: {
@@ -940,7 +933,7 @@ describe('extract actions', () => {
   });
 
   it('should extract sendTo with a callback delay', () => {
-    const config = getTestMachineConfig(`
+    const config = testUtils.getTestMachineConfig(`
 	  createMachine({
 		initial: "a",
 		states: {
@@ -985,7 +978,7 @@ describe('extract actions', () => {
   });
 
   it('should extract sendTo with any expressions for delay', () => {
-    const config = getTestMachineConfig(`
+    const config = testUtils.getTestMachineConfig(`
 	  createMachine({
 		initial: "a",
 		states: {
@@ -1014,7 +1007,7 @@ describe('extract actions', () => {
   });
 
   it('should extract sendTo with a string id', () => {
-    const config = getTestMachineConfig(`
+    const config = testUtils.getTestMachineConfig(`
 	  createMachine({
 		initial: "a",
 		states: {
@@ -1043,7 +1036,7 @@ describe('extract actions', () => {
   });
 
   it('should extract sendTo with a number id as string id', () => {
-    const config = getTestMachineConfig(`
+    const config = testUtils.getTestMachineConfig(`
 	  createMachine({
 		initial: "a",
 		states: {
@@ -1072,7 +1065,7 @@ describe('extract actions', () => {
   });
 
   it('should extract sendTo with a callback id', () => {
-    const config = getTestMachineConfig(`
+    const config = testUtils.getTestMachineConfig(`
 	  createMachine({
 		initial: "a",
 		states: {
@@ -1117,7 +1110,7 @@ describe('extract actions', () => {
   });
 
   it('should extract sendTo with any expressions for id', () => {
-    const config = getTestMachineConfig(`
+    const config = testUtils.getTestMachineConfig(`
 	  createMachine({
 		initial: "a",
 		states: {
@@ -1146,7 +1139,7 @@ describe('extract actions', () => {
   });
 
   it('Should extract stop with a string id', () => {
-    const config = getTestMachineConfig(`
+    const config = testUtils.getTestMachineConfig(`
 	  createMachine({
 		initial: "a",
 		states: {
@@ -1171,7 +1164,7 @@ describe('extract actions', () => {
   });
 
   it('Should extract stop with a number id as string id', () => {
-    const config = getTestMachineConfig(`
+    const config = testUtils.getTestMachineConfig(`
 	  createMachine({
 		initial: "a",
 		states: {
@@ -1196,7 +1189,7 @@ describe('extract actions', () => {
   });
 
   it('Should extract stop with a bigint id', () => {
-    const config = getTestMachineConfig(`
+    const config = testUtils.getTestMachineConfig(`
 	  createMachine({
 		initial: "a",
 		states: {

@@ -340,20 +340,20 @@ const getCondition = (
         type: condNode.name,
       };
       if (t.isObjectExpression(condNode.node)) {
-        let paramsNode: t.ObjectExpression | undefined = undefined;
         for (const val of condNode.node.properties) {
           if (
-            t.isObjectExpression(val) &&
-            getObjectPropertyKey(val) === 'params'
+            t.isObjectProperty(val) &&
+            getObjectPropertyKey(val) === 'params' &&
+            t.isObjectExpression(val.value) &&
+            // Filter out objects with spread elements
+            val.value.properties.every((valProp) => t.isObjectProperty(valProp))
           ) {
-            paramsNode = val;
+            guard.params = extractObjectRecursively(
+              val.value,
+              opts!.fileContent,
+            );
+            break;
           }
-        }
-        if (paramsNode) {
-          guard.params = extractObjectRecursively(
-            paramsNode,
-            opts!.fileContent,
-          );
         }
       }
       return {
