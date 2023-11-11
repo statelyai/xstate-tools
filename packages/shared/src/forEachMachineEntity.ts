@@ -2,6 +2,7 @@ import {
   ExtractorInvokeNodeConfig,
   ExtractorMachineAction,
   ExtractorMachineConfig,
+  ExtractorMachineGuard,
   ExtractorStateNodeConfig,
   ExtractrorTransitionNodeConfig,
   MaybeArray,
@@ -79,15 +80,29 @@ function getTransitionsOutOfState(
   return transitions;
 }
 
-const replaceOrDeleteActions = <T>(
+const replaceOrDeleteEntities = <T>(
   host: T,
   prop: keyof T,
-  visitor: (action: ExtractorMachineAction | undefined) => any,
+  visitor: Visitor,
 ) => {
-  const entity = host[prop] as MaybeArray<ExtractorMachineAction>;
+  const entity = host[prop] as MaybeArray<
+    ExtractorMachineAction | ExtractorMachineGuard
+  >;
   if (Array.isArray(entity)) {
     for (let i = entity.length - 1; i >= 0; i--) {
-      const val = visitor(entity[i]);
+      const original = entity[i];
+      // Run visitor on guards inside choose actions
+      if (
+        original?.kind === 'inline' &&
+        'action' in original &&
+        original.action.__tempStatelyChooseConds
+      ) {
+        original.action.__tempStatelyChooseConds.forEach((conds, i, arr) => {
+          arr[i].cond = visitor(conds.cond);
+        });
+      }
+
+      const val = visitor(original);
       if (val) {
         entity[i] = val;
       } else {
@@ -95,6 +110,16 @@ const replaceOrDeleteActions = <T>(
       }
     }
   } else {
+    // Run visitor on guards inside choose actions
+    if (
+      entity?.kind === 'inline' &&
+      'action' in entity &&
+      entity.action.__tempStatelyChooseConds
+    ) {
+      entity.action.__tempStatelyChooseConds.forEach((conds, i, arr) => {
+        arr[i].cond = visitor(conds.cond);
+      });
+    }
     const val = visitor(entity);
     if (val) {
       host[prop] = val;
@@ -107,19 +132,19 @@ const replaceOrDeleteActions = <T>(
 /**
  * @description Recursively traverses the state node, finds all actions and either replaces them with the new value is visitor returns a truthy value or deletes it
  */
-const forEachActionRecur = (
+const forEachMachineEntityRecur = (
   stateNode: ExtractorStateNodeConfig,
-  visitor: (action: ExtractorMachineAction | undefined) => any,
+  visitor: Visitor,
   path: string[],
 ) => {
   /**
    * Entry actions
    */
-  replaceOrDeleteActions(stateNode, 'entry', visitor);
+  replaceOrDeleteEntities(stateNode, 'entry', visitor);
   /**
    * Exit actions
    */
-  replaceOrDeleteActions(stateNode, 'exit', visitor);
+  replaceOrDeleteEntities(stateNode, 'exit', visitor);
 
   const transitions = getTransitionsOutOfState(stateNode, path.join('.'));
   Object.entries(transitions).forEach(([event, tr]) => {
@@ -135,24 +160,24 @@ const forEachActionRecur = (
         const invocation = stateNode.invoke[index];
         if (Array.isArray(invocation.onDone)) {
           invocation.onDone.forEach((doneTransition) => {
-            replaceOrDeleteActions(doneTransition, 'actions', visitor);
+            replaceOrDeleteEntities(doneTransition, 'actions', visitor);
           });
         } else {
           const doneTransition = invocation.onDone;
           if (!doneTransition?.actions) return;
-          replaceOrDeleteActions(doneTransition, 'actions', visitor);
+          replaceOrDeleteEntities(doneTransition, 'actions', visitor);
         }
       } else {
         const invocation = stateNode.invoke;
         if (!invocation) return;
         if (Array.isArray(invocation.onDone)) {
           invocation.onDone.forEach((doneTransition) => {
-            replaceOrDeleteActions(doneTransition, 'actions', visitor);
+            replaceOrDeleteEntities(doneTransition, 'actions', visitor);
           });
         } else {
           const doneTransition = invocation.onDone;
           if (!doneTransition?.actions) return;
-          replaceOrDeleteActions(doneTransition, 'actions', visitor);
+          replaceOrDeleteEntities(doneTransition, 'actions', visitor);
         }
       }
     } else if (event.startsWith('error.invoke')) {
@@ -167,47 +192,53 @@ const forEachActionRecur = (
         const invocation = stateNode.invoke[index];
         if (Array.isArray(invocation.onError)) {
           invocation.onError.forEach((errorTransition) => {
-            replaceOrDeleteActions(errorTransition, 'actions', visitor);
+            replaceOrDeleteEntities(errorTransition, 'actions', visitor);
           });
         } else {
           const errorTransition = invocation.onError;
           if (!errorTransition?.actions) return;
-          replaceOrDeleteActions(errorTransition, 'actions', visitor);
+          replaceOrDeleteEntities(errorTransition, 'actions', visitor);
         }
       } else {
         const invocation = stateNode.invoke;
         if (!invocation) return;
         if (Array.isArray(invocation.onError)) {
           invocation.onError.forEach((errorTransition) => {
-            replaceOrDeleteActions(errorTransition, 'actions', visitor);
+            replaceOrDeleteEntities(errorTransition, 'actions', visitor);
           });
         } else {
           const errorTransition = invocation.onError;
           if (!errorTransition?.actions) return;
-          replaceOrDeleteActions(errorTransition, 'actions', visitor);
+          replaceOrDeleteEntities(errorTransition, 'actions', visitor);
         }
       }
     }
     // Guarded transitions
     else if (Array.isArray(tr)) {
       tr.forEach((group) => {
-        replaceOrDeleteActions(group, 'actions', visitor);
+        replaceOrDeleteEntities(group, 'actions', visitor);
+        replaceOrDeleteEntities(group, 'cond', visitor);
       });
     } else {
-      replaceOrDeleteActions(tr, 'actions', visitor);
+      replaceOrDeleteEntities(tr, 'actions', visitor);
+      replaceOrDeleteEntities(tr, 'cond', visitor);
     }
   });
   /**
    * Recurse to child states
    */
   for (const key in stateNode.states) {
-    forEachActionRecur(stateNode.states[key], visitor, path.concat(key));
+    forEachMachineEntityRecur(stateNode.states[key], visitor, path.concat(key));
   }
 };
 
-export const forEachAction = (
+export const forEachMachineEntity = (
   machine: ExtractorMachineConfig,
-  visitor: (action: ExtractorMachineAction | undefined) => any,
+  visitor: Visitor,
 ) => {
-  return forEachActionRecur(machine, visitor, ['machine']);
+  return forEachMachineEntityRecur(machine, visitor, ['machine']);
 };
+
+type Visitor = (
+  entity: ExtractorMachineAction | ExtractorMachineGuard | undefined,
+) => any;
