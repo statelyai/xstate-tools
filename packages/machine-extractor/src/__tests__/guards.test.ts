@@ -143,7 +143,7 @@ describe('extract guards', () => {
       }
     `);
   });
-  it.only('Params should be ignored for parameterized actions with params set to any value other than an object expression', () => {
+  it('Params should be ignored for parameterized actions with params set to any value other than an object expression', () => {
     const config = testUtils.getTestMachineConfig(`createMachine({
 			initial: 'a',
 			states: {
