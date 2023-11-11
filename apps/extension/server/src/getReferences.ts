@@ -1,5 +1,5 @@
 import {
-  forEachAction,
+  forEachMachineEntity,
   getRangeFromSourceLocation,
 } from '@xstate/tools-shared';
 import { TextDocumentIdentifier } from 'vscode-languageserver';
@@ -25,8 +25,8 @@ export const getReferences = (
       const config = cursorHover.machine.toConfig();
       if (!config) return [];
 
-      // Actions don't matter here so we stub them out
-      forEachAction(config, () => {
+      // Actions and guards don't matter here so we stub them out
+      forEachMachineEntity(config, () => {
         return { type: 'anonymous' };
       });
 
@@ -66,8 +66,8 @@ export const getReferences = (
       const config = cursorHover.machine.toConfig();
       if (!config) return [];
 
-      // Actions don't matter here so we stub them out
-      forEachAction(config, () => {
+      // Actions and guards don't matter here so we stub them out
+      forEachMachineEntity(config, () => {
         return { type: 'anonymous' };
       });
 

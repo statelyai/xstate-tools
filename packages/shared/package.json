@@ -27,7 +27,7 @@
   "preconstruct": {
     "entrypoints": [
       "./index.ts",
-      "./forEachAction.ts"
+      "./forEachMachineEntity.ts"
     ]
   }
 }
