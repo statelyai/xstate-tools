@@ -31,10 +31,17 @@ const StringLiteralOrExpression = unionType([
         parseNode: (node, context): StringLiteralNode => {
           // If the user has passed the API key as an expression `process.env.API_KEY`, we need to evaluate it
           const source = context.getNodeSource?.(node) ?? '';
-          return {
-            value: eval(source),
-            node,
-          };
+          let regex = new RegExp('^process\\.env\\..+$');
+          if (regex.test(source)) {
+            return {
+              value: eval(source),
+              node,
+            };
+          } else {
+            throw new Error(
+              'Invalid API key, we support strings or reading from process.env.YOUR_KEY_HERE',
+            );
+          }
         },
       }),
     ),
