@@ -17,6 +17,9 @@ export function skyConfigExtractResult({
       const fileText = fileContent.substring(node.start!, node.end!);
       return hashedId(fileText);
     },
+    getNodeSource: (node: t.Node): string => {
+      return fileContent.substring(node.start!, node.end!);
+    },
   });
   return skyConfigCallResult && skyConfigCallResult.definition;
 }

@@ -1773,14 +1773,14 @@
   dependencies:
     "@sinonjs/commons" "^1.7.0"
 
-"@statelyai/sky@0.0.4":
-  version "0.0.4"
-  resolved "https://registry.yarnpkg.com/@statelyai/sky/-/sky-0.0.4.tgz#c23aad7544e117f735ebe2b30f3064e7bc2dcc1e"
-  integrity sha512-KCmcVOsJlVdsRbgv9G+1LrbeRH8Tp4pqDhq/i9stpnURS9hRbs1gAFfUDmKvWHMnd6785FkRXQv80fyi+82wGw==
+"@statelyai/sky@0.0.7":
+  version "0.0.7"
+  resolved "https://registry.yarnpkg.com/@statelyai/sky/-/sky-0.0.7.tgz#d5f856eabb49f156e0d58d3d7a39cbf458675a95"
+  integrity sha512-ZpPZiqrwuoemuVnomP2EhfUvkmDGILlFBkulasYcBQ/AZGMr+K3PIoOBBdokRcq9+Qma+3n0irXMO0xYB5iIww==
   dependencies:
-    partysocket "0.0.9"
+    partysocket "0.0.12"
     superjson "1.13.1"
-    xstate "5.0.0-beta.33"
+    xstate "5.0.0-beta.37"
 
 "@szmarczak/http-timer@^1.1.2":
   version "1.1.2"
@@ -5114,7 +5114,7 @@ jest@^27.4.7:
     import-local "^3.0.2"
     jest-cli "^27.4.7"
 
-"js-tokens@^3.0.0 || ^4.0.0", js-tokens@^4.0.0:
+js-tokens@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/js-tokens/-/js-tokens-4.0.0.tgz#19203fb59991df98e3a287050d4647cdeaf32499"
   integrity sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==
@@ -5391,13 +5391,6 @@ log-update@^4.0.0:
     cli-cursor "^3.1.0"
     slice-ansi "^4.0.0"
     wrap-ansi "^6.2.0"
-
-loose-envify@^1.1.0:
-  version "1.4.0"
-  resolved "https://registry.yarnpkg.com/loose-envify/-/loose-envify-1.4.0.tgz#71ee51fa7be4caec1a63839f7e682d8132d30caf"
-  integrity sha512-lyuxPGr/Wfhrlem2CL/UcnUc1zcqKAImBDzukY7Y5F/yQiNdko6+fRLevlw1HgMySw7f611UIY408EtxRSoK3Q==
-  dependencies:
-    js-tokens "^3.0.0 || ^4.0.0"
 
 lowercase-keys@^1.0.0, lowercase-keys@^1.0.1:
   version "1.0.1"
@@ -5973,12 +5966,10 @@ parse5@6.0.1:
   resolved "https://registry.yarnpkg.com/parse5/-/parse5-6.0.1.tgz#e1a1c085c569b3dc08321184f19a39cc27f7c30b"
   integrity sha512-Ofn/CTFzRGTTxwpNEs9PP93gXShHcTq255nzRYSKe8AkVpZY7e1fpmTfOyoIvjP5HG7Z2ZM7VS9PPhQGW2pOpw==
 
-partysocket@0.0.9:
-  version "0.0.9"
-  resolved "https://registry.yarnpkg.com/partysocket/-/partysocket-0.0.9.tgz#8c898ae5697bac76d3c3569c4671401c3b575cea"
-  integrity sha512-SVFtPseMU9DC7fd7MdMx/y9MgWFMteWBgL0wVDQ90nCRBzt/pD1x8ovIqsCFK7uo1KXOXvqJuf9vjTIGPw77Wg==
-  dependencies:
-    react "^18.2.0"
+partysocket@0.0.12:
+  version "0.0.12"
+  resolved "https://registry.yarnpkg.com/partysocket/-/partysocket-0.0.12.tgz#97285d8047121fe82d8294f46dea037f579c5b22"
+  integrity sha512-20fikH08aHl7oJvRD7QLftzHvCEqxHf6y/ZiO0wltkl2cbNbtZQuDno9CLrqIQG2t22UWFHjiSqj/rT1In36Eg==
 
 pascalcase@^0.1.1:
   version "0.1.1"
@@ -6209,13 +6200,6 @@ react-is@^17.0.1:
   version "17.0.2"
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-17.0.2.tgz#e691d4a8e9c789365655539ab372762b0efb54f0"
   integrity sha512-w2GsyukL62IJnlaff/nRegPQR94C/XXamvMWmSHRJ4y7Ts/4ocGRmTHvOs8PSE6pB3dWOrD/nueuU5sduBsQ4w==
-
-react@^18.2.0:
-  version "18.2.0"
-  resolved "https://registry.yarnpkg.com/react/-/react-18.2.0.tgz#555bd98592883255fa00de14f1151a917b5d77d5"
-  integrity sha512-/3IjMdb2L9QbBdWiW5e3P2/npwMBaU9mHCSCUzNln0ZCYbcfTsGbTJrU/kGemdH2IWmB2ioZ+zkxtmq6g09fGQ==
-  dependencies:
-    loose-envify "^1.1.0"
 
 read-pkg-up@^7.0.1:
   version "7.0.1"
@@ -7693,10 +7677,10 @@ xmlchars@^2.2.0:
   resolved "https://registry.yarnpkg.com/xstate/-/xstate-5.0.0-beta.30.tgz#8eb7e8551ac6dd24e06bcdfdc834ce6aea3f1f5f"
   integrity sha512-ZWNf48jEZxasco7oi4vyKJRgjpwc1+Q0AgzfVF+nrWeghAwc8oW+W2rBQaQWldyZ9zXORBzX7xZAfgu81oANkA==
 
-xstate@5.0.0-beta.33:
-  version "5.0.0-beta.33"
-  resolved "https://registry.yarnpkg.com/xstate/-/xstate-5.0.0-beta.33.tgz#2f25ce90cc0d7b1c84a5183347f5cecb980e065e"
-  integrity sha512-zHwbY2d2GGrsIySUCybrlq6YAPGM20yKpvliroDqfSbwa255Z1d7RYLkbbxiLx8SnEwDpWVple7JTXkjOw3JLA==
+xstate@5.0.0-beta.37:
+  version "5.0.0-beta.37"
+  resolved "https://registry.yarnpkg.com/xstate/-/xstate-5.0.0-beta.37.tgz#617dc79ec2dc6b30b2567da93c0559bf2d595b34"
+  integrity sha512-pbdl6piQ7H+KGd8TKxo5htomMkP85HXLVfTuUy6J0JMPvI8srum3YD+QINx3Ea4QAib8tqk28u70BNq2opnoIw==
 
 xstate@^4.33.4:
   version "4.33.4"

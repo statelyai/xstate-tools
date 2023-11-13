@@ -54,6 +54,9 @@ export const writeConfigToFiles = async (opts: {
           });
           try {
             const skyConfig = (await configResponse.json()) as SkyConfig;
+            if ('error' in skyConfig) {
+              throw new Error(skyConfig.error);
+            }
             await writeSkyConfig({
               filePath: opts.uri,
               skyConfig,

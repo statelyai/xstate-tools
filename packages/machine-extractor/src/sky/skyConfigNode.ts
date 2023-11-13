@@ -1,6 +1,10 @@
 import * as t from '@babel/types';
+import { createParser } from '../createParser';
+import { maybeIdentifierTo } from '../identifiers';
 import { StringLiteral } from '../scalars';
-import { AnyParser } from '../types';
+import { maybeTsAsExpression } from '../tsAsExpression';
+import { AnyParser, StringLiteralNode } from '../types';
+import { unionType } from '../unionType';
 import {
   GetParserResult,
   ObjectPropertyInfo,
@@ -18,11 +22,30 @@ export type SkyConfigNodeReturn = WithValueNodes<{
 }> &
   Pick<ObjectPropertyInfo, 'node'>;
 
+const StringLiteralOrExpression = unionType([
+  StringLiteral,
+  maybeTsAsExpression(
+    maybeIdentifierTo(
+      createParser({
+        babelMatcher: t.isMemberExpression,
+        parseNode: (node, context): StringLiteralNode => {
+          // If the user has passed the API key as an expression `process.env.API_KEY`, we need to evaluate it
+          const source = context.getNodeSource?.(node) ?? '';
+          return {
+            value: eval(source),
+            node,
+          };
+        },
+      }),
+    ),
+  ),
+]);
+
 const SkyConfigNodeObject: AnyParser<SkyConfigNodeReturn> =
   objectTypeWithKnownKeys(() => ({
     url: StringLiteral,
-    apiKey: StringLiteral,
+    apiKey: StringLiteralOrExpression,
     xstateVersion: StringLiteral,
   }));
 
-export const LiveNode = SkyConfigNodeObject;
+export const SkyNode = SkyConfigNodeObject;
