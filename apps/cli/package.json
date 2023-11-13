@@ -8,8 +8,7 @@
     "prepare": "yarn build",
     "lint": "tsc",
     "test": "jest",
-    "build": "esbuild src/bin.ts --outdir=bin --platform=node --format=cjs --bundle --loader:.node=file",
-    "copy": "cp -r bin/bin.js ../../../sky-starter-app/node_modules/@xstate/cli/bin"
+    "build": "esbuild src/bin.ts --outdir=bin --platform=node --format=cjs --bundle --loader:.node=file"
   },
   "devDependencies": {
     "@statelyai/sky": "0.0.7",
