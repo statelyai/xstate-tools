@@ -1,5 +1,11 @@
 # @xstate/cli
 
+## 0.5.9
+
+### Patch Changes
+
+- bcaeedc: Fix getting env variables from import.meta.env.SOME_KEY
+
 ## 0.5.8
 
 ### Patch Changes
