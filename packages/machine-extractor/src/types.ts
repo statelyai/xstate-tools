@@ -58,6 +58,7 @@ export interface ParserContext {
   file: t.File;
   getNodeHash: (node: t.Node) => string;
   getNodeSource?: (node: t.Node) => string;
+  getEnvVariable?: (name: string) => string | undefined;
 }
 
 export interface Parser<T extends t.Node = any, Result = any> {

@@ -29,14 +29,19 @@ const StringLiteralOrExpression = unionType([
       createParser({
         babelMatcher: t.isMemberExpression,
         parseNode: (node, context): StringLiteralNode => {
-          // If the user has passed the API key as an expression `process.env.API_KEY`, we need to evaluate it
-          const source = context.getNodeSource?.(node) ?? '';
-          let regex = new RegExp('^process\\.env\\..+$');
-          if (regex.test(source)) {
-            return {
-              value: eval(source),
-              node,
-            };
+          if (!context.getNodeSource || !context.getEnvVariable) {
+            throw new Error("Couldn't find API key in any of the env files");
+          }
+          // Let's find the last part of the expression, e.g. `API_KEY` in `process.env.API_KEY`
+          const envVariableName = context
+            .getNodeSource(node)
+            .match(/(?<=\.)(\w+)(?!.*\.)/);
+          if (envVariableName && envVariableName[0]) {
+            const value = context.getEnvVariable(envVariableName[0]);
+            if (!value) {
+              throw new Error("Couldn't find API key in any of the env files");
+            }
+            return { value, node };
           } else {
             throw new Error(
               'Invalid API key, we support strings or reading from process.env.YOUR_KEY_HERE',

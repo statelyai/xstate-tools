@@ -1,14 +1,19 @@
 import * as t from '@babel/types';
 import { hashedId } from '../utils';
 import { SkyConfigCallExpression } from './skyConfigCallExpression';
+import { getClosestEnvFile, getEnvValue } from './skyEnvFileUtils';
 
 export function skyConfigExtractResult({
   file,
   fileContent,
+  filePath,
+  cwd,
   node,
 }: {
   file: t.File;
   fileContent: string;
+  filePath: string;
+  cwd: string;
   node: t.CallExpression;
 }) {
   const skyConfigCallResult = SkyConfigCallExpression.parse(node, {
@@ -19,6 +24,10 @@ export function skyConfigExtractResult({
     },
     getNodeSource: (node: t.Node): string => {
       return fileContent.substring(node.start!, node.end!);
+    },
+    getEnvVariable: (name: string): string | undefined => {
+      const envFileContents = getClosestEnvFile({ filePath, cwd });
+      return getEnvValue(envFileContents, name);
     },
   });
   return skyConfigCallResult && skyConfigCallResult.definition;

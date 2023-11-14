@@ -23,8 +23,12 @@ export const writeConfigToFiles = async (opts: {
       console.log(`${opts.uri} - skipping, sky config already exists`);
       return;
     }
-    const fileContents = await fs.readFile(opts.uri, 'utf8');
-    const parseResult = skyConfigExtractFromFile(fileContents);
+    const fileContent = await fs.readFile(opts.uri, 'utf8');
+    const parseResult = skyConfigExtractFromFile({
+      fileContent,
+      filePath: opts.uri,
+      cwd: opts.cwd,
+    });
     if (!parseResult) return;
     await Promise.all(
       parseResult.skyConfigs.map(async (config) => {
