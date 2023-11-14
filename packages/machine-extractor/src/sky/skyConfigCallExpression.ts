@@ -1,7 +1,7 @@
 import * as t from '@babel/types';
 import { createParser } from '../createParser';
 import { GetParserResult } from '../utils';
-import { LiveNode } from './skyConfigNode';
+import { SkyNode } from './skyConfigNode';
 import { ALLOWED_SKY_CONFIG_CALL_EXPRESSION_NAMES } from './skyConfigUtils';
 
 export type TMachineCallExpression = GetParserResult<
@@ -21,7 +21,7 @@ export const SkyConfigCallExpression = createParser({
       return {
         callee: node.callee,
         calleeName: node.callee.property.name,
-        definition: LiveNode.parse(node.arguments[0], context),
+        definition: SkyNode.parse(node.arguments[0], context),
         isMemberExpression: true,
         node,
       };
@@ -34,7 +34,7 @@ export const SkyConfigCallExpression = createParser({
       return {
         callee: node.callee,
         calleeName: node.callee.name,
-        definition: LiveNode.parse(node.arguments[0], context),
+        definition: SkyNode.parse(node.arguments[0], context),
         isMemberExpression: false,
         node,
       };

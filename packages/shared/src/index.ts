@@ -15,4 +15,3 @@ export * from './isCursorInPosition';
 export * from './processFileEdits';
 export * from './resolveUriToFilePrefix';
 export * from './types';
-export * from './writeToFetchedMachineFile';

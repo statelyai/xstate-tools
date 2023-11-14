@@ -3,13 +3,16 @@ import {
   modifySkyConfigSource,
   skyConfigExtractFromFile,
 } from '@xstate/machine-extractor';
-import { doesSkyConfigExist, writeSkyConfig } from '@xstate/tools-shared';
 import 'dotenv/config';
 import * as fs from 'fs/promises';
 import fetch from 'isomorphic-fetch';
 import { writeToFiles } from '../typegen/writeToFiles';
 import { getPrettierInstance } from '../utils';
 import { fetchSkyConfig } from './urlUtils';
+import {
+  doesSkyConfigExist,
+  writeSkyConfig,
+} from './writeToFetchedMachineFile';
 
 export const writeConfigToFiles = async (opts: {
   uri: string;
@@ -23,8 +26,12 @@ export const writeConfigToFiles = async (opts: {
       console.log(`${opts.uri} - skipping, sky config already exists`);
       return;
     }
-    const fileContents = await fs.readFile(opts.uri, 'utf8');
-    const parseResult = skyConfigExtractFromFile(fileContents);
+    const fileContent = await fs.readFile(opts.uri, 'utf8');
+    const parseResult = skyConfigExtractFromFile({
+      fileContent,
+      filePath: opts.uri,
+      cwd: opts.cwd,
+    });
     if (!parseResult) return;
     await Promise.all(
       parseResult.skyConfigs.map(async (config) => {
@@ -54,6 +61,9 @@ export const writeConfigToFiles = async (opts: {
           });
           try {
             const skyConfig = (await configResponse.json()) as SkyConfig;
+            if ('error' in skyConfig) {
+              throw new Error(skyConfig.error);
+            }
             await writeSkyConfig({
               filePath: opts.uri,
               skyConfig,
