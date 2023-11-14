@@ -33,7 +33,6 @@ const StringLiteralOrEnvKey = unionType([
             throw new Error("Couldn't find API key in any of the env files");
           }
 
-          // Let's find the last part of the expression (identifier), e.g. `API_KEY` in `process.env.API_KEY`
           // Let's find the last part of the expression, e.g. `API_KEY` in `process.env.API_KEY`
           const envVariableName = context
             .getNodeSource(node)
