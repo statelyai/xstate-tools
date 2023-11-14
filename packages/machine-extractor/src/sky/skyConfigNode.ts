@@ -32,12 +32,17 @@ const StringLiteralOrEnvKey = unionType([
           if (!context.getNodeSource || !context.getEnvVariable) {
             throw new Error("Couldn't find API key in any of the env files");
           }
-          // Let's find the last part of the expression, e.g. `API_KEY` in `process.env.API_KEY`
-          const envVariableName = context
-            .getNodeSource(node)
-            .match(/(?<=\.)(\w+)(?!.*\.)/);
-          if (envVariableName && envVariableName[0]) {
-            const value = context.getEnvVariable(envVariableName[0]);
+
+          // Let's find the last part of the expression (identifier), e.g. `API_KEY` in `process.env.API_KEY`
+          const envVariableName =
+            (t.isMetaProperty(node.object) ||
+              t.buildMatchMemberExpression('process.env')(node.object)) &&
+            t.isIdentifier(node.property)
+              ? node.property.name
+              : null;
+
+          if (envVariableName) {
+            const value = context.getEnvVariable(envVariableName);
             if (!value) {
               throw new Error("Couldn't find API key in any of the env files");
             }
