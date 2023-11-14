@@ -26,6 +26,9 @@ export function skyConfigExtractResult({
       return fileContent.substring(node.start!, node.end!);
     },
     getEnvVariable: (name: string): string | undefined => {
+      if (process.env[name]) {
+        return process.env[name];
+      }
       const envFileContents = getClosestEnvFile({ filePath, cwd });
       return getEnvValue(envFileContents, name);
     },
