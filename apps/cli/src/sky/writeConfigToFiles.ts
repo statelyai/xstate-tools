@@ -3,13 +3,16 @@ import {
   modifySkyConfigSource,
   skyConfigExtractFromFile,
 } from '@xstate/machine-extractor';
-import { doesSkyConfigExist, writeSkyConfig } from '@xstate/tools-shared';
 import 'dotenv/config';
 import * as fs from 'fs/promises';
 import fetch from 'isomorphic-fetch';
 import { writeToFiles } from '../typegen/writeToFiles';
 import { getPrettierInstance } from '../utils';
 import { fetchSkyConfig } from './urlUtils';
+import {
+  doesSkyConfigExist,
+  writeSkyConfig,
+} from './writeToFetchedMachineFile';
 
 export const writeConfigToFiles = async (opts: {
   uri: string;
