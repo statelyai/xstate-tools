@@ -150,7 +150,7 @@ export const objectExpressionWithDeepPath = <Result>(
 const getRootIdentifierOfDeepMemberExpression = (
   deepMemberExpression: DeepMemberExpression | undefined,
 ): t.Identifier | undefined => {
-  if (!deepMemberExpressionToPath) return undefined;
+  if (!deepMemberExpression) return undefined;
   if (t.isIdentifier(deepMemberExpression?.node)) {
     return deepMemberExpression?.node;
   }
