@@ -22,7 +22,7 @@ export type SkyConfigNodeReturn = WithValueNodes<{
 }> &
   Pick<ObjectPropertyInfo, 'node'>;
 
-const StringLiteralOrExpression = unionType([
+const StringLiteralOrEnvKey = unionType([
   StringLiteral,
   maybeTsAsExpression(
     maybeIdentifierTo(
@@ -56,7 +56,7 @@ const StringLiteralOrExpression = unionType([
 const SkyConfigNodeObject: AnyParser<SkyConfigNodeReturn> =
   objectTypeWithKnownKeys(() => ({
     url: StringLiteral,
-    apiKey: StringLiteralOrExpression,
+    apiKey: StringLiteralOrEnvKey,
     xstateVersion: StringLiteral,
   }));
 
