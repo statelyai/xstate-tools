@@ -1,5 +1,11 @@
 # @xstate/cli
 
+## 0.5.8
+
+### Patch Changes
+
+- 9789cd7: Make it possible to define the API keys for Sky inline using strings or Node-compatible environment variables like `process.env.SKY_API_KEY`.
+
 ## 0.5.7
 
 ### Patch Changes
