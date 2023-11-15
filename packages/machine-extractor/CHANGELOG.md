@@ -1,5 +1,11 @@
 # @xstate/machine-extractor
 
+## 0.12.2
+
+### Patch Changes
+
+- b157f29: Moved exports related to Sky to a separate entrypoint.
+
 ## 0.12.1
 
 ### Patch Changes
