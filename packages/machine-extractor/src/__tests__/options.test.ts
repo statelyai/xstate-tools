@@ -21,4 +21,28 @@ describe('Options', () => {
 
     expect(t.isObjectMethod(node)).toBeTruthy();
   });
+
+  it.only('Should extract complete machine options', () => {
+    const result = extractMachinesFromFile(`
+      createMachine({}, {
+        actions: {
+          test: assign({})
+        },
+        services: {},
+        guards: {},
+        delays: {}
+      })
+    `);
+
+    expect(result!.machines[0]!.getAllMachineOptions()).toMatchInlineSnapshot(`
+      {
+        "actions": "{
+                test: assign({})
+              }",
+        "actors": "{}",
+        "delays": "{}",
+        "guards": "{}",
+      }
+    `);
+  });
 });

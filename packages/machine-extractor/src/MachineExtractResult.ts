@@ -6,6 +6,7 @@ import { choose } from 'xstate/lib/actions';
 import { DeclarationType } from '.';
 import { RecordOfArrays } from './RecordOfArrays';
 import { ActionNode, ParsedChooseCondition } from './actions';
+import { extractObjectRecursively } from './extractAction';
 import { getMachineNodesFromFile } from './getMachineNodesFromFile';
 import { TMachineCallExpression } from './machineCallExpression';
 import { StateNodeReturn } from './stateNode';
@@ -706,6 +707,34 @@ export class MachineExtractResult {
     });
 
     return delays.toObject();
+  };
+
+  getAllMachineOptions = () => {
+    if (
+      !this.machineCallResult.options ||
+      t.isObjectExpression(this.machineCallResult.options)
+    ) {
+      return { actions: `{}`, actors: `{}`, guards: `{}`, delays: `{}` };
+    }
+
+    return {
+      actions: this._fileContent.slice(
+        this.machineCallResult.options.actions?.node.start!,
+        this.machineCallResult.options.actions?.node.end!,
+      ),
+      actors: this._fileContent.slice(
+        this.machineCallResult.options.services?.node.start!,
+        this.machineCallResult.options.services?.node.end!,
+      ),
+      guards: this._fileContent.slice(
+        this.machineCallResult.options.guards?.node.start!,
+        this.machineCallResult.options.guards?.node.end!,
+      ),
+      delays: this._fileContent.slice(
+        this.machineCallResult.options.delays?.node.start!,
+        this.machineCallResult.options.delays?.node.end!,
+      ),
+    };
   };
 
   getActionImplementation = (name: string) => {

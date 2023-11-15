@@ -13,15 +13,17 @@ export const extractMachinesFromFile = (
   }
 
   const { file, machineNodes } = getMachineNodesFromFile(fileContent);
+  const machines = machineNodes.map((node) =>
+    getMachineExtractResult({
+      file,
+      fileContent,
+      node,
+    }),
+  );
 
   return {
-    machines: machineNodes.map((node) =>
-      getMachineExtractResult({
-        file,
-        fileContent,
-        node,
-      }),
-    ),
+    machines,
+    options: machines.map((m) => m?.getAllMachineOptions()),
     file,
   };
 };

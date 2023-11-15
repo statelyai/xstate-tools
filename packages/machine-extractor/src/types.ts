@@ -83,6 +83,15 @@ export interface FileExtractResult<
   T extends MachineExtractResult | undefined = MachineExtractResult | undefined,
 > {
   machines: T[];
+  options: (
+    | {
+        actions: string;
+        actors: string;
+        guards: string;
+        delays: string;
+      }
+    | undefined
+  )[];
   file: t.File;
 }
 
