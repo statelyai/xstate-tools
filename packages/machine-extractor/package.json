@@ -5,19 +5,11 @@
   "module": "dist/xstate-machine-extractor.esm.js",
   "exports": {
     ".": {
-      "types": {
-        "import": "./dist/xstate-machine-extractor.cjs.mjs",
-        "default": "./dist/xstate-machine-extractor.cjs.js"
-      },
       "module": "./dist/xstate-machine-extractor.esm.js",
       "import": "./dist/xstate-machine-extractor.cjs.mjs",
       "default": "./dist/xstate-machine-extractor.cjs.js"
     },
     "./sky": {
-      "types": {
-        "import": "./sky/dist/xstate-machine-extractor-sky.cjs.mjs",
-        "default": "./sky/dist/xstate-machine-extractor-sky.cjs.js"
-      },
       "module": "./sky/dist/xstate-machine-extractor-sky.esm.js",
       "import": "./sky/dist/xstate-machine-extractor-sky.cjs.mjs",
       "default": "./sky/dist/xstate-machine-extractor-sky.cjs.js"

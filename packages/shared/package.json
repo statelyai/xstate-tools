@@ -5,19 +5,11 @@
   "module": "dist/xstate-tools-shared.esm.js",
   "exports": {
     ".": {
-      "types": {
-        "import": "./dist/xstate-tools-shared.cjs.mjs",
-        "default": "./dist/xstate-tools-shared.cjs.js"
-      },
       "module": "./dist/xstate-tools-shared.esm.js",
       "import": "./dist/xstate-tools-shared.cjs.mjs",
       "default": "./dist/xstate-tools-shared.cjs.js"
     },
     "./forEachAction": {
-      "types": {
-        "import": "./forEachAction/dist/xstate-tools-shared-forEachAction.cjs.mjs",
-        "default": "./forEachAction/dist/xstate-tools-shared-forEachAction.cjs.js"
-      },
       "module": "./forEachAction/dist/xstate-tools-shared-forEachAction.esm.js",
       "import": "./forEachAction/dist/xstate-tools-shared-forEachAction.cjs.mjs",
       "default": "./forEachAction/dist/xstate-tools-shared-forEachAction.cjs.js"
