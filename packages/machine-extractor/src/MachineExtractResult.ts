@@ -6,7 +6,10 @@ import { choose } from 'xstate/lib/actions';
 import { DeclarationType } from '.';
 import { RecordOfArrays } from './RecordOfArrays';
 import { ActionNode, ParsedChooseCondition } from './actions';
-import { extractObjectRecursively } from './extractAction';
+import {
+  extractObjectRecursively,
+  getObjectPropertyKey,
+} from './extractAction';
 import { getMachineNodesFromFile } from './getMachineNodesFromFile';
 import { TMachineCallExpression } from './machineCallExpression';
 import { StateNodeReturn } from './stateNode';
@@ -714,27 +717,32 @@ export class MachineExtractResult {
       !this.machineCallResult.options ||
       t.isObjectExpression(this.machineCallResult.options)
     ) {
-      return { actions: `{}`, actors: `{}`, guards: `{}`, delays: `{}` };
+      return { actions: {}, actors: {}, guards: {}, delays: {} };
     }
 
-    return {
-      actions: this._fileContent.slice(
-        this.machineCallResult.options.actions?.node.start!,
-        this.machineCallResult.options.actions?.node.end!,
-      ),
-      actors: this._fileContent.slice(
-        this.machineCallResult.options.services?.node.start!,
-        this.machineCallResult.options.services?.node.end!,
-      ),
-      guards: this._fileContent.slice(
-        this.machineCallResult.options.guards?.node.start!,
-        this.machineCallResult.options.guards?.node.end!,
-      ),
-      delays: this._fileContent.slice(
-        this.machineCallResult.options.delays?.node.start!,
-        this.machineCallResult.options.delays?.node.end!,
-      ),
-    };
+    const out: Record<
+      'actions' | 'actors' | 'guards' | 'delays',
+      Record<string, string>
+    > = { actions: {}, actors: {}, guards: {}, delays: {} } as const;
+
+    for (const key in this.machineCallResult.options) {
+      const _key =
+        key === 'actors'
+          ? 'services'
+          : (key as 'actions' | 'services' | 'guards' | 'delays');
+      const valueNode = this.machineCallResult.options[_key];
+      if (valueNode && t.isObjectExpression(valueNode.node)) {
+        valueNode.node.properties.forEach((prop) => {
+          if (t.isObjectProperty(prop)) {
+            out[_key === 'services' ? 'actors' : _key][
+              getObjectPropertyKey(prop)
+            ] = this._fileContent.slice(prop.value.start!, prop.value.end!);
+          }
+        });
+      }
+    }
+
+    return out;
   };
 
   getActionImplementation = (name: string) => {

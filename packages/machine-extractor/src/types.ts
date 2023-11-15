@@ -85,10 +85,10 @@ export interface FileExtractResult<
   machines: T[];
   options: (
     | {
-        actions: string;
-        actors: string;
-        guards: string;
-        delays: string;
+        actions: Record<string, string>;
+        actors: Record<string, string>;
+        guards: Record<string, string>;
+        delays: Record<string, string>;
       }
     | undefined
   )[];
