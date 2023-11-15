@@ -1,3 +1,4 @@
 {
-  "main": "dist/xstate-tools-shared-forEachAction.cjs.js"
+  "main": "dist/xstate-tools-shared-forEachAction.cjs.js",
+  "module": "dist/xstate-tools-shared-forEachAction.esm.js"
 }

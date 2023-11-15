@@ -2,7 +2,7 @@ import { SkyConfig } from '@statelyai/sky';
 import {
   modifySkyConfigSource,
   skyConfigExtractFromFile,
-} from '@xstate/machine-extractor';
+} from '@xstate/machine-extractor/sky';
 import 'dotenv/config';
 import * as fs from 'fs/promises';
 import fetch from 'isomorphic-fetch';
