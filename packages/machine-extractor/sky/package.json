@@ -1,0 +1,4 @@
+{
+  "main": "dist/xstate-machine-extractor-sky.cjs.js",
+  "module": "dist/xstate-machine-extractor-sky.esm.js"
+}
