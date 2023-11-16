@@ -169,6 +169,7 @@ export const ActionAsNode = createParser({
 const ChooseFirstArg = arrayOf(
   objectTypeWithKnownKeys({
     cond: Cond,
+    guard: Cond,
     // Don't allow choose inside of choose for now,
     // too recursive
     // TODO - fix
