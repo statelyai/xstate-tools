@@ -22,7 +22,7 @@ describe('Options', () => {
     expect(t.isObjectMethod(node)).toBeTruthy();
   });
 
-  it.only('Should extract implementations provided in machine options', () => {
+  it('Should extract implementations provided in machine options', () => {
     const result = extractMachinesFromFile(`
       createMachine({}, {
         actions: {
