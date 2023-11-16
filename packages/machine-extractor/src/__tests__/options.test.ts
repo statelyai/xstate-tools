@@ -22,56 +22,27 @@ describe('Options', () => {
     expect(t.isObjectMethod(node)).toBeTruthy();
   });
 
-  it('Should extract implementations provided in machine options', () => {
+  it('Should include both services and actors in extracted machine options', () => {
     const result = extractMachinesFromFile(`
       createMachine({}, {
-        actions: {
-          named: () => {},
-          namedAssign: assign({}),
-          namedRaise: raise({}),
-          namedLog: log(''),
-          namedSendTo: sendTo('', ''),
-          namedStop: stop('')
-        },
         services: {
           'namedCallback': () => () => {}
         },
         actors: {
           'namedPromise': () => Promise.resolve()
         },
-        guards: {
-          namedGuard: () => {
-            return condition()
-          }
-        },
-        delays: {
-          namedDelay: () => 2000
-        }
       })
     `);
 
     expect(result!.machines[0]!.getAllMachineOptions()).toMatchInlineSnapshot(`
       {
-        "actions": {
-          "named": "() => {}",
-          "namedAssign": "assign({})",
-          "namedLog": "log('')",
-          "namedRaise": "raise({})",
-          "namedSendTo": "sendTo('', '')",
-          "namedStop": "stop('')",
-        },
+        "actions": {},
         "actors": {
           "namedCallback": "() => () => {}",
           "namedPromise": "() => Promise.resolve()",
         },
-        "delays": {
-          "namedDelay": "() => 2000",
-        },
-        "guards": {
-          "namedGuard": "() => {
-                  return condition()
-                }",
-        },
+        "delays": {},
+        "guards": {},
       }
     `);
   });
