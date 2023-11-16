@@ -34,7 +34,8 @@ describe('Options', () => {
       })
     `);
 
-    expect(result!.machines[0]!.getAllMachineOptions()).toMatchInlineSnapshot(`
+    expect(result!.machines[0]!.getAllMachineImplementations())
+      .toMatchInlineSnapshot(`
       {
         "actions": {},
         "actors": {

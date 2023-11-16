@@ -709,7 +709,7 @@ export class MachineExtractResult {
     return delays.toObject();
   };
 
-  getAllMachineOptions = () => {
+  getAllMachineImplementations = () => {
     if (
       !this.machineCallResult.options ||
       t.isObjectExpression(this.machineCallResult.options)
