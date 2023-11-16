@@ -6,10 +6,7 @@ import { choose } from 'xstate/lib/actions';
 import { DeclarationType } from '.';
 import { RecordOfArrays } from './RecordOfArrays';
 import { ActionNode, ParsedChooseCondition } from './actions';
-import {
-  extractObjectRecursively,
-  getObjectPropertyKey,
-} from './extractAction';
+import { getObjectPropertyKey } from './extractAction';
 import { getMachineNodesFromFile } from './getMachineNodesFromFile';
 import { TMachineCallExpression } from './machineCallExpression';
 import { StateNodeReturn } from './stateNode';

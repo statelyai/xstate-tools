@@ -22,26 +22,56 @@ describe('Options', () => {
     expect(t.isObjectMethod(node)).toBeTruthy();
   });
 
-  it.only('Should extract complete machine options', () => {
+  it.only('Should extract implementations provided in machine options', () => {
     const result = extractMachinesFromFile(`
       createMachine({}, {
         actions: {
-          test: assign({})
+          named: () => {},
+          namedAssign: assign({}),
+          namedRaise: raise({}),
+          namedLog: log(''),
+          namedSendTo: sendTo('', ''),
+          namedStop: stop('')
         },
-        services: {},
-        guards: {},
-        delays: {}
+        services: {
+          'namedCallback': () => () => {}
+        },
+        actors: {
+          'namedPromise': () => Promise.resolve()
+        },
+        guards: {
+          namedGuard: () => {
+            return condition()
+          }
+        },
+        delays: {
+          namedDelay: () => 2000
+        }
       })
     `);
 
     expect(result!.machines[0]!.getAllMachineOptions()).toMatchInlineSnapshot(`
       {
-        "actions": "{
-                test: assign({})
-              }",
-        "actors": "{}",
-        "delays": "{}",
-        "guards": "{}",
+        "actions": {
+          "named": "() => {}",
+          "namedAssign": "assign({})",
+          "namedLog": "log('')",
+          "namedRaise": "raise({})",
+          "namedSendTo": "sendTo('', '')",
+          "namedStop": "stop('')",
+        },
+        "actors": {
+          "namedCallback": "() => () => {}",
+          "namedPromise": "() => Promise.resolve()",
+        },
+        "delays": {
+          "namedDelay": "() => 2000",
+        },
+        "guards": {
+          "namedGuard": "() => {
+                  return condition()
+                }",
+        },
       }
     `);
   });
