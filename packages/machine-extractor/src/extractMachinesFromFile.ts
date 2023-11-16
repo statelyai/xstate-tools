@@ -23,7 +23,6 @@ export const extractMachinesFromFile = (
 
   return {
     machines,
-    options: machines.map((m) => m?.getAllMachineOptions()),
     file,
   };
 };
