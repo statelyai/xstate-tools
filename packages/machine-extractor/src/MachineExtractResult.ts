@@ -725,18 +725,25 @@ export class MachineExtractResult {
       Record<string, string>
     > = { actions: {}, actors: {}, guards: {}, delays: {} } as const;
 
+    const foundKeyToOutKey: Record<string, keyof typeof out> = {
+      actions: 'actions',
+      actors: 'actors',
+      services: 'actors',
+      guards: 'guards',
+      delays: 'delays',
+    };
+
     for (const key in this.machineCallResult.options) {
-      const _key =
-        key === 'actors'
-          ? 'services'
-          : (key as 'actions' | 'services' | 'guards' | 'delays');
-      const valueNode = this.machineCallResult.options[_key];
+      const valueNode = this.machineCallResult.options[key as keyof typeof out];
       if (valueNode && t.isObjectExpression(valueNode.node)) {
         valueNode.node.properties.forEach((prop) => {
           if (t.isObjectProperty(prop)) {
-            out[_key === 'services' ? 'actors' : _key][
-              getObjectPropertyKey(prop)
-            ] = this._fileContent.slice(prop.value.start!, prop.value.end!);
+            const propKey = getObjectPropertyKey(prop);
+            const val = this._fileContent.slice(
+              prop.value.start!,
+              prop.value.end!,
+            );
+            out[foundKeyToOutKey[key]][propKey] = val;
           }
         });
       }
