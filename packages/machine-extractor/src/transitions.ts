@@ -19,6 +19,7 @@ const TransitionObject = objectTypeWithKnownKeys({
   target: TransitionTarget,
   actions: MaybeArrayOfActions,
   cond: Cond,
+  guard: Cond,
   description: unionType([StringLiteral, TemplateLiteral]),
   internal: BooleanLiteral,
 });

@@ -11,6 +11,7 @@ const MachineOptionsObject = objectTypeWithKnownKeys({
     unionType<ActionNode | { node: t.Node }>([ChooseAction, AnyNode]),
   ),
   services: objectOf(AnyNode),
+  actors: objectOf(AnyNode),
   guards: objectOf(AnyNode),
   delays: objectOf(AnyNode),
   devTools: BooleanLiteral,

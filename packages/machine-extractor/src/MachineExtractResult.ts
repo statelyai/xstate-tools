@@ -6,6 +6,7 @@ import { choose } from 'xstate/lib/actions';
 import { DeclarationType } from '.';
 import { RecordOfArrays } from './RecordOfArrays';
 import { ActionNode, ParsedChooseCondition } from './actions';
+import { getObjectPropertyKey } from './extractAction';
 import { getMachineNodesFromFile } from './getMachineNodesFromFile';
 import { TMachineCallExpression } from './machineCallExpression';
 import { StateNodeReturn } from './stateNode';
@@ -706,6 +707,40 @@ export class MachineExtractResult {
     });
 
     return delays.toObject();
+  };
+
+  getAllMachineImplementations = () => {
+    if (
+      !this.machineCallResult.options ||
+      t.isObjectExpression(this.machineCallResult.options)
+    ) {
+      return { actions: {}, actors: {}, guards: {}, delays: {} };
+    }
+
+    return {
+      actors: {
+        ...getImplementationObject(
+          this.machineCallResult.options.services?.node,
+          this._fileContent,
+        ),
+        ...getImplementationObject(
+          this.machineCallResult.options.actors?.node,
+          this._fileContent,
+        ),
+      },
+      actions: getImplementationObject(
+        this.machineCallResult.options.actions?.node,
+        this._fileContent,
+      ),
+      delays: getImplementationObject(
+        this.machineCallResult.options.delays?.node,
+        this._fileContent,
+      ),
+      guards: getImplementationObject(
+        this.machineCallResult.options.guards?.node,
+        this._fileContent,
+      ),
+    };
   };
 
   getActionImplementation = (name: string) => {
@@ -2795,4 +2830,24 @@ function consumeIndentationToNodeAtIndex(
     }
     indentation = `${char}${indentation}`;
   }
+}
+
+function getImplementationObject(
+  objNode: t.Node | undefined,
+  fileContent: string,
+) {
+  if (!t.isObjectExpression(objNode)) return {};
+
+  const out: Record<string, string> = {};
+
+  for (const key in objNode.properties) {
+    const node = objNode.properties[key];
+    if (t.isObjectProperty(node)) {
+      const propKey = getObjectPropertyKey(node);
+      const val = fileContent.slice(node.value.start!, node.value.end!);
+      out[propKey] = val;
+    }
+  }
+
+  return out;
 }

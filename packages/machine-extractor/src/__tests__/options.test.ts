@@ -21,4 +21,30 @@ describe('Options', () => {
 
     expect(t.isObjectMethod(node)).toBeTruthy();
   });
+
+  it('Should include both services and actors in extracted machine options', () => {
+    const result = extractMachinesFromFile(`
+      createMachine({}, {
+        services: {
+          'namedCallback': () => () => {}
+        },
+        actors: {
+          'namedPromise': () => Promise.resolve()
+        },
+      })
+    `);
+
+    expect(result!.machines[0]!.getAllMachineImplementations())
+      .toMatchInlineSnapshot(`
+      {
+        "actions": {},
+        "actors": {
+          "namedCallback": "() => () => {}",
+          "namedPromise": "() => Promise.resolve()",
+        },
+        "delays": {},
+        "guards": {},
+      }
+    `);
+  });
 });

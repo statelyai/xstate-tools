@@ -349,8 +349,12 @@ export const getTransitions = (
       }
     }
     const cond = getCondition(transition?.cond, opts);
+    const guard = getCondition(transition?.guard, opts);
     if (cond) {
       toPush.cond = cond;
+    }
+    if (guard) {
+      toPush.cond = guard;
     }
     if (transition?.actions) {
       toPush.actions = getActionConfig(transition.actions, opts);
