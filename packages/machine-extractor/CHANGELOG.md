@@ -1,5 +1,12 @@
 # @xstate/machine-extractor
 
+## 0.13.0
+
+### Minor Changes
+
+- 4d4f0da: Support both actors and services in machine implementations and if both are present, merges them into a single object
+- 4d4f0da: Support v5 guard keyword for transition conditions and choose action conditions. If both cond and guard are present on a transaction, picks guard
+
 ## 0.12.2
 
 ### Patch Changes
