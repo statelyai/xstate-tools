@@ -717,36 +717,30 @@ export class MachineExtractResult {
       return { actions: {}, actors: {}, guards: {}, delays: {} };
     }
 
-    const out: Record<
-      'actions' | 'actors' | 'guards' | 'delays',
-      Record<string, string>
-    > = { actions: {}, actors: {}, guards: {}, delays: {} } as const;
-
-    const foundKeyToOutKey: Record<string, keyof typeof out> = {
-      actions: 'actions',
-      actors: 'actors',
-      services: 'actors',
-      guards: 'guards',
-      delays: 'delays',
+    return {
+      actors: {
+        ...getImplementationObject(
+          this.machineCallResult.options.services?.node,
+          this._fileContent,
+        ),
+        ...getImplementationObject(
+          this.machineCallResult.options.actors?.node,
+          this._fileContent,
+        ),
+      },
+      actions: getImplementationObject(
+        this.machineCallResult.options.actions?.node,
+        this._fileContent,
+      ),
+      delays: getImplementationObject(
+        this.machineCallResult.options.delays?.node,
+        this._fileContent,
+      ),
+      guards: getImplementationObject(
+        this.machineCallResult.options.guards?.node,
+        this._fileContent,
+      ),
     };
-
-    for (const key in this.machineCallResult.options) {
-      const valueNode = this.machineCallResult.options[key as keyof typeof out];
-      if (valueNode && t.isObjectExpression(valueNode.node)) {
-        valueNode.node.properties.forEach((prop) => {
-          if (t.isObjectProperty(prop)) {
-            const propKey = getObjectPropertyKey(prop);
-            const val = this._fileContent.slice(
-              prop.value.start!,
-              prop.value.end!,
-            );
-            out[foundKeyToOutKey[key]][propKey] = val;
-          }
-        });
-      }
-    }
-
-    return out;
   };
 
   getActionImplementation = (name: string) => {
@@ -2836,4 +2830,24 @@ function consumeIndentationToNodeAtIndex(
     }
     indentation = `${char}${indentation}`;
   }
+}
+
+function getImplementationObject(
+  objNode: t.Node | undefined,
+  fileContent: string,
+) {
+  if (!t.isObjectExpression(objNode)) return {};
+
+  const out: Record<string, string> = {};
+
+  for (const key in objNode.properties) {
+    const node = objNode.properties[key];
+    if (t.isObjectProperty(node)) {
+      const propKey = getObjectPropertyKey(node);
+      const val = fileContent.slice(node.value.start!, node.value.end!);
+      out[propKey] = val;
+    }
+  }
+
+  return out;
 }
