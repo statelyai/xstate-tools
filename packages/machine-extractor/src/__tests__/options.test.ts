@@ -2,24 +2,34 @@ import * as t from '@babel/types';
 import { extractMachinesFromFile } from '..';
 
 describe('Options', () => {
-  it('Should handle functions declared as ObjectMethod', () => {
+  it('Should extract object methods and functions declared as object methods', () => {
     const result = extractMachinesFromFile(`
       const machine = createMachine({}, {
-        services: {
-          service() {}
+        actions: {
+          setContext(ctx, { evt }, ...args) {
+            Object.assign(ctx, evt.context);
+          },
+          saveUser: assign(({ctx, evt}, params) => {}),
+          sendAnalytics: ({ctx, evt}, params) => {}
         }
       })
     `);
 
-    expect(
-      result!.machines[0]!.machineCallResult.options?.services?.properties,
-    ).toHaveLength(1);
-
-    const node =
-      result!.machines[0]!.machineCallResult.options?.services?.properties[0]
-        .property;
-
-    expect(t.isObjectMethod(node)).toBeTruthy();
+    expect(result?.machines[0]?.getAllMachineImplementations())
+      .toMatchInlineSnapshot(`
+      {
+        "actions": {
+          "saveUser": "assign(({ctx, evt}, params) => {})",
+          "sendAnalytics": "({ctx, evt}, params) => {}",
+          "setContext": "function setContext(ctx, { evt }, ...args){
+                  Object.assign(ctx, evt.context);
+                }",
+        },
+        "actors": {},
+        "delays": {},
+        "guards": {},
+      }
+    `);
   });
 
   it('Should include both services and actors in extracted machine options', () => {

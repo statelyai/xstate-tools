@@ -2846,6 +2846,13 @@ function getImplementationObject(
       const propKey = getObjectPropertyKey(node);
       const val = fileContent.slice(node.value.start!, node.value.end!);
       out[propKey] = val;
+    } else if (t.isObjectMethod(node)) {
+      const propKey = getObjectPropertyKey(node);
+      const body = fileContent.slice(node.body.start!, node.body.end!);
+      const params = node.params.map((p) =>
+        fileContent.slice(p.start!, p.end!),
+      );
+      out[propKey] = `function ${propKey}(${params.join(', ')})${body}`;
     }
   }
 
