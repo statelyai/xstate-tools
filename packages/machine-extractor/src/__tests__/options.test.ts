@@ -9,6 +9,7 @@ describe('Options', () => {
           setContext(context, { event }, ...args) {
             
           },
+          "fetch user"(context, { event }, ...args) {}
         }
       })
     `);
@@ -16,6 +17,7 @@ describe('Options', () => {
     expect(result?.machines[0]?.getAllMachineImplementations().actions)
       .toMatchInlineSnapshot(`
       {
+        "fetch user": "(context, { event }, ...args) => {}",
         "setContext": "function setContext(context, { event }, ...args){
                   
                 }",
