@@ -2,32 +2,41 @@ import * as t from '@babel/types';
 import { extractMachinesFromFile } from '..';
 
 describe('Options', () => {
-  it('Should extract object methods and functions declared as object methods', () => {
+  it('Should extract machine options implementations as object methods', () => {
     const result = extractMachinesFromFile(`
       const machine = createMachine({}, {
         actions: {
-          setContext(ctx, { evt }, ...args) {
-            Object.assign(ctx, evt.context);
+          setContext(context, { event }, ...args) {
+            
           },
-          saveUser: assign(({ctx, evt}, params) => {}),
-          sendAnalytics: ({ctx, evt}, params) => {}
         }
       })
     `);
 
-    expect(result?.machines[0]?.getAllMachineImplementations())
+    expect(result?.machines[0]?.getAllMachineImplementations().actions)
       .toMatchInlineSnapshot(`
       {
-        "actions": {
-          "saveUser": "assign(({ctx, evt}, params) => {})",
-          "sendAnalytics": "({ctx, evt}, params) => {}",
-          "setContext": "function setContext(ctx, { evt }, ...args){
-                  Object.assign(ctx, evt.context);
+        "setContext": "function setContext(context, { event }, ...args){
+                  
                 }",
-        },
-        "actors": {},
-        "delays": {},
-        "guards": {},
+      }
+    `);
+  });
+  it('Should extract machine options implementations as object property', () => {
+    const result = extractMachinesFromFile(`
+      const machine = createMachine({}, {
+        actions: {
+          saveUser: assign((context, event) => {}),
+          sendAnalytics: (context, event) => {}
+        }
+      })
+    `);
+
+    expect(result?.machines[0]?.getAllMachineImplementations().actions)
+      .toMatchInlineSnapshot(`
+      {
+        "saveUser": "assign((context, event) => {})",
+        "sendAnalytics": "(context, event) => {}",
       }
     `);
   });
