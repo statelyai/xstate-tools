@@ -6,10 +6,10 @@ describe('Options', () => {
     const result = extractMachinesFromFile(`
       const machine = createMachine({}, {
         actions: {
-          setContext(context, { event }, ...args) {
+          setContext(context, { data }, ...args) {
             
           },
-          "fetch user"(context, { event }, ...args) {}
+          "fetch user"(context, { data }, ...args) {}
         }
       })
     `);
@@ -17,8 +17,8 @@ describe('Options', () => {
     expect(result?.machines[0]?.getAllMachineImplementations().actions)
       .toMatchInlineSnapshot(`
       {
-        "fetch user": "(context, { event }, ...args) => {}",
-        "setContext": "function setContext(context, { event }, ...args){
+        "fetch user": "(context, { data }, ...args) => {}",
+        "setContext": "function setContext(context, { data }, ...args){
                   
                 }",
       }
