@@ -1,5 +1,11 @@
 # @xstate/cli
 
+## 0.5.12
+
+### Patch Changes
+
+- 1698d62: Update to the latest Sky SDK.
+
 ## 0.5.11
 
 ### Patch Changes
