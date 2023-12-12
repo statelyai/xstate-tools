@@ -1774,14 +1774,14 @@
   dependencies:
     "@sinonjs/commons" "^1.7.0"
 
-"@statelyai/sky@0.0.7":
-  version "0.0.7"
-  resolved "https://registry.yarnpkg.com/@statelyai/sky/-/sky-0.0.7.tgz#d5f856eabb49f156e0d58d3d7a39cbf458675a95"
-  integrity sha512-ZpPZiqrwuoemuVnomP2EhfUvkmDGILlFBkulasYcBQ/AZGMr+K3PIoOBBdokRcq9+Qma+3n0irXMO0xYB5iIww==
+"@statelyai/sky@0.0.10":
+  version "0.0.10"
+  resolved "https://registry.yarnpkg.com/@statelyai/sky/-/sky-0.0.10.tgz#23a6bf6c55d8d91544f364142b27056ac79120e3"
+  integrity sha512-CMdRux9yUlYM9FrwPPXebD+ALQ7JHZKvWmQ76zb721i8hiAIoDP2LnZzdv/6d7l8cZ6c7c6v4vW/djABlqtdnQ==
   dependencies:
-    partysocket "0.0.12"
+    partysocket "0.0.17"
     superjson "1.13.1"
-    xstate "5.0.0-beta.37"
+    xstate "5.2.1"
 
 "@szmarczak/http-timer@^1.1.2":
   version "1.1.2"
@@ -5967,10 +5967,10 @@ parse5@6.0.1:
   resolved "https://registry.yarnpkg.com/parse5/-/parse5-6.0.1.tgz#e1a1c085c569b3dc08321184f19a39cc27f7c30b"
   integrity sha512-Ofn/CTFzRGTTxwpNEs9PP93gXShHcTq255nzRYSKe8AkVpZY7e1fpmTfOyoIvjP5HG7Z2ZM7VS9PPhQGW2pOpw==
 
-partysocket@0.0.12:
-  version "0.0.12"
-  resolved "https://registry.yarnpkg.com/partysocket/-/partysocket-0.0.12.tgz#97285d8047121fe82d8294f46dea037f579c5b22"
-  integrity sha512-20fikH08aHl7oJvRD7QLftzHvCEqxHf6y/ZiO0wltkl2cbNbtZQuDno9CLrqIQG2t22UWFHjiSqj/rT1In36Eg==
+partysocket@0.0.17:
+  version "0.0.17"
+  resolved "https://registry.yarnpkg.com/partysocket/-/partysocket-0.0.17.tgz#cb36858e5c2749cbf3ef9208f7df22c028162105"
+  integrity sha512-8Re9nmgP2LzQhq+FBs9+BZNTjmMwoF4geEKlpH0lxW1JKp3FmplN74306afGH9EsOjdfcXqKY2VCZtc3iAHIow==
 
 pascalcase@^0.1.1:
   version "0.1.1"
@@ -7678,10 +7678,10 @@ xmlchars@^2.2.0:
   resolved "https://registry.yarnpkg.com/xstate/-/xstate-5.0.0-beta.30.tgz#8eb7e8551ac6dd24e06bcdfdc834ce6aea3f1f5f"
   integrity sha512-ZWNf48jEZxasco7oi4vyKJRgjpwc1+Q0AgzfVF+nrWeghAwc8oW+W2rBQaQWldyZ9zXORBzX7xZAfgu81oANkA==
 
-xstate@5.0.0-beta.37:
-  version "5.0.0-beta.37"
-  resolved "https://registry.yarnpkg.com/xstate/-/xstate-5.0.0-beta.37.tgz#617dc79ec2dc6b30b2567da93c0559bf2d595b34"
-  integrity sha512-pbdl6piQ7H+KGd8TKxo5htomMkP85HXLVfTuUy6J0JMPvI8srum3YD+QINx3Ea4QAib8tqk28u70BNq2opnoIw==
+xstate@5.2.1:
+  version "5.2.1"
+  resolved "https://registry.yarnpkg.com/xstate/-/xstate-5.2.1.tgz#55f1736cccdff58938277d1e1e2a91a01d37f008"
+  integrity sha512-qPYPnoYIvNSwSv4uIwV+V/uFeGk6houLGmZy0io1XsfImBrp1AKbw9ADNJytCksCDP/YOAg1EtiWjXFzsT1rdw==
 
 xstate@^4.33.4:
   version "4.33.4"
