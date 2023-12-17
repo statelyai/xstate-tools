@@ -2853,11 +2853,8 @@ function getImplementationObject(
         fileContent.slice(p.start!, p.end!),
       );
       // "fetch user"() {} ==> "fetch user": () => {}
-      if (propKey.includes(' ')) {
-        out[propKey] = `(${params.join(', ')}) => ${body}`;
-      } else {
-        out[propKey] = `function ${propKey}(${params.join(', ')})${body}`;
-      }
+      let funcName = !isValidIdentifier(propKey) ? '' : propKey;
+      out[propKey] = `function ${funcName}(${params.join(', ')})${body}`;
     }
   }
 
