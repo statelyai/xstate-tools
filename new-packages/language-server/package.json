@@ -1,0 +1,42 @@
+{
+  "name": "@xstate/language-server",
+  "private": true,
+  "version": "0.0.0",
+  "license": "AGPL-3.0-only",
+  "main": "dist/xstate-language-server.cjs.js",
+  "module": "dist/xstate-language-server.esm.js",
+  "exports": {
+    ".": {
+      "types": {
+        "import": "./dist/xstate-language-server.cjs.mjs",
+        "default": "./dist/xstate-language-server.cjs.js"
+      },
+      "module": "./dist/xstate-language-server.esm.js",
+      "import": "./dist/xstate-language-server.cjs.mjs",
+      "default": "./dist/xstate-language-server.cjs.js"
+    },
+    "./protocol": {
+      "types": {
+        "import": "./protocol/dist/xstate-language-server-protocol.cjs.mjs",
+        "default": "./protocol/dist/xstate-language-server-protocol.cjs.js"
+      },
+      "module": "./protocol/dist/xstate-language-server-protocol.esm.js",
+      "import": "./protocol/dist/xstate-language-server-protocol.cjs.mjs",
+      "default": "./protocol/dist/xstate-language-server-protocol.cjs.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {},
+  "dependencies": {
+    "@volar/language-server": "2.0.0-alpha.3",
+    "volar-service-typescript": "0.0.20",
+    "vscode-languageserver-protocol": "^3.17.5"
+  },
+  "devDependencies": {},
+  "preconstruct": {
+    "entrypoints": [
+      "./index.ts",
+      "./protocol.ts"
+    ]
+  }
+}

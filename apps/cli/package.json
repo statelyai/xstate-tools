@@ -15,7 +15,7 @@
     "@types/isomorphic-fetch": "^0.0.36",
     "@types/jest": "^27.4.0",
     "@types/node": "^16.0.1",
-    "esbuild": "^0.14.48",
+    "esbuild": "^0.19.9",
     "jest": "^27.4.7"
   },
   "dependencies": {

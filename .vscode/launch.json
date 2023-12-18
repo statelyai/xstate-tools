@@ -16,41 +16,23 @@
       }
     },
     {
-      "type": "extensionHost",
-      "request": "launch",
-      "name": "Launch Client",
-      "runtimeExecutable": "${execPath}",
-      "args": [
-        "--extensionDevelopmentPath=${workspaceRoot}/apps/extension/client"
-      ],
-      "outFiles": ["${workspaceRoot}/apps/extension/client/dist/**.js"],
-      "preLaunchTask": "npm: vscode:dev"
-    },
-    {
-      "type": "node",
-      "request": "attach",
-      "name": "Attach to Server",
-      "port": 6009,
-      "restart": true,
-      "outFiles": ["${workspaceRoot}/apps/extension/server/dist/**.js"]
-    },
-    {
-      "name": "Language Server E2E Test",
+      "name": "Run Extension",
       "type": "extensionHost",
       "request": "launch",
       "runtimeExecutable": "${execPath}",
+      "autoAttachChildProcesses": true,
       "args": [
-        "--extensionDevelopmentPath=${workspaceRoot}/apps/extension/client",
-        "--extensionTestsPath=${workspaceRoot}/apps/extension/client/out/test/index",
-        "${workspaceRoot}apps/extension/client/testFixture"
+        "--disable-updates",
+        "--disable-workspace-trust",
+        "--profile-temp",
+        "--skip-release-notes",
+        "--skip-welcome",
+        "--extensionDevelopmentPath=${workspaceFolder}/new-packages/vscode-xstate",
+        "${workspaceFolder}/new-packages/vscode-xstate/fixtures/fixtures.code-workspace"
       ],
-      "outFiles": ["${workspaceRoot}/apps/extension/client/dist/**.js"]
-    }
-  ],
-  "compounds": [
-    {
-      "name": "Client + Server",
-      "configurations": ["Launch Client", "Attach to Server"]
+      "outFiles": ["${workspaceFolder}/packages/vscode-xstate/dist/**/*.js"],
+      "skipFiles": ["<node_internals>/**", "**/node_modules/vscode-*/**"],
+      "preLaunchTask": "build"
     }
   ]
 }
