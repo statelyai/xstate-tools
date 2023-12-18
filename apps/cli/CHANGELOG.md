@@ -1,5 +1,13 @@
 # @xstate/cli
 
+## 0.5.13
+
+### Patch Changes
+
+- Updated dependencies [4734eb3]
+  - @xstate/machine-extractor@0.13.1
+  - @xstate/tools-shared@4.0.6
+
 ## 0.5.12
 
 ### Patch Changes
