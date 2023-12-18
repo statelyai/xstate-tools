@@ -1,5 +1,11 @@
 # @xstate/machine-extractor
 
+## 0.13.1
+
+### Patch Changes
+
+- 4734eb3: Extract object methods in machine options
+
 ## 0.13.0
 
 ### Minor Changes
