@@ -2852,7 +2852,7 @@ function getImplementationObject(
       const params = node.params.map((p) =>
         fileContent.slice(p.start!, p.end!),
       );
-      // "fetch user"() {} ==> "fetch user": () => {}
+      // "fetch user"() {} ==> "fetch user": function () {}
       let funcName = !isValidIdentifier(propKey) ? '' : propKey;
       out[propKey] = `function ${funcName}(${params.join(', ')})${body}`;
     }
