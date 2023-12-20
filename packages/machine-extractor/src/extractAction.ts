@@ -331,10 +331,11 @@ export function extractObjectRecursively(
   object.properties.forEach((prop) => {
     if (t.isObjectProperty(prop)) {
       if (t.isLiteral(prop.value)) {
-        if (
+        if (t.isNullLiteral(prop.value)) {
+          extracted[getObjectPropertyKey(prop)] = null;
+        } else if (
           t.isRegExpLiteral(prop.value) ||
-          isTemplateLiteralWithExpressions(prop.value) ||
-          t.isNullLiteral(prop.value)
+          isTemplateLiteralWithExpressions(prop.value)
         ) {
           extracted[getObjectPropertyKey(prop)] = fileContent.slice(
             prop.value.start!,
