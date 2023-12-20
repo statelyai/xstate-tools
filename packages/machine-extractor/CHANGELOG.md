@@ -1,5 +1,11 @@
 # @xstate/machine-extractor
 
+## 0.14.0
+
+### Minor Changes
+
+- ade217f: Do not stringify null literals in object values
+
 ## 0.13.1
 
 ### Patch Changes
