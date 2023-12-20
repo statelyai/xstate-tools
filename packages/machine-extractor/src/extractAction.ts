@@ -330,7 +330,6 @@ export function extractObjectRecursively(
 
   object.properties.forEach((prop) => {
     if (t.isObjectProperty(prop)) {
-      const key = getObjectPropertyKey(prop);
       if (t.isLiteral(prop.value)) {
         if (t.isNullLiteral(prop.value)) {
           extracted[getObjectPropertyKey(prop)] = null;
