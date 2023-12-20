@@ -2,8 +2,8 @@
   "editor.insertSpaces": false,
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": true,
-    "source.sortImports": true
+    "source.fixAll.eslint": "explicit",
+    "source.sortImports": "explicit"
   },
   "npm.packageManager": "yarn",
   "typescript.tsdk": "node_modules/typescript/lib"
