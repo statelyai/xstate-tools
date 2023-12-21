@@ -1,0 +1,25 @@
+{
+  "name": "@xstate/ts-project",
+  "private": true,
+  "version": "0.0.0",
+  "license": "AGPL-3.0-only",
+  "main": "dist/xstate-ts-project.cjs.js",
+  "module": "dist/xstate-ts-project.esm.js",
+  "exports": {
+    ".": {
+      "types": {
+        "import": "./dist/xstate-ts-project.cjs.mjs",
+        "default": "./dist/xstate-ts-project.cjs.js"
+      },
+      "module": "./dist/xstate-ts-project.esm.js",
+      "import": "./dist/xstate-ts-project.cjs.mjs",
+      "default": "./dist/xstate-ts-project.cjs.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {},
+  "dependencies": {
+    "typescript": "5.3.3"
+  },
+  "devDependencies": {}
+}
