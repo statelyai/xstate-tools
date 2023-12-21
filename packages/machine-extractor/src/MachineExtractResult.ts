@@ -14,6 +14,10 @@ import { ToMachineConfigOptions, toMachineConfig } from './toMachineConfig';
 import { TransitionConfigNode } from './transitions';
 import { Comment } from './types';
 
+interface ModifyOptions {
+  v5?: boolean;
+}
+
 function last<T extends ReadonlyArray<any>>(
   arr: T,
 ): T extends readonly [...any, infer Last] ? Last : never;
@@ -773,7 +777,7 @@ export class MachineExtractResult {
     return node;
   };
 
-  modify(edits: Array<MachineEdit>) {
+  modify(edits: Array<MachineEdit>, options?: ModifyOptions) {
     // we need to read it before calling `recast.parse` as that mutates the AST and removes comments and sometimes also locations
     const existingLayoutComment = this.getLayoutComment();
     const existingMachineNodeLoc = this.machineCallResult.node.loc!;
@@ -1254,6 +1258,7 @@ export class MachineExtractResult {
             toObjectExpression({
               ...(edit.guard && { cond: edit.guard }),
             }),
+            options,
             {
               ...(typeof target === 'string' && { target }),
               ...(target?.startsWith('.') && edit.external
@@ -1364,6 +1369,7 @@ export class MachineExtractResult {
           // TODO: this logic could maybe be somehow merged with `updateTransitionAtPathWith`
           const minifiedTransition = minifyTransitionObjectExpression(
             transitionObject,
+            options,
             { target, internal: !finalExternal },
           );
 
@@ -1420,6 +1426,7 @@ export class MachineExtractResult {
           // TODO: this logic could maybe be somehow merged with `updateTransitionAtPathWith`
           const minifiedTransition = minifyTransitionObjectExpression(
             transitionObject,
+            options,
             { internal: !edit.external },
           );
 
@@ -1475,6 +1482,7 @@ export class MachineExtractResult {
             stateObj,
             edit.transitionPath,
             t.stringLiteral(edit.name),
+            options,
           );
           break;
         }
@@ -1483,7 +1491,7 @@ export class MachineExtractResult {
             recastDefinitionNode,
             edit.path,
           );
-          removeGuardFromTransition(stateObj, edit.transitionPath);
+          removeGuardFromTransition(stateObj, edit.transitionPath, options);
           break;
         }
         case 'edit_guard': {
@@ -1495,6 +1503,7 @@ export class MachineExtractResult {
             stateObj,
             edit.transitionPath,
             t.stringLiteral(edit.name),
+            options,
           );
           break;
         }
@@ -2168,10 +2177,12 @@ function insertGuardAtTransitionPath(
   obj: RecastObjectExpression,
   path: TransitionPath,
   value: RecastNode,
+  options: ModifyOptions | undefined,
 ) {
+  const guardKey = options?.v5 ? 'guard' : 'cond';
   const transition = getTransitionObject(obj, path);
   transition.properties.push(
-    b.objectProperty(b.identifier('cond'), value as any),
+    b.objectProperty(b.identifier(guardKey), value as any),
   );
 }
 
@@ -2179,17 +2190,21 @@ function editGuardAtTransitionPath(
   obj: RecastObjectExpression,
   path: TransitionPath,
   value: RecastNode,
+  options: ModifyOptions | undefined,
 ) {
+  const guardKey = options?.v5 ? 'guard' : 'cond';
   const transition = getTransitionObject(obj, path);
-  const condIndex = findObjectPropertyIndex(transition, 'cond');
-  if (condIndex === -1) {
-    throw new Error(`"cond" should exist before attempting to remove it`);
+  const guard = findObjectPropertyIndex(transition, guardKey);
+  if (guard === -1) {
+    throw new Error(
+      `"${guardKey}" should exist before attempting to remove it`,
+    );
   }
 
-  const condProp = transition.properties[condIndex];
-  n.ObjectProperty.assert(condProp);
-  condProp.value = updateItemType(
-    unwrapSimplePropValue(condProp)!,
+  const guardProp = transition.properties[guard];
+  n.ObjectProperty.assert(guardProp);
+  guardProp.value = updateItemType(
+    unwrapSimplePropValue(guardProp)!,
     value,
   ) as any;
 }
@@ -2197,15 +2212,19 @@ function editGuardAtTransitionPath(
 function removeGuardFromTransition(
   obj: RecastObjectExpression,
   path: TransitionPath,
+  options: ModifyOptions | undefined,
 ) {
+  const guardKey = options?.v5 ? 'guard' : 'cond';
   const transition = getTransitionObject(obj, path);
-  const condIndex = findObjectPropertyIndex(transition, 'cond');
+  const guardIndex = findObjectPropertyIndex(transition, guardKey);
 
-  if (condIndex === -1) {
-    throw new Error(`"cond" should exist before attempting to remove it`);
+  if (guardIndex === -1) {
+    throw new Error(
+      `"${guardKey}" should exist before attempting to remove it`,
+    );
   }
 
-  removeProperty(transition, 'cond');
+  removeProperty(transition, guardKey);
   updateTransitionAtPathWith(obj, path, transition);
 }
 
@@ -2638,6 +2657,7 @@ function isExternalTransition(transition: RecastObjectExpression): boolean {
 // it only minifies based on the `override` and if the transition contains only a target prop etc
 function minifyTransitionObjectExpression(
   transitionObject: RecastObjectExpression,
+  options?: ModifyOptions,
   override?: { target?: string | null; internal?: boolean },
 ): RecastNode {
   const targetProp = findObjectProperty(transitionObject, 'target');
@@ -2674,15 +2694,19 @@ function minifyTransitionObjectExpression(
     override && 'target' in override ? override.target : targetValue;
 
   if (typeof finalTargetValue !== 'string') {
-    removeProperty(transitionObject, 'internal');
+    removeProperty(transitionObject, options?.v5 ? 'reenter' : 'internal');
   } else if (override?.internal === true) {
-    if (finalTargetValue.startsWith('.')) {
+    if (options?.v5) {
+      removeProperty(transitionObject, 'reenter');
+    } else if (finalTargetValue.startsWith('.')) {
       removeProperty(transitionObject, 'internal');
     } else {
       setProperty(transitionObject, 'internal', t.booleanLiteral(true));
     }
   } else if (override?.internal === false) {
-    if (finalTargetValue.startsWith('.')) {
+    if (options?.v5) {
+      setProperty(transitionObject, 'reenter', t.booleanLiteral(true));
+    } else if (finalTargetValue.startsWith('.')) {
       setProperty(transitionObject, 'internal', t.booleanLiteral(false));
     } else {
       removeProperty(transitionObject, 'internal');

@@ -27,6 +27,7 @@ type OpenLinkEvent = {
 type MachineChangedEvent = {
   type: 'MACHINE_CHANGED';
   edits: MachineEdit[];
+  options?: { v5?: boolean } | undefined;
   reason?: 'undo' | 'redo';
 };
 
@@ -333,6 +334,7 @@ const machine = createMachine(
                 languageClient
                   .sendRequest('applyMachineEdits', {
                     machineEdits: event.edits,
+                    options: event.options,
                     reason: event.reason,
                   })
                   .then(({ textEdits }) => {

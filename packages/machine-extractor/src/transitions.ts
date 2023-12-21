@@ -22,6 +22,7 @@ const TransitionObject = objectTypeWithKnownKeys({
   guard: Cond,
   description: unionType([StringLiteral, TemplateLiteral]),
   internal: BooleanLiteral,
+  reenter: BooleanLiteral,
 });
 
 const TransitionConfigOrTargetLiteral = unionType([
