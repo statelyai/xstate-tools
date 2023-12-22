@@ -1,5 +1,11 @@
 # @xstate/machine-extractor
 
+## 0.14.1
+
+### Patch Changes
+
+- 010651b: Added basic support for v5. Mainly support for `guard` (instead of `cond`) and `reenter` (instead of `internal`).
+
 ## 0.14.0
 
 ### Minor Changes

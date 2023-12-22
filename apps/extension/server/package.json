@@ -11,7 +11,7 @@
     "url": "https://github.com/statelyai/xstate-tools"
   },
   "dependencies": {
-    "@xstate/tools-shared": "^4.0.7",
+    "@xstate/tools-shared": "^4.0.8",
     "fast-deep-equal": "^3.1.3",
     "vscode-languageserver": "^7.0.0",
     "vscode-languageserver-textdocument": "^1.0.1",
