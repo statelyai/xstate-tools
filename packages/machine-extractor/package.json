@@ -1,6 +1,6 @@
 {
   "name": "@xstate/machine-extractor",
-  "version": "0.14.0",
+  "version": "0.14.1",
   "main": "dist/xstate-machine-extractor.cjs.js",
   "module": "dist/xstate-machine-extractor.esm.js",
   "exports": {
