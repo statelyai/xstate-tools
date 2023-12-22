@@ -82,6 +82,7 @@ export interface RequestMap {
   applyMachineEdits: {
     params: {
       machineEdits: MachineEdit[];
+      options?: { v5?: boolean } | undefined;
       reason?: 'undo' | 'redo' | undefined;
     };
     result: {

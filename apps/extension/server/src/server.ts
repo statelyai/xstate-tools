@@ -743,86 +743,87 @@ connection.onRequest('getMachineAtCursorPosition', ({ uri, position }) => {
   };
 });
 
-connection.onRequest('applyMachineEdits', ({ machineEdits, reason }) => {
-  if (!displayedMachine) {
-    throw new Error(
-      '`applyMachineEdits` can only be requested when there is a displayed machine',
-    );
-  }
-  const displayedUri = displayedMachine.uri;
-
-  const cachedDocument = documentsCache.get(displayedUri)!;
-  const isLayoutStringOnlyUpdate =
-    machineEdits.length === 1 &&
-    machineEdits[0].type === 'update_layout_string';
-
-  let modified: ReturnType<
-    MachineExtractResult['modify'] | MachineExtractResult['restore']
-  >;
-
-  if (!isLayoutStringOnlyUpdate && reason === 'undo') {
-    const item = cachedDocument.undoStack.pop();
-    if (item) {
-      modified =
-        cachedDocument.extractionResults[
-          displayedMachine.machineIndex
-        ].machineResult.restore(item);
-    } else {
-      modified =
-        cachedDocument.extractionResults[
-          displayedMachine.machineIndex
-        ].machineResult.modify(machineEdits);
-    }
-  } else {
-    const modifyResult =
-      cachedDocument.extractionResults[
-        displayedMachine.machineIndex
-      ].machineResult.modify(machineEdits);
-
-    modified = modifyResult;
-
-    if (!isLayoutStringOnlyUpdate) {
-      cachedDocument.undoStack.push(
-        modifyResult.deleted ? { deleted: modifyResult.deleted } : undefined,
+connection.onRequest(
+  'applyMachineEdits',
+  ({ machineEdits, options, reason }) => {
+    if (!displayedMachine) {
+      throw new Error(
+        '`applyMachineEdits` can only be requested when there is a displayed machine',
       );
     }
-  }
-  const edits = mergeOverlappingEdits(
-    [
-      modified.configEdit,
-      'layoutEdit' in modified ? modified.layoutEdit : undefined,
-    ].filter((edit): edit is NonNullable<typeof edit> => !!edit),
-  );
+    const displayedUri = displayedMachine.uri;
 
-  let newDocumentText = cachedDocument.documentText;
+    const cachedDocument = documentsCache.get(displayedUri)!;
+    const isLayoutStringOnlyUpdate =
+      machineEdits.length === 1 &&
+      machineEdits[0].type === 'update_layout_string';
 
-  for (const edit of edits) {
-    newDocumentText =
-      newDocumentText.slice(0, edit.range[0].index) +
-      edit.newText +
-      newDocumentText.slice(edit.range[1].index);
-  }
+    let modified: ReturnType<
+      MachineExtractResult['modify'] | MachineExtractResult['restore']
+    >;
 
-  // TODO: figure out a better solution, the extraction that happens here is kinda wasteful
-  const { file, machineNodes } = getMachineNodesFromFile(newDocumentText);
+    if (!isLayoutStringOnlyUpdate && reason === 'undo') {
+      const item = cachedDocument.undoStack.pop();
+      if (item) {
+        modified =
+          cachedDocument.extractionResults[
+            displayedMachine.machineIndex
+          ].machineResult.restore(item);
+      } else {
+        modified = cachedDocument.extractionResults[
+          displayedMachine.machineIndex
+        ].machineResult.modify(machineEdits, options);
+      }
+    } else {
+      const modifyResult = cachedDocument.extractionResults[
+        displayedMachine.machineIndex
+      ].machineResult.modify(machineEdits, options);
 
-  // this kinda also should update types, but at the moment we don't need it
-  // and the whole thing will be refactored anyway
-  cachedDocument.extractionResults[
-    displayedMachine.machineIndex
-  ].machineResult = getMachineExtractResult({
-    file,
-    fileContent: newDocumentText,
-    node: machineNodes[displayedMachine.machineIndex],
-  })!;
+      modified = modifyResult;
 
-  return {
-    textEdits: edits.map((textEdit) => ({
-      uri: displayedUri,
-      ...textEdit,
-    })),
-  };
-});
+      if (!isLayoutStringOnlyUpdate) {
+        cachedDocument.undoStack.push(
+          modifyResult.deleted ? { deleted: modifyResult.deleted } : undefined,
+        );
+      }
+    }
+    const edits = mergeOverlappingEdits(
+      [
+        modified.configEdit,
+        'layoutEdit' in modified ? modified.layoutEdit : undefined,
+      ].filter((edit): edit is NonNullable<typeof edit> => !!edit),
+    );
+
+    let newDocumentText = cachedDocument.documentText;
+
+    for (const edit of edits) {
+      newDocumentText =
+        newDocumentText.slice(0, edit.range[0].index) +
+        edit.newText +
+        newDocumentText.slice(edit.range[1].index);
+    }
+
+    // TODO: figure out a better solution, the extraction that happens here is kinda wasteful
+    const { file, machineNodes } = getMachineNodesFromFile(newDocumentText);
+
+    // this kinda also should update types, but at the moment we don't need it
+    // and the whole thing will be refactored anyway
+    cachedDocument.extractionResults[
+      displayedMachine.machineIndex
+    ].machineResult = getMachineExtractResult({
+      file,
+      fileContent: newDocumentText,
+      node: machineNodes[displayedMachine.machineIndex],
+    })!;
+
+    return {
+      textEdits: edits.map((textEdit) => ({
+        uri: displayedUri,
+        ...textEdit,
+      })),
+    };
+  },
+);
 
 connection.onRequest('getTsTypesAndEdits', async ({ uri }) => {
   const cachedDocument = documentsCache.get(uri);
