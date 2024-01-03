@@ -1,5 +1,17 @@
 # @xstate/tools-shared
 
+## 4.0.9
+
+### Patch Changes
+
+- 22d51d2: pr: 422
+  commit: 9cef236
+
+  Extarct actor code from machine config as either inline or named actors preserving their source code
+
+- Updated dependencies [22d51d2]
+  - @xstate/machine-extractor@0.15.0
+
 ## 4.0.8
 
 ### Patch Changes
