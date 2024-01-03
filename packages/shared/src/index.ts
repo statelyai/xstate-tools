@@ -1,6 +1,6 @@
 export * from './createIntrospectableMachine';
 export * from './filterOutIgnoredMachines';
-export * from './forEachAction';
+export * from './forEachEntity';
 export * from './getInlineImplementations';
 export * from './getRangeFromSourceLocation';
 export * from './getRawTextFromNode';

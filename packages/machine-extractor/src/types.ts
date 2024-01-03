@@ -14,12 +14,13 @@ export type ExtractrorTransitionNodeConfig = {
 };
 
 export type ExtractorInvokeNodeConfig = {
-  src?: string | Function;
+  src: string;
   id?: string;
   autoForward?: boolean;
   forward?: boolean;
   onDone?: MaybeArray<ExtractrorTransitionNodeConfig>;
   onError?: MaybeArray<ExtractrorTransitionNodeConfig>;
+  kind: 'inline' | 'named';
 };
 
 export type ExtractorStateNodeConfig = {

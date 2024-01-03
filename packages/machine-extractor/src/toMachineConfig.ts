@@ -1,4 +1,5 @@
 import * as t from '@babel/types';
+import { getNameOfDeclaration } from 'typescript';
 import { MaybeArrayOfActions } from './actions';
 import { CondNode } from './conds';
 import {
@@ -8,6 +9,8 @@ import {
   extractRaiseAction,
   extractSendToAction,
   extractStopAction,
+  getCallExpressionName,
+  getObjectPropertyKey,
 } from './extractAction';
 import { TMachineCallExpression } from './machineCallExpression';
 import { StateNodeReturn } from './stateNode';
@@ -133,11 +136,27 @@ const parseStateNode = (
         return;
       }
       // For now, we'll treat "anonymous" as if this is an inline expression
-      let src: string | undefined =
-        invoke.src.declarationType === 'named' ? invoke.src.value : undefined;
+      let invokeDef:
+        | { src: string; kind: ExtractorInvokeNodeConfig['kind'] }
+        | undefined = (() => {
+        if (invoke.src.declarationType === 'named') {
+          return {
+            src: invoke.src.value,
+            kind: 'named',
+          };
+        }
+        return {
+          src: opts!.fileContent.slice(
+            invoke.src.node.start!,
+            invoke.src.node.end!,
+          ),
+          kind: 'inline',
+        };
+      })();
 
       const toPush: ExtractorInvokeNodeConfig = {
-        src: src || (() => () => {}),
+        src: invokeDef.src,
+        kind: invokeDef.kind,
       };
 
       if (invoke.id) {
