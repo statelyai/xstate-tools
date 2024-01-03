@@ -13,14 +13,14 @@
       "import": "./dist/xstate-tools-shared.cjs.mjs",
       "default": "./dist/xstate-tools-shared.cjs.js"
     },
-    "./forEachAction": {
+    "./forEachEntity": {
       "types": {
-        "import": "./forEachAction/dist/xstate-tools-shared-forEachAction.cjs.mjs",
-        "default": "./forEachAction/dist/xstate-tools-shared-forEachAction.cjs.js"
+        "import": "./forEachEntity/dist/xstate-tools-shared-forEachEntity.cjs.mjs",
+        "default": "./forEachEntity/dist/xstate-tools-shared-forEachEntity.cjs.js"
       },
-      "module": "./forEachAction/dist/xstate-tools-shared-forEachAction.esm.js",
-      "import": "./forEachAction/dist/xstate-tools-shared-forEachAction.cjs.mjs",
-      "default": "./forEachAction/dist/xstate-tools-shared-forEachAction.cjs.js"
+      "module": "./forEachEntity/dist/xstate-tools-shared-forEachEntity.esm.js",
+      "import": "./forEachEntity/dist/xstate-tools-shared-forEachEntity.cjs.mjs",
+      "default": "./forEachEntity/dist/xstate-tools-shared-forEachEntity.cjs.js"
     },
     "./package.json": "./package.json"
   },
@@ -48,7 +48,7 @@
   "preconstruct": {
     "entrypoints": [
       "./index.ts",
-      "./forEachAction.ts"
+      "./forEachEntity.ts"
     ]
   }
 }

@@ -1,7 +1,8 @@
 import { extractMachinesFromFile } from '@xstate/machine-extractor';
-import { forEachAction } from '../forEachAction';
+import { isActorEntity } from '../createIntrospectableMachine';
+import { forEachEntity } from '../forEachEntity';
 
-describe('forEachAction', () => {
+describe('forEachEntity', () => {
   it('Should visit and replace all actions', () => {
     const result = extractMachinesFromFile(`
 			createMachine({
@@ -62,8 +63,11 @@ describe('forEachAction', () => {
 		`);
 
     const config = result?.machines[0]?.toConfig()!;
-    forEachAction(config, (action) => {
-      return { type: 'anonymous' };
+    forEachEntity(config, (entity) => {
+      if (!isActorEntity(entity)) {
+        return { type: 'anonymous' };
+      }
+      return entity;
     });
 
     expect(config).toMatchInlineSnapshot(`
@@ -76,6 +80,7 @@ describe('forEachAction', () => {
         },
         "initial": "a",
         "invoke": {
+          "kind": "named",
           "onDone": {
             "actions": {
               "type": "anonymous",
@@ -97,6 +102,7 @@ describe('forEachAction', () => {
               "type": "anonymous",
             },
             "invoke": {
+              "kind": "named",
               "onDone": [
                 {
                   "actions": {
@@ -150,12 +156,18 @@ describe('forEachAction', () => {
             "exit": {
               "type": "anonymous",
             },
+            "invoke": {
+              "type": "anonymous",
+            },
           },
           "c": {
             "entry": {
               "type": "anonymous",
             },
             "exit": {
+              "type": "anonymous",
+            },
+            "invoke": {
               "type": "anonymous",
             },
             "on": {
@@ -201,11 +213,13 @@ describe('forEachAction', () => {
 
     const config = result?.machines[0]?.toConfig()!;
 
-    forEachAction(config, (action) => {
-      if (action?.kind === 'builtin') {
-        return;
+    forEachEntity(config, (entity) => {
+      if (!isActorEntity(entity)) {
+        if (entity?.kind === 'builtin') {
+          return;
+        }
       }
-      return action;
+      return entity;
     });
 
     expect(config).toMatchInlineSnapshot(`
@@ -233,6 +247,124 @@ describe('forEachAction', () => {
                 ],
               },
             },
+          },
+        },
+      }
+    `);
+  });
+
+  it('Should visit and replace all actors', () => {
+    const result = extractMachinesFromFile(`
+      createMachine({
+        initial: 'a',
+        invoke: {
+          src: 'named actor'
+        },
+        states: {
+          a: {
+            invoke: [
+              {src: () => {}},
+              {src: () => () => {}},
+              {src: someIdentifier},
+              {src: 'another named actor'}
+            ]
+          }
+        }
+      })
+    `);
+
+    const config = result?.machines[0]?.toConfig()!;
+
+    // Only replace inline actors
+    forEachEntity(config, (entity) => {
+      if (isActorEntity(entity)) {
+        if (entity.kind === 'inline') {
+          return { ...entity, src: 'anonymous' };
+        }
+      }
+      return entity;
+    });
+
+    expect(config).toMatchInlineSnapshot(`
+      {
+        "initial": "a",
+        "invoke": {
+          "kind": "named",
+          "src": "named actor",
+        },
+        "states": {
+          "a": {
+            "invoke": [
+              {
+                "kind": "inline",
+                "src": "anonymous",
+              },
+              {
+                "kind": "inline",
+                "src": "anonymous",
+              },
+              {
+                "kind": "inline",
+                "src": "anonymous",
+              },
+              {
+                "kind": "named",
+                "src": "another named actor",
+              },
+            ],
+          },
+        },
+      }
+    `);
+  });
+
+  it('Should delete actors', () => {
+    const result = extractMachinesFromFile(`
+      createMachine({
+        initial: 'a',
+        invoke: {
+          src: 'named actor'
+        },
+        states: {
+          a: {
+            invoke: [
+              {src: () => {}},
+              {src: () => () => {}},
+              {src: someIdentifier},
+              {src: 'another named actor'}
+            ]
+          }
+        }
+      })
+    `);
+
+    const config = result?.machines[0]?.toConfig()!;
+
+    // Only delete inline actors
+    forEachEntity(config, (entity) => {
+      if (isActorEntity(entity)) {
+        if (entity.kind === 'inline') {
+          return;
+        }
+      }
+      return entity;
+    });
+
+    expect(config).toMatchInlineSnapshot(`
+      {
+        "initial": "a",
+        "invoke": {
+          "kind": "named",
+          "src": "named actor",
+        },
+        "states": {
+          "a": {
+            "invoke": [
+              {
+                "kind": "named",
+                "src": "another named actor",
+              },
+            ],
           },
         },
       }

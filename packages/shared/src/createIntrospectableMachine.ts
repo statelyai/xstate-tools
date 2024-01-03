@@ -1,6 +1,10 @@
-import { MachineExtractResult } from '@xstate/machine-extractor';
+import {
+  ExtractorInvokeNodeConfig,
+  ExtractorMachineAction,
+  MachineExtractResult,
+} from '@xstate/machine-extractor';
 import { AnyStateMachine, createMachine } from 'xstate';
-import { forEachAction } from './forEachAction';
+import { forEachEntity } from './forEachEntity';
 
 function stubAllWith<T>(value: T): Record<string, T> {
   return new Proxy(
@@ -11,20 +15,33 @@ function stubAllWith<T>(value: T): Record<string, T> {
   );
 }
 
+export const isActorEntity = (
+  entity: ExtractorMachineAction | ExtractorInvokeNodeConfig | undefined,
+): entity is ExtractorInvokeNodeConfig =>
+  !!entity && 'src' in entity && typeof entity.src !== 'undefined';
+
 export function createIntrospectableMachine(
   machineResult: MachineExtractResult,
 ): AnyStateMachine {
   const config = machineResult.toConfig()!;
 
-  forEachAction(config, (action) => {
-    if (action?.kind === 'named') {
-      return action.action;
+  forEachEntity(config, (entity) => {
+    if (isActorEntity(entity)) {
+      return {
+        ...entity,
+        src: entity.kind === 'inline' ? () => {} : entity.src,
+      };
+    } else if (entity?.kind === 'named') {
+      return entity.action;
     }
     // Special case choose actions for typegen
-    if (action?.kind === 'inline' && action.action.__tempStatelyChooseConds) {
+    else if (
+      entity?.kind === 'inline' &&
+      entity.action.__tempStatelyChooseConds
+    ) {
       return {
         type: 'xstate.choose',
-        conds: action.action.__tempStatelyChooseConds,
+        conds: entity.action.__tempStatelyChooseConds,
       };
     }
     return;
