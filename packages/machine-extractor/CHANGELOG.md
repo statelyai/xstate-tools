@@ -1,5 +1,14 @@
 # @xstate/machine-extractor
 
+## 0.15.0
+
+### Minor Changes
+
+- 22d51d2: pr: 422
+  commit: 9cef236
+
+  Extarct actor code from machine config as either inline or named actors preserving their source code
+
 ## 0.14.1
 
 ### Patch Changes
