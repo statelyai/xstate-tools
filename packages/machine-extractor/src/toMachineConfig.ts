@@ -145,43 +145,11 @@ const parseStateNode = (
             kind: 'named',
           };
         }
-        if (invoke.src.declarationType === 'inline') {
-          return {
-            src: opts!.fileContent.slice(
-              invoke.src.node.start!,
-              invoke.src.node.end!,
-            ),
-            kind: 'inline',
-          };
-        }
-        // fromCallback(() => {}), fetch(''), etc.
-        if (
-          invoke.src.declarationType === 'unknown' &&
-          t.isCallExpression(invoke.src.node)
-        ) {
-          const callExprName = getCallExpressionName(invoke.src.node);
-
-          return {
-            src: opts!.fileContent.slice(
-              invoke.src.node.start!,
-              invoke.src.node.end!,
-            ),
-            kind:
-              callExprName &&
-              [
-                'fromPromise',
-                'fromCallback',
-                'fromTransition',
-                'fromObservable',
-                'fromEventObservable',
-              ].includes(callExprName)
-                ? 'builtin'
-                : 'inline',
-          };
-        }
-
         return {
-          src: 'anonymous',
+          src: opts!.fileContent.slice(
+            invoke.src.node.start!,
+            invoke.src.node.end!,
+          ),
           kind: 'inline',
         };
       })();

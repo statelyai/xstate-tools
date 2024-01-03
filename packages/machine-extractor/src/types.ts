@@ -20,7 +20,7 @@ export type ExtractorInvokeNodeConfig = {
   forward?: boolean;
   onDone?: MaybeArray<ExtractrorTransitionNodeConfig>;
   onError?: MaybeArray<ExtractrorTransitionNodeConfig>;
-  kind: 'inline' | 'builtin' | 'named';
+  kind: 'inline' | 'named';
 };
 
 export type ExtractorStateNodeConfig = {
