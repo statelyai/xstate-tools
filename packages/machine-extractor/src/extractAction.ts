@@ -270,9 +270,9 @@ export function extractSendToAction(
 // Todo: support namespace imports and aliased specifiers
 // import * as actions from 'xstate'; actions.sendTo
 // import {sendTo as x} from 'xstate'
-export const getActionCreatorName = (actionNode: ActionNode) =>
-  t.isCallExpression(actionNode.node) && t.isIdentifier(actionNode.node.callee)
-    ? actionNode.node.callee.name
+export const getCallExpressionName = (node: t.Node) =>
+  t.isCallExpression(node) && t.isIdentifier(node.callee)
+    ? node.callee.name
     : undefined;
 
 export const getObjectPropertyKey = (

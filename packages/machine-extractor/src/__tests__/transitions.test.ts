@@ -43,6 +43,7 @@ describe('Internal transitions', () => {
         "states": {
           "a": {
             "invoke": {
+              "kind": "named",
               "onDone": {
                 "internal": false,
               },

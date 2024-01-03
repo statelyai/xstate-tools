@@ -79,12 +79,16 @@ function getTransitionsOutOfState(
   return transitions;
 }
 
-const replaceOrDeleteActions = <T>(
+const replaceOrDeleteEntity = <T>(
   host: T,
   prop: keyof T,
-  visitor: (action: ExtractorMachineAction | undefined) => any,
+  visitor: (
+    entity: ExtractorMachineAction | ExtractorInvokeNodeConfig | undefined,
+  ) => any,
 ) => {
-  const entity = host[prop] as MaybeArray<ExtractorMachineAction>;
+  const entity = host[prop] as
+    | MaybeArray<ExtractorMachineAction>
+    | MaybeArray<ExtractorInvokeNodeConfig>;
   if (Array.isArray(entity)) {
     for (let i = entity.length - 1; i >= 0; i--) {
       const val = visitor(entity[i]);
@@ -107,19 +111,24 @@ const replaceOrDeleteActions = <T>(
 /**
  * @description Recursively traverses the state node, finds all actions and either replaces them with the new value is visitor returns a truthy value or deletes it
  */
-const forEachActionRecur = (
+const forEachEntityRecur = (
   stateNode: ExtractorStateNodeConfig,
-  visitor: (action: ExtractorMachineAction | undefined) => any,
+  visitor: (
+    entity: ExtractorMachineAction | ExtractorInvokeNodeConfig | undefined,
+  ) => any,
   path: string[],
 ) => {
   /**
    * Entry actions
    */
-  replaceOrDeleteActions(stateNode, 'entry', visitor);
+  replaceOrDeleteEntity(stateNode, 'entry', visitor);
   /**
    * Exit actions
    */
-  replaceOrDeleteActions(stateNode, 'exit', visitor);
+  replaceOrDeleteEntity(stateNode, 'exit', visitor);
+
+  // Invokes
+  replaceOrDeleteEntity(stateNode, 'invoke', visitor);
 
   const transitions = getTransitionsOutOfState(stateNode, path.join('.'));
   Object.entries(transitions).forEach(([event, tr]) => {
@@ -135,24 +144,24 @@ const forEachActionRecur = (
         const invocation = stateNode.invoke[index];
         if (Array.isArray(invocation.onDone)) {
           invocation.onDone.forEach((doneTransition) => {
-            replaceOrDeleteActions(doneTransition, 'actions', visitor);
+            replaceOrDeleteEntity(doneTransition, 'actions', visitor);
           });
         } else {
           const doneTransition = invocation.onDone;
           if (!doneTransition?.actions) return;
-          replaceOrDeleteActions(doneTransition, 'actions', visitor);
+          replaceOrDeleteEntity(doneTransition, 'actions', visitor);
         }
       } else {
         const invocation = stateNode.invoke;
         if (!invocation) return;
         if (Array.isArray(invocation.onDone)) {
           invocation.onDone.forEach((doneTransition) => {
-            replaceOrDeleteActions(doneTransition, 'actions', visitor);
+            replaceOrDeleteEntity(doneTransition, 'actions', visitor);
           });
         } else {
           const doneTransition = invocation.onDone;
           if (!doneTransition?.actions) return;
-          replaceOrDeleteActions(doneTransition, 'actions', visitor);
+          replaceOrDeleteEntity(doneTransition, 'actions', visitor);
         }
       }
     } else if (event.startsWith('error.invoke')) {
@@ -167,47 +176,49 @@ const forEachActionRecur = (
         const invocation = stateNode.invoke[index];
         if (Array.isArray(invocation.onError)) {
           invocation.onError.forEach((errorTransition) => {
-            replaceOrDeleteActions(errorTransition, 'actions', visitor);
+            replaceOrDeleteEntity(errorTransition, 'actions', visitor);
           });
         } else {
           const errorTransition = invocation.onError;
           if (!errorTransition?.actions) return;
-          replaceOrDeleteActions(errorTransition, 'actions', visitor);
+          replaceOrDeleteEntity(errorTransition, 'actions', visitor);
         }
       } else {
         const invocation = stateNode.invoke;
         if (!invocation) return;
         if (Array.isArray(invocation.onError)) {
           invocation.onError.forEach((errorTransition) => {
-            replaceOrDeleteActions(errorTransition, 'actions', visitor);
+            replaceOrDeleteEntity(errorTransition, 'actions', visitor);
           });
         } else {
           const errorTransition = invocation.onError;
           if (!errorTransition?.actions) return;
-          replaceOrDeleteActions(errorTransition, 'actions', visitor);
+          replaceOrDeleteEntity(errorTransition, 'actions', visitor);
         }
       }
     }
     // Guarded transitions
     else if (Array.isArray(tr)) {
       tr.forEach((group) => {
-        replaceOrDeleteActions(group, 'actions', visitor);
+        replaceOrDeleteEntity(group, 'actions', visitor);
       });
     } else {
-      replaceOrDeleteActions(tr, 'actions', visitor);
+      replaceOrDeleteEntity(tr, 'actions', visitor);
     }
   });
   /**
    * Recurse to child states
    */
   for (const key in stateNode.states) {
-    forEachActionRecur(stateNode.states[key], visitor, path.concat(key));
+    forEachEntityRecur(stateNode.states[key], visitor, path.concat(key));
   }
 };
 
-export const forEachAction = (
+export const forEachEntity = (
   machine: ExtractorMachineConfig,
-  visitor: (action: ExtractorMachineAction | undefined) => any,
+  visitor: (
+    entity: ExtractorMachineAction | ExtractorInvokeNodeConfig | undefined,
+  ) => any,
 ) => {
-  return forEachActionRecur(machine, visitor, ['machine']);
+  return forEachEntityRecur(machine, visitor, ['machine']);
 };
