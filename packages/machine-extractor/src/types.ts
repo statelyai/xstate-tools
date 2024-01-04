@@ -8,7 +8,7 @@ export type ExtractrorTransitionNodeConfig = {
   target?: MaybeArray<string>;
   actions?: MaybeArray<ExtractorMachineAction>;
   internal?: boolean;
-  cond?: string;
+  cond?: ExtractorGuard;
   description?: string;
   meta?: Record<string, any>;
 };
@@ -150,6 +150,12 @@ export type ExtractorMachineAction =
   | ExtractorNamedAction
   | ExtractorInlineAction
   | BuiltinAction;
+
+export type ExtractorGuard = {
+  kind: 'inline' | 'named';
+  type: string;
+  params: JsonObject;
+};
 
 // These types are copied over from studio blocks.
 // array and object are extracted as expressions so Studio render them correctly when exporting
