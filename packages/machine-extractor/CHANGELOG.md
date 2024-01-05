@@ -1,5 +1,11 @@
 # @xstate/machine-extractor
 
+## 0.16.0
+
+### Minor Changes
+
+- 5e96dc2: Extract guards with kind property either as named or inline
+
 ## 0.15.0
 
 ### Minor Changes
