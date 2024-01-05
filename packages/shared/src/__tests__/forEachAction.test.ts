@@ -139,7 +139,11 @@ describe('forEachEntity', () => {
                   "actions": {
                     "type": "anonymous",
                   },
-                  "cond": "someCond",
+                  "cond": {
+                    "kind": "named",
+                    "params": {},
+                    "type": "someCond",
+                  },
                   "target": "a",
                 },
                 {
