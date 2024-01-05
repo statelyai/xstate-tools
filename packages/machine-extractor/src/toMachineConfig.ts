@@ -256,7 +256,10 @@ export const getActionConfig = (
         const __tempStatelyChooseConds =
           action.name === 'choose'
             ? action.chooseConditions!.map((condition) => {
-                const cond = getCondition(condition.conditionNode, opts);
+                const cond = getLegacyChooseActionCondition(
+                  condition.conditionNode,
+                  opts,
+                );
                 return {
                   ...(cond && { cond }),
                   // TODO: extract cond.actions with getActionConfig
@@ -341,6 +344,16 @@ export const getActionConfig = (
   }
 
   return actions;
+};
+
+const getLegacyChooseActionCondition = (
+  condNode: CondNode | undefined,
+  opts: ToMachineConfigOptions | undefined,
+) => {
+  if (!condNode) {
+    return;
+  }
+  return condNode.declarationType === 'named' ? condNode.name : undefined;
 };
 
 const getCondition = (

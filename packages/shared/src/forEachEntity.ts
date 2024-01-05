@@ -1,4 +1,5 @@
 import {
+  ExtractorGuard,
   ExtractorInvokeNodeConfig,
   ExtractorMachineAction,
   ExtractorMachineConfig,
@@ -83,12 +84,18 @@ const replaceOrDeleteEntity = <T>(
   host: T,
   prop: keyof T,
   visitor: (
-    entity: ExtractorMachineAction | ExtractorInvokeNodeConfig | undefined,
+    entity:
+      | ExtractorMachineAction
+      | ExtractorInvokeNodeConfig
+      | ExtractorGuard
+      | undefined,
   ) => any,
 ) => {
   const entity = host[prop] as
     | MaybeArray<ExtractorMachineAction>
-    | MaybeArray<ExtractorInvokeNodeConfig>;
+    | MaybeArray<ExtractorInvokeNodeConfig>
+    | ExtractorGuard;
+  if (!entity) return;
   if (Array.isArray(entity)) {
     for (let i = entity.length - 1; i >= 0; i--) {
       const val = visitor(entity[i]);
@@ -114,7 +121,11 @@ const replaceOrDeleteEntity = <T>(
 const forEachEntityRecur = (
   stateNode: ExtractorStateNodeConfig,
   visitor: (
-    entity: ExtractorMachineAction | ExtractorInvokeNodeConfig | undefined,
+    entity:
+      | ExtractorMachineAction
+      | ExtractorInvokeNodeConfig
+      | ExtractorGuard
+      | undefined,
   ) => any,
   path: string[],
 ) => {
@@ -145,11 +156,16 @@ const forEachEntityRecur = (
         if (Array.isArray(invocation.onDone)) {
           invocation.onDone.forEach((doneTransition) => {
             replaceOrDeleteEntity(doneTransition, 'actions', visitor);
+            replaceOrDeleteEntity(doneTransition, 'cond', visitor);
           });
         } else {
           const doneTransition = invocation.onDone;
-          if (!doneTransition?.actions) return;
-          replaceOrDeleteEntity(doneTransition, 'actions', visitor);
+          if (doneTransition?.actions) {
+            replaceOrDeleteEntity(doneTransition, 'actions', visitor);
+          }
+          if (doneTransition?.cond) {
+            replaceOrDeleteEntity(doneTransition, 'cond', visitor);
+          }
         }
       } else {
         const invocation = stateNode.invoke;
@@ -157,11 +173,16 @@ const forEachEntityRecur = (
         if (Array.isArray(invocation.onDone)) {
           invocation.onDone.forEach((doneTransition) => {
             replaceOrDeleteEntity(doneTransition, 'actions', visitor);
+            replaceOrDeleteEntity(doneTransition, 'cond', visitor);
           });
         } else {
           const doneTransition = invocation.onDone;
-          if (!doneTransition?.actions) return;
-          replaceOrDeleteEntity(doneTransition, 'actions', visitor);
+          if (doneTransition?.actions) {
+            replaceOrDeleteEntity(doneTransition, 'actions', visitor);
+          }
+          if (doneTransition?.cond) {
+            replaceOrDeleteEntity(doneTransition, 'cond', visitor);
+          }
         }
       }
     } else if (event.startsWith('error.invoke')) {
@@ -177,11 +198,16 @@ const forEachEntityRecur = (
         if (Array.isArray(invocation.onError)) {
           invocation.onError.forEach((errorTransition) => {
             replaceOrDeleteEntity(errorTransition, 'actions', visitor);
+            replaceOrDeleteEntity(errorTransition, 'cond', visitor);
           });
         } else {
           const errorTransition = invocation.onError;
-          if (!errorTransition?.actions) return;
-          replaceOrDeleteEntity(errorTransition, 'actions', visitor);
+          if (errorTransition?.actions) {
+            replaceOrDeleteEntity(errorTransition, 'actions', visitor);
+          }
+          if (errorTransition?.cond) {
+            replaceOrDeleteEntity(errorTransition, 'cond', visitor);
+          }
         }
       } else {
         const invocation = stateNode.invoke;
@@ -189,11 +215,16 @@ const forEachEntityRecur = (
         if (Array.isArray(invocation.onError)) {
           invocation.onError.forEach((errorTransition) => {
             replaceOrDeleteEntity(errorTransition, 'actions', visitor);
+            replaceOrDeleteEntity(errorTransition, 'cond', visitor);
           });
         } else {
           const errorTransition = invocation.onError;
-          if (!errorTransition?.actions) return;
-          replaceOrDeleteEntity(errorTransition, 'actions', visitor);
+          if (errorTransition?.actions) {
+            replaceOrDeleteEntity(errorTransition, 'actions', visitor);
+          }
+          if (errorTransition?.cond) {
+            replaceOrDeleteEntity(errorTransition, 'cond', visitor);
+          }
         }
       }
     }
@@ -201,9 +232,11 @@ const forEachEntityRecur = (
     else if (Array.isArray(tr)) {
       tr.forEach((group) => {
         replaceOrDeleteEntity(group, 'actions', visitor);
+        replaceOrDeleteEntity(group, 'cond', visitor);
       });
     } else {
       replaceOrDeleteEntity(tr, 'actions', visitor);
+      replaceOrDeleteEntity(tr, 'cond', visitor);
     }
   });
   /**
@@ -217,7 +250,11 @@ const forEachEntityRecur = (
 export const forEachEntity = (
   machine: ExtractorMachineConfig,
   visitor: (
-    entity: ExtractorMachineAction | ExtractorInvokeNodeConfig | undefined,
+    entity:
+      | ExtractorMachineAction
+      | ExtractorInvokeNodeConfig
+      | ExtractorGuard
+      | undefined,
   ) => any,
 ) => {
   return forEachEntityRecur(machine, visitor, ['machine']);
