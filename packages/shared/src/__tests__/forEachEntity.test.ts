@@ -1,5 +1,5 @@
 import { extractMachinesFromFile } from '@xstate/machine-extractor';
-import { isActorEntity } from '../createIntrospectableMachine';
+import { isActionEntity, isActorEntity } from '../createIntrospectableMachine';
 import { forEachEntity } from '../forEachEntity';
 
 describe('forEachEntity', () => {
@@ -27,11 +27,11 @@ describe('forEachEntity', () => {
 							onDone: [{
 								target: 'b',
 								actions: [() => {}]
-							}, {onDone: () => {}}],
+							}, {actions: () => {}}],
 							onError: [{
 								target: 'b',
 								actions: [() => {}]
-							}, {onDone: () => {}}]
+							}, {actions: () => {}}]
 						},
 					},
 					b: {
@@ -64,7 +64,7 @@ describe('forEachEntity', () => {
 
     const config = result?.machines[0]?.toConfig()!;
     forEachEntity(config, (entity) => {
-      if (!isActorEntity(entity)) {
+      if (isActionEntity(entity)) {
         return { type: 'anonymous' };
       }
       return entity;
@@ -139,7 +139,11 @@ describe('forEachEntity', () => {
                   "actions": {
                     "type": "anonymous",
                   },
-                  "cond": "someCond",
+                  "cond": {
+                    "kind": "named",
+                    "params": {},
+                    "type": "someCond",
+                  },
                   "target": "a",
                 },
                 {
@@ -150,26 +154,8 @@ describe('forEachEntity', () => {
                 },
               ],
             },
-            "entry": {
-              "type": "anonymous",
-            },
-            "exit": {
-              "type": "anonymous",
-            },
-            "invoke": {
-              "type": "anonymous",
-            },
           },
           "c": {
-            "entry": {
-              "type": "anonymous",
-            },
-            "exit": {
-              "type": "anonymous",
-            },
-            "invoke": {
-              "type": "anonymous",
-            },
             "on": {
               "always": {
                 "actions": {
@@ -214,7 +200,7 @@ describe('forEachEntity', () => {
     const config = result?.machines[0]?.toConfig()!;
 
     forEachEntity(config, (entity) => {
-      if (!isActorEntity(entity)) {
+      if (isActionEntity(entity)) {
         if (entity?.kind === 'builtin') {
           return;
         }
@@ -365,6 +351,297 @@ describe('forEachEntity', () => {
                 "src": "another named actor",
               },
             ],
+          },
+        },
+      }
+    `);
+  });
+
+  it('Should visit all named guards and replace them', () => {
+    const result = extractMachinesFromFile(`createMachine({
+      initial: 'a',
+      states: {
+        a: {
+          on: {
+            event: {
+              target: 'b',
+              cond: 'someCond',
+            },
+          },
+        },
+        b: {
+          after: {
+            delay: {
+              target: 'c',
+              cond: () => true,
+            },
+          },
+        },
+        c: {
+          on: {
+            event: {
+              target: 'd',
+              cond: {
+                type: 'parametrizedGuard',
+                params: {
+                  a: 1,
+                },
+              },
+            },
+          },
+        },
+        d: {
+          invoke: {
+            src: 'actor',
+            onDone: {
+              target: 'a',
+              cond: 'someCond',
+            },
+            onError: {
+              target: 'b',
+              cond: () => true,
+            },
+          },
+          on: {
+            event: [
+              { target: 'a', cond: 'someCond' },
+              { target: 'b', cond: () => true },
+            ],
+          },
+        },
+      },
+    })`);
+
+    const config = result!.machines[0]!.toConfig()!;
+    forEachEntity(config, (entity) => {
+      if (!isActorEntity(entity) && !isActionEntity(entity)) {
+        if (entity?.kind === 'named') {
+          return { ...entity, type: 'anonymous' };
+        }
+      }
+      return entity;
+    });
+
+    expect(config).toMatchInlineSnapshot(`
+      {
+        "initial": "a",
+        "states": {
+          "a": {
+            "on": {
+              "event": {
+                "cond": {
+                  "kind": "named",
+                  "params": {},
+                  "type": "anonymous",
+                },
+                "target": "b",
+              },
+            },
+          },
+          "b": {
+            "after": {
+              "delay": {
+                "cond": {
+                  "kind": "inline",
+                  "params": {},
+                  "type": "() => true",
+                },
+                "target": "c",
+              },
+            },
+          },
+          "c": {
+            "on": {
+              "event": {
+                "cond": {
+                  "kind": "named",
+                  "params": {
+                    "a": 1,
+                  },
+                  "type": "anonymous",
+                },
+                "target": "d",
+              },
+            },
+          },
+          "d": {
+            "invoke": {
+              "kind": "named",
+              "onDone": {
+                "cond": {
+                  "kind": "named",
+                  "params": {},
+                  "type": "anonymous",
+                },
+                "target": "a",
+              },
+              "onError": {
+                "cond": {
+                  "kind": "inline",
+                  "params": {},
+                  "type": "() => true",
+                },
+                "target": "b",
+              },
+              "src": "actor",
+            },
+            "on": {
+              "event": [
+                {
+                  "cond": {
+                    "kind": "named",
+                    "params": {},
+                    "type": "anonymous",
+                  },
+                  "target": "a",
+                },
+                {
+                  "cond": {
+                    "kind": "inline",
+                    "params": {},
+                    "type": "() => true",
+                  },
+                  "target": "b",
+                },
+              ],
+            },
+          },
+        },
+      }
+    `);
+  });
+  it('Should visit all inline guards and delete them', () => {
+    const result = extractMachinesFromFile(`
+      createMachine({
+        initial: 'a',
+        states: {
+          a: {
+            on: {
+              event: {
+                target: 'b',
+                cond: 'someCond'
+              }
+            }
+          },
+          b: {
+            after: {
+              delay: {
+                target: 'c',
+                cond: () => true
+              }
+            }
+          },
+          c: {
+            on: {
+              event: {
+                target: 'd',
+                cond: {
+                  type: 'parametrizedGuard',
+                  params: {
+                    a: 1
+                  }
+                }
+              }
+            }
+          },
+          d: {
+            invoke: {
+              src: 'actor',
+              onDone: {
+                target: 'a',
+                cond: 'someCond'
+              },
+              onError: {
+                target: 'b',
+                cond: () => true
+              }
+            },
+            on: {
+              event: [{target: 'a', cond: 'someCond'}, {target: 'b', cond: () => true}]
+            }
+          }
+        }
+      })
+    `);
+    const config = result!.machines[0]!.toConfig()!;
+    forEachEntity(config, (entity) => {
+      const isInlineGuard =
+        entity &&
+        !isActorEntity(entity) &&
+        !isActionEntity(entity) &&
+        entity?.kind === 'inline';
+
+      return isInlineGuard ? undefined : entity;
+    });
+
+    expect(config).toMatchInlineSnapshot(`
+      {
+        "initial": "a",
+        "states": {
+          "a": {
+            "on": {
+              "event": {
+                "cond": {
+                  "kind": "named",
+                  "params": {},
+                  "type": "someCond",
+                },
+                "target": "b",
+              },
+            },
+          },
+          "b": {
+            "after": {
+              "delay": {
+                "target": "c",
+              },
+            },
+          },
+          "c": {
+            "on": {
+              "event": {
+                "cond": {
+                  "kind": "named",
+                  "params": {
+                    "a": 1,
+                  },
+                  "type": "parametrizedGuard",
+                },
+                "target": "d",
+              },
+            },
+          },
+          "d": {
+            "invoke": {
+              "kind": "named",
+              "onDone": {
+                "cond": {
+                  "kind": "named",
+                  "params": {},
+                  "type": "someCond",
+                },
+                "target": "a",
+              },
+              "onError": {
+                "target": "b",
+              },
+              "src": "actor",
+            },
+            "on": {
+              "event": [
+                {
+                  "cond": {
+                    "kind": "named",
+                    "params": {},
+                    "type": "someCond",
+                  },
+                  "target": "a",
+                },
+                {
+                  "target": "b",
+                },
+              ],
+            },
           },
         },
       }

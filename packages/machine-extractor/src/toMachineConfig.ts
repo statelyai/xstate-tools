@@ -16,6 +16,7 @@ import { TMachineCallExpression } from './machineCallExpression';
 import { StateNodeReturn } from './stateNode';
 import { MaybeTransitionArray } from './transitions';
 import {
+  ExtractorGuard,
   ExtractorInvokeNodeConfig,
   ExtractorMachineAction,
   ExtractorMachineConfig,
@@ -255,7 +256,10 @@ export const getActionConfig = (
         const __tempStatelyChooseConds =
           action.name === 'choose'
             ? action.chooseConditions!.map((condition) => {
-                const cond = getCondition(condition.conditionNode, opts);
+                const cond = getLegacyChooseActionCondition(
+                  condition.conditionNode,
+                  opts,
+                );
                 return {
                   ...(cond && { cond }),
                   // TODO: extract cond.actions with getActionConfig
@@ -342,7 +346,7 @@ export const getActionConfig = (
   return actions;
 };
 
-const getCondition = (
+const getLegacyChooseActionCondition = (
   condNode: CondNode | undefined,
   opts: ToMachineConfigOptions | undefined,
 ) => {
@@ -350,6 +354,35 @@ const getCondition = (
     return;
   }
   return condNode.declarationType === 'named' ? condNode.name : undefined;
+};
+
+const getCondition = (
+  condNode: CondNode | undefined,
+  opts: ToMachineConfigOptions | undefined,
+): ExtractorGuard | undefined => {
+  if (!condNode) {
+    return;
+  }
+  if (condNode.declarationType === 'named') {
+    if (t.isObjectExpression(condNode.node)) {
+      return {
+        // We probably need to extract the object node here and be specific about this returned object properties
+        ...extractObjectRecursively(condNode.node, opts!.fileContent),
+        kind: 'named',
+      } as ExtractorGuard;
+    }
+    return {
+      kind: 'named',
+      type: condNode.name,
+      params: {},
+    };
+  }
+  return {
+    kind: 'inline',
+    type: opts!.fileContent.slice(condNode.node.start!, condNode.node.end!),
+    params: {},
+  };
+  // return condNode.declarationType === 'named' ? condNode.name : undefined;
 };
 
 export const getTransitions = (
