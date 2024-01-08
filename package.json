@@ -36,7 +36,8 @@
     "deps:dev": "preconstruct watch",
     "vscode:dev": "yarn turbo run vscode:build:dev --no-cache && cp apps/extension/server/dist/index.js apps/extension/client/dist/server.js",
     "vscode:prod": "yarn turbo run vscode:build:prod --no-cache && cp apps/extension/server/dist/index.js apps/extension/client/dist/server.js",
-    "test": "jest"
+    "test": "jest",
+    "vitest": "vitest"
   },
   "preconstruct": {
     "packages": [
@@ -100,6 +101,8 @@
     "patch-package": "^6.4.7",
     "prettier": "^2.8.8",
     "turbo": "^1.1.2",
-    "typescript": "5.3.3"
+    "typescript": "5.3.3",
+    "vite": "^5.0.11",
+    "vitest": "^1.1.3"
   }
 }
