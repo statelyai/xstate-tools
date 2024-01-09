@@ -20,7 +20,7 @@
       "request": "launch",
       "name": "Vitest Current Test File",
       "autoAttachChildProcesses": true,
-      "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
+      "skipFiles": ["<node_internals>/**"],
       "program": "${workspaceRoot}/node_modules/vitest/vitest.mjs",
       "args": ["run", "${relativeFile}"],
       "smartStep": true,
