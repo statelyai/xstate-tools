@@ -1,0 +1,4 @@
+{
+  "main": "dist/xstate-language-server-protocol.cjs.js",
+  "module": "dist/xstate-language-server-protocol.esm.js"
+}
