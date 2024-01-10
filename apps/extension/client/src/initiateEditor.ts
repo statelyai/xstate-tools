@@ -42,12 +42,6 @@ type StudioEvent =
   | MachineChangedEvent
   | LayoutUpdatedEvent;
 
-function showXStateV5Warning() {
-  vscode.window.showInformationMessage(
-    'You are using XState v5. The extension is not yet 100% compatible with it.',
-  );
-}
-
 function registerCommand<Name extends keyof typeSafeVsCode.XStateCommands>(
   extensionContext: vscode.ExtensionContext,
   ...[name, handler]: Parameters<typeof typeSafeVsCode.registerCommand<Name>>
@@ -261,9 +255,6 @@ const machine = createMachine(
                 layoutString,
                 implementations,
               });
-              if (xstateVersion === 5) {
-                showXStateV5Warning();
-              }
             } catch {
               vscode.window.showErrorMessage(
                 'Could not find a machine at the current cursor.',
@@ -300,10 +291,6 @@ const machine = createMachine(
                       layoutString,
                       implementations,
                     });
-
-                    if (xstateVersion === 5) {
-                      showXStateV5Warning();
-                    }
                   },
                 );
             },
