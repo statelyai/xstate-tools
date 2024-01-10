@@ -261,7 +261,9 @@ const machine = createMachine(
                 layoutString,
                 implementations,
               });
-              showXStateV5Warning();
+              if (xstateVersion === 5) {
+                showXStateV5Warning();
+              }
             } catch {
               vscode.window.showErrorMessage(
                 'Could not find a machine at the current cursor.',
@@ -299,7 +301,9 @@ const machine = createMachine(
                       implementations,
                     });
 
-                    showXStateV5Warning();
+                    if (xstateVersion === 5) {
+                      showXStateV5Warning();
+                    }
                   },
                 );
             },
