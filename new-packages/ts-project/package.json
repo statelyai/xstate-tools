@@ -20,6 +20,11 @@
   "scripts": {},
   "dependencies": {},
   "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "fs-extra": "^11.2.0",
+    "outdent": "^0.8.0",
+    "signal-exit": "^4.1.0",
+    "tempy": "^3.1.0",
     "typescript": "5.3.3"
   }
 }
