@@ -1,24 +1,27 @@
 import {
+  ExtractorInvokeNodeConfig,
+  ExtractorMachineAction,
+  ExtractorMachineConfig,
+  MachineExtractResult,
   extractMachinesFromFile,
   getMachineExtractResult,
   getMachineNodesFromFile,
-  MachineExtractResult,
 } from '@xstate/machine-extractor';
 import {
+  GlobalSettings,
+  TypegenData,
+  TypegenOptions,
   createIntrospectableMachine,
   filterOutIgnoredMachines,
-  getInlineImplementations,
+  forEachEntity,
   getRangeFromSourceLocation,
   getRawTextFromNode,
   getSetOfNames,
   getTransitionsFromNode,
   getTsTypesEdits,
   getTypegenData,
-  GlobalSettings,
   introspectMachine,
   isCursorInPosition,
-  TypegenData,
-  TypegenOptions,
 } from '@xstate/tools-shared';
 import deepEqual from 'fast-deep-equal';
 import { CodeLens, Position } from 'vscode-languageserver';
@@ -43,6 +46,9 @@ import {
   isTypegenData,
   mergeOverlappingEdits,
 } from './utils';
+
+const uriToFileName = (uri: string) =>
+  URI.parse(uri).fsPath.replace(/\\/g, '/');
 
 const getTypegenUri = (
   uri: string,
@@ -202,8 +208,106 @@ connection.onCodeLens(({ textDocument }) => {
 const areTypesWritable = (typegenData: TypegenData) =>
   deepEqual(typegenData.typesNode.value, typegenData.data.tsTypesValue);
 
+// this shouldn't use file system directly but rather an injected module
+// atm this extension doesn't work in browsers anyway though
+async function getXStateVersion(uri: string) {
+  try {
+    const pkgJsonPath = require.resolve('xstate/package.json', {
+      paths: [uriToFileName(UriUtils.dirname(URI.parse(uri)).toString())],
+    });
+    return require(pkgJsonPath).version.startsWith('5') ? 5 : 4;
+  } catch {
+    return 4;
+  }
+}
+
+const isActorEntity = (entity: any): entity is ExtractorInvokeNodeConfig =>
+  !!entity && 'src' in entity && typeof entity.src !== 'undefined';
+const isActionEntity = (entity: any): entity is ExtractorMachineAction =>
+  !!entity && 'action' in entity && typeof entity.action !== 'undefined';
+
+const INLINE_IMPLEMENTATION_STRING = '__@@INLINE_IMPLEMENTATION@@__';
+
+const inlineImplementationsStub = {
+  actions: {
+    [INLINE_IMPLEMENTATION_STRING]: {
+      jsImplementation: INLINE_IMPLEMENTATION_STRING,
+    },
+  },
+  guards: {
+    [INLINE_IMPLEMENTATION_STRING]: {
+      jsImplementation: INLINE_IMPLEMENTATION_STRING,
+    },
+  },
+  services: {
+    [INLINE_IMPLEMENTATION_STRING]: {
+      jsImplementation: INLINE_IMPLEMENTATION_STRING,
+    },
+  },
+};
+
+function toLegacyHashedConfig(extractionResult: MachineExtractResult) {
+  const config: ExtractorMachineConfig = JSON.parse(
+    JSON.stringify(extractionResult.toConfig()!),
+  );
+
+  forEachEntity(config, (entity) => {
+    if (isActorEntity(entity)) {
+      return {
+        ...entity,
+        src:
+          entity.kind === 'inline' ? INLINE_IMPLEMENTATION_STRING : entity.src,
+      };
+    }
+    if (isActionEntity(entity)) {
+      if (entity?.kind === 'named') {
+        return entity.action;
+      }
+      return INLINE_IMPLEMENTATION_STRING;
+    }
+
+    if (entity?.kind === 'named') {
+      return entity.type;
+    }
+
+    return INLINE_IMPLEMENTATION_STRING;
+  });
+
+  return config;
+}
+
+function toLegacyAnonymizedConfig(extractionResult: MachineExtractResult) {
+  const config: ExtractorMachineConfig = JSON.parse(
+    JSON.stringify(extractionResult.toConfig()!),
+  );
+
+  forEachEntity(config, (entity) => {
+    if (isActorEntity(entity)) {
+      return {
+        ...entity,
+        src: entity.kind === 'inline' ? 'anonymous' : entity.src,
+      };
+    }
+    if (isActionEntity(entity)) {
+      if (entity?.kind === 'named') {
+        return entity.action;
+      }
+      return 'anonymous';
+    }
+    if (entity?.kind === 'named') {
+      return entity.type;
+    }
+    return 'anonymous';
+  });
+
+  return config;
+}
+
 async function handleDocumentChange(textDocument: TextDocument): Promise<void> {
   const previouslyCachedDocument = documentsCache.get(textDocument.uri);
+  const xstateVersion =
+    previouslyCachedDocument?.xstateVersion ??
+    (await getXStateVersion(textDocument.uri));
   try {
     const text = textDocument.getText();
 
@@ -246,12 +350,15 @@ async function handleDocumentChange(textDocument: TextDocument): Promise<void> {
           // Create typegen data for typed machines. This will throw if there are any errors.
           return {
             machineResult,
-            types: getTypegenData(
-              UriUtils.basename(URI.parse(textDocument.uri)),
-              index,
-              machineResult,
-              settings,
-            ),
+            types:
+              xstateVersion === 4
+                ? getTypegenData(
+                    UriUtils.basename(URI.parse(textDocument.uri)),
+                    index,
+                    machineResult,
+                    settings,
+                  )
+                : undefined,
           };
         } else {
           // for the time being we are piggy-backing on the fact that `createMachine` called in `instrospectMachine` might throw for invalid configs
@@ -274,6 +381,7 @@ async function handleDocumentChange(textDocument: TextDocument): Promise<void> {
       documentText: text,
       extractionResults,
       undoStack: previouslyCachedDocument?.undoStack ?? [],
+      xstateVersion,
     });
 
     if (displayedMachine?.uri === textDocument.uri) {
@@ -326,7 +434,7 @@ async function handleDocumentChange(textDocument: TextDocument): Promise<void> {
           });
         }
 
-        const updatedConfig = machineResult.toConfig();
+        const updatedConfig = toLegacyHashedConfig(machineResult);
         const previousMachineResult =
           previouslyCachedDocument?.extractionResults[
             displayedMachine.machineIndex
@@ -334,12 +442,15 @@ async function handleDocumentChange(textDocument: TextDocument): Promise<void> {
         if (
           updatedConfig &&
           previousMachineResult &&
-          !deepEqual(previousMachineResult.toConfig(), machineResult.toConfig())
+          !deepEqual(
+            toLegacyAnonymizedConfig(previousMachineResult),
+            toLegacyAnonymizedConfig(machineResult),
+          )
         ) {
           connection.sendNotification('displayedMachineUpdated', {
             config: updatedConfig,
             layoutString: machineResult.getLayoutComment()?.value || null,
-            implementations: getInlineImplementations(machineResult, text),
+            implementations: inlineImplementationsStub,
             namedGuards: machineResult
               .getAllConds(['named'])
               .map((elem) => elem.name),
@@ -348,30 +459,33 @@ async function handleDocumentChange(textDocument: TextDocument): Promise<void> {
       }
     }
 
-    connection.sendDiagnostics({
-      uri: textDocument.uri,
-      diagnostics: getDiagnostics(
-        machineResults.filter((res): res is NonNullable<typeof res> => !!res),
-        textDocument,
-        settings,
-      ),
-    });
-    const writableTypes = types.filter(areTypesWritable);
-    if (
-      writableTypes.length &&
-      !deepEqual(
-        previouslyCachedDocument?.extractionResults
-          .map((extractionResult) => extractionResult.types)
-          .filter(isTypegenData)
-          .filter(areTypesWritable)
-          .map((t) => t.data),
-        writableTypes.map((t) => t.data),
-      )
-    ) {
-      connection.sendNotification('typesUpdated', {
-        typegenUri: getTypegenUri(textDocument.uri, settings),
-        types,
+    if (xstateVersion === 4) {
+      connection.sendDiagnostics({
+        uri: textDocument.uri,
+        diagnostics: getDiagnostics(
+          machineResults.filter((res): res is NonNullable<typeof res> => !!res),
+          textDocument,
+          settings,
+        ),
       });
+
+      const writableTypes = types.filter(areTypesWritable);
+      if (
+        writableTypes.length &&
+        !deepEqual(
+          previouslyCachedDocument?.extractionResults
+            .map((extractionResult) => extractionResult.types)
+            .filter(isTypegenData)
+            .filter(areTypesWritable)
+            .map((t) => t.data),
+          writableTypes.map((t) => t.data),
+        )
+      ) {
+        connection.sendNotification('typesUpdated', {
+          typegenUri: getTypegenUri(textDocument.uri, settings),
+          types,
+        });
+      }
     }
   } catch (e) {
     handleDocumentExtractionFailure(
@@ -473,7 +587,7 @@ connection.onCompletion(({ textDocument, position }): CompletionItem[] => {
     });
   }
 
-  if (cursor?.type === 'COND') {
+  if (cursor?.type === 'COND' && cachedDocument.xstateVersion === 4) {
     const conds = getSetOfNames(cursor.machine.getAllConds(['named']));
 
     cursor.machine.machineCallResult.options?.guards?.properties.forEach(
@@ -490,7 +604,7 @@ connection.onCompletion(({ textDocument, position }): CompletionItem[] => {
     });
   }
 
-  if (cursor?.type === 'SERVICE') {
+  if (cursor?.type === 'SERVICE' && cachedDocument.xstateVersion === 4) {
     const services = getSetOfNames(
       cursor.machine
         .getAllServices(['named'])
@@ -547,7 +661,7 @@ connection.onCodeAction((params) => {
       },
     ];
   }
-  if (result?.type === 'SERVICE') {
+  if (cachedDocument.xstateVersion === 4 && result?.type === 'SERVICE') {
     return [
       {
         title: `Add ${result.name} to options`,
@@ -564,7 +678,7 @@ connection.onCodeAction((params) => {
       },
     ];
   }
-  if (result?.type === 'COND') {
+  if (cachedDocument.xstateVersion === 4 && result?.type === 'COND') {
     return [
       {
         title: `Add ${result.name} to options`,
@@ -679,17 +793,14 @@ connection.onRequest('getMachineAtIndex', ({ uri, machineIndex }) => {
       `Machine ${machineIndex} was not found. This document has only ${cachedDocument.extractionResults.length} machine(s)`,
     );
   }
-
   return {
-    config: machineResult.toConfig()!,
+    config: toLegacyHashedConfig(machineResult),
     layoutString: machineResult.getLayoutComment()?.value || null,
-    implementations: getInlineImplementations(
-      machineResult,
-      cachedDocument.documentText,
-    ),
+    implementations: inlineImplementationsStub,
     namedGuards: Array.from(
       getSetOfNames(machineResult.getAllConds(['named'])),
     ),
+    xstateVersion: cachedDocument.xstateVersion,
   };
 });
 
@@ -730,16 +841,14 @@ connection.onRequest('getMachineAtCursorPosition', ({ uri, position }) => {
     cachedDocument.extractionResults[machineResultIndex].machineResult;
 
   return {
-    config: machineResult.toConfig()!,
+    config: toLegacyHashedConfig(machineResult),
     machineIndex: machineResultIndex,
     layoutString: machineResult.getLayoutComment()?.value || null,
-    implementations: getInlineImplementations(
-      machineResult,
-      cachedDocument.documentText,
-    ),
+    implementations: inlineImplementationsStub,
     namedGuards: Array.from(
       getSetOfNames(machineResult.getAllConds(['named'])),
     ),
+    xstateVersion: cachedDocument.xstateVersion,
   };
 });
 
@@ -772,12 +881,18 @@ connection.onRequest(
       } else {
         modified = cachedDocument.extractionResults[
           displayedMachine.machineIndex
-        ].machineResult.modify(machineEdits, options);
+        ].machineResult.modify(machineEdits, {
+          ...options,
+          v5: options?.v5 ?? cachedDocument.xstateVersion === 5,
+        });
       }
     } else {
       const modifyResult = cachedDocument.extractionResults[
         displayedMachine.machineIndex
-      ].machineResult.modify(machineEdits, options);
+      ].machineResult.modify(machineEdits, {
+        ...options,
+        v5: options?.v5 ?? cachedDocument.xstateVersion === 5,
+      });
 
       modified = modifyResult;
 
@@ -827,7 +942,7 @@ connection.onRequest(
 
 connection.onRequest('getTsTypesAndEdits', async ({ uri }) => {
   const cachedDocument = documentsCache.get(uri);
-  if (!cachedDocument) {
+  if (!cachedDocument || cachedDocument.xstateVersion !== 4) {
     return;
   }
   const types = cachedDocument.extractionResults

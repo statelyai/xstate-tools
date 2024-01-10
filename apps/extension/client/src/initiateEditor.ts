@@ -6,7 +6,7 @@ import {
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { ColorThemeKind } from 'vscode';
-import { MachineConfig, createMachine, interpret } from 'xstate';
+import { createMachine, interpret } from 'xstate';
 import { forwardTo } from 'xstate/lib/actions';
 import { registerDisposable } from './registerDisposable';
 import { TypeSafeLanguageClient } from './typeSafeLanguageClient';
@@ -41,6 +41,12 @@ type StudioEvent =
   | OpenLinkEvent
   | MachineChangedEvent
   | LayoutUpdatedEvent;
+
+function showXStateV5Warning() {
+  vscode.window.showInformationMessage(
+    'You are using XState v5. The extension is not yet 100% compatible with it.',
+  );
+}
 
 function registerCommand<Name extends keyof typeSafeVsCode.XStateCommands>(
   extensionContext: vscode.ExtensionContext,
@@ -230,18 +236,23 @@ const machine = createMachine(
                 activeTextEditor.document.uri.path,
               );
               const tokenSource = new vscode.CancellationTokenSource();
-              const { config, layoutString, implementations, machineIndex } =
-                await languageClient.sendRequest(
-                  'getMachineAtCursorPosition',
-                  {
-                    uri,
-                    position: {
-                      line: activeTextEditor.selection.start.line,
-                      column: activeTextEditor.selection.start.character,
-                    },
+              const {
+                config,
+                layoutString,
+                implementations,
+                machineIndex,
+                xstateVersion,
+              } = await languageClient.sendRequest(
+                'getMachineAtCursorPosition',
+                {
+                  uri,
+                  position: {
+                    line: activeTextEditor.selection.start.line,
+                    column: activeTextEditor.selection.start.character,
                   },
-                  tokenSource.token,
-                );
+                },
+                tokenSource.token,
+              );
               sendBack({
                 type: 'EDIT_MACHINE',
                 config,
@@ -250,6 +261,7 @@ const machine = createMachine(
                 layoutString,
                 implementations,
               });
+              showXStateV5Warning();
             } catch {
               vscode.window.showErrorMessage(
                 'Could not find a machine at the current cursor.',
@@ -271,16 +283,25 @@ const machine = createMachine(
                   { uri, machineIndex },
                   tokenSource.token,
                 )
-                .then(({ config, layoutString, implementations }) => {
-                  sendBack({
-                    type: 'EDIT_MACHINE',
+                .then(
+                  ({
                     config,
-                    index: machineIndex,
-                    uri,
                     layoutString,
                     implementations,
-                  });
-                });
+                    xstateVersion,
+                  }) => {
+                    sendBack({
+                      type: 'EDIT_MACHINE',
+                      config,
+                      index: machineIndex,
+                      uri,
+                      layoutString,
+                      implementations,
+                    });
+
+                    showXStateV5Warning();
+                  },
+                );
             },
           ),
       onServerNotificationListener:

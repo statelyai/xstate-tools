@@ -65,6 +65,7 @@ export interface RequestMap {
       layoutString: string | null;
       implementations: ImplementationsMetadata;
       namedGuards: string[];
+      xstateVersion: 4 | 5;
     };
     error: any;
   };
@@ -76,6 +77,7 @@ export interface RequestMap {
       layoutString: string | null;
       implementations: ImplementationsMetadata;
       namedGuards: string[];
+      xstateVersion: 4 | 5;
     };
     error: any;
   };
