@@ -12,5 +12,5 @@ export interface CachedDocument {
   extractionResults: ExtractionResult[];
   error?: { type: 'syntax' | 'unknown'; message: string } | undefined;
   undoStack: Array<{ deleted: any[] } | undefined>;
-  xstateVersion: 4 | 5;
+  v5: boolean;
 }

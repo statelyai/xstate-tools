@@ -230,23 +230,18 @@ const machine = createMachine(
                 activeTextEditor.document.uri.path,
               );
               const tokenSource = new vscode.CancellationTokenSource();
-              const {
-                config,
-                layoutString,
-                implementations,
-                machineIndex,
-                xstateVersion,
-              } = await languageClient.sendRequest(
-                'getMachineAtCursorPosition',
-                {
-                  uri,
-                  position: {
-                    line: activeTextEditor.selection.start.line,
-                    column: activeTextEditor.selection.start.character,
+              const { config, layoutString, implementations, machineIndex } =
+                await languageClient.sendRequest(
+                  'getMachineAtCursorPosition',
+                  {
+                    uri,
+                    position: {
+                      line: activeTextEditor.selection.start.line,
+                      column: activeTextEditor.selection.start.character,
+                    },
                   },
-                },
-                tokenSource.token,
-              );
+                  tokenSource.token,
+                );
               sendBack({
                 type: 'EDIT_MACHINE',
                 config,
@@ -276,23 +271,16 @@ const machine = createMachine(
                   { uri, machineIndex },
                   tokenSource.token,
                 )
-                .then(
-                  ({
+                .then(({ config, layoutString, implementations }) => {
+                  sendBack({
+                    type: 'EDIT_MACHINE',
                     config,
+                    index: machineIndex,
+                    uri,
                     layoutString,
                     implementations,
-                    xstateVersion,
-                  }) => {
-                    sendBack({
-                      type: 'EDIT_MACHINE',
-                      config,
-                      index: machineIndex,
-                      uri,
-                      layoutString,
-                      implementations,
-                    });
-                  },
-                );
+                  });
+                });
             },
           ),
       onServerNotificationListener:

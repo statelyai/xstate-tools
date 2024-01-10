@@ -210,14 +210,14 @@ const areTypesWritable = (typegenData: TypegenData) =>
 
 // this shouldn't use file system directly but rather an injected module
 // atm this extension doesn't work in browsers anyway though
-async function getXStateVersion(uri: string) {
+async function isXState5(uri: string) {
   try {
     const pkgJsonPath = require.resolve('xstate/package.json', {
       paths: [uriToFileName(UriUtils.dirname(URI.parse(uri)).toString())],
     });
-    return require(pkgJsonPath).version.startsWith('5') ? 5 : 4;
+    return (require(pkgJsonPath).version as string).startsWith('5');
   } catch {
-    return 4;
+    return false;
   }
 }
 
@@ -305,9 +305,8 @@ function toLegacyAnonymizedConfig(extractionResult: MachineExtractResult) {
 
 async function handleDocumentChange(textDocument: TextDocument): Promise<void> {
   const previouslyCachedDocument = documentsCache.get(textDocument.uri);
-  const xstateVersion =
-    previouslyCachedDocument?.xstateVersion ??
-    (await getXStateVersion(textDocument.uri));
+  const isV5 =
+    previouslyCachedDocument?.v5 ?? (await isXState5(textDocument.uri));
   try {
     const text = textDocument.getText();
 
@@ -350,15 +349,14 @@ async function handleDocumentChange(textDocument: TextDocument): Promise<void> {
           // Create typegen data for typed machines. This will throw if there are any errors.
           return {
             machineResult,
-            types:
-              xstateVersion === 4
-                ? getTypegenData(
-                    UriUtils.basename(URI.parse(textDocument.uri)),
-                    index,
-                    machineResult,
-                    settings,
-                  )
-                : undefined,
+            types: !isV5
+              ? getTypegenData(
+                  UriUtils.basename(URI.parse(textDocument.uri)),
+                  index,
+                  machineResult,
+                  settings,
+                )
+              : undefined,
           };
         } else {
           // for the time being we are piggy-backing on the fact that `createMachine` called in `instrospectMachine` might throw for invalid configs
@@ -381,7 +379,7 @@ async function handleDocumentChange(textDocument: TextDocument): Promise<void> {
       documentText: text,
       extractionResults,
       undoStack: previouslyCachedDocument?.undoStack ?? [],
-      xstateVersion,
+      v5: isV5,
     });
 
     if (displayedMachine?.uri === textDocument.uri) {
@@ -459,7 +457,7 @@ async function handleDocumentChange(textDocument: TextDocument): Promise<void> {
       }
     }
 
-    if (xstateVersion === 4) {
+    if (!isV5) {
       connection.sendDiagnostics({
         uri: textDocument.uri,
         diagnostics: getDiagnostics(
@@ -587,7 +585,7 @@ connection.onCompletion(({ textDocument, position }): CompletionItem[] => {
     });
   }
 
-  if (cursor?.type === 'COND' && cachedDocument.xstateVersion === 4) {
+  if (!cachedDocument.v5 && cursor?.type === 'COND') {
     const conds = getSetOfNames(cursor.machine.getAllConds(['named']));
 
     cursor.machine.machineCallResult.options?.guards?.properties.forEach(
@@ -604,7 +602,7 @@ connection.onCompletion(({ textDocument, position }): CompletionItem[] => {
     });
   }
 
-  if (cursor?.type === 'SERVICE' && cachedDocument.xstateVersion === 4) {
+  if (!cachedDocument.v5 && cursor?.type === 'SERVICE') {
     const services = getSetOfNames(
       cursor.machine
         .getAllServices(['named'])
@@ -661,7 +659,7 @@ connection.onCodeAction((params) => {
       },
     ];
   }
-  if (cachedDocument.xstateVersion === 4 && result?.type === 'SERVICE') {
+  if (!cachedDocument.v5 && result?.type === 'SERVICE') {
     return [
       {
         title: `Add ${result.name} to options`,
@@ -678,7 +676,7 @@ connection.onCodeAction((params) => {
       },
     ];
   }
-  if (cachedDocument.xstateVersion === 4 && result?.type === 'COND') {
+  if (!cachedDocument.v5 && result?.type === 'COND') {
     return [
       {
         title: `Add ${result.name} to options`,
@@ -800,7 +798,6 @@ connection.onRequest('getMachineAtIndex', ({ uri, machineIndex }) => {
     namedGuards: Array.from(
       getSetOfNames(machineResult.getAllConds(['named'])),
     ),
-    xstateVersion: cachedDocument.xstateVersion,
   };
 });
 
@@ -848,7 +845,6 @@ connection.onRequest('getMachineAtCursorPosition', ({ uri, position }) => {
     namedGuards: Array.from(
       getSetOfNames(machineResult.getAllConds(['named'])),
     ),
-    xstateVersion: cachedDocument.xstateVersion,
   };
 });
 
@@ -883,7 +879,7 @@ connection.onRequest(
           displayedMachine.machineIndex
         ].machineResult.modify(machineEdits, {
           ...options,
-          v5: options?.v5 ?? cachedDocument.xstateVersion === 5,
+          v5: options?.v5 ?? cachedDocument.v5,
         });
       }
     } else {
@@ -891,7 +887,7 @@ connection.onRequest(
         displayedMachine.machineIndex
       ].machineResult.modify(machineEdits, {
         ...options,
-        v5: options?.v5 ?? cachedDocument.xstateVersion === 5,
+        v5: options?.v5 ?? cachedDocument.v5,
       });
 
       modified = modifyResult;
@@ -942,7 +938,7 @@ connection.onRequest(
 
 connection.onRequest('getTsTypesAndEdits', async ({ uri }) => {
   const cachedDocument = documentsCache.get(uri);
-  if (!cachedDocument || cachedDocument.xstateVersion !== 4) {
+  if (!cachedDocument || cachedDocument.v5) {
     return;
   }
   const types = cachedDocument.extractionResults
