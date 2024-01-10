@@ -9,15 +9,20 @@ import type {
 // TODO: add error location/span
 type ExtractionError =
   | {
-      type: 'unrecognizable_state';
+      type: 'state_unhandled';
       node: unknown;
     }
   | {
-      type: 'unrecognizable_state_element';
+      type: 'state_property_unhandled';
       node: unknown;
     }
   | {
       type: 'property_key_no_roundtrip';
+      node: unknown;
+    }
+  | {
+      type: 'property_key_unhandled';
+      propertyKind: 'computed' | 'private';
       node: unknown;
     };
 
@@ -79,9 +84,19 @@ function getPropertyKey(
     return text;
   }
   if (ts.isComputedPropertyName(prop.name)) {
+    ctx.errors.push({
+      type: 'property_key_unhandled',
+      propertyKind: 'computed',
+      node: prop.name,
+    });
     return;
   }
   if (ts.isPrivateIdentifier(prop.name)) {
+    ctx.errors.push({
+      type: 'property_key_unhandled',
+      propertyKind: 'private',
+      node: prop.name,
+    });
     return;
   }
   prop.name satisfies never;
@@ -100,7 +115,7 @@ function extractState(
 
   if (!ts.isObjectLiteralExpression(state)) {
     ctx.errors.push({
-      type: 'unrecognizable_state',
+      type: 'state_unhandled',
       node: state,
     });
     return result;
@@ -109,19 +124,22 @@ function extractState(
   for (const prop of state.properties) {
     if (ts.isPropertyAssignment(prop)) {
       const key = getPropertyKey(ctx, ts, prop);
+      if (key) {
+        result[key] = {};
+      }
       continue;
     }
 
     if (ts.isShorthandPropertyAssignment(prop)) {
       ctx.errors.push({
-        type: 'unrecognizable_state_element',
+        type: 'state_property_unhandled',
         node: prop,
       });
       continue;
     }
     if (ts.isSpreadAssignment(prop)) {
       ctx.errors.push({
-        type: 'unrecognizable_state_element',
+        type: 'state_property_unhandled',
         node: prop,
       });
       continue;
@@ -132,7 +150,7 @@ function extractState(
       ts.isSetAccessorDeclaration(prop)
     ) {
       ctx.errors.push({
-        type: 'unrecognizable_state_element',
+        type: 'state_property_unhandled',
         node: prop,
       });
       continue;
@@ -140,6 +158,8 @@ function extractState(
 
     prop satisfies never;
   }
+
+  return result;
 }
 
 function extractMachineConfig(
