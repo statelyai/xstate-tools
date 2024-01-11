@@ -2,28 +2,18 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "type": "npm",
-      "script": "compile",
-      "group": "build",
+      "type": "shell",
+      "command": "yarn",
+      "args": ["workspace", "vscode-xstate", "run", "build:debug"],
+      "label": "build",
       "presentation": {
-        "panel": "dedicated",
-        "reveal": "never"
+        "clear": true,
+        "echo": true
       },
-      "problemMatcher": ["$tsc"]
-    },
-    {
-      "type": "npm",
-      "script": "watch",
-      "isBackground": true,
       "group": {
         "kind": "build",
         "isDefault": true
-      },
-      "presentation": {
-        "panel": "dedicated",
-        "reveal": "never"
-      },
-      "problemMatcher": ["$tsc-watch"]
+      }
     }
   ]
 }

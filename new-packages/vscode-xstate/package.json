@@ -1,0 +1,49 @@
+{
+  "name": "vscode-xstate",
+  "private": true,
+  "version": "0.0.0",
+  "license": "AGPL-3.0-only",
+  "main": "./dist/extension.js",
+  "engines": {
+    "vscode": "^1.78.0"
+  },
+  "scripts": {
+    "build": "node ./scripts/build.mjs",
+    "build:debug": "npm run build debug"
+  },
+  "dependencies": {
+    "@volar/language-server": "2.0.0-alpha.3",
+    "@volar/vscode": "2.0.0-alpha.3",
+    "@xstate/language-server": "0.0.0",
+    "vscode-languageserver-protocol": "^3.17.5"
+  },
+  "devDependencies": {
+    "esbuild": "^0.19.9"
+  },
+  "activationEvents": [
+    "onLanguage:javascript",
+    "onLanguage:javascriptreact",
+    "onLanguage:typescript",
+    "onLanguage:typescriptreact"
+  ],
+  "contributes": {
+    "configuration": [
+      {
+        "title": "XState",
+        "properties": {
+          "xstate.server.enable": {
+            "type": "boolean",
+            "default": true
+          }
+        }
+      }
+    ],
+    "commands": [
+      {
+        "command": "xstate.hello",
+        "title": "Hello from XState!",
+        "category": "XState"
+      }
+    ]
+  }
+}

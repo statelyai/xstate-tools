@@ -14,6 +14,7 @@
   "workspaces": {
     "packages": [
       "packages/*",
+      "new-packages/*",
       "apps/extension/*",
       "apps/*"
     ]
@@ -35,11 +36,13 @@
     "deps:dev": "preconstruct watch",
     "vscode:dev": "yarn turbo run vscode:build:dev --no-cache && cp apps/extension/server/dist/index.js apps/extension/client/dist/server.js",
     "vscode:prod": "yarn turbo run vscode:build:prod --no-cache && cp apps/extension/server/dist/index.js apps/extension/client/dist/server.js",
-    "test": "jest"
+    "test": "jest",
+    "vitest": "vitest"
   },
   "preconstruct": {
     "packages": [
-      "packages/*"
+      "packages/*",
+      "new-packages/!(vscode-xstate)"
     ],
     "exports": {
       "importConditionDefaultExport": "default"
@@ -87,17 +90,21 @@
     "@changesets/cli": "^2.21.0",
     "@manypkg/cli": "^0.19.1",
     "@preconstruct/cli": "^2.8.1",
+    "@preconstruct/eslint-plugin-format-js-tag": "^0.4.0",
     "@types/node": "^16.0.1",
-    "@typescript-eslint/eslint-plugin": "^5.59.0",
-    "@typescript-eslint/parser": "^5.59.0",
+    "@typescript-eslint/eslint-plugin": "^6.18.1",
+    "@typescript-eslint/parser": "^6.18.1",
     "concurrently": "6.2.0",
-    "esbuild": "^0.14.48",
-    "eslint": "^7.26.0",
+    "esbuild": "^0.19.9",
+    "eslint": "^8.56.0",
+    "eslint-plugin-prettier": "^4.2.1",
     "husky": "^8.0.1",
     "lint-staged": ">=10",
     "patch-package": "^6.4.7",
     "prettier": "^2.8.8",
     "turbo": "^1.1.2",
-    "typescript": "^5.0.4"
+    "typescript": "5.3.3",
+    "vite": "^5.0.11",
+    "vitest": "^1.1.3"
   }
 }
