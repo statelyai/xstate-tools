@@ -19,7 +19,7 @@ interface XStateConfiguration {
 
 export function getConfiguration<Name extends keyof XStateConfiguration>(
   name: Name,
-): XStateConfiguration[Name] {
+): XStateConfiguration[Name] | undefined {
   return vscode.workspace.getConfiguration('xstate').get(name);
 }
 
