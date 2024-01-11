@@ -6,7 +6,7 @@ import {
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { ColorThemeKind } from 'vscode';
-import { MachineConfig, createMachine, interpret } from 'xstate';
+import { createMachine, interpret } from 'xstate';
 import { forwardTo } from 'xstate/lib/actions';
 import { registerDisposable } from './registerDisposable';
 import { TypeSafeLanguageClient } from './typeSafeLanguageClient';
