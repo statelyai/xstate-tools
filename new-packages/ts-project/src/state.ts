@@ -135,9 +135,7 @@ export function extractState(
           case 'history': {
             const isStringWithValidValue =
               ts.isStringLiteral(prop.initializer) &&
-              ['history', 'atomic', 'compound', 'parallel', 'final'].includes(
-                prop.initializer.text,
-              );
+              ['shallow', 'deep'].includes(prop.initializer.text);
 
             if (isStringWithValidValue) {
               result.data[key] = prop.initializer
