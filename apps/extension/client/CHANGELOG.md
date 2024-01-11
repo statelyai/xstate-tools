@@ -1,5 +1,12 @@
 # stately-vscode
 
+## 2.1.0
+
+### Minor Changes
+
+- dfdf388: The extension should be now more compatible with v5.
+- bd427f6: Removed "XState Typegen Machine" code snippet.
+
 ## 2.0.0
 
 ### Major Changes
