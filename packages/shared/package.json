@@ -33,7 +33,6 @@
     "test": "jest"
   },
   "peerDependencies": {
-    "prettier": "^2",
     "xstate": "^4"
   },
   "devDependencies": {
