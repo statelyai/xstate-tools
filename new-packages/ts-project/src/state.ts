@@ -2,7 +2,7 @@ import type { Expression } from 'typescript';
 import { ExtractionContext, ExtractorStateConfig } from './types';
 import { getPropertyKey } from './utils';
 
-const hasUnefinedValue = (ts: typeof import('typescript'), prop: Expression) =>
+const isUndefined = (ts: typeof import('typescript'), prop: Expression) =>
   ts.isIdentifier(prop) && ts.idText(prop) === 'undefined';
 
 const StateConfigDataWhitelistedProperties = new Set([
