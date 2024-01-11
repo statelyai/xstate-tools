@@ -131,6 +131,7 @@ export function extractState(
             }
             break;
           }
+          // TODO: this property only has effect if type is set to history
           case 'history': {
             const isStringWithValidValue =
               ts.isStringLiteral(prop.initializer) &&
