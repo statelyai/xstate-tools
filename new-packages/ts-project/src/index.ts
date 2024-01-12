@@ -1,34 +1,10 @@
-import type {
-  CallExpression,
-  Expression,
-  Program,
-  PropertyAssignment,
-  SourceFile,
-} from 'typescript';
-
-// TODO: add error location/span
-type ExtractionError =
-  | {
-      type: 'state_unhandled';
-      node: unknown;
-    }
-  | {
-      type: 'state_property_unhandled';
-      node: unknown;
-    }
-  | {
-      type: 'property_key_no_roundtrip';
-      node: unknown;
-    }
-  | {
-      type: 'property_key_unhandled';
-      propertyKind: 'computed' | 'private';
-      node: unknown;
-    };
-
-interface ExtractionContext {
-  errors: ExtractionError[];
-}
+import type { CallExpression, Program, SourceFile } from 'typescript';
+import { extractState } from './state';
+import {
+  ExtractionContext,
+  ExtractionError,
+  ExtractorDigraphDef,
+} from './types';
 
 function findCreateMachineCalls(
   ts: typeof import('typescript'),
@@ -57,120 +33,32 @@ function findCreateMachineCalls(
   return createMachineCalls;
 }
 
-function getPropertyKey(
-  ctx: ExtractionContext,
-  ts: typeof import('typescript'),
-  prop: PropertyAssignment,
-) {
-  if (ts.isIdentifier(prop.name)) {
-    return ts.idText(prop.name);
-  }
-  if (
-    ts.isStringLiteral(prop.name) ||
-    ts.isNoSubstitutionTemplateLiteral(prop.name)
-  ) {
-    return prop.name.text;
-  }
-  if (ts.isNumericLiteral(prop.name)) {
-    // `.getText()` returns original text whereas `.text` on numeric literals return `(+originalText).toString()`
-    // for big ints this loses precision or might even return `'Infinity'`
-    const text = prop.name.getText();
-    if (text !== prop.name.text) {
-      ctx.errors.push({
-        type: 'property_key_no_roundtrip',
-        node: prop.name,
-      });
-    }
-    return text;
-  }
-  if (ts.isComputedPropertyName(prop.name)) {
-    ctx.errors.push({
-      type: 'property_key_unhandled',
-      propertyKind: 'computed',
-      node: prop.name,
-    });
-    return;
-  }
-  if (ts.isPrivateIdentifier(prop.name)) {
-    ctx.errors.push({
-      type: 'property_key_unhandled',
-      propertyKind: 'private',
-      node: prop.name,
-    });
-    return;
-  }
-  prop.name satisfies never;
-}
-
-function extractState(
-  ctx: ExtractionContext,
-  ts: typeof import('typescript'),
-  state: Expression | undefined,
-) {
-  const result: Record<string, unknown> = {};
-
-  if (!state) {
-    return result;
-  }
-
-  if (!ts.isObjectLiteralExpression(state)) {
-    ctx.errors.push({
-      type: 'state_unhandled',
-      node: state,
-    });
-    return result;
-  }
-
-  for (const prop of state.properties) {
-    if (ts.isPropertyAssignment(prop)) {
-      const key = getPropertyKey(ctx, ts, prop);
-      if (key) {
-        result[key] = {};
-      }
-      continue;
-    }
-
-    if (ts.isShorthandPropertyAssignment(prop)) {
-      ctx.errors.push({
-        type: 'state_property_unhandled',
-        node: prop,
-      });
-      continue;
-    }
-    if (ts.isSpreadAssignment(prop)) {
-      ctx.errors.push({
-        type: 'state_property_unhandled',
-        node: prop,
-      });
-      continue;
-    }
-    if (
-      ts.isMethodDeclaration(prop) ||
-      ts.isGetAccessorDeclaration(prop) ||
-      ts.isSetAccessorDeclaration(prop)
-    ) {
-      ctx.errors.push({
-        type: 'state_property_unhandled',
-        node: prop,
-      });
-      continue;
-    }
-
-    prop satisfies never;
-  }
-
-  return result;
-}
-
 function extractMachineConfig(
   ts: typeof import('typescript'),
   createMachineCall: CallExpression,
-) {
+): readonly [ExtractorDigraphDef | undefined, ExtractionError[]] {
   const ctx: ExtractionContext = {
     errors: [],
+    digraph: {
+      nodes: {},
+      edges: {},
+    },
   };
   const rootState = createMachineCall.arguments[0];
-  return [extractState(ctx, ts, rootState), ctx.errors] as const;
+  const rootNode = extractState(ctx, ts, rootState);
+
+  if (!rootNode) {
+    return [undefined, ctx.errors];
+  }
+
+  return [
+    {
+      root: rootNode.uniqueId,
+      nodes: ctx.digraph.nodes,
+      edges: ctx.digraph.edges,
+    },
+    ctx.errors,
+  ];
 }
 
 export function createProject(
@@ -183,9 +71,9 @@ export function createProject(
       if (!sourceFile) {
         return [];
       }
-      return findCreateMachineCalls(ts, sourceFile).map((call) =>
-        extractMachineConfig(ts, call),
-      );
+      return findCreateMachineCalls(ts, sourceFile).map((call) => {
+        return extractMachineConfig(ts, call);
+      });
     },
   };
 }
