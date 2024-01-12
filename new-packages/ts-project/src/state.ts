@@ -101,7 +101,7 @@ export function extractState(
           case 'initial': {
             if (ts.isStringLiteral(prop.initializer)) {
               result.data[key] = prop.initializer.text;
-            } else if (hasUnefinedValue(ts, prop.initializer)) {
+            } else if (isUndefined(ts, prop.initializer)) {
               result.data[key] = undefined;
             } else {
               ctx.errors.push({
@@ -121,7 +121,7 @@ export function extractState(
             if (isStringWithValidValue) {
               result.data[key] = prop.initializer
                 .text as ExtractorStateConfig['data']['type'];
-            } else if (hasUnefinedValue(ts, prop.initializer)) {
+            } else if (isUndefined(ts, prop.initializer)) {
               result.data[key] = undefined;
             } else {
               ctx.errors.push({
@@ -140,7 +140,7 @@ export function extractState(
             if (isStringWithValidValue) {
               result.data[key] = prop.initializer
                 .text as ExtractorStateConfig['data']['history'];
-            } else if (hasUnefinedValue(ts, prop.initializer)) {
+            } else if (isUndefined(ts, prop.initializer)) {
               result.data[key] = undefined;
             } else {
               ctx.errors.push({
