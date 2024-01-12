@@ -116,7 +116,7 @@ test('should extract states recursively', async () => {
   `);
 });
 
-test('Should extract state.initial with string value', async () => {
+test('should extract state.initial with string value', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
@@ -177,7 +177,7 @@ test('Should extract state.initial with string value', async () => {
   `);
 });
 
-test('Should extract state.initial with undefined value', async () => {
+test('should extract state.initial with undefined value', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
@@ -220,7 +220,7 @@ test('Should extract state.initial with undefined value', async () => {
   `);
 });
 
-test('Should raise error when state.initial property has invalid value', async () => {
+test('should raise error when state.initial property has invalid value', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
@@ -309,7 +309,7 @@ test('Should raise error when state.initial property has invalid value', async (
   `);
 });
 
-test('Should extract state.type with value "parallel"', async () => {
+test('should extract state.type with value "parallel"', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
@@ -351,7 +351,7 @@ test('Should extract state.type with value "parallel"', async () => {
     ]
   `);
 });
-test('Should extract state.type with value "final"', async () => {
+test('should extract state.type with value "final"', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
@@ -394,7 +394,7 @@ test('Should extract state.type with value "final"', async () => {
   `);
 });
 
-test('Should extract state.type with value "history"', async () => {
+test('should extract state.type with value "history"', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
@@ -436,7 +436,7 @@ test('Should extract state.type with value "history"', async () => {
     ]
   `);
 });
-test('Should extract state.type with value undefined', async () => {
+test('should extract state.type with value undefined', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
@@ -478,7 +478,7 @@ test('Should extract state.type with value undefined', async () => {
     ]
   `);
 });
-test('Should raise error when state.type has invalid value', async () => {
+test('should raise error when state.type has invalid value', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
@@ -566,7 +566,7 @@ test('Should raise error when state.type has invalid value', async () => {
   `);
 });
 
-test('Should extract state.history with value "shallow"', async () => {
+test('should extract state.history with value "shallow"', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
@@ -608,7 +608,7 @@ test('Should extract state.history with value "shallow"', async () => {
     ]
   `);
 });
-test('Should extract state.history with value "deep"', async () => {
+test('should extract state.history with value "deep"', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
@@ -651,7 +651,7 @@ test('Should extract state.history with value "deep"', async () => {
   `);
 });
 
-test('Should extract state.history with value undefined', async () => {
+test('should extract state.history with value undefined', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`

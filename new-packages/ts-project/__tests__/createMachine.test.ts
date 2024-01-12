@@ -27,7 +27,7 @@ test('should extract createMachine with no arguments', async () => {
   `);
 });
 
-test('should extract createMachine empty config', async () => {
+test('should extract createMachine with empty config', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
