@@ -235,6 +235,66 @@ test('should extract state.initial with string value', async () => {
     ]
   `);
 });
+test('should extract state.initial with template literal value', async () => {
+  const tmpPath = await testdir({
+    'tsconfig.json': JSON.stringify({}),
+    'index.ts': ts`
+      import { createMachine } from "xstate";
+
+      createMachine({
+        initial: \`foo\`,
+        states: {
+          foo: {},
+        },
+      });
+    `,
+  });
+
+  const project = await createTestProject(tmpPath);
+
+  expect(project.extractMachines('index.ts')).toMatchInlineSnapshot(`
+    [
+      [
+        {
+          "edges": [],
+          "rootState": {
+            "data": {
+              "description": undefined,
+              "entry": [],
+              "exit": [],
+              "history": undefined,
+              "initial": "foo",
+              "invoke": [],
+              "metaEntries": [],
+              "tags": [],
+              "type": undefined,
+            },
+            "id": "",
+            "states": [
+              {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": undefined,
+                },
+                "id": "foo",
+                "states": [],
+              },
+            ],
+          },
+          "states": [],
+        },
+        [],
+      ],
+    ]
+  `);
+});
 
 test('should extract state.initial with undefined value', async () => {
   const tmpPath = await testdir({
