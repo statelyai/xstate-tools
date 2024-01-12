@@ -36,21 +36,29 @@ function findCreateMachineCalls(
 function extractMachineConfig(
   ts: typeof import('typescript'),
   createMachineCall: CallExpression,
-): [ExtractorDigraphDef, ExtractionError[]] {
+): readonly [ExtractorDigraphDef | undefined, ExtractionError[]] {
   const ctx: ExtractionContext = {
     errors: [],
-  };
-  const rootState = createMachineCall.arguments[0];
-  const nodes = {};
-  const edges = {};
-  extractState(ctx, ts, rootState, nodes);
-  return [
-    {
-      nodes,
+    digraph: {
+      nodes: {},
       edges: {},
     },
+  };
+  const rootState = createMachineCall.arguments[0];
+  const rootNode = extractState(ctx, ts, rootState);
+
+  if (!rootNode) {
+    return [undefined, ctx.errors];
+  }
+
+  return [
+    {
+      root: rootNode.uniqueId,
+      nodes: ctx.digraph.nodes,
+      edges: ctx.digraph.edges,
+    },
     ctx.errors,
-  ] as const;
+  ];
 }
 
 export function createProject(

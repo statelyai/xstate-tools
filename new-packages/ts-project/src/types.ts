@@ -1,5 +1,6 @@
 export interface ExtractionContext {
   errors: ExtractionError[];
+  digraph: Pick<ExtractorDigraphDef, 'nodes' | 'edges'>;
 }
 
 // TODO: add error location/span
@@ -45,6 +46,7 @@ export type ExtractorNodeDef = {
 type ExtractorMetaEntry = [string, unknown];
 
 export type ExtractorDigraphDef = {
+  root: string;
   nodes: Record<string, ExtractorNodeDef>;
   edges: Record<string, never>;
 };
