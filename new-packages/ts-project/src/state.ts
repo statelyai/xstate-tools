@@ -1,8 +1,4 @@
-import type {
-  Expression,
-  NoSubstitutionTemplateLiteral,
-  StringLiteral,
-} from 'typescript';
+import type { Expression } from 'typescript';
 import {
   ExtractionContext,
   ExtractorDigraphDef,
@@ -12,11 +8,6 @@ import { getPropertyKey } from './utils';
 
 const isUndefined = (ts: typeof import('typescript'), prop: Expression) =>
   ts.isIdentifier(prop) && ts.idText(prop) === 'undefined';
-const isStringLiteral = (
-  ts: typeof import('typescript'),
-  prop: Expression,
-): prop is StringLiteral | NoSubstitutionTemplateLiteral =>
-  ts.isStringLiteral(prop) || ts.isNoSubstitutionTemplateLiteral(prop);
 
 export function extractState(
   ctx: ExtractionContext,
@@ -91,7 +82,7 @@ export function extractState(
           }
           break;
         case 'initial': {
-          if (isStringLiteral(ts, prop.initializer)) {
+          if (ts.isStringLiteralLike(prop.initializer)) {
             result[key] = prop.initializer.text;
             continue;
           }
@@ -104,7 +95,7 @@ export function extractState(
           break;
         }
         case 'type': {
-          if (ts.isStringLiteral(prop.initializer)) {
+          if (ts.isStringLiteralLike(prop.initializer)) {
             const text = prop.initializer.text;
             if (text === 'history' || text === 'parallel' || text === 'final') {
               result[key] = text;
@@ -128,7 +119,7 @@ export function extractState(
         }
         // TODO: this property only has effect if type is set to history
         case 'history': {
-          if (ts.isStringLiteral(prop.initializer)) {
+          if (ts.isStringLiteralLike(prop.initializer)) {
             const text = prop.initializer.text;
             if (text === 'shallow' || text === 'deep') {
               result[key] = text;
