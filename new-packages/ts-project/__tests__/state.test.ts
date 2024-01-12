@@ -260,11 +260,11 @@ test('should raise error when state.initial property has invalid value', async (
         [
           {
             "node": NodeObject {
-              "end": 69,
+              "end": 70,
               "exclamationToken": undefined,
               "flags": 0,
               "initializer": NodeObject {
-                "end": 69,
+                "end": 70,
                 "flags": 0,
                 "jsDoc": undefined,
                 "kind": 210,
@@ -272,7 +272,7 @@ test('should raise error when state.initial property has invalid value', async (
                 "modifierFlagsCache": 0,
                 "multiLine": false,
                 "parent": undefined,
-                "pos": 66,
+                "pos": 67,
                 "properties": [],
                 "symbol": undefined,
                 "transformFlags": 0,
@@ -283,7 +283,7 @@ test('should raise error when state.initial property has invalid value', async (
               "modifierFlagsCache": 0,
               "modifiers": undefined,
               "name": IdentifierObject {
-                "end": 65,
+                "end": 66,
                 "escapedText": "initial",
                 "flags": 0,
                 "flowNode": undefined,
@@ -518,18 +518,18 @@ test('should raise error when state.type has invalid value', async () => {
         [
           {
             "node": NodeObject {
-              "end": 67,
+              "end": 68,
               "exclamationToken": undefined,
               "flags": 0,
               "initializer": NodeObject {
-                "end": 67,
+                "end": 68,
                 "flags": 0,
                 "kind": 9,
                 "localSymbol": undefined,
                 "modifierFlagsCache": 0,
                 "numericLiteralFlags": 0,
                 "parent": undefined,
-                "pos": 63,
+                "pos": 64,
                 "symbol": undefined,
                 "text": "123",
                 "transformFlags": 0,
@@ -540,7 +540,7 @@ test('should raise error when state.type has invalid value', async () => {
               "modifierFlagsCache": 0,
               "modifiers": undefined,
               "name": IdentifierObject {
-                "end": 62,
+                "end": 63,
                 "escapedText": "type",
                 "flags": 0,
                 "flowNode": undefined,

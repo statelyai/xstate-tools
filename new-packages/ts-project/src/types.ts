@@ -2,7 +2,6 @@ import type { SourceFile } from 'typescript';
 
 export interface ExtractionContext {
   errors: ExtractionError[];
-  sourceFile: SourceFile;
 }
 
 // TODO: add error location/span

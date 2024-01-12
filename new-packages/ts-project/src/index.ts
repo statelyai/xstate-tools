@@ -30,10 +30,12 @@ function findCreateMachineCalls(
 }
 
 function extractMachineConfig(
-  ctx: ExtractionContext,
   ts: typeof import('typescript'),
   createMachineCall: CallExpression,
 ) {
+  const ctx: ExtractionContext = {
+    errors: [],
+  };
   const rootState = createMachineCall.arguments[0];
   return [
     {
@@ -56,11 +58,7 @@ export function createProject(
         return [];
       }
       return findCreateMachineCalls(ts, sourceFile).map((call) => {
-        const ctx: ExtractionContext = {
-          errors: [],
-          sourceFile,
-        };
-        return extractMachineConfig(ctx, ts, call);
+        return extractMachineConfig(ts, call);
       });
     },
   };
