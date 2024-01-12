@@ -1,9 +1,18 @@
-import type { Expression } from 'typescript';
+import type {
+  Expression,
+  NoSubstitutionTemplateLiteral,
+  StringLiteral,
+} from 'typescript';
 import { ExtractionContext, ExtractorStateConfig } from './types';
 import { getPropertyKey } from './utils';
 
 const isUndefined = (ts: typeof import('typescript'), prop: Expression) =>
   ts.isIdentifier(prop) && ts.idText(prop) === 'undefined';
+const isStringLiteral = (
+  ts: typeof import('typescript'),
+  prop: Expression,
+): prop is StringLiteral | NoSubstitutionTemplateLiteral =>
+  ts.isStringLiteral(prop) || ts.isNoSubstitutionTemplateLiteral(prop);
 
 export function extractState(
   ctx: ExtractionContext,
@@ -82,12 +91,11 @@ export function extractState(
           }
           break;
         case 'initial': {
-          if (ts.isStringLiteral(prop.initializer)) {
+          if (isStringLiteral(ts, prop.initializer)) {
             result.data[key] = prop.initializer.text;
             continue;
           }
           if (isUndefined(ts, prop.initializer)) {
-            result.data[key] = undefined;
             continue;
           }
           ctx.errors.push({
@@ -111,7 +119,6 @@ export function extractState(
             continue;
           }
           if (isUndefined(ts, prop.initializer)) {
-            result.data[key] = undefined;
             continue;
           }
           ctx.errors.push({
@@ -132,7 +139,6 @@ export function extractState(
             });
           }
           if (isUndefined(ts, prop.initializer)) {
-            result.data[key] = undefined;
             continue;
           }
           ctx.errors.push({
