@@ -50,7 +50,6 @@ export function extractState(
     if (ts.isPropertyAssignment(prop)) {
       const key = getPropertyKey(ctx, ts, prop);
 
-      /* state.states */
       if (key === 'states' && ts.isObjectLiteralExpression(prop.initializer)) {
         for (const state of prop.initializer.properties) {
           if (ts.isPropertyAssignment(state)) {
