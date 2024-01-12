@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import { createTestProject, testdir, ts } from './utils';
+import { createTestProject, replaceUniqueIds, testdir, ts } from './utils';
 
 test('should extract a simple state', async () => {
   const tmpPath = await testdir({
@@ -16,51 +16,52 @@ test('should extract a simple state', async () => {
   });
 
   const project = await createTestProject(tmpPath);
-  expect(project.extractMachines('index.ts')).toMatchInlineSnapshot(`
-    [
+  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+    .toMatchInlineSnapshot(`
       [
-        {
-          "edges": {},
-          "nodes": {
-            "": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
+        [
+          {
+            "edges": {},
+            "nodes": {
+              "state-0": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": undefined,
+                "type": "node",
+                "uniqueId": "state-0",
               },
-              "parentId": undefined,
-              "type": "node",
-              "uniqueId": "",
-            },
-            ".foo": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
+              "state-1": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": "state-0",
+                "type": "node",
+                "uniqueId": "state-1",
               },
-              "parentId": "",
-              "type": "node",
-              "uniqueId": ".foo",
             },
+            "root": "state-0",
           },
-          "root": "",
-        },
-        [],
-      ],
-    ]
-  `);
+          [],
+        ],
+      ]
+    `);
 });
 
 test('should extract states recursively', async () => {
@@ -71,11 +72,11 @@ test('should extract states recursively', async () => {
 
       createMachine({
         states: {
-          state1: {
+          foo: {
             states: {
-              state2: {
+              bar: {
                 states: {
-                  state3: {},
+                  baz: {},
                 },
               },
             },
@@ -87,99 +88,100 @@ test('should extract states recursively', async () => {
   });
 
   const project = await createTestProject(tmpPath);
-  expect(project.extractMachines('index.ts')).toMatchInlineSnapshot(`
-    [
+  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+    .toMatchInlineSnapshot(`
       [
-        {
-          "edges": {},
-          "nodes": {
-            "": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
+        [
+          {
+            "edges": {},
+            "nodes": {
+              "state-0": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": undefined,
+                "type": "node",
+                "uniqueId": "state-0",
               },
-              "parentId": undefined,
-              "type": "node",
-              "uniqueId": "",
-            },
-            ".state1": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
+              "state-1": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": "state-0",
+                "type": "node",
+                "uniqueId": "state-1",
               },
-              "parentId": "",
-              "type": "node",
-              "uniqueId": ".state1",
-            },
-            ".state1.state2": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
+              "state-2": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": "state-1",
+                "type": "node",
+                "uniqueId": "state-2",
               },
-              "parentId": ".state1",
-              "type": "node",
-              "uniqueId": ".state1.state2",
-            },
-            ".state1.state2.state3": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
+              "state-3": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": "state-2",
+                "type": "node",
+                "uniqueId": "state-3",
               },
-              "parentId": ".state1.state2",
-              "type": "node",
-              "uniqueId": ".state1.state2.state3",
-            },
-            ".state4": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
+              "state-4": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": "state-0",
+                "type": "node",
+                "uniqueId": "state-4",
               },
-              "parentId": "",
-              "type": "node",
-              "uniqueId": ".state4",
             },
+            "root": "state-0",
           },
-          "root": "",
-        },
-        [],
-      ],
-    ]
-  `);
+          [],
+        ],
+      ]
+    `);
 });
 
 test('should extract state.initial with string value', async () => {
@@ -199,51 +201,52 @@ test('should extract state.initial with string value', async () => {
 
   const project = await createTestProject(tmpPath);
 
-  expect(project.extractMachines('index.ts')).toMatchInlineSnapshot(`
-    [
+  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+    .toMatchInlineSnapshot(`
       [
-        {
-          "edges": {},
-          "nodes": {
-            "": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": "foo",
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
+        [
+          {
+            "edges": {},
+            "nodes": {
+              "state-0": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": "foo",
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": undefined,
+                "type": "node",
+                "uniqueId": "state-0",
               },
-              "parentId": undefined,
-              "type": "node",
-              "uniqueId": "",
-            },
-            ".foo": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
+              "state-1": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": "state-0",
+                "type": "node",
+                "uniqueId": "state-1",
               },
-              "parentId": "",
-              "type": "node",
-              "uniqueId": ".foo",
             },
+            "root": "state-0",
           },
-          "root": "",
-        },
-        [],
-      ],
-    ]
-  `);
+          [],
+        ],
+      ]
+    `);
 });
 test('should extract state.initial with template literal value', async () => {
   const tmpPath = await testdir({
@@ -262,51 +265,52 @@ test('should extract state.initial with template literal value', async () => {
 
   const project = await createTestProject(tmpPath);
 
-  expect(project.extractMachines('index.ts')).toMatchInlineSnapshot(`
-    [
+  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+    .toMatchInlineSnapshot(`
       [
-        {
-          "edges": {},
-          "nodes": {
-            "": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": "foo",
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
+        [
+          {
+            "edges": {},
+            "nodes": {
+              "state-0": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": "foo",
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": undefined,
+                "type": "node",
+                "uniqueId": "state-0",
               },
-              "parentId": undefined,
-              "type": "node",
-              "uniqueId": "",
-            },
-            ".foo": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
+              "state-1": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": "state-0",
+                "type": "node",
+                "uniqueId": "state-1",
               },
-              "parentId": "",
-              "type": "node",
-              "uniqueId": ".foo",
             },
+            "root": "state-0",
           },
-          "root": "",
-        },
-        [],
-      ],
-    ]
-  `);
+          [],
+        ],
+      ]
+    `);
 });
 
 test('should extract state.initial with undefined value', async () => {
@@ -324,35 +328,36 @@ test('should extract state.initial with undefined value', async () => {
 
   const project = await createTestProject(tmpPath);
 
-  expect(project.extractMachines('index.ts')).toMatchInlineSnapshot(`
-    [
+  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+    .toMatchInlineSnapshot(`
       [
-        {
-          "edges": {},
-          "nodes": {
-            "": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
+        [
+          {
+            "edges": {},
+            "nodes": {
+              "state-0": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": undefined,
+                "type": "node",
+                "uniqueId": "state-0",
               },
-              "parentId": undefined,
-              "type": "node",
-              "uniqueId": "",
             },
+            "root": "state-0",
           },
-          "root": "",
-        },
-        [],
-      ],
-    ]
-  `);
+          [],
+        ],
+      ]
+    `);
 });
 
 test('should raise error when state.initial property has invalid value', async () => {
@@ -370,39 +375,40 @@ test('should raise error when state.initial property has invalid value', async (
 
   const project = await createTestProject(tmpPath);
 
-  expect(project.extractMachines('index.ts')).toMatchInlineSnapshot(`
-    [
+  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+    .toMatchInlineSnapshot(`
       [
-        {
-          "edges": {},
-          "nodes": {
-            "": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
-              },
-              "parentId": undefined,
-              "type": "node",
-              "uniqueId": "",
-            },
-          },
-          "root": "",
-        },
         [
           {
-            "type": "state_property_unhandled",
+            "edges": {},
+            "nodes": {
+              "state-0": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": undefined,
+                "type": "node",
+                "uniqueId": "state-0",
+              },
+            },
+            "root": "state-0",
           },
+          [
+            {
+              "type": "state_property_unhandled",
+            },
+          ],
         ],
-      ],
-    ]
-  `);
+      ]
+    `);
 });
 
 test('should extract state.type with value "parallel"', async () => {
@@ -420,35 +426,36 @@ test('should extract state.type with value "parallel"', async () => {
 
   const project = await createTestProject(tmpPath);
 
-  expect(project.extractMachines('index.ts')).toMatchInlineSnapshot(`
-    [
+  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+    .toMatchInlineSnapshot(`
       [
-        {
-          "edges": {},
-          "nodes": {
-            "": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "parallel",
+        [
+          {
+            "edges": {},
+            "nodes": {
+              "state-0": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "parallel",
+                },
+                "parentId": undefined,
+                "type": "node",
+                "uniqueId": "state-0",
               },
-              "parentId": undefined,
-              "type": "node",
-              "uniqueId": "",
             },
+            "root": "state-0",
           },
-          "root": "",
-        },
-        [],
-      ],
-    ]
-  `);
+          [],
+        ],
+      ]
+    `);
 });
 
 test('should extract state.type with value "final"', async () => {
@@ -466,35 +473,36 @@ test('should extract state.type with value "final"', async () => {
 
   const project = await createTestProject(tmpPath);
 
-  expect(project.extractMachines('index.ts')).toMatchInlineSnapshot(`
-    [
+  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+    .toMatchInlineSnapshot(`
       [
-        {
-          "edges": {},
-          "nodes": {
-            "": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "final",
+        [
+          {
+            "edges": {},
+            "nodes": {
+              "state-0": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "final",
+                },
+                "parentId": undefined,
+                "type": "node",
+                "uniqueId": "state-0",
               },
-              "parentId": undefined,
-              "type": "node",
-              "uniqueId": "",
             },
+            "root": "state-0",
           },
-          "root": "",
-        },
-        [],
-      ],
-    ]
-  `);
+          [],
+        ],
+      ]
+    `);
 });
 
 test('should extract state.type with value "history"', async () => {
@@ -512,35 +520,36 @@ test('should extract state.type with value "history"', async () => {
 
   const project = await createTestProject(tmpPath);
 
-  expect(project.extractMachines('index.ts')).toMatchInlineSnapshot(`
-    [
+  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+    .toMatchInlineSnapshot(`
       [
-        {
-          "edges": {},
-          "nodes": {
-            "": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "history",
+        [
+          {
+            "edges": {},
+            "nodes": {
+              "state-0": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "history",
+                },
+                "parentId": undefined,
+                "type": "node",
+                "uniqueId": "state-0",
               },
-              "parentId": undefined,
-              "type": "node",
-              "uniqueId": "",
             },
+            "root": "state-0",
           },
-          "root": "",
-        },
-        [],
-      ],
-    ]
-  `);
+          [],
+        ],
+      ]
+    `);
 });
 
 test('should extract state.type with value undefined', async () => {
@@ -558,35 +567,36 @@ test('should extract state.type with value undefined', async () => {
 
   const project = await createTestProject(tmpPath);
 
-  expect(project.extractMachines('index.ts')).toMatchInlineSnapshot(`
-    [
+  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+    .toMatchInlineSnapshot(`
       [
-        {
-          "edges": {},
-          "nodes": {
-            "": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
+        [
+          {
+            "edges": {},
+            "nodes": {
+              "state-0": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": undefined,
+                "type": "node",
+                "uniqueId": "state-0",
               },
-              "parentId": undefined,
-              "type": "node",
-              "uniqueId": "",
             },
+            "root": "state-0",
           },
-          "root": "",
-        },
-        [],
-      ],
-    ]
-  `);
+          [],
+        ],
+      ]
+    `);
 });
 
 test('should raise error when state.type has invalid value', async () => {
@@ -604,39 +614,40 @@ test('should raise error when state.type has invalid value', async () => {
 
   const project = await createTestProject(tmpPath);
 
-  expect(project.extractMachines('index.ts')).toMatchInlineSnapshot(`
-    [
+  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+    .toMatchInlineSnapshot(`
       [
-        {
-          "edges": {},
-          "nodes": {
-            "": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
-              },
-              "parentId": undefined,
-              "type": "node",
-              "uniqueId": "",
-            },
-          },
-          "root": "",
-        },
         [
           {
-            "type": "state_property_unhandled",
+            "edges": {},
+            "nodes": {
+              "state-0": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": undefined,
+                "type": "node",
+                "uniqueId": "state-0",
+              },
+            },
+            "root": "state-0",
           },
+          [
+            {
+              "type": "state_property_unhandled",
+            },
+          ],
         ],
-      ],
-    ]
-  `);
+      ]
+    `);
 });
 
 test('should extract state.history with value "shallow"', async () => {
@@ -654,35 +665,36 @@ test('should extract state.history with value "shallow"', async () => {
 
   const project = await createTestProject(tmpPath);
 
-  expect(project.extractMachines('index.ts')).toMatchInlineSnapshot(`
-    [
+  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+    .toMatchInlineSnapshot(`
       [
-        {
-          "edges": {},
-          "nodes": {
-            "": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": "shallow",
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
+        [
+          {
+            "edges": {},
+            "nodes": {
+              "state-0": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": "shallow",
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": undefined,
+                "type": "node",
+                "uniqueId": "state-0",
               },
-              "parentId": undefined,
-              "type": "node",
-              "uniqueId": "",
             },
+            "root": "state-0",
           },
-          "root": "",
-        },
-        [],
-      ],
-    ]
-  `);
+          [],
+        ],
+      ]
+    `);
 });
 test('should extract state.history with value "deep"', async () => {
   const tmpPath = await testdir({
@@ -699,35 +711,36 @@ test('should extract state.history with value "deep"', async () => {
 
   const project = await createTestProject(tmpPath);
 
-  expect(project.extractMachines('index.ts')).toMatchInlineSnapshot(`
-    [
+  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+    .toMatchInlineSnapshot(`
       [
-        {
-          "edges": {},
-          "nodes": {
-            "": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": "deep",
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
+        [
+          {
+            "edges": {},
+            "nodes": {
+              "state-0": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": "deep",
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": undefined,
+                "type": "node",
+                "uniqueId": "state-0",
               },
-              "parentId": undefined,
-              "type": "node",
-              "uniqueId": "",
             },
+            "root": "state-0",
           },
-          "root": "",
-        },
-        [],
-      ],
-    ]
-  `);
+          [],
+        ],
+      ]
+    `);
 });
 
 test('should extract state.history with value undefined', async () => {
@@ -745,33 +758,34 @@ test('should extract state.history with value undefined', async () => {
 
   const project = await createTestProject(tmpPath);
 
-  expect(project.extractMachines('index.ts')).toMatchInlineSnapshot(`
-    [
+  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+    .toMatchInlineSnapshot(`
       [
-        {
-          "edges": {},
-          "nodes": {
-            "": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
+        [
+          {
+            "edges": {},
+            "nodes": {
+              "state-0": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": undefined,
+                "type": "node",
+                "uniqueId": "state-0",
               },
-              "parentId": undefined,
-              "type": "node",
-              "uniqueId": "",
             },
+            "root": "state-0",
           },
-          "root": "",
-        },
-        [],
-      ],
-    ]
-  `);
+          [],
+        ],
+      ]
+    `);
 });

@@ -5,7 +5,7 @@ import path from 'path';
 import { onExit } from 'signal-exit';
 import { temporaryDirectory } from 'tempy';
 import typescript from 'typescript';
-import { createProject } from '../src/index';
+import { XStateProject, createProject } from '../src/index';
 
 export const js = outdent;
 export const ts = outdent;
@@ -111,4 +111,65 @@ export async function createTestProject(
     ...options,
   });
   return createProject(ts, program);
+}
+
+function replaceUniqueIdsRecursively(
+  input: unknown,
+  replacements: Record<string, string>,
+): unknown {
+  if (!input) {
+    return input;
+  }
+  if (typeof input === 'string') {
+    return replacements[input] ?? input;
+  }
+  if (Array.isArray(input)) {
+    return input.map((item) => replaceUniqueIdsRecursively(item, replacements));
+  }
+  if (typeof input === 'object') {
+    return Object.fromEntries(
+      Object.entries(input).map(([key, value]) => [
+        key,
+        replaceUniqueIdsRecursively(value, replacements),
+      ]),
+    );
+  }
+  return input;
+}
+
+export function replaceUniqueIds(
+  extracted: ReturnType<XStateProject['extractMachines']>,
+) {
+  return extracted.map(([digraph, errors]) => {
+    if (!digraph) {
+      return [digraph, errors];
+    }
+
+    const replacements = Object.fromEntries([
+      ...Object.keys(digraph.edges).map((id, i) => [id, `edge-${i}`] as const),
+      ...Object.keys(digraph.nodes).map((id, i) => [id, `state-${i}`] as const),
+    ]);
+
+    return [
+      replaceUniqueIdsRecursively(
+        {
+          ...digraph,
+          edges: Object.fromEntries(
+            Object.entries(digraph.edges).map(([id, edge]) => [
+              replacements[id],
+              edge,
+            ]),
+          ),
+          nodes: Object.fromEntries(
+            Object.entries(digraph.nodes).map(([id, node]) => [
+              replacements[id],
+              node,
+            ]),
+          ),
+        },
+        replacements,
+      ),
+      errors,
+    ];
+  });
 }

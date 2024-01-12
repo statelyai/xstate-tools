@@ -45,7 +45,7 @@ function extractMachineConfig(
     },
   };
   const rootState = createMachineCall.arguments[0];
-  const rootNode = extractState(ctx, ts, rootState);
+  const rootNode = extractState(ctx, ts, rootState, undefined);
 
   if (!rootNode) {
     return [undefined, ctx.errors];
