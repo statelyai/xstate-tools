@@ -1,5 +1,3 @@
-import type { SourceFile } from 'typescript';
-
 export interface ExtractionContext {
   errors: ExtractionError[];
 }
@@ -26,24 +24,27 @@ export type ExtractionError =
       propertyKind: 'computed' | 'private';
     };
 
-export type ExtractorStateConfig = {
-  id: string;
-  //   uniqueId: string; // disabling this for now because it breaks snapshots every time tests run
+export type ExtractorNodeDef = {
+  type: 'node';
+  uniqueId: string;
+  parentId: string | undefined;
   data: {
     // key: string;
-    type: 'parallel' | 'final' | 'history' | undefined;
+    type: 'normal' | 'parallel' | 'final' | 'history' | undefined;
     history: 'shallow' | 'deep' | undefined;
     metaEntries: ExtractorMetaEntry[];
-    entry: ExtractorAction[];
-    exit: ExtractorAction[];
-    invoke: ExtractorInvoke[];
+    entry: string[];
+    exit: string[];
+    invoke: string[];
     initial: string | undefined;
     tags: string[];
     description: string | undefined;
   };
-  states: ExtractorStateConfig[];
 };
 
 type ExtractorMetaEntry = [string, unknown];
-type ExtractorAction = never | never[];
-type ExtractorInvoke = never | never[];
+
+export type ExtractorDigraphDef = {
+  nodes: Record<string, ExtractorNodeDef>;
+  edges: Record<string, never>;
+};

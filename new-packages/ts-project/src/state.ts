@@ -3,7 +3,11 @@ import type {
   NoSubstitutionTemplateLiteral,
   StringLiteral,
 } from 'typescript';
-import { ExtractionContext, ExtractorStateConfig } from './types';
+import {
+  ExtractionContext,
+  ExtractorDigraphDef,
+  ExtractorNodeDef,
+} from './types';
 import { getPropertyKey } from './utils';
 
 const isUndefined = (ts: typeof import('typescript'), prop: Expression) =>
@@ -18,12 +22,10 @@ export function extractState(
   ctx: ExtractionContext,
   ts: typeof import('typescript'),
   state: Expression | undefined,
-  path: string[],
-): ExtractorStateConfig | undefined {
-  const result = {
-    states: [] as ExtractorStateConfig[],
-    data: {} as Partial<ExtractorStateConfig['data']>,
-  };
+  nodes: ExtractorDigraphDef['nodes'],
+  path: string[] = [''], // todo handle set key or id on root state
+) {
+  const result: Partial<ExtractorNodeDef['data']> = {};
 
   if (!state) {
     return;
@@ -52,15 +54,13 @@ export function extractState(
             if (ts.isPropertyAssignment(state)) {
               const key = getPropertyKey(ctx, ts, state);
               if (key) {
-                const stateConfig = extractState(
+                extractState(
                   ctx,
                   ts,
                   state.initializer,
+                  nodes,
                   path.concat(key),
                 );
-                if (stateConfig) {
-                  result.states.push(stateConfig);
-                }
               }
               continue;
             }
@@ -92,7 +92,7 @@ export function extractState(
           break;
         case 'initial': {
           if (isStringLiteral(ts, prop.initializer)) {
-            result.data[key] = prop.initializer.text;
+            result[key] = prop.initializer.text;
             continue;
           }
           if (isUndefined(ts, prop.initializer)) {
@@ -107,7 +107,7 @@ export function extractState(
           if (ts.isStringLiteral(prop.initializer)) {
             const text = prop.initializer.text;
             if (text === 'history' || text === 'parallel' || text === 'final') {
-              result.data[key] = text;
+              result[key] = text;
               continue;
             }
             if (text === 'atomic' || text === 'compound') {
@@ -131,7 +131,7 @@ export function extractState(
           if (ts.isStringLiteral(prop.initializer)) {
             const text = prop.initializer.text;
             if (text === 'shallow' || text === 'deep') {
-              result.data[key] = text;
+              result[key] = text;
               continue;
             }
             ctx.errors.push({
@@ -176,19 +176,23 @@ export function extractState(
     prop satisfies never;
   }
 
-  return {
-    id: path.join('.'),
+  // TODO: this needs to be a sophiticated id
+  const uniqueId = path.join('.');
+
+  nodes[uniqueId] = {
+    type: 'node',
+    uniqueId,
+    parentId: path.length > 1 ? path.slice(0, -1).join('.') : undefined,
     data: {
-      initial: result.data.initial ?? undefined,
-      type: result.data.type ?? undefined,
-      history: result.data.history ?? undefined,
-      metaEntries: result.data.metaEntries ?? [],
-      entry: result.data.entry ?? [],
-      exit: result.data.exit ?? [],
-      invoke: result.data.invoke ?? [],
-      tags: result.data.tags ?? [],
-      description: result.data.description ?? undefined,
+      initial: result.initial ?? undefined,
+      type: result.type ?? undefined,
+      history: result.history ?? undefined,
+      metaEntries: result.metaEntries ?? [],
+      entry: result.entry ?? [],
+      exit: result.exit ?? [],
+      invoke: result.invoke ?? [],
+      tags: result.tags ?? [],
+      description: result.description ?? undefined,
     },
-    states: result.states,
   };
 }

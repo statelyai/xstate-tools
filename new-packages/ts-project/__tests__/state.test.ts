@@ -20,39 +20,41 @@ test('should extract a simple state', async () => {
     [
       [
         {
-          "edges": [],
-          "rootState": {
-            "data": {
-              "description": undefined,
-              "entry": [],
-              "exit": [],
-              "history": undefined,
-              "initial": undefined,
-              "invoke": [],
-              "metaEntries": [],
-              "tags": [],
-              "type": undefined,
-            },
-            "id": "",
-            "states": [
-              {
-                "data": {
-                  "description": undefined,
-                  "entry": [],
-                  "exit": [],
-                  "history": undefined,
-                  "initial": undefined,
-                  "invoke": [],
-                  "metaEntries": [],
-                  "tags": [],
-                  "type": undefined,
-                },
-                "id": "foo",
-                "states": [],
+          "edges": {},
+          "nodes": {
+            "": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": undefined,
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": undefined,
               },
-            ],
+              "parentId": undefined,
+              "type": "node",
+              "uniqueId": "",
+            },
+            ".foo": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": undefined,
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": undefined,
+              },
+              "parentId": "",
+              "type": "node",
+              "uniqueId": ".foo",
+            },
           },
-          "states": [],
         },
         [],
       ],
@@ -88,86 +90,89 @@ test('should extract states recursively', async () => {
     [
       [
         {
-          "edges": [],
-          "rootState": {
-            "data": {
-              "description": undefined,
-              "entry": [],
-              "exit": [],
-              "history": undefined,
-              "initial": undefined,
-              "invoke": [],
-              "metaEntries": [],
-              "tags": [],
-              "type": undefined,
+          "edges": {},
+          "nodes": {
+            "": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": undefined,
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": undefined,
+              },
+              "parentId": undefined,
+              "type": "node",
+              "uniqueId": "",
             },
-            "id": "",
-            "states": [
-              {
-                "data": {
-                  "description": undefined,
-                  "entry": [],
-                  "exit": [],
-                  "history": undefined,
-                  "initial": undefined,
-                  "invoke": [],
-                  "metaEntries": [],
-                  "tags": [],
-                  "type": undefined,
-                },
-                "id": "state1",
-                "states": [
-                  {
-                    "data": {
-                      "description": undefined,
-                      "entry": [],
-                      "exit": [],
-                      "history": undefined,
-                      "initial": undefined,
-                      "invoke": [],
-                      "metaEntries": [],
-                      "tags": [],
-                      "type": undefined,
-                    },
-                    "id": "state1.state2",
-                    "states": [
-                      {
-                        "data": {
-                          "description": undefined,
-                          "entry": [],
-                          "exit": [],
-                          "history": undefined,
-                          "initial": undefined,
-                          "invoke": [],
-                          "metaEntries": [],
-                          "tags": [],
-                          "type": undefined,
-                        },
-                        "id": "state1.state2.state3",
-                        "states": [],
-                      },
-                    ],
-                  },
-                ],
+            ".state1": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": undefined,
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": undefined,
               },
-              {
-                "data": {
-                  "description": undefined,
-                  "entry": [],
-                  "exit": [],
-                  "history": undefined,
-                  "initial": undefined,
-                  "invoke": [],
-                  "metaEntries": [],
-                  "tags": [],
-                  "type": undefined,
-                },
-                "id": "state4",
-                "states": [],
+              "parentId": "",
+              "type": "node",
+              "uniqueId": ".state1",
+            },
+            ".state1.state2": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": undefined,
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": undefined,
               },
-            ],
+              "parentId": ".state1",
+              "type": "node",
+              "uniqueId": ".state1.state2",
+            },
+            ".state1.state2.state3": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": undefined,
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": undefined,
+              },
+              "parentId": ".state1.state2",
+              "type": "node",
+              "uniqueId": ".state1.state2.state3",
+            },
+            ".state4": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": undefined,
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": undefined,
+              },
+              "parentId": "",
+              "type": "node",
+              "uniqueId": ".state4",
+            },
           },
-          "states": [],
         },
         [],
       ],
@@ -196,39 +201,41 @@ test('should extract state.initial with string value', async () => {
     [
       [
         {
-          "edges": [],
-          "rootState": {
-            "data": {
-              "description": undefined,
-              "entry": [],
-              "exit": [],
-              "history": undefined,
-              "initial": "foo",
-              "invoke": [],
-              "metaEntries": [],
-              "tags": [],
-              "type": undefined,
-            },
-            "id": "",
-            "states": [
-              {
-                "data": {
-                  "description": undefined,
-                  "entry": [],
-                  "exit": [],
-                  "history": undefined,
-                  "initial": undefined,
-                  "invoke": [],
-                  "metaEntries": [],
-                  "tags": [],
-                  "type": undefined,
-                },
-                "id": "foo",
-                "states": [],
+          "edges": {},
+          "nodes": {
+            "": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": "foo",
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": undefined,
               },
-            ],
+              "parentId": undefined,
+              "type": "node",
+              "uniqueId": "",
+            },
+            ".foo": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": undefined,
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": undefined,
+              },
+              "parentId": "",
+              "type": "node",
+              "uniqueId": ".foo",
+            },
           },
-          "states": [],
         },
         [],
       ],
@@ -256,39 +263,41 @@ test('should extract state.initial with template literal value', async () => {
     [
       [
         {
-          "edges": [],
-          "rootState": {
-            "data": {
-              "description": undefined,
-              "entry": [],
-              "exit": [],
-              "history": undefined,
-              "initial": "foo",
-              "invoke": [],
-              "metaEntries": [],
-              "tags": [],
-              "type": undefined,
-            },
-            "id": "",
-            "states": [
-              {
-                "data": {
-                  "description": undefined,
-                  "entry": [],
-                  "exit": [],
-                  "history": undefined,
-                  "initial": undefined,
-                  "invoke": [],
-                  "metaEntries": [],
-                  "tags": [],
-                  "type": undefined,
-                },
-                "id": "foo",
-                "states": [],
+          "edges": {},
+          "nodes": {
+            "": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": "foo",
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": undefined,
               },
-            ],
+              "parentId": undefined,
+              "type": "node",
+              "uniqueId": "",
+            },
+            ".foo": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": undefined,
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": undefined,
+              },
+              "parentId": "",
+              "type": "node",
+              "uniqueId": ".foo",
+            },
           },
-          "states": [],
         },
         [],
       ],
@@ -315,23 +324,25 @@ test('should extract state.initial with undefined value', async () => {
     [
       [
         {
-          "edges": [],
-          "rootState": {
-            "data": {
-              "description": undefined,
-              "entry": [],
-              "exit": [],
-              "history": undefined,
-              "initial": undefined,
-              "invoke": [],
-              "metaEntries": [],
-              "tags": [],
-              "type": undefined,
+          "edges": {},
+          "nodes": {
+            "": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": undefined,
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": undefined,
+              },
+              "parentId": undefined,
+              "type": "node",
+              "uniqueId": "",
             },
-            "id": "",
-            "states": [],
           },
-          "states": [],
         },
         [],
       ],
@@ -358,23 +369,25 @@ test('should raise error when state.initial property has invalid value', async (
     [
       [
         {
-          "edges": [],
-          "rootState": {
-            "data": {
-              "description": undefined,
-              "entry": [],
-              "exit": [],
-              "history": undefined,
-              "initial": undefined,
-              "invoke": [],
-              "metaEntries": [],
-              "tags": [],
-              "type": undefined,
+          "edges": {},
+          "nodes": {
+            "": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": undefined,
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": undefined,
+              },
+              "parentId": undefined,
+              "type": "node",
+              "uniqueId": "",
             },
-            "id": "",
-            "states": [],
           },
-          "states": [],
         },
         [
           {
@@ -405,23 +418,25 @@ test('should extract state.type with value "parallel"', async () => {
     [
       [
         {
-          "edges": [],
-          "rootState": {
-            "data": {
-              "description": undefined,
-              "entry": [],
-              "exit": [],
-              "history": undefined,
-              "initial": undefined,
-              "invoke": [],
-              "metaEntries": [],
-              "tags": [],
-              "type": "parallel",
+          "edges": {},
+          "nodes": {
+            "": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": undefined,
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": "parallel",
+              },
+              "parentId": undefined,
+              "type": "node",
+              "uniqueId": "",
             },
-            "id": "",
-            "states": [],
           },
-          "states": [],
         },
         [],
       ],
@@ -448,23 +463,25 @@ test('should extract state.type with value "final"', async () => {
     [
       [
         {
-          "edges": [],
-          "rootState": {
-            "data": {
-              "description": undefined,
-              "entry": [],
-              "exit": [],
-              "history": undefined,
-              "initial": undefined,
-              "invoke": [],
-              "metaEntries": [],
-              "tags": [],
-              "type": "final",
+          "edges": {},
+          "nodes": {
+            "": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": undefined,
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": "final",
+              },
+              "parentId": undefined,
+              "type": "node",
+              "uniqueId": "",
             },
-            "id": "",
-            "states": [],
           },
-          "states": [],
         },
         [],
       ],
@@ -491,23 +508,25 @@ test('should extract state.type with value "history"', async () => {
     [
       [
         {
-          "edges": [],
-          "rootState": {
-            "data": {
-              "description": undefined,
-              "entry": [],
-              "exit": [],
-              "history": undefined,
-              "initial": undefined,
-              "invoke": [],
-              "metaEntries": [],
-              "tags": [],
-              "type": "history",
+          "edges": {},
+          "nodes": {
+            "": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": undefined,
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": "history",
+              },
+              "parentId": undefined,
+              "type": "node",
+              "uniqueId": "",
             },
-            "id": "",
-            "states": [],
           },
-          "states": [],
         },
         [],
       ],
@@ -534,23 +553,25 @@ test('should extract state.type with value undefined', async () => {
     [
       [
         {
-          "edges": [],
-          "rootState": {
-            "data": {
-              "description": undefined,
-              "entry": [],
-              "exit": [],
-              "history": undefined,
-              "initial": undefined,
-              "invoke": [],
-              "metaEntries": [],
-              "tags": [],
-              "type": undefined,
+          "edges": {},
+          "nodes": {
+            "": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": undefined,
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": undefined,
+              },
+              "parentId": undefined,
+              "type": "node",
+              "uniqueId": "",
             },
-            "id": "",
-            "states": [],
           },
-          "states": [],
         },
         [],
       ],
@@ -577,23 +598,25 @@ test('should raise error when state.type has invalid value', async () => {
     [
       [
         {
-          "edges": [],
-          "rootState": {
-            "data": {
-              "description": undefined,
-              "entry": [],
-              "exit": [],
-              "history": undefined,
-              "initial": undefined,
-              "invoke": [],
-              "metaEntries": [],
-              "tags": [],
-              "type": undefined,
+          "edges": {},
+          "nodes": {
+            "": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": undefined,
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": undefined,
+              },
+              "parentId": undefined,
+              "type": "node",
+              "uniqueId": "",
             },
-            "id": "",
-            "states": [],
           },
-          "states": [],
         },
         [
           {
@@ -624,23 +647,25 @@ test('should extract state.history with value "shallow"', async () => {
     [
       [
         {
-          "edges": [],
-          "rootState": {
-            "data": {
-              "description": undefined,
-              "entry": [],
-              "exit": [],
-              "history": "shallow",
-              "initial": undefined,
-              "invoke": [],
-              "metaEntries": [],
-              "tags": [],
-              "type": undefined,
+          "edges": {},
+          "nodes": {
+            "": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": "shallow",
+                "initial": undefined,
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": undefined,
+              },
+              "parentId": undefined,
+              "type": "node",
+              "uniqueId": "",
             },
-            "id": "",
-            "states": [],
           },
-          "states": [],
         },
         [],
       ],
@@ -666,23 +691,25 @@ test('should extract state.history with value "deep"', async () => {
     [
       [
         {
-          "edges": [],
-          "rootState": {
-            "data": {
-              "description": undefined,
-              "entry": [],
-              "exit": [],
-              "history": "deep",
-              "initial": undefined,
-              "invoke": [],
-              "metaEntries": [],
-              "tags": [],
-              "type": undefined,
+          "edges": {},
+          "nodes": {
+            "": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": "deep",
+                "initial": undefined,
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": undefined,
+              },
+              "parentId": undefined,
+              "type": "node",
+              "uniqueId": "",
             },
-            "id": "",
-            "states": [],
           },
-          "states": [],
         },
         [],
       ],
@@ -709,23 +736,25 @@ test('should extract state.history with value undefined', async () => {
     [
       [
         {
-          "edges": [],
-          "rootState": {
-            "data": {
-              "description": undefined,
-              "entry": [],
-              "exit": [],
-              "history": undefined,
-              "initial": undefined,
-              "invoke": [],
-              "metaEntries": [],
-              "tags": [],
-              "type": undefined,
+          "edges": {},
+          "nodes": {
+            "": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": undefined,
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": undefined,
+              },
+              "parentId": undefined,
+              "type": "node",
+              "uniqueId": "",
             },
-            "id": "",
-            "states": [],
           },
-          "states": [],
         },
         [],
       ],

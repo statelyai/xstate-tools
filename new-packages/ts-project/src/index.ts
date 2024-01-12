@@ -1,6 +1,10 @@
 import type { CallExpression, Program, SourceFile } from 'typescript';
 import { extractState } from './state';
-import { ExtractionContext } from './types';
+import {
+  ExtractionContext,
+  ExtractionError,
+  ExtractorDigraphDef,
+} from './types';
 
 function findCreateMachineCalls(
   ts: typeof import('typescript'),
@@ -32,16 +36,18 @@ function findCreateMachineCalls(
 function extractMachineConfig(
   ts: typeof import('typescript'),
   createMachineCall: CallExpression,
-) {
+): [ExtractorDigraphDef, ExtractionError[]] {
   const ctx: ExtractionContext = {
     errors: [],
   };
   const rootState = createMachineCall.arguments[0];
+  const nodes = {};
+  const edges = {};
+  extractState(ctx, ts, rootState, nodes);
   return [
     {
-      states: [],
-      edges: [],
-      rootState: extractState(ctx, ts, rootState, []),
+      nodes,
+      edges: {},
     },
     ctx.errors,
   ] as const;

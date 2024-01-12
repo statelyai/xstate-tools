@@ -17,23 +17,25 @@ test('should extract a machine with empty config', async () => {
     [
       [
         {
-          "edges": [],
-          "rootState": {
-            "data": {
-              "description": undefined,
-              "entry": [],
-              "exit": [],
-              "history": undefined,
-              "initial": undefined,
-              "invoke": [],
-              "metaEntries": [],
-              "tags": [],
-              "type": undefined,
+          "edges": {},
+          "nodes": {
+            "": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": undefined,
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": undefined,
+              },
+              "parentId": undefined,
+              "type": "node",
+              "uniqueId": "",
             },
-            "id": "",
-            "states": [],
           },
-          "states": [],
         },
         [],
       ],
@@ -57,9 +59,8 @@ test('should extract a machine created with no config at all', async () => {
     [
       [
         {
-          "edges": [],
-          "rootState": undefined,
-          "states": [],
+          "edges": {},
+          "nodes": {},
         },
         [],
       ],
@@ -89,45 +90,49 @@ test('should extract multiple machines in a single file', async () => {
     [
       [
         {
-          "edges": [],
-          "rootState": {
-            "data": {
-              "description": undefined,
-              "entry": [],
-              "exit": [],
-              "history": undefined,
-              "initial": undefined,
-              "invoke": [],
-              "metaEntries": [],
-              "tags": [],
-              "type": undefined,
+          "edges": {},
+          "nodes": {
+            "": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": undefined,
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": undefined,
+              },
+              "parentId": undefined,
+              "type": "node",
+              "uniqueId": "",
             },
-            "id": "",
-            "states": [],
           },
-          "states": [],
         },
         [],
       ],
       [
         {
-          "edges": [],
-          "rootState": {
-            "data": {
-              "description": undefined,
-              "entry": [],
-              "exit": [],
-              "history": undefined,
-              "initial": undefined,
-              "invoke": [],
-              "metaEntries": [],
-              "tags": [],
-              "type": undefined,
+          "edges": {},
+          "nodes": {
+            "": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": undefined,
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": undefined,
+              },
+              "parentId": undefined,
+              "type": "node",
+              "uniqueId": "",
             },
-            "id": "",
-            "states": [],
           },
-          "states": [],
         },
         [],
       ],
@@ -155,39 +160,41 @@ test('should extract a machine created with `setup`', async () => {
     [
       [
         {
-          "edges": [],
-          "rootState": {
-            "data": {
-              "description": undefined,
-              "entry": [],
-              "exit": [],
-              "history": undefined,
-              "initial": undefined,
-              "invoke": [],
-              "metaEntries": [],
-              "tags": [],
-              "type": undefined,
-            },
-            "id": "",
-            "states": [
-              {
-                "data": {
-                  "description": undefined,
-                  "entry": [],
-                  "exit": [],
-                  "history": undefined,
-                  "initial": undefined,
-                  "invoke": [],
-                  "metaEntries": [],
-                  "tags": [],
-                  "type": undefined,
-                },
-                "id": "foo",
-                "states": [],
+          "edges": {},
+          "nodes": {
+            "": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": undefined,
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": undefined,
               },
-            ],
+              "parentId": undefined,
+              "type": "node",
+              "uniqueId": "",
+            },
+            ".foo": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": undefined,
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": undefined,
+              },
+              "parentId": "",
+              "type": "node",
+              "uniqueId": ".foo",
+            },
           },
-          "states": [],
         },
         [],
       ],
