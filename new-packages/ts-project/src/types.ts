@@ -8,20 +8,22 @@ export interface ExtractionContext {
 export type ExtractionError =
   | {
       type: 'state_unhandled';
-      node: unknown;
     }
   | {
       type: 'state_property_unhandled';
-      node: unknown;
+    }
+  | {
+      type: 'state_type_invalid';
+    }
+  | {
+      type: 'state_history_invalid';
     }
   | {
       type: 'property_key_no_roundtrip';
-      node: unknown;
     }
   | {
       type: 'property_key_unhandled';
       propertyKind: 'computed' | 'private';
-      node: unknown;
     };
 
 export type ExtractorStateConfig = {

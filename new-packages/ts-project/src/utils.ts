@@ -26,7 +26,6 @@ export function getPropertyKey(
     if (text !== prop.name.text) {
       ctx.errors.push({
         type: 'property_key_no_roundtrip',
-        node: prop.name,
       });
     }
     return text;
@@ -35,7 +34,6 @@ export function getPropertyKey(
     ctx.errors.push({
       type: 'property_key_unhandled',
       propertyKind: 'computed',
-      node: prop.name,
     });
     return;
   }
@@ -43,7 +41,6 @@ export function getPropertyKey(
     ctx.errors.push({
       type: 'property_key_unhandled',
       propertyKind: 'private',
-      node: prop.name,
     });
     return;
   }

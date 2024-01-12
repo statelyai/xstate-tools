@@ -5,24 +5,6 @@ import { getPropertyKey } from './utils';
 const isUndefined = (ts: typeof import('typescript'), prop: Expression) =>
   ts.isIdentifier(prop) && ts.idText(prop) === 'undefined';
 
-const StateConfigDataWhitelistedProperties = new Set([
-  'key',
-  'type',
-  'history',
-  'metaEntries',
-  'entry',
-  'exit',
-  'invoke',
-  'initial',
-  'tags',
-  'description',
-]);
-
-const isStateNodeConfigProperty = (
-  key: string,
-): key is keyof ExtractorStateConfig['data'] =>
-  StateConfigDataWhitelistedProperties.has(key);
-
 export function extractState(
   ctx: ExtractionContext,
   ts: typeof import('typescript'),
@@ -41,7 +23,6 @@ export function extractState(
   if (!ts.isObjectLiteralExpression(state)) {
     ctx.errors.push({
       type: 'state_unhandled',
-      node: state,
     });
     return;
   }
@@ -50,106 +31,114 @@ export function extractState(
     if (ts.isPropertyAssignment(prop)) {
       const key = getPropertyKey(ctx, ts, prop);
 
-      if (key === 'states' && ts.isObjectLiteralExpression(prop.initializer)) {
-        for (const state of prop.initializer.properties) {
-          if (ts.isPropertyAssignment(state)) {
-            const key = getPropertyKey(ctx, ts, state);
-            if (key) {
-              const stateConfig = extractState(
-                ctx,
-                ts,
-                state.initializer,
-                path.concat(key),
-              );
-              if (stateConfig) {
-                result.states.push(stateConfig);
+      switch (key) {
+        case 'states':
+          if (!ts.isObjectLiteralExpression(prop.initializer)) {
+            ctx.errors.push({
+              type: 'state_unhandled',
+            });
+            break;
+          }
+          for (const state of prop.initializer.properties) {
+            if (ts.isPropertyAssignment(state)) {
+              const key = getPropertyKey(ctx, ts, state);
+              if (key) {
+                const stateConfig = extractState(
+                  ctx,
+                  ts,
+                  state.initializer,
+                  path.concat(key),
+                );
+                if (stateConfig) {
+                  result.states.push(stateConfig);
+                }
               }
+              continue;
             }
-            continue;
-          }
-          if (ts.isShorthandPropertyAssignment(state)) {
-            ctx.errors.push({
-              type: 'state_property_unhandled',
-              node: state,
-            });
-            continue;
-          }
-          if (ts.isSpreadAssignment(state)) {
-            ctx.errors.push({
-              type: 'state_property_unhandled',
-              node: state,
-            });
-            continue;
-          }
-          if (
-            ts.isMethodDeclaration(state) ||
-            ts.isGetAccessorDeclaration(state) ||
-            ts.isSetAccessorDeclaration(state)
-          ) {
-            ctx.errors.push({
-              type: 'state_property_unhandled',
-              node: state,
-            });
-            continue;
-          }
+            if (ts.isShorthandPropertyAssignment(state)) {
+              ctx.errors.push({
+                type: 'state_property_unhandled',
+              });
+              continue;
+            }
+            if (ts.isSpreadAssignment(state)) {
+              ctx.errors.push({
+                type: 'state_property_unhandled',
+              });
+              continue;
+            }
+            if (
+              ts.isMethodDeclaration(state) ||
+              ts.isGetAccessorDeclaration(state) ||
+              ts.isSetAccessorDeclaration(state)
+            ) {
+              ctx.errors.push({
+                type: 'state_property_unhandled',
+              });
+              continue;
+            }
 
-          state satisfies never;
+            state satisfies never;
+          }
+          break;
+        case 'initial': {
+          if (ts.isStringLiteral(prop.initializer)) {
+            result.data[key] = prop.initializer.text;
+            continue;
+          }
+          if (isUndefined(ts, prop.initializer)) {
+            result.data[key] = undefined;
+            continue;
+          }
+          ctx.errors.push({
+            type: 'state_property_unhandled',
+          });
+          break;
         }
-      } else if (key && isStateNodeConfigProperty(key)) {
-        switch (key) {
-          case 'initial': {
-            if (ts.isStringLiteral(prop.initializer)) {
-              result.data[key] = prop.initializer.text;
-            } else if (isUndefined(ts, prop.initializer)) {
-              result.data[key] = undefined;
-            } else {
-              ctx.errors.push({
-                type: 'state_property_unhandled',
-                node: prop,
-              });
+        case 'type': {
+          if (ts.isStringLiteral(prop.initializer)) {
+            const text = prop.initializer.text;
+            if (text === 'history' || text === 'parallel' || text === 'final') {
+              result.data[key] = text;
+              continue;
             }
-            break;
-          }
-          case 'type': {
-            const isStringWithValidValue =
-              ts.isStringLiteral(prop.initializer) &&
-              ['history', 'atomic', 'compound', 'parallel', 'final'].includes(
-                prop.initializer.text,
-              );
-
-            if (isStringWithValidValue) {
-              result.data[key] = prop.initializer
-                .text as ExtractorStateConfig['data']['type'];
-            } else if (isUndefined(ts, prop.initializer)) {
-              result.data[key] = undefined;
-            } else {
-              ctx.errors.push({
-                type: 'state_property_unhandled',
-                node: prop,
-              });
+            if (text === 'atomic' || text === 'compound') {
+              continue;
             }
-            break;
+            ctx.errors.push({
+              type: 'state_type_invalid',
+            });
+            continue;
           }
-          // TODO: this property only has effect if type is set to history
-          case 'history': {
-            const isStringWithValidValue =
-              ts.isStringLiteral(prop.initializer) &&
-              ['shallow', 'deep'].includes(prop.initializer.text);
-
-            if (isStringWithValidValue) {
-              result.data[key] = prop.initializer
-                .text as ExtractorStateConfig['data']['history'];
-            } else if (isUndefined(ts, prop.initializer)) {
-              result.data[key] = undefined;
-            } else {
-              ctx.errors.push({
-                type: 'state_property_unhandled',
-                node: prop,
-              });
+          if (isUndefined(ts, prop.initializer)) {
+            result.data[key] = undefined;
+            continue;
+          }
+          ctx.errors.push({
+            type: 'state_property_unhandled',
+          });
+          break;
+        }
+        // TODO: this property only has effect if type is set to history
+        case 'history': {
+          if (ts.isStringLiteral(prop.initializer)) {
+            const text = prop.initializer.text;
+            if (text === 'shallow' || text === 'deep') {
+              result.data[key] = text;
+              continue;
             }
-            break;
+            ctx.errors.push({
+              type: 'state_history_invalid',
+            });
           }
-          default:
+          if (isUndefined(ts, prop.initializer)) {
+            result.data[key] = undefined;
+            continue;
+          }
+          ctx.errors.push({
+            type: 'state_property_unhandled',
+          });
+          break;
         }
       }
       continue;
@@ -158,14 +147,12 @@ export function extractState(
     if (ts.isShorthandPropertyAssignment(prop)) {
       ctx.errors.push({
         type: 'state_property_unhandled',
-        node: prop,
       });
       continue;
     }
     if (ts.isSpreadAssignment(prop)) {
       ctx.errors.push({
         type: 'state_property_unhandled',
-        node: prop,
       });
       continue;
     }
@@ -176,7 +163,6 @@ export function extractState(
     ) {
       ctx.errors.push({
         type: 'state_property_unhandled',
-        node: prop,
       });
       continue;
     }

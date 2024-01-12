@@ -1,6 +1,65 @@
 import { expect, test } from 'vitest';
 import { createTestProject, testdir, ts } from './utils';
 
+test('should extract a simple state', async () => {
+  const tmpPath = await testdir({
+    'tsconfig.json': JSON.stringify({}),
+    'index.ts': ts`
+      import { createMachine } from "xstate";
+
+      createMachine({
+        states: {
+          foo: {},
+        },
+      });
+    `,
+  });
+
+  const project = await createTestProject(tmpPath);
+  expect(project.extractMachines('index.ts')).toMatchInlineSnapshot(`
+    [
+      [
+        {
+          "edges": [],
+          "rootState": {
+            "data": {
+              "description": undefined,
+              "entry": [],
+              "exit": [],
+              "history": undefined,
+              "initial": undefined,
+              "invoke": [],
+              "metaEntries": [],
+              "tags": [],
+              "type": undefined,
+            },
+            "id": "",
+            "states": [
+              {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": undefined,
+                },
+                "id": "foo",
+                "states": [],
+              },
+            ],
+          },
+          "states": [],
+        },
+        [],
+      ],
+    ]
+  `);
+});
+
 test('should extract states recursively', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
@@ -259,48 +318,6 @@ test('should raise error when state.initial property has invalid value', async (
         },
         [
           {
-            "node": NodeObject {
-              "end": 70,
-              "exclamationToken": undefined,
-              "flags": 0,
-              "initializer": NodeObject {
-                "end": 70,
-                "flags": 0,
-                "jsDoc": undefined,
-                "kind": 210,
-                "localSymbol": undefined,
-                "modifierFlagsCache": 0,
-                "multiLine": false,
-                "parent": undefined,
-                "pos": 67,
-                "properties": [],
-                "symbol": undefined,
-                "transformFlags": 0,
-              },
-              "jsDoc": undefined,
-              "kind": 303,
-              "localSymbol": undefined,
-              "modifierFlagsCache": 0,
-              "modifiers": undefined,
-              "name": IdentifierObject {
-                "end": 66,
-                "escapedText": "initial",
-                "flags": 0,
-                "flowNode": undefined,
-                "jsDoc": undefined,
-                "kind": 80,
-                "modifierFlagsCache": 0,
-                "parent": undefined,
-                "pos": 56,
-                "symbol": undefined,
-                "transformFlags": 0,
-              },
-              "parent": undefined,
-              "pos": 56,
-              "questionToken": undefined,
-              "symbol": undefined,
-              "transformFlags": 0,
-            },
             "type": "state_property_unhandled",
           },
         ],
@@ -351,6 +368,7 @@ test('should extract state.type with value "parallel"', async () => {
     ]
   `);
 });
+
 test('should extract state.type with value "final"', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
@@ -436,6 +454,7 @@ test('should extract state.type with value "history"', async () => {
     ]
   `);
 });
+
 test('should extract state.type with value undefined', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
@@ -478,6 +497,7 @@ test('should extract state.type with value undefined', async () => {
     ]
   `);
 });
+
 test('should raise error when state.type has invalid value', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
@@ -517,47 +537,6 @@ test('should raise error when state.type has invalid value', async () => {
         },
         [
           {
-            "node": NodeObject {
-              "end": 68,
-              "exclamationToken": undefined,
-              "flags": 0,
-              "initializer": NodeObject {
-                "end": 68,
-                "flags": 0,
-                "kind": 9,
-                "localSymbol": undefined,
-                "modifierFlagsCache": 0,
-                "numericLiteralFlags": 0,
-                "parent": undefined,
-                "pos": 64,
-                "symbol": undefined,
-                "text": "123",
-                "transformFlags": 0,
-              },
-              "jsDoc": undefined,
-              "kind": 303,
-              "localSymbol": undefined,
-              "modifierFlagsCache": 0,
-              "modifiers": undefined,
-              "name": IdentifierObject {
-                "end": 63,
-                "escapedText": "type",
-                "flags": 0,
-                "flowNode": undefined,
-                "jsDoc": undefined,
-                "kind": 80,
-                "modifierFlagsCache": 0,
-                "parent": undefined,
-                "pos": 56,
-                "symbol": undefined,
-                "transformFlags": 0,
-              },
-              "parent": undefined,
-              "pos": 56,
-              "questionToken": undefined,
-              "symbol": undefined,
-              "transformFlags": 0,
-            },
             "type": "state_property_unhandled",
           },
         ],
