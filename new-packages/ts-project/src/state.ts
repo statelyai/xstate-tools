@@ -144,6 +144,19 @@ export function extractState(
           });
           break;
         }
+        case 'description': {
+          if (ts.isStringLiteralLike(prop.initializer)) {
+            node.data.description = prop.initializer.text;
+            continue;
+          }
+          if (isUndefined(ts, prop.initializer)) {
+            continue;
+          }
+          ctx.errors.push({
+            type: 'state_property_unhandled',
+          });
+          break;
+        }
       }
       continue;
     }
