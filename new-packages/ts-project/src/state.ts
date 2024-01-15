@@ -1,6 +1,6 @@
 import type { Expression } from 'typescript';
 import { ExtractionContext, ExtractorNodeDef } from './types';
-import { getPropertyKey } from './utils';
+import { getPropertyKey, uniqueId } from './utils';
 
 const isUndefined = (ts: typeof import('typescript'), prop: Expression) =>
   ts.isIdentifier(prop) && ts.idText(prop) === 'undefined';
@@ -9,13 +9,12 @@ export function extractState(
   ctx: ExtractionContext,
   ts: typeof import('typescript'),
   state: Expression | undefined,
-  path: string[] = [''], // todo handle set key or id on root state
+  parentId: string | undefined,
 ) {
   const node: ExtractorNodeDef = {
     type: 'node',
-    // TODO: this needs to be a sophisticated id
-    uniqueId: path.join('.'),
-    parentId: path.length > 1 ? path.slice(0, -1).join('.') : undefined,
+    uniqueId: uniqueId(),
+    parentId,
     data: {
       initial: undefined,
       type: 'normal',
@@ -59,7 +58,7 @@ export function extractState(
             if (ts.isPropertyAssignment(state)) {
               const childKey = getPropertyKey(ctx, ts, state);
               if (childKey) {
-                extractState(ctx, ts, state.initializer, path.concat(childKey));
+                extractState(ctx, ts, state.initializer, node.uniqueId);
               }
               continue;
             }

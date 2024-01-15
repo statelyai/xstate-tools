@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import { createTestProject, testdir, ts } from './utils';
+import { createTestProject, replaceUniqueIds, testdir, ts } from './utils';
 
 test('should extract a machine with empty config', async () => {
   const tmpPath = await testdir({
@@ -13,35 +13,36 @@ test('should extract a machine with empty config', async () => {
 
   const project = await createTestProject(tmpPath);
 
-  expect(project.extractMachines('index.ts')).toMatchInlineSnapshot(`
-    [
+  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+    .toMatchInlineSnapshot(`
       [
-        {
-          "edges": {},
-          "nodes": {
-            "": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
+        [
+          {
+            "edges": {},
+            "nodes": {
+              "state-0": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": undefined,
+                "type": "node",
+                "uniqueId": "state-0",
               },
-              "parentId": undefined,
-              "type": "node",
-              "uniqueId": "",
             },
+            "root": "state-0",
           },
-          "root": "",
-        },
-        [],
-      ],
-    ]
-  `);
+          [],
+        ],
+      ]
+    `);
 });
 
 test('should extract a machine created with no config at all', async () => {
@@ -56,35 +57,36 @@ test('should extract a machine created with no config at all', async () => {
 
   const project = await createTestProject(tmpPath);
 
-  expect(project.extractMachines('index.ts')).toMatchInlineSnapshot(`
-    [
+  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+    .toMatchInlineSnapshot(`
       [
-        {
-          "edges": {},
-          "nodes": {
-            "": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
+        [
+          {
+            "edges": {},
+            "nodes": {
+              "state-0": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": undefined,
+                "type": "node",
+                "uniqueId": "state-0",
               },
-              "parentId": undefined,
-              "type": "node",
-              "uniqueId": "",
             },
+            "root": "state-0",
           },
-          "root": "",
-        },
-        [],
-      ],
-    ]
-  `);
+          [],
+        ],
+      ]
+    `);
 });
 
 test('should extract multiple machines in a single file', async () => {
@@ -105,60 +107,61 @@ test('should extract multiple machines in a single file', async () => {
 
   const project = await createTestProject(tmpPath);
 
-  expect(project.extractMachines('index.ts')).toMatchInlineSnapshot(`
-    [
+  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+    .toMatchInlineSnapshot(`
       [
-        {
-          "edges": {},
-          "nodes": {
-            "": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
+        [
+          {
+            "edges": {},
+            "nodes": {
+              "state-0": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": undefined,
+                "type": "node",
+                "uniqueId": "state-0",
               },
-              "parentId": undefined,
-              "type": "node",
-              "uniqueId": "",
             },
+            "root": "state-0",
           },
-          "root": "",
-        },
-        [],
-      ],
-      [
-        {
-          "edges": {},
-          "nodes": {
-            "": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
+          [],
+        ],
+        [
+          {
+            "edges": {},
+            "nodes": {
+              "state-0": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": undefined,
+                "type": "node",
+                "uniqueId": "state-0",
               },
-              "parentId": undefined,
-              "type": "node",
-              "uniqueId": "",
             },
+            "root": "state-0",
           },
-          "root": "",
-        },
-        [],
-      ],
-    ]
-  `);
+          [],
+        ],
+      ]
+    `);
 });
 
 test('should extract a machine created with `setup`', async () => {
@@ -177,49 +180,50 @@ test('should extract a machine created with `setup`', async () => {
 
   const project = await createTestProject(tmpPath);
 
-  expect(project.extractMachines('index.ts')).toMatchInlineSnapshot(`
-    [
+  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+    .toMatchInlineSnapshot(`
       [
-        {
-          "edges": {},
-          "nodes": {
-            "": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
+        [
+          {
+            "edges": {},
+            "nodes": {
+              "state-0": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": undefined,
+                "type": "node",
+                "uniqueId": "state-0",
               },
-              "parentId": undefined,
-              "type": "node",
-              "uniqueId": "",
-            },
-            ".foo": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
+              "state-1": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": "state-0",
+                "type": "node",
+                "uniqueId": "state-1",
               },
-              "parentId": "",
-              "type": "node",
-              "uniqueId": ".foo",
             },
+            "root": "state-0",
           },
-          "root": "",
-        },
-        [],
-      ],
-    ]
-  `);
+          [],
+        ],
+      ]
+    `);
 });
