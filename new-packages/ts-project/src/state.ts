@@ -5,6 +5,11 @@ import { getPropertyKey, uniqueId } from './utils';
 const isUndefined = (ts: typeof import('typescript'), prop: Expression) =>
   ts.isIdentifier(prop) && ts.idText(prop) === 'undefined';
 
+const isTrue = (ts: typeof import('typescript'), prop: Expression) =>
+  prop.kind === ts.SyntaxKind.TrueKeyword;
+const isFalse = (ts: typeof import('typescript'), prop: Expression) =>
+  prop.kind === ts.SyntaxKind.FalseKeyword;
+
 export function extractState(
   ctx: ExtractionContext,
   ts: typeof import('typescript'),
@@ -135,6 +140,14 @@ export function extractState(
             ctx.errors.push({
               type: 'state_history_invalid',
             });
+          }
+          if (isTrue(ts, prop.initializer)) {
+            node.data.history = 'deep';
+            continue;
+          }
+          if (isFalse(ts, prop.initializer)) {
+            node.data.history = 'shallow';
+            continue;
           }
           if (isUndefined(ts, prop.initializer)) {
             continue;
