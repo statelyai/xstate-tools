@@ -1,5 +1,5 @@
 import { type Expression, type PropertyAssignment } from 'typescript';
-import { ExtractionContext, JsonItem } from './types';
+import { ExtractionContext, JsonItem, JsonObject } from './types';
 
 export const uniqueId = () => {
   return Math.random().toString(36).substring(2);
@@ -78,6 +78,7 @@ export function getJsonValue(
     for (const elem of prop.elements) {
       const value = getJsonValue(ctx, ts, elem);
       if (value === undefined) {
+        // TODO: raise error
         return;
       }
       out.push(value);
@@ -85,12 +86,17 @@ export function getJsonValue(
     return out;
   }
   if (ts.isObjectLiteralExpression(prop)) {
-    const out: Record<string, any> = {};
+    const out: JsonObject = {};
     for (const p of prop.properties) {
       if (ts.isPropertyAssignment(p)) {
         const key = getPropertyKey(ctx, ts, p);
         if (key) {
-          out[key] = getJsonValue(ctx, ts, p.initializer);
+          const value = getJsonValue(ctx, ts, p.initializer);
+          if (value === undefined) {
+            // TODO: raise error
+            return;
+          }
+          out[key] = value;
         }
       }
     }
