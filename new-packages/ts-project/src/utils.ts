@@ -1,10 +1,4 @@
-import {
-  isArrayLiteralExpression,
-  isNumericLiteral,
-  isStringLiteralLike,
-  type Expression,
-  type PropertyAssignment,
-} from 'typescript';
+import { type Expression, type PropertyAssignment } from 'typescript';
 import { ExtractionContext, JsonItem } from './types';
 
 export const uniqueId = () => {
@@ -58,13 +52,6 @@ export const isUndefined = (
   prop: Expression,
 ) => ts.isIdentifier(prop) && ts.idText(prop) === 'undefined';
 
-export const isTrue = (ts: typeof import('typescript'), prop: Expression) =>
-  prop.kind === ts.SyntaxKind.TrueKeyword;
-export const isFalse = (ts: typeof import('typescript'), prop: Expression) =>
-  prop.kind === ts.SyntaxKind.FalseKeyword;
-export const isNull = (ts: typeof import('typescript'), prop: Expression) =>
-  prop.kind === ts.SyntaxKind.NullKeyword;
-
 export function getJsonValue(
   ctx: ExtractionContext,
   ts: typeof import('typescript'),
@@ -76,13 +63,13 @@ export function getJsonValue(
   if (ts.isNumericLiteral(prop)) {
     return +prop.text;
   }
-  if (isTrue(ts, prop)) {
+  if (prop.kind === ts.SyntaxKind.TrueKeyword) {
     return true;
   }
-  if (isFalse(ts, prop)) {
+  if (prop.kind === ts.SyntaxKind.FalseKeyword) {
     return false;
   }
-  if (isNull(ts, prop)) {
+  if (prop.kind === ts.SyntaxKind.NullKeyword) {
     return null;
   }
   // TODO: set a strategy here. Ignore the whole array if an items can't be extracted or try to extract as much as possible?

@@ -1,13 +1,6 @@
 import type { Expression } from 'typescript';
 import { ExtractionContext, ExtractorNodeDef } from './types';
-import {
-  getJsonValue,
-  getPropertyKey,
-  isFalse,
-  isTrue,
-  isUndefined,
-  uniqueId,
-} from './utils';
+import { getJsonValue, getPropertyKey, isUndefined, uniqueId } from './utils';
 
 export function extractState(
   ctx: ExtractionContext,
@@ -140,11 +133,11 @@ export function extractState(
               type: 'state_history_invalid',
             });
           }
-          if (isTrue(ts, prop.initializer)) {
+          if (prop.initializer.kind === ts.SyntaxKind.TrueKeyword) {
             node.data.history = 'deep';
             continue;
           }
-          if (isFalse(ts, prop.initializer)) {
+          if (prop.initializer.kind === ts.SyntaxKind.FalseKeyword) {
             node.data.history = 'shallow';
             continue;
           }
