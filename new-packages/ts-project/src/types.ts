@@ -50,3 +50,12 @@ export type ExtractorDigraphDef = {
   nodes: Record<string, ExtractorNodeDef>;
   edges: Record<string, never>;
 };
+
+export type JsonItem =
+  | string
+  | number
+  | boolean
+  | null
+  | JsonObject
+  | JsonItem[];
+export type JsonObject = { [key: string]: JsonItem };
