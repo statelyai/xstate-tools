@@ -1496,9 +1496,9 @@ test("should extract state.meta when it's a javascript object and contains multi
           foo: {
             meta: {
               obj: {
-                foo: {
-                  bar: {
-                    baz: 'some string'
+                x: {
+                  y: {
+                    z: 'some string'
                   }
                 }
               }
@@ -1513,67 +1513,67 @@ test("should extract state.meta when it's a javascript object and contains multi
 
   expect(replaceUniqueIds(project.extractMachines('index.ts')))
     .toMatchInlineSnapshot(`
+    [
       [
-        [
-          {
-            "blocks": {},
-            "edges": {},
-            "implementations": {
-              "actions": {},
-              "actors": {},
-              "guards": {},
-            },
-            "nodes": {
-              "state-0": {
-                "data": {
-                  "description": undefined,
-                  "entry": [],
-                  "exit": [],
-                  "history": undefined,
-                  "initial": "foo",
-                  "invoke": [],
-                  "metaEntries": [],
-                  "tags": [],
-                  "type": "normal",
-                },
-                "parentId": undefined,
-                "type": "node",
-                "uniqueId": "state-0",
+        {
+          "blocks": {},
+          "edges": {},
+          "implementations": {
+            "actions": {},
+            "actors": {},
+            "guards": {},
+          },
+          "nodes": {
+            "state-0": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": "foo",
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": "normal",
               },
-              "state-1": {
-                "data": {
-                  "description": undefined,
-                  "entry": [],
-                  "exit": [],
-                  "history": undefined,
-                  "initial": undefined,
-                  "invoke": [],
-                  "metaEntries": [
-                    [
-                      "obj",
-                      {
-                        "foo": {
-                          "bar": {
-                            "baz": "some string",
-                          },
+              "parentId": undefined,
+              "type": "node",
+              "uniqueId": "state-0",
+            },
+            "state-1": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": undefined,
+                "invoke": [],
+                "metaEntries": [
+                  [
+                    "obj",
+                    {
+                      "x": {
+                        "y": {
+                          "z": "some string",
                         },
                       },
-                    ],
+                    },
                   ],
-                  "tags": [],
-                  "type": "normal",
-                },
-                "parentId": "state-0",
-                "type": "node",
-                "uniqueId": "state-1",
+                ],
+                "tags": [],
+                "type": "normal",
               },
+              "parentId": "state-0",
+              "type": "node",
+              "uniqueId": "state-1",
             },
-            "root": "state-0",
           },
-          [],
-        ],
-      ]
-    `);
+          "root": "state-0",
+        },
+        [],
+      ],
+    ]
+  `);
 });
 
 test('should not raise error for state.meta with undefined value', async () => {
