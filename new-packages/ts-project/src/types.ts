@@ -98,11 +98,11 @@ export type ExtractorDigraphDef = {
   };
 };
 
-export type JsonItem =
+export type JsonValue =
   | string
   | number
   | boolean
   | null
   | JsonObject
-  | JsonItem[];
-export type JsonObject = { [key: string]: JsonItem };
+  | JsonValue[];
+export type JsonObject = { [key: string]: JsonValue };

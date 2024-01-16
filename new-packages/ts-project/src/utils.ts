@@ -1,5 +1,5 @@
 import type { Expression, PropertyAssignment } from 'typescript';
-import { ExtractionContext, JsonItem, JsonObject } from './types';
+import { ExtractionContext, JsonObject, JsonValue } from './types';
 
 export const uniqueId = () => {
   return Math.random().toString(36).substring(2);
@@ -56,7 +56,7 @@ export function getJsonValue(
   ctx: ExtractionContext,
   ts: typeof import('typescript'),
   prop: Expression,
-): JsonItem | undefined {
+): JsonValue | undefined {
   if (ts.isStringLiteralLike(prop)) {
     return prop.text;
   }
