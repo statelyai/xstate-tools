@@ -1,8 +1,11 @@
+import type { SourceFile } from 'typescript';
+
 export interface ExtractionContext {
+  sourceFile: SourceFile;
   errors: ExtractionError[];
   digraph: Pick<
     ExtractorDigraphDef,
-    'blocks' | 'nodes' | 'edges' | 'implementations'
+    'blocks' | 'nodes' | 'edges' | 'implementations' | 'data'
   >;
 }
 
@@ -13,6 +16,9 @@ export type ExtractionError =
     }
   | {
       type: 'state_property_unhandled';
+    }
+  | {
+      type: 'state_property_invalid';
     }
   | {
       type: 'state_type_invalid';
@@ -86,15 +92,16 @@ type ExtractorMetaEntry = [string, unknown];
 
 export type ExtractorDigraphDef = {
   root: string;
-
   blocks: Record<string, Block>;
   nodes: Record<string, Node>;
   edges: Record<string, never>;
-
   implementations: {
     actions: Record<string, { type: 'action'; id: string; name: string }>;
     actors: Record<string, never>;
     guards: Record<string, never>;
+  };
+  data: {
+    context: JsonObject | `{{${string}}}`;
   };
 };
 

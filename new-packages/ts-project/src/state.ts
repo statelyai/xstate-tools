@@ -1,3 +1,4 @@
+import { JsonObject } from '@xstate/machine-extractor';
 import type { Expression, PropertyAssignment } from 'typescript';
 import { ActionBlock, ExtractionContext, Node } from './types';
 import {
@@ -71,6 +72,34 @@ export function extractState(
       const key = getPropertyKey(ctx, ts, prop);
 
       switch (key) {
+        case 'context': {
+          if (parentId !== undefined) {
+            ctx.errors.push({
+              type: 'state_property_invalid',
+            });
+            continue;
+          }
+          if (ts.isObjectLiteralExpression(prop.initializer)) {
+            ctx.digraph.data.context = getJsonValue(
+              ctx,
+              ts,
+              prop.initializer,
+            ) as JsonObject;
+            continue;
+          }
+          if (
+            ts.isFunctionExpression(prop.initializer) ||
+            ts.isArrowFunction(prop.initializer)
+          ) {
+            ctx.digraph.data.context = `{{${prop.initializer.getText(
+              ctx.sourceFile,
+            )}}}`;
+            continue;
+          }
+
+          ctx.errors.push({ type: 'state_property_unhandled' });
+          break;
+        }
         case 'states':
           if (!ts.isObjectLiteralExpression(prop.initializer)) {
             ctx.errors.push({
