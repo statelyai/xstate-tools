@@ -838,34 +838,40 @@ test('should extract state.history with value true as deep', async () => {
 
   expect(replaceUniqueIds(project.extractMachines('index.ts')))
     .toMatchInlineSnapshot(`
-    [
       [
-        {
-          "edges": {},
-          "nodes": {
-            "state-0": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": "deep",
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
-              },
-              "parentId": undefined,
-              "type": "node",
-              "uniqueId": "state-0",
+        [
+          {
+            "blocks": {},
+            "edges": {},
+            "implementations": {
+              "actions": {},
+              "actors": {},
+              "guards": {},
             },
+            "nodes": {
+              "state-0": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": "deep",
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": undefined,
+                "type": "node",
+                "uniqueId": "state-0",
+              },
+            },
+            "root": "state-0",
           },
-          "root": "state-0",
-        },
-        [],
-      ],
-    ]
-  `);
+          [],
+        ],
+      ]
+    `);
 });
 
 test('should extract state.history with value false as shallow', async () => {
@@ -885,34 +891,40 @@ test('should extract state.history with value false as shallow', async () => {
 
   expect(replaceUniqueIds(project.extractMachines('index.ts')))
     .toMatchInlineSnapshot(`
-    [
       [
-        {
-          "edges": {},
-          "nodes": {
-            "state-0": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": "shallow",
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
-              },
-              "parentId": undefined,
-              "type": "node",
-              "uniqueId": "state-0",
+        [
+          {
+            "blocks": {},
+            "edges": {},
+            "implementations": {
+              "actions": {},
+              "actors": {},
+              "guards": {},
             },
+            "nodes": {
+              "state-0": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": "shallow",
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": undefined,
+                "type": "node",
+                "uniqueId": "state-0",
+              },
+            },
+            "root": "state-0",
           },
-          "root": "state-0",
-        },
-        [],
-      ],
-    ]
-  `);
+          [],
+        ],
+      ]
+    `);
 });
 
 test('should extract state.history with value undefined', async () => {
@@ -1298,81 +1310,87 @@ test("should extract state.meta when it's a javascript object", async () => {
 
   expect(replaceUniqueIds(project.extractMachines('index.ts')))
     .toMatchInlineSnapshot(`
-    [
       [
-        {
-          "edges": {},
-          "nodes": {
-            "state-0": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": "foo",
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
-              },
-              "parentId": undefined,
-              "type": "node",
-              "uniqueId": "state-0",
+        [
+          {
+            "blocks": {},
+            "edges": {},
+            "implementations": {
+              "actions": {},
+              "actors": {},
+              "guards": {},
             },
-            "state-1": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [
-                  [
-                    "str",
-                    "some string",
-                  ],
-                  [
-                    "num",
-                    123,
-                  ],
-                  [
-                    "bool",
-                    true,
-                  ],
-                  [
-                    "arr",
+            "nodes": {
+              "state-0": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": "foo",
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": undefined,
+                "type": "node",
+                "uniqueId": "state-0",
+              },
+              "state-1": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [
                     [
-                      1,
-                      2,
-                      3,
+                      "str",
+                      "some string",
+                    ],
+                    [
+                      "num",
+                      123,
+                    ],
+                    [
+                      "bool",
+                      true,
+                    ],
+                    [
+                      "arr",
+                      [
+                        1,
+                        2,
+                        3,
+                      ],
+                    ],
+                    [
+                      "obj",
+                      {
+                        "foo": "bar",
+                      },
+                    ],
+                    [
+                      "null",
+                      null,
                     ],
                   ],
-                  [
-                    "obj",
-                    {
-                      "foo": "bar",
-                    },
-                  ],
-                  [
-                    "null",
-                    null,
-                  ],
-                ],
-                "tags": [],
-                "type": "normal",
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": "state-0",
+                "type": "node",
+                "uniqueId": "state-1",
               },
-              "parentId": "state-0",
-              "type": "node",
-              "uniqueId": "state-1",
             },
+            "root": "state-0",
           },
-          "root": "state-0",
-        },
-        [],
-      ],
-    ]
-  `);
+          [],
+        ],
+      ]
+    `);
 });
 test("should extract state.meta when it's a javascript object containing nested array items", async () => {
   const tmpPath = await testdir({
@@ -1397,68 +1415,74 @@ test("should extract state.meta when it's a javascript object containing nested 
 
   expect(replaceUniqueIds(project.extractMachines('index.ts')))
     .toMatchInlineSnapshot(`
-    [
       [
-        {
-          "edges": {},
-          "nodes": {
-            "state-0": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": "foo",
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
-              },
-              "parentId": undefined,
-              "type": "node",
-              "uniqueId": "state-0",
+        [
+          {
+            "blocks": {},
+            "edges": {},
+            "implementations": {
+              "actions": {},
+              "actors": {},
+              "guards": {},
             },
-            "state-1": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [
-                  [
-                    "arr",
+            "nodes": {
+              "state-0": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": "foo",
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": undefined,
+                "type": "node",
+                "uniqueId": "state-0",
+              },
+              "state-1": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [
                     [
-                      "str",
-                      123,
-                      true,
+                      "arr",
                       [
-                        1,
-                        2,
-                        3,
+                        "str",
+                        123,
+                        true,
+                        [
+                          1,
+                          2,
+                          3,
+                        ],
+                        {
+                          "foo": "bar",
+                        },
+                        null,
                       ],
-                      {
-                        "foo": "bar",
-                      },
-                      null,
                     ],
                   ],
-                ],
-                "tags": [],
-                "type": "normal",
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": "state-0",
+                "type": "node",
+                "uniqueId": "state-1",
               },
-              "parentId": "state-0",
-              "type": "node",
-              "uniqueId": "state-1",
             },
+            "root": "state-0",
           },
-          "root": "state-0",
-        },
-        [],
-      ],
-    ]
-  `);
+          [],
+        ],
+      ]
+    `);
 });
 test("should extract state.meta when it's a javascript object and contains multi level object value", async () => {
   const tmpPath = await testdir({
@@ -1489,61 +1513,67 @@ test("should extract state.meta when it's a javascript object and contains multi
 
   expect(replaceUniqueIds(project.extractMachines('index.ts')))
     .toMatchInlineSnapshot(`
-    [
       [
-        {
-          "edges": {},
-          "nodes": {
-            "state-0": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": "foo",
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
-              },
-              "parentId": undefined,
-              "type": "node",
-              "uniqueId": "state-0",
+        [
+          {
+            "blocks": {},
+            "edges": {},
+            "implementations": {
+              "actions": {},
+              "actors": {},
+              "guards": {},
             },
-            "state-1": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [
-                  [
-                    "obj",
-                    {
-                      "foo": {
-                        "bar": {
-                          "baz": "some string",
+            "nodes": {
+              "state-0": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": "foo",
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": undefined,
+                "type": "node",
+                "uniqueId": "state-0",
+              },
+              "state-1": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [
+                    [
+                      "obj",
+                      {
+                        "foo": {
+                          "bar": {
+                            "baz": "some string",
+                          },
                         },
                       },
-                    },
+                    ],
                   ],
-                ],
-                "tags": [],
-                "type": "normal",
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": "state-0",
+                "type": "node",
+                "uniqueId": "state-1",
               },
-              "parentId": "state-0",
-              "type": "node",
-              "uniqueId": "state-1",
             },
+            "root": "state-0",
           },
-          "root": "state-0",
-        },
-        [],
-      ],
-    ]
-  `);
+          [],
+        ],
+      ]
+    `);
 });
 
 test('should extract state.meta with undefined value', async () => {
@@ -1567,50 +1597,56 @@ test('should extract state.meta with undefined value', async () => {
 
   expect(replaceUniqueIds(project.extractMachines('index.ts')))
     .toMatchInlineSnapshot(`
-    [
       [
-        {
-          "edges": {},
-          "nodes": {
-            "state-0": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": "foo",
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
-              },
-              "parentId": undefined,
-              "type": "node",
-              "uniqueId": "state-0",
+        [
+          {
+            "blocks": {},
+            "edges": {},
+            "implementations": {
+              "actions": {},
+              "actors": {},
+              "guards": {},
             },
-            "state-1": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
+            "nodes": {
+              "state-0": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": "foo",
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": undefined,
+                "type": "node",
+                "uniqueId": "state-0",
               },
-              "parentId": "state-0",
-              "type": "node",
-              "uniqueId": "state-1",
+              "state-1": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": "state-0",
+                "type": "node",
+                "uniqueId": "state-1",
+              },
             },
+            "root": "state-0",
           },
-          "root": "state-0",
-        },
-        [],
-      ],
-    ]
-  `);
+          [],
+        ],
+      ]
+    `);
 });
 
 // TODO: this needs to change as technically any value is accepted by XState. Studio only supports plain js objects right now
@@ -1635,52 +1671,58 @@ test('should raise error when state.meta contains any value other than a plain j
 
   expect(replaceUniqueIds(project.extractMachines('index.ts')))
     .toMatchInlineSnapshot(`
-    [
       [
-        {
-          "edges": {},
-          "nodes": {
-            "state-0": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": "foo",
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
-              },
-              "parentId": undefined,
-              "type": "node",
-              "uniqueId": "state-0",
-            },
-            "state-1": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
-              },
-              "parentId": "state-0",
-              "type": "node",
-              "uniqueId": "state-1",
-            },
-          },
-          "root": "state-0",
-        },
         [
           {
-            "type": "state_property_unhandled",
+            "blocks": {},
+            "edges": {},
+            "implementations": {
+              "actions": {},
+              "actors": {},
+              "guards": {},
+            },
+            "nodes": {
+              "state-0": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": "foo",
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": undefined,
+                "type": "node",
+                "uniqueId": "state-0",
+              },
+              "state-1": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": "state-0",
+                "type": "node",
+                "uniqueId": "state-1",
+              },
+            },
+            "root": "state-0",
           },
+          [
+            {
+              "type": "state_property_unhandled",
+            },
+          ],
         ],
-      ],
-    ]
-  `);
+      ]
+    `);
 });
