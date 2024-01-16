@@ -188,17 +188,17 @@ export function replaceUniqueIds(
           implementations: {
             actions: Object.fromEntries(
               Object.entries(digraph.implementations.actions).map(
-                ([id, action]) => [replacements[id], action],
+                ([id, action]) => [replacements[id] ?? id, action],
               ),
             ),
             actors: Object.fromEntries(
               Object.entries(digraph.implementations.actors).map(
-                ([id, actor]) => [replacements[id], actor],
+                ([id, actor]) => [replacements[id] ?? id, actor],
               ),
             ),
             guards: Object.fromEntries(
               Object.entries(digraph.implementations.guards).map(
-                ([id, guard]) => [replacements[id], guard],
+                ([id, guard]) => [replacements[id] ?? id, guard],
               ),
             ),
           },

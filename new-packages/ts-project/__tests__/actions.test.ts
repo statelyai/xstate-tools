@@ -34,7 +34,7 @@ test('should extract a string entry action (direct)', async () => {
             "edges": {},
             "implementations": {
               "actions": {
-                "undefined": {
+                "callDavid": {
                   "id": "callDavid",
                   "name": "callDavid",
                   "type": "action",
@@ -104,7 +104,7 @@ test('should extract a string exit action (direct)', async () => {
             "edges": {},
             "implementations": {
               "actions": {
-                "undefined": {
+                "callDavid": {
                   "id": "callDavid",
                   "name": "callDavid",
                   "type": "action",
@@ -174,7 +174,7 @@ test('should extract a string action (in array)', async () => {
             "edges": {},
             "implementations": {
               "actions": {
-                "undefined": {
+                "callAnders": {
                   "id": "callAnders",
                   "name": "callAnders",
                   "type": "action",
@@ -254,9 +254,14 @@ test('should extract multiple string actions', async () => {
             "edges": {},
             "implementations": {
               "actions": {
-                "undefined": {
+                "callAnders": {
                   "id": "callAnders",
                   "name": "callAnders",
+                  "type": "action",
+                },
+                "callDavid": {
+                  "id": "callDavid",
+                  "name": "callDavid",
                   "type": "action",
                 },
               },
@@ -327,7 +332,7 @@ test('should extract a simple parameterized action (direct)', async () => {
             "edges": {},
             "implementations": {
               "actions": {
-                "undefined": {
+                "callDavid": {
                   "id": "callDavid",
                   "name": "callDavid",
                   "type": "action",
@@ -401,7 +406,7 @@ test('should extract a simple parameterized action (in array)', async () => {
             "edges": {},
             "implementations": {
               "actions": {
-                "undefined": {
+                "callDavid": {
                   "id": "callDavid",
                   "name": "callDavid",
                   "type": "action",
