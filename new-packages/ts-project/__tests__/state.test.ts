@@ -821,6 +821,112 @@ test('should extract state.history with value "deep"', async () => {
     `);
 });
 
+test('should extract state.history with value true as deep', async () => {
+  const tmpPath = await testdir({
+    'tsconfig.json': JSON.stringify({}),
+    'index.ts': ts`
+      import { createMachine } from "xstate";
+
+      createMachine({
+        history: true,
+        states: {},
+      });
+    `,
+  });
+
+  const project = await createTestProject(tmpPath);
+
+  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+    .toMatchInlineSnapshot(`
+      [
+        [
+          {
+            "blocks": {},
+            "edges": {},
+            "implementations": {
+              "actions": {},
+              "actors": {},
+              "guards": {},
+            },
+            "nodes": {
+              "state-0": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": "deep",
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": undefined,
+                "type": "node",
+                "uniqueId": "state-0",
+              },
+            },
+            "root": "state-0",
+          },
+          [],
+        ],
+      ]
+    `);
+});
+
+test('should extract state.history with value false as shallow', async () => {
+  const tmpPath = await testdir({
+    'tsconfig.json': JSON.stringify({}),
+    'index.ts': ts`
+      import { createMachine } from "xstate";
+
+      createMachine({
+        history: false,
+        states: {},
+      });
+    `,
+  });
+
+  const project = await createTestProject(tmpPath);
+
+  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+    .toMatchInlineSnapshot(`
+      [
+        [
+          {
+            "blocks": {},
+            "edges": {},
+            "implementations": {
+              "actions": {},
+              "actors": {},
+              "guards": {},
+            },
+            "nodes": {
+              "state-0": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": "shallow",
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": undefined,
+                "type": "node",
+                "uniqueId": "state-0",
+              },
+            },
+            "root": "state-0",
+          },
+          [],
+        ],
+      ]
+    `);
+});
+
 test('should extract state.history with value undefined', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
@@ -1108,6 +1214,453 @@ test('should raise error when state.description has invalid value', async () => 
         states: {
           foo: {
             description: {}
+          }
+        },
+      });
+    `,
+  });
+
+  const project = await createTestProject(tmpPath);
+
+  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+    .toMatchInlineSnapshot(`
+      [
+        [
+          {
+            "blocks": {},
+            "edges": {},
+            "implementations": {
+              "actions": {},
+              "actors": {},
+              "guards": {},
+            },
+            "nodes": {
+              "state-0": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": "foo",
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": undefined,
+                "type": "node",
+                "uniqueId": "state-0",
+              },
+              "state-1": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": "state-0",
+                "type": "node",
+                "uniqueId": "state-1",
+              },
+            },
+            "root": "state-0",
+          },
+          [
+            {
+              "type": "state_property_unhandled",
+            },
+          ],
+        ],
+      ]
+    `);
+});
+
+test("should extract state.meta when it's a javascript object", async () => {
+  const tmpPath = await testdir({
+    'tsconfig.json': JSON.stringify({}),
+    'index.ts': ts`
+      import { createMachine } from "xstate";
+
+      createMachine({
+        initial: 'foo'
+        states: {
+          foo: {
+            meta: {
+              str: 'some string',
+              num: 123,
+              bool: true,
+              arr: [1, 2, 3],
+              obj: {
+                foo: 'bar'
+              },
+              null: null
+            }
+          }
+        },
+      });
+    `,
+  });
+
+  const project = await createTestProject(tmpPath);
+
+  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+    .toMatchInlineSnapshot(`
+      [
+        [
+          {
+            "blocks": {},
+            "edges": {},
+            "implementations": {
+              "actions": {},
+              "actors": {},
+              "guards": {},
+            },
+            "nodes": {
+              "state-0": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": "foo",
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": undefined,
+                "type": "node",
+                "uniqueId": "state-0",
+              },
+              "state-1": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [
+                    [
+                      "str",
+                      "some string",
+                    ],
+                    [
+                      "num",
+                      123,
+                    ],
+                    [
+                      "bool",
+                      true,
+                    ],
+                    [
+                      "arr",
+                      [
+                        1,
+                        2,
+                        3,
+                      ],
+                    ],
+                    [
+                      "obj",
+                      {
+                        "foo": "bar",
+                      },
+                    ],
+                    [
+                      "null",
+                      null,
+                    ],
+                  ],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": "state-0",
+                "type": "node",
+                "uniqueId": "state-1",
+              },
+            },
+            "root": "state-0",
+          },
+          [],
+        ],
+      ]
+    `);
+});
+test("should extract state.meta when it's a javascript object containing nested array items", async () => {
+  const tmpPath = await testdir({
+    'tsconfig.json': JSON.stringify({}),
+    'index.ts': ts`
+      import { createMachine } from "xstate";
+
+      createMachine({
+        initial: 'foo'
+        states: {
+          foo: {
+            meta: {
+              arr: ['str', 123, true, [1, 2, 3], { foo: 'bar' }, null]
+            }
+          }
+        },
+      });
+    `,
+  });
+
+  const project = await createTestProject(tmpPath);
+
+  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+    .toMatchInlineSnapshot(`
+      [
+        [
+          {
+            "blocks": {},
+            "edges": {},
+            "implementations": {
+              "actions": {},
+              "actors": {},
+              "guards": {},
+            },
+            "nodes": {
+              "state-0": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": "foo",
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": undefined,
+                "type": "node",
+                "uniqueId": "state-0",
+              },
+              "state-1": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [
+                    [
+                      "arr",
+                      [
+                        "str",
+                        123,
+                        true,
+                        [
+                          1,
+                          2,
+                          3,
+                        ],
+                        {
+                          "foo": "bar",
+                        },
+                        null,
+                      ],
+                    ],
+                  ],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": "state-0",
+                "type": "node",
+                "uniqueId": "state-1",
+              },
+            },
+            "root": "state-0",
+          },
+          [],
+        ],
+      ]
+    `);
+});
+test("should extract state.meta when it's a javascript object and contains multi level object value", async () => {
+  const tmpPath = await testdir({
+    'tsconfig.json': JSON.stringify({}),
+    'index.ts': ts`
+      import { createMachine } from "xstate";
+
+      createMachine({
+        initial: 'foo'
+        states: {
+          foo: {
+            meta: {
+              obj: {
+                x: {
+                  y: {
+                    z: 'some string'
+                  }
+                }
+              }
+            }
+          }
+        },
+      });
+    `,
+  });
+
+  const project = await createTestProject(tmpPath);
+
+  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+    .toMatchInlineSnapshot(`
+    [
+      [
+        {
+          "blocks": {},
+          "edges": {},
+          "implementations": {
+            "actions": {},
+            "actors": {},
+            "guards": {},
+          },
+          "nodes": {
+            "state-0": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": "foo",
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": "normal",
+              },
+              "parentId": undefined,
+              "type": "node",
+              "uniqueId": "state-0",
+            },
+            "state-1": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": undefined,
+                "invoke": [],
+                "metaEntries": [
+                  [
+                    "obj",
+                    {
+                      "x": {
+                        "y": {
+                          "z": "some string",
+                        },
+                      },
+                    },
+                  ],
+                ],
+                "tags": [],
+                "type": "normal",
+              },
+              "parentId": "state-0",
+              "type": "node",
+              "uniqueId": "state-1",
+            },
+          },
+          "root": "state-0",
+        },
+        [],
+      ],
+    ]
+  `);
+});
+
+test('should not raise error for state.meta with undefined value', async () => {
+  const tmpPath = await testdir({
+    'tsconfig.json': JSON.stringify({}),
+    'index.ts': ts`
+      import { createMachine } from "xstate";
+
+      createMachine({
+        initial: 'foo'
+        states: {
+          foo: {
+            meta: undefined
+          }
+        },
+      });
+    `,
+  });
+
+  const project = await createTestProject(tmpPath);
+
+  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+    .toMatchInlineSnapshot(`
+      [
+        [
+          {
+            "blocks": {},
+            "edges": {},
+            "implementations": {
+              "actions": {},
+              "actors": {},
+              "guards": {},
+            },
+            "nodes": {
+              "state-0": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": "foo",
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": undefined,
+                "type": "node",
+                "uniqueId": "state-0",
+              },
+              "state-1": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": "state-0",
+                "type": "node",
+                "uniqueId": "state-1",
+              },
+            },
+            "root": "state-0",
+          },
+          [],
+        ],
+      ]
+    `);
+});
+
+// TODO: this needs to change as technically any value is accepted by XState. Studio only supports plain js objects right now
+test('should raise error when state.meta contains any value other than a plain javascript object', async () => {
+  const tmpPath = await testdir({
+    'tsconfig.json': JSON.stringify({}),
+    'index.ts': ts`
+      import { createMachine } from "xstate";
+
+      createMachine({
+        initial: 'foo'
+        states: {
+          foo: {
+            meta: 'some string meta' 
           }
         },
       });

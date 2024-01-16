@@ -97,3 +97,12 @@ export type ExtractorDigraphDef = {
     guards: Record<string, never>;
   };
 };
+
+export type JsonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | JsonObject
+  | JsonValue[];
+export type JsonObject = { [key: string]: JsonValue };

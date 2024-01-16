@@ -2,13 +2,12 @@ import type { Expression, PropertyAssignment } from 'typescript';
 import { ActionBlock, ExtractionContext, Node } from './types';
 import {
   everyDefined,
+  getJsonValue,
   getPropertyKey,
+  isUndefined,
   mapMaybeArrayElements,
   uniqueId,
 } from './utils';
-
-const isUndefined = (ts: typeof import('typescript'), prop: Expression) =>
-  ts.isIdentifier(prop) && ts.idText(prop) === 'undefined';
 
 const createActionBlock = ({
   sourceId,
@@ -161,6 +160,14 @@ export function extractState(
               type: 'state_history_invalid',
             });
           }
+          if (prop.initializer.kind === ts.SyntaxKind.TrueKeyword) {
+            node.data.history = 'deep';
+            continue;
+          }
+          if (prop.initializer.kind === ts.SyntaxKind.FalseKeyword) {
+            node.data.history = 'shallow';
+            continue;
+          }
           if (isUndefined(ts, prop.initializer)) {
             continue;
           }
@@ -177,6 +184,31 @@ export function extractState(
           if (isUndefined(ts, prop.initializer)) {
             continue;
           }
+          ctx.errors.push({
+            type: 'state_property_unhandled',
+          });
+          break;
+        }
+        case 'meta': {
+          if (ts.isObjectLiteralExpression(prop.initializer)) {
+            for (const meta of prop.initializer.properties) {
+              if (ts.isPropertyAssignment(meta)) {
+                const metaKey = getPropertyKey(ctx, ts, meta);
+                if (metaKey) {
+                  node.data.metaEntries.push([
+                    metaKey,
+                    getJsonValue(ctx, ts, meta.initializer),
+                  ]);
+                }
+                continue;
+              }
+            }
+            continue;
+          }
+          if (isUndefined(ts, prop.initializer)) {
+            continue;
+          }
+
           ctx.errors.push({
             type: 'state_property_unhandled',
           });
