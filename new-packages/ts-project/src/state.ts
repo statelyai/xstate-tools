@@ -1,9 +1,34 @@
-import type { Expression } from 'typescript';
-import { ExtractionContext, ExtractorNodeDef } from './types';
-import { getPropertyKey, uniqueId } from './utils';
+import type { Expression, PropertyAssignment } from 'typescript';
+import { ActionBlock, ExtractionContext, Node } from './types';
+import {
+  everyDefined,
+  getPropertyKey,
+  mapMaybeArrayElements,
+  uniqueId,
+} from './utils';
 
 const isUndefined = (ts: typeof import('typescript'), prop: Expression) =>
   ts.isIdentifier(prop) && ts.idText(prop) === 'undefined';
+
+const createActionBlock = ({
+  sourceId,
+  parentId,
+}: {
+  sourceId: string;
+  parentId: string;
+}): ActionBlock => {
+  const blockId = uniqueId();
+  return {
+    blockType: 'action',
+    uniqueId: blockId,
+    parentId,
+    sourceId,
+    properties: {
+      type: sourceId,
+      params: {},
+    },
+  };
+};
 
 export function extractState(
   ctx: ExtractionContext,
@@ -11,7 +36,7 @@ export function extractState(
   state: Expression | undefined,
   parentId: string | undefined,
 ) {
-  const node: ExtractorNodeDef = {
+  const node: Node = {
     type: 'node',
     uniqueId: uniqueId(),
     parentId,
@@ -155,6 +180,65 @@ export function extractState(
           ctx.errors.push({
             type: 'state_property_unhandled',
           });
+          break;
+        }
+        case 'entry':
+        case 'exit': {
+          const blocks = mapMaybeArrayElements(
+            ts,
+            prop.initializer,
+            (element): ActionBlock | undefined => {
+              if (isUndefined(ts, element)) {
+                return;
+              }
+              if (ts.isStringLiteralLike(element)) {
+                return createActionBlock({
+                  sourceId: element.text,
+                  parentId: node.uniqueId,
+                });
+              }
+              if (ts.isObjectLiteralExpression(element)) {
+                const typeProperty = element.properties.find(
+                  (prop): prop is PropertyAssignment =>
+                    ts.isPropertyAssignment(prop) &&
+                    getPropertyKey(ctx, ts, prop) === 'type',
+                );
+
+                if (!typeProperty) {
+                  return;
+                }
+
+                if (ts.isStringLiteralLike(typeProperty.initializer)) {
+                  return createActionBlock({
+                    sourceId: typeProperty.initializer.text,
+                    parentId: node.uniqueId,
+                  });
+                }
+              }
+
+              return createActionBlock({
+                sourceId: `inline:${uniqueId()}`,
+                parentId: node.uniqueId,
+              });
+            },
+          );
+
+          if (!everyDefined(blocks)) {
+            ctx.errors.push({
+              type: 'state_property_unhandled',
+            });
+            continue;
+          }
+
+          for (const block of blocks) {
+            node.data[key].push(block.uniqueId);
+            ctx.digraph.blocks[block.uniqueId] = block;
+            ctx.digraph.implementations.actions[block.sourceId] ??= {
+              type: 'action',
+              id: block.sourceId,
+              name: block.sourceId,
+            };
+          }
           break;
         }
       }

@@ -146,14 +146,33 @@ export function replaceUniqueIds(
     }
 
     const replacements = Object.fromEntries([
+      ...Object.keys(digraph.blocks).map(
+        (id, i) => [id, `block-${i}`] as const,
+      ),
       ...Object.keys(digraph.edges).map((id, i) => [id, `edge-${i}`] as const),
       ...Object.keys(digraph.nodes).map((id, i) => [id, `state-${i}`] as const),
+
+      ...Object.keys(digraph.implementations.actions)
+        .filter((key) => key.startsWith('inline:'))
+        .map((id, i) => [id, `inline:action-${i}`] as const),
+      ...Object.keys(digraph.implementations.actors)
+        .filter((key) => key.startsWith('inline:'))
+        .map((id, i) => [id, `inline:actor-${i}`] as const),
+      ...Object.keys(digraph.implementations.guards)
+        .filter((key) => key.startsWith('inline:'))
+        .map((id, i) => [id, `inline:guard-${i}`] as const),
     ]);
 
     return [
       replaceUniqueIdsRecursively(
         {
           ...digraph,
+          blocks: Object.fromEntries(
+            Object.entries(digraph.blocks).map(([id, block]) => [
+              replacements[id],
+              block,
+            ]),
+          ),
           edges: Object.fromEntries(
             Object.entries(digraph.edges).map(([id, edge]) => [
               replacements[id],
@@ -166,6 +185,23 @@ export function replaceUniqueIds(
               node,
             ]),
           ),
+          implementations: {
+            actions: Object.fromEntries(
+              Object.entries(digraph.implementations.actions).map(
+                ([id, action]) => [replacements[id], action],
+              ),
+            ),
+            actors: Object.fromEntries(
+              Object.entries(digraph.implementations.actors).map(
+                ([id, actor]) => [replacements[id], actor],
+              ),
+            ),
+            guards: Object.fromEntries(
+              Object.entries(digraph.implementations.guards).map(
+                ([id, guard]) => [replacements[id], guard],
+              ),
+            ),
+          },
         },
         replacements,
       ),
