@@ -21,7 +21,13 @@ test('should extract a simple state', async () => {
       [
         [
           {
+            "blocks": {},
             "edges": {},
+            "implementations": {
+              "actions": {},
+              "actors": {},
+              "guards": {},
+            },
             "nodes": {
               "state-0": {
                 "data": {
@@ -93,7 +99,13 @@ test('should extract states recursively', async () => {
       [
         [
           {
+            "blocks": {},
             "edges": {},
+            "implementations": {
+              "actions": {},
+              "actors": {},
+              "guards": {},
+            },
             "nodes": {
               "state-0": {
                 "data": {
@@ -206,7 +218,13 @@ test('should extract state.initial with string value', async () => {
       [
         [
           {
+            "blocks": {},
             "edges": {},
+            "implementations": {
+              "actions": {},
+              "actors": {},
+              "guards": {},
+            },
             "nodes": {
               "state-0": {
                 "data": {
@@ -270,7 +288,13 @@ test('should extract state.initial with template literal value', async () => {
       [
         [
           {
+            "blocks": {},
             "edges": {},
+            "implementations": {
+              "actions": {},
+              "actors": {},
+              "guards": {},
+            },
             "nodes": {
               "state-0": {
                 "data": {
@@ -333,7 +357,13 @@ test('should extract state.initial with undefined value', async () => {
       [
         [
           {
+            "blocks": {},
             "edges": {},
+            "implementations": {
+              "actions": {},
+              "actors": {},
+              "guards": {},
+            },
             "nodes": {
               "state-0": {
                 "data": {
@@ -380,7 +410,13 @@ test('should raise error when state.initial property has invalid value', async (
       [
         [
           {
+            "blocks": {},
             "edges": {},
+            "implementations": {
+              "actions": {},
+              "actors": {},
+              "guards": {},
+            },
             "nodes": {
               "state-0": {
                 "data": {
@@ -431,7 +467,13 @@ test('should extract state.type with value "parallel"', async () => {
       [
         [
           {
+            "blocks": {},
             "edges": {},
+            "implementations": {
+              "actions": {},
+              "actors": {},
+              "guards": {},
+            },
             "nodes": {
               "state-0": {
                 "data": {
@@ -478,7 +520,13 @@ test('should extract state.type with value "final"', async () => {
       [
         [
           {
+            "blocks": {},
             "edges": {},
+            "implementations": {
+              "actions": {},
+              "actors": {},
+              "guards": {},
+            },
             "nodes": {
               "state-0": {
                 "data": {
@@ -525,7 +573,13 @@ test('should extract state.type with value "history"', async () => {
       [
         [
           {
+            "blocks": {},
             "edges": {},
+            "implementations": {
+              "actions": {},
+              "actors": {},
+              "guards": {},
+            },
             "nodes": {
               "state-0": {
                 "data": {
@@ -572,7 +626,13 @@ test('should extract state.type with value undefined', async () => {
       [
         [
           {
+            "blocks": {},
             "edges": {},
+            "implementations": {
+              "actions": {},
+              "actors": {},
+              "guards": {},
+            },
             "nodes": {
               "state-0": {
                 "data": {
@@ -619,7 +679,13 @@ test('should raise error when state.type has invalid value', async () => {
       [
         [
           {
+            "blocks": {},
             "edges": {},
+            "implementations": {
+              "actions": {},
+              "actors": {},
+              "guards": {},
+            },
             "nodes": {
               "state-0": {
                 "data": {
@@ -670,7 +736,13 @@ test('should extract state.history with value "shallow"', async () => {
       [
         [
           {
+            "blocks": {},
             "edges": {},
+            "implementations": {
+              "actions": {},
+              "actors": {},
+              "guards": {},
+            },
             "nodes": {
               "state-0": {
                 "data": {
@@ -716,7 +788,13 @@ test('should extract state.history with value "deep"', async () => {
       [
         [
           {
+            "blocks": {},
             "edges": {},
+            "implementations": {
+              "actions": {},
+              "actors": {},
+              "guards": {},
+            },
             "nodes": {
               "state-0": {
                 "data": {
@@ -857,7 +935,13 @@ test('should extract state.history with value undefined', async () => {
       [
         [
           {
+            "blocks": {},
             "edges": {},
+            "implementations": {
+              "actions": {},
+              "actors": {},
+              "guards": {},
+            },
             "nodes": {
               "state-0": {
                 "data": {
@@ -905,50 +989,56 @@ test('should extract state.description with string value', async () => {
 
   expect(replaceUniqueIds(project.extractMachines('index.ts')))
     .toMatchInlineSnapshot(`
-    [
       [
-        {
-          "edges": {},
-          "nodes": {
-            "state-0": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": "foo",
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
-              },
-              "parentId": undefined,
-              "type": "node",
-              "uniqueId": "state-0",
+        [
+          {
+            "blocks": {},
+            "edges": {},
+            "implementations": {
+              "actions": {},
+              "actors": {},
+              "guards": {},
             },
-            "state-1": {
-              "data": {
-                "description": "This is the description of state foo",
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
+            "nodes": {
+              "state-0": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": "foo",
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": undefined,
+                "type": "node",
+                "uniqueId": "state-0",
               },
-              "parentId": "state-0",
-              "type": "node",
-              "uniqueId": "state-1",
+              "state-1": {
+                "data": {
+                  "description": "This is the description of state foo",
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": "state-0",
+                "type": "node",
+                "uniqueId": "state-1",
+              },
             },
+            "root": "state-0",
           },
-          "root": "state-0",
-        },
-        [],
-      ],
-    ]
-  `);
+          [],
+        ],
+      ]
+    `);
 });
 
 test('should extract state.description with template literal value', async () => {
@@ -974,52 +1064,58 @@ test('should extract state.description with template literal value', async () =>
 
   expect(replaceUniqueIds(project.extractMachines('index.ts')))
     .toMatchInlineSnapshot(`
-    [
       [
-        {
-          "edges": {},
-          "nodes": {
-            "state-0": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": "foo",
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
-              },
-              "parentId": undefined,
-              "type": "node",
-              "uniqueId": "state-0",
+        [
+          {
+            "blocks": {},
+            "edges": {},
+            "implementations": {
+              "actions": {},
+              "actors": {},
+              "guards": {},
             },
-            "state-1": {
-              "data": {
-                "description": "This is the description
-          of state
-          foo",
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
+            "nodes": {
+              "state-0": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": "foo",
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": undefined,
+                "type": "node",
+                "uniqueId": "state-0",
               },
-              "parentId": "state-0",
-              "type": "node",
-              "uniqueId": "state-1",
+              "state-1": {
+                "data": {
+                  "description": "This is the description
+            of state
+            foo",
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": "state-0",
+                "type": "node",
+                "uniqueId": "state-1",
+              },
             },
+            "root": "state-0",
           },
-          "root": "state-0",
-        },
-        [],
-      ],
-    ]
-  `);
+          [],
+        ],
+      ]
+    `);
 });
 
 test('should extract state.description with undefined value with no errors', async () => {
@@ -1043,50 +1139,56 @@ test('should extract state.description with undefined value with no errors', asy
 
   expect(replaceUniqueIds(project.extractMachines('index.ts')))
     .toMatchInlineSnapshot(`
-    [
       [
-        {
-          "edges": {},
-          "nodes": {
-            "state-0": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": "foo",
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
-              },
-              "parentId": undefined,
-              "type": "node",
-              "uniqueId": "state-0",
+        [
+          {
+            "blocks": {},
+            "edges": {},
+            "implementations": {
+              "actions": {},
+              "actors": {},
+              "guards": {},
             },
-            "state-1": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
+            "nodes": {
+              "state-0": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": "foo",
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": undefined,
+                "type": "node",
+                "uniqueId": "state-0",
               },
-              "parentId": "state-0",
-              "type": "node",
-              "uniqueId": "state-1",
+              "state-1": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": "state-0",
+                "type": "node",
+                "uniqueId": "state-1",
+              },
             },
+            "root": "state-0",
           },
-          "root": "state-0",
-        },
-        [],
-      ],
-    ]
-  `);
+          [],
+        ],
+      ]
+    `);
 });
 
 test('should raise error when state.description has invalid value', async () => {
@@ -1110,54 +1212,60 @@ test('should raise error when state.description has invalid value', async () => 
 
   expect(replaceUniqueIds(project.extractMachines('index.ts')))
     .toMatchInlineSnapshot(`
-    [
       [
-        {
-          "edges": {},
-          "nodes": {
-            "state-0": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": "foo",
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
-              },
-              "parentId": undefined,
-              "type": "node",
-              "uniqueId": "state-0",
-            },
-            "state-1": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
-              },
-              "parentId": "state-0",
-              "type": "node",
-              "uniqueId": "state-1",
-            },
-          },
-          "root": "state-0",
-        },
         [
           {
-            "type": "state_property_unhandled",
+            "blocks": {},
+            "edges": {},
+            "implementations": {
+              "actions": {},
+              "actors": {},
+              "guards": {},
+            },
+            "nodes": {
+              "state-0": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": "foo",
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": undefined,
+                "type": "node",
+                "uniqueId": "state-0",
+              },
+              "state-1": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": "state-0",
+                "type": "node",
+                "uniqueId": "state-1",
+              },
+            },
+            "root": "state-0",
           },
+          [
+            {
+              "type": "state_property_unhandled",
+            },
+          ],
         ],
-      ],
-    ]
-  `);
+      ]
+    `);
 });
 
 test("should extract state.meta when it's a javascript object", async () => {

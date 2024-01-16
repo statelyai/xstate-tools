@@ -40,8 +40,14 @@ function extractMachineConfig(
   const ctx: ExtractionContext = {
     errors: [],
     digraph: {
+      blocks: {},
       nodes: {},
       edges: {},
+      implementations: {
+        actors: {},
+        actions: {},
+        guards: {},
+      },
     },
   };
   const rootState = createMachineCall.arguments[0];
@@ -54,8 +60,10 @@ function extractMachineConfig(
   return [
     {
       root: rootNode.uniqueId,
+      blocks: ctx.digraph.blocks,
       nodes: ctx.digraph.nodes,
       edges: ctx.digraph.edges,
+      implementations: ctx.digraph.implementations,
     },
     ctx.errors,
   ];
