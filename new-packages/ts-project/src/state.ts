@@ -3,6 +3,7 @@ import type { Expression, PropertyAssignment } from 'typescript';
 import { ActionBlock, ExtractionContext, Node } from './types';
 import {
   everyDefined,
+  getJsonObject,
   getJsonValue,
   getPropertyKey,
   isUndefined,
@@ -80,11 +81,7 @@ export function extractState(
             continue;
           }
           if (ts.isObjectLiteralExpression(prop.initializer)) {
-            ctx.digraph.data.context = getJsonValue(
-              ctx,
-              ts,
-              prop.initializer,
-            ) as JsonObject;
+            ctx.digraph.data.context = getJsonObject(ctx, ts, prop.initializer);
             continue;
           }
           if (

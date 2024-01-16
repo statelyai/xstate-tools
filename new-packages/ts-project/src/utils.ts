@@ -1,4 +1,9 @@
-import type { Expression, PropertyAssignment } from 'typescript';
+import type {
+  Expression,
+  ObjectLiteralElement,
+  ObjectLiteralExpression,
+  PropertyAssignment,
+} from 'typescript';
 import { ExtractionContext, JsonObject, JsonValue } from './types';
 
 export const uniqueId = () => {
@@ -103,6 +108,13 @@ export function getJsonValue(
     return out;
   }
 }
+
+export const getJsonObject = (
+  ctx: ExtractionContext,
+  ts: typeof import('typescript'),
+  prop: ObjectLiteralExpression,
+) => getJsonValue(ctx, ts, prop) as JsonObject;
+
 export function mapMaybeArrayElements<T>(
   ts: typeof import('typescript'),
   expression: Expression,
