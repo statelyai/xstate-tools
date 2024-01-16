@@ -79,33 +79,19 @@ export function getJsonValue(
   }
   // TODO: set a strategy here. Ignore the whole array if an items can't be extracted or try to extract as much as possible?
   if (ts.isArrayLiteralExpression(prop)) {
-    const out = [];
+    const arr = [];
     for (const elem of prop.elements) {
       const value = getJsonValue(ctx, ts, elem);
       if (value === undefined) {
         // TODO: raise error
         return;
       }
-      out.push(value);
+      arr.push(value);
     }
-    return out;
+    return arr;
   }
   if (ts.isObjectLiteralExpression(prop)) {
-    const out: JsonObject = {};
-    for (const p of prop.properties) {
-      if (ts.isPropertyAssignment(p)) {
-        const key = getPropertyKey(ctx, ts, p);
-        if (key) {
-          const value = getJsonValue(ctx, ts, p.initializer);
-          if (value === undefined) {
-            // TODO: raise error
-            return;
-          }
-          out[key] = value;
-        }
-      }
-    }
-    return out;
+    return getJsonObject(ctx, ts, prop);
   }
 }
 
@@ -113,7 +99,23 @@ export const getJsonObject = (
   ctx: ExtractionContext,
   ts: typeof import('typescript'),
   prop: ObjectLiteralExpression,
-) => getJsonValue(ctx, ts, prop) as JsonObject;
+) => {
+  const obj: JsonObject = {};
+  for (const p of prop.properties) {
+    if (ts.isPropertyAssignment(p)) {
+      const key = getPropertyKey(ctx, ts, p);
+      if (key) {
+        const value = getJsonValue(ctx, ts, p.initializer);
+        if (value === undefined) {
+          // TODO: raise error
+          return;
+        }
+        obj[key] = value;
+      }
+    }
+  }
+  return obj;
+};
 
 export function mapMaybeArrayElements<T>(
   ts: typeof import('typescript'),
