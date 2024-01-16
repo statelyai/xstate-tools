@@ -1,4 +1,4 @@
-import type { PropertyAssignment } from 'typescript';
+import type { Expression, PropertyAssignment } from 'typescript';
 import { ExtractionContext } from './types';
 
 export const uniqueId = () => {
@@ -45,4 +45,20 @@ export function getPropertyKey(
     return;
   }
   prop.name satisfies never;
+}
+
+export function mapMaybeArrayElements<T>(
+  ts: typeof import('typescript'),
+  expression: Expression,
+  cb: (element: Expression) => T,
+): T[] {
+  if (ts.isArrayLiteralExpression(expression)) {
+    return expression.elements.map((element) => cb(element));
+  } else {
+    return [cb(expression)];
+  }
+}
+
+export function everyDefined<T>(arr: T[]): arr is NonNullable<T>[] {
+  return arr.every((item) => item !== undefined);
 }

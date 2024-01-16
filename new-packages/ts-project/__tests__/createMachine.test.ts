@@ -18,7 +18,13 @@ test('should extract a machine with empty config', async () => {
       [
         [
           {
+            "blocks": {},
             "edges": {},
+            "implementations": {
+              "actions": {},
+              "actors": {},
+              "guards": {},
+            },
             "nodes": {
               "state-0": {
                 "data": {
@@ -62,7 +68,13 @@ test('should extract a machine created with no config at all', async () => {
       [
         [
           {
+            "blocks": {},
             "edges": {},
+            "implementations": {
+              "actions": {},
+              "actors": {},
+              "guards": {},
+            },
             "nodes": {
               "state-0": {
                 "data": {
@@ -112,7 +124,13 @@ test('should extract multiple machines in a single file', async () => {
       [
         [
           {
+            "blocks": {},
             "edges": {},
+            "implementations": {
+              "actions": {},
+              "actors": {},
+              "guards": {},
+            },
             "nodes": {
               "state-0": {
                 "data": {
@@ -137,7 +155,13 @@ test('should extract multiple machines in a single file', async () => {
         ],
         [
           {
+            "blocks": {},
             "edges": {},
+            "implementations": {
+              "actions": {},
+              "actors": {},
+              "guards": {},
+            },
             "nodes": {
               "state-0": {
                 "data": {
@@ -185,7 +209,13 @@ test('should extract a machine created with `setup`', async () => {
       [
         [
           {
+            "blocks": {},
             "edges": {},
+            "implementations": {
+              "actions": {},
+              "actors": {},
+              "guards": {},
+            },
             "nodes": {
               "state-0": {
                 "data": {
