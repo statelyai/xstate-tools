@@ -1576,7 +1576,7 @@ test("should extract state.meta when it's a javascript object and contains multi
     `);
 });
 
-test('should extract state.meta with undefined value', async () => {
+test('should not raise error for state.meta with undefined value', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
