@@ -34,22 +34,10 @@ function findCreateMachineCalls(
 }
 
 function extractMachineConfig(
+  ctx: ExtractionContext,
   ts: typeof import('typescript'),
   createMachineCall: CallExpression,
 ): readonly [ExtractorDigraphDef | undefined, ExtractionError[]] {
-  const ctx: ExtractionContext = {
-    errors: [],
-    digraph: {
-      blocks: {},
-      nodes: {},
-      edges: {},
-      implementations: {
-        actors: {},
-        actions: {},
-        guards: {},
-      },
-    },
-  };
   const rootState = createMachineCall.arguments[0];
   const rootNode = extractState(ctx, ts, rootState, undefined);
 
@@ -64,6 +52,7 @@ function extractMachineConfig(
       nodes: ctx.digraph.nodes,
       edges: ctx.digraph.edges,
       implementations: ctx.digraph.implementations,
+      data: ctx.digraph.data,
     },
     ctx.errors,
   ];
@@ -80,7 +69,24 @@ export function createProject(
         return [];
       }
       return findCreateMachineCalls(ts, sourceFile).map((call) => {
-        return extractMachineConfig(ts, call);
+        const ctx: ExtractionContext = {
+          sourceFile,
+          errors: [],
+          digraph: {
+            nodes: {},
+            edges: {},
+            blocks: {},
+            implementations: {
+              actions: {},
+              actors: {},
+              guards: {},
+            },
+            data: {
+              context: {},
+            },
+          },
+        };
+        return extractMachineConfig(ctx, ts, call);
       });
     },
   };
