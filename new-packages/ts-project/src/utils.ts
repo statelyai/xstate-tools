@@ -120,12 +120,12 @@ export const getJsonObject = (
 export function mapMaybeArrayElements<T>(
   ts: typeof import('typescript'),
   expression: Expression,
-  cb: (element: Expression) => T,
+  cb: (element: Expression, index: number) => T,
 ): T[] {
   if (ts.isArrayLiteralExpression(expression)) {
-    return expression.elements.map((element) => cb(element));
+    return expression.elements.map((element, index) => cb(element, index));
   } else {
-    return [cb(expression)];
+    return [cb(expression, 0)];
   }
 }
 

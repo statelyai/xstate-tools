@@ -19,6 +19,9 @@ test('should extract a machine with empty config', async () => {
         [
           {
             "blocks": {},
+            "data": {
+              "context": {},
+            },
             "edges": {},
             "implementations": {
               "actions": {},
@@ -69,6 +72,9 @@ test('should extract a machine created with no config at all', async () => {
         [
           {
             "blocks": {},
+            "data": {
+              "context": {},
+            },
             "edges": {},
             "implementations": {
               "actions": {},
@@ -125,6 +131,9 @@ test('should extract multiple machines in a single file', async () => {
         [
           {
             "blocks": {},
+            "data": {
+              "context": {},
+            },
             "edges": {},
             "implementations": {
               "actions": {},
@@ -156,6 +165,9 @@ test('should extract multiple machines in a single file', async () => {
         [
           {
             "blocks": {},
+            "data": {
+              "context": {},
+            },
             "edges": {},
             "implementations": {
               "actions": {},
@@ -210,6 +222,9 @@ test('should extract a machine created with `setup`', async () => {
         [
           {
             "blocks": {},
+            "data": {
+              "context": {},
+            },
             "edges": {},
             "implementations": {
               "actions": {},

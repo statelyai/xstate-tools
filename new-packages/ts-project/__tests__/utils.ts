@@ -6,6 +6,7 @@ import { onExit } from 'signal-exit';
 import { temporaryDirectory } from 'tempy';
 import typescript from 'typescript';
 import { XStateProject, createProject } from '../src/index';
+import { ActorBlock } from '../src/types';
 
 export const js = outdent;
 export const ts = outdent;
@@ -149,6 +150,12 @@ export function replaceUniqueIds(
       ...Object.keys(digraph.blocks).map(
         (id, i) => [id, `block-${i}`] as const,
       ),
+      ...Object.values(digraph.blocks)
+        .filter((block): block is ActorBlock => block.blockType === 'actor')
+        .filter((block) => block.properties.id.startsWith('inline:'))
+        .map(
+          (block, i) => [block.properties.id, `inline:actor-id-${i}`] as const,
+        ),
       ...Object.keys(digraph.edges).map((id, i) => [id, `edge-${i}`] as const),
       ...Object.keys(digraph.nodes).map((id, i) => [id, `state-${i}`] as const),
 

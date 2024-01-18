@@ -31,6 +31,9 @@ test('should extract a string entry action (direct)', async () => {
                 "uniqueId": "block-0",
               },
             },
+            "data": {
+              "context": {},
+            },
             "edges": {},
             "implementations": {
               "actions": {
@@ -101,6 +104,9 @@ test('should extract a string exit action (direct)', async () => {
                 "uniqueId": "block-0",
               },
             },
+            "data": {
+              "context": {},
+            },
             "edges": {},
             "implementations": {
               "actions": {
@@ -170,6 +176,9 @@ test('should extract a string action (in array)', async () => {
                 "sourceId": "callAnders",
                 "uniqueId": "block-0",
               },
+            },
+            "data": {
+              "context": {},
             },
             "edges": {},
             "implementations": {
@@ -251,6 +260,9 @@ test('should extract multiple string actions', async () => {
                 "uniqueId": "block-1",
               },
             },
+            "data": {
+              "context": {},
+            },
             "edges": {},
             "implementations": {
               "actions": {
@@ -329,6 +341,9 @@ test('should extract a simple parameterized action (direct)', async () => {
                 "uniqueId": "block-0",
               },
             },
+            "data": {
+              "context": {},
+            },
             "edges": {},
             "implementations": {
               "actions": {
@@ -403,6 +418,9 @@ test('should extract a simple parameterized action (in array)', async () => {
                 "uniqueId": "block-0",
               },
             },
+            "data": {
+              "context": {},
+            },
             "edges": {},
             "implementations": {
               "actions": {
@@ -472,6 +490,9 @@ test('should extract an inline action (function)', async () => {
                 "sourceId": "inline:action-0",
                 "uniqueId": "block-0",
               },
+            },
+            "data": {
+              "context": {},
             },
             "edges": {},
             "implementations": {
@@ -545,6 +566,9 @@ test('should extract an inline action (builtin)', async () => {
                 "uniqueId": "block-0",
               },
             },
+            "data": {
+              "context": {},
+            },
             "edges": {},
             "implementations": {
               "actions": {
@@ -604,6 +628,9 @@ test('should error when extracting undefined action (direct)', async () => {
         [
           {
             "blocks": {},
+            "data": {
+              "context": {},
+            },
             "edges": {},
             "implementations": {
               "actions": {},
@@ -659,6 +686,9 @@ test('should error when extracting undefined action (in array)', async () => {
         [
           {
             "blocks": {},
+            "data": {
+              "context": {},
+            },
             "edges": {},
             "implementations": {
               "actions": {},
