@@ -22,6 +22,9 @@ test('should extract a simple state', async () => {
         [
           {
             "blocks": {},
+            "data": {
+              "context": {},
+            },
             "edges": {},
             "implementations": {
               "actions": {},
@@ -100,6 +103,9 @@ test('should extract states recursively', async () => {
         [
           {
             "blocks": {},
+            "data": {
+              "context": {},
+            },
             "edges": {},
             "implementations": {
               "actions": {},
@@ -219,6 +225,9 @@ test('should extract state.initial with string value', async () => {
         [
           {
             "blocks": {},
+            "data": {
+              "context": {},
+            },
             "edges": {},
             "implementations": {
               "actions": {},
@@ -289,6 +298,9 @@ test('should extract state.initial with template literal value', async () => {
         [
           {
             "blocks": {},
+            "data": {
+              "context": {},
+            },
             "edges": {},
             "implementations": {
               "actions": {},
@@ -358,6 +370,9 @@ test('should extract state.initial with undefined value', async () => {
         [
           {
             "blocks": {},
+            "data": {
+              "context": {},
+            },
             "edges": {},
             "implementations": {
               "actions": {},
@@ -411,6 +426,9 @@ test('should raise error when state.initial property has invalid value', async (
         [
           {
             "blocks": {},
+            "data": {
+              "context": {},
+            },
             "edges": {},
             "implementations": {
               "actions": {},
@@ -468,6 +486,9 @@ test('should extract state.type with value "parallel"', async () => {
         [
           {
             "blocks": {},
+            "data": {
+              "context": {},
+            },
             "edges": {},
             "implementations": {
               "actions": {},
@@ -521,6 +542,9 @@ test('should extract state.type with value "final"', async () => {
         [
           {
             "blocks": {},
+            "data": {
+              "context": {},
+            },
             "edges": {},
             "implementations": {
               "actions": {},
@@ -574,6 +598,9 @@ test('should extract state.type with value "history"', async () => {
         [
           {
             "blocks": {},
+            "data": {
+              "context": {},
+            },
             "edges": {},
             "implementations": {
               "actions": {},
@@ -627,6 +654,9 @@ test('should extract state.type with value undefined', async () => {
         [
           {
             "blocks": {},
+            "data": {
+              "context": {},
+            },
             "edges": {},
             "implementations": {
               "actions": {},
@@ -680,6 +710,9 @@ test('should raise error when state.type has invalid value', async () => {
         [
           {
             "blocks": {},
+            "data": {
+              "context": {},
+            },
             "edges": {},
             "implementations": {
               "actions": {},
@@ -737,6 +770,9 @@ test('should extract state.history with value "shallow"', async () => {
         [
           {
             "blocks": {},
+            "data": {
+              "context": {},
+            },
             "edges": {},
             "implementations": {
               "actions": {},
@@ -789,6 +825,9 @@ test('should extract state.history with value "deep"', async () => {
         [
           {
             "blocks": {},
+            "data": {
+              "context": {},
+            },
             "edges": {},
             "implementations": {
               "actions": {},
@@ -842,6 +881,9 @@ test('should extract state.history with value true as deep', async () => {
         [
           {
             "blocks": {},
+            "data": {
+              "context": {},
+            },
             "edges": {},
             "implementations": {
               "actions": {},
@@ -895,6 +937,9 @@ test('should extract state.history with value false as shallow', async () => {
         [
           {
             "blocks": {},
+            "data": {
+              "context": {},
+            },
             "edges": {},
             "implementations": {
               "actions": {},
@@ -948,6 +993,9 @@ test('should extract state.history with value undefined', async () => {
         [
           {
             "blocks": {},
+            "data": {
+              "context": {},
+            },
             "edges": {},
             "implementations": {
               "actions": {},
@@ -1005,6 +1053,9 @@ test('should extract state.description with string value', async () => {
         [
           {
             "blocks": {},
+            "data": {
+              "context": {},
+            },
             "edges": {},
             "implementations": {
               "actions": {},
@@ -1080,6 +1131,9 @@ test('should extract state.description with template literal value', async () =>
         [
           {
             "blocks": {},
+            "data": {
+              "context": {},
+            },
             "edges": {},
             "implementations": {
               "actions": {},
@@ -1155,6 +1209,9 @@ test('should extract state.description with undefined value with no errors', asy
         [
           {
             "blocks": {},
+            "data": {
+              "context": {},
+            },
             "edges": {},
             "implementations": {
               "actions": {},
@@ -1228,6 +1285,9 @@ test('should raise error when state.description has invalid value', async () => 
         [
           {
             "blocks": {},
+            "data": {
+              "context": {},
+            },
             "edges": {},
             "implementations": {
               "actions": {},
@@ -1314,6 +1374,9 @@ test("should extract state.meta when it's a javascript object", async () => {
         [
           {
             "blocks": {},
+            "data": {
+              "context": {},
+            },
             "edges": {},
             "implementations": {
               "actions": {},
@@ -1419,6 +1482,9 @@ test("should extract state.meta when it's a javascript object containing nested 
         [
           {
             "blocks": {},
+            "data": {
+              "context": {},
+            },
             "edges": {},
             "implementations": {
               "actions": {},
@@ -1513,67 +1579,70 @@ test("should extract state.meta when it's a javascript object and contains multi
 
   expect(replaceUniqueIds(project.extractMachines('index.ts')))
     .toMatchInlineSnapshot(`
-    [
       [
-        {
-          "blocks": {},
-          "edges": {},
-          "implementations": {
-            "actions": {},
-            "actors": {},
-            "guards": {},
-          },
-          "nodes": {
-            "state-0": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": "foo",
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
-              },
-              "parentId": undefined,
-              "type": "node",
-              "uniqueId": "state-0",
+        [
+          {
+            "blocks": {},
+            "data": {
+              "context": {},
             },
-            "state-1": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [
-                  [
-                    "obj",
-                    {
-                      "x": {
-                        "y": {
-                          "z": "some string",
+            "edges": {},
+            "implementations": {
+              "actions": {},
+              "actors": {},
+              "guards": {},
+            },
+            "nodes": {
+              "state-0": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": "foo",
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": undefined,
+                "type": "node",
+                "uniqueId": "state-0",
+              },
+              "state-1": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [
+                    [
+                      "obj",
+                      {
+                        "x": {
+                          "y": {
+                            "z": "some string",
+                          },
                         },
                       },
-                    },
+                    ],
                   ],
-                ],
-                "tags": [],
-                "type": "normal",
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": "state-0",
+                "type": "node",
+                "uniqueId": "state-1",
               },
-              "parentId": "state-0",
-              "type": "node",
-              "uniqueId": "state-1",
             },
+            "root": "state-0",
           },
-          "root": "state-0",
-        },
-        [],
-      ],
-    ]
-  `);
+          [],
+        ],
+      ]
+    `);
 });
 
 test('should not raise error for state.meta with undefined value', async () => {
@@ -1601,6 +1670,9 @@ test('should not raise error for state.meta with undefined value', async () => {
         [
           {
             "blocks": {},
+            "data": {
+              "context": {},
+            },
             "edges": {},
             "implementations": {
               "actions": {},
@@ -1675,6 +1747,9 @@ test('should raise error when state.meta contains any value other than a plain j
         [
           {
             "blocks": {},
+            "data": {
+              "context": {},
+            },
             "edges": {},
             "implementations": {
               "actions": {},
