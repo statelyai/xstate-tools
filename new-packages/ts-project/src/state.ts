@@ -495,21 +495,13 @@ export function extractState(
                 return;
               }
               if (ts.isObjectLiteralExpression(element)) {
-                const srcProperty = element.properties.find(
-                  (prop): prop is PropertyAssignment =>
-                    ts.isPropertyAssignment(prop) &&
-                    getPropertyKey(ctx, ts, prop) === 'src',
-                );
+                const srcProperty = findProperty(ctx, ts, element, 'src');
 
                 if (!srcProperty) {
                   return;
                 }
 
-                const idProperty = element.properties.find(
-                  (prop): prop is PropertyAssignment =>
-                    ts.isPropertyAssignment(prop) &&
-                    getPropertyKey(ctx, ts, prop) === 'id',
-                );
+                const idProperty = findProperty(ctx, ts, element, 'id');
 
                 return createActorBlock({
                   sourceId: ts.isStringLiteralLike(srcProperty.initializer)
