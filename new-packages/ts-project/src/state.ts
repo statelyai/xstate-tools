@@ -1,6 +1,5 @@
-import { JsonObject } from '@xstate/machine-extractor';
 import type { Expression, PropertyAssignment } from 'typescript';
-import { ActionBlock, ExtractionContext, Node } from './types';
+import { ActionBlock, ActorBlock, ExtractionContext, Node } from './types';
 import {
   everyDefined,
   getJsonObject,
@@ -30,6 +29,40 @@ const createActionBlock = ({
     },
   };
 };
+export function createActorBlock({
+  sourceId,
+  parentId,
+  actorId,
+}: {
+  sourceId: string;
+  parentId: string;
+  actorId: string;
+}): ActorBlock {
+  const blockId = uniqueId();
+  return {
+    blockType: 'actor',
+    uniqueId: blockId,
+    parentId,
+    sourceId,
+    properties: {
+      src: sourceId,
+      id: actorId,
+    },
+  };
+}
+
+function getActorId(
+  ts: typeof import('typescript'),
+  parentId: string,
+  index: number,
+  idProperty: PropertyAssignment | undefined,
+) {
+  if (idProperty && ts.isStringLiteralLike(idProperty.initializer)) {
+    return idProperty.initializer.text;
+  }
+  // TODO: replace this with `:serializableId:invocation[:index]`
+  return `${parentId}:invocation[${index}]`;
+}
 
 export function extractState(
   ctx: ExtractionContext,
@@ -81,7 +114,11 @@ export function extractState(
             continue;
           }
           if (ts.isObjectLiteralExpression(prop.initializer)) {
-            ctx.digraph.data.context = getJsonObject(ctx, ts, prop.initializer);
+            ctx.digraph.data.context = getJsonObject(
+              ctx,
+              ts,
+              prop.initializer,
+            )!;
             continue;
           }
           if (
@@ -293,6 +330,66 @@ export function extractState(
             ctx.digraph.blocks[block.uniqueId] = block;
             ctx.digraph.implementations.actions[block.sourceId] ??= {
               type: 'action',
+              id: block.sourceId,
+              name: block.sourceId,
+            };
+          }
+          break;
+        }
+        case 'invoke': {
+          const blocks = mapMaybeArrayElements(
+            ts,
+            prop.initializer,
+            (element, index): ActorBlock | undefined => {
+              if (isUndefined(ts, element)) {
+                return;
+              }
+              if (ts.isObjectLiteralExpression(element)) {
+                const srcProperty = element.properties.find(
+                  (prop): prop is PropertyAssignment =>
+                    ts.isPropertyAssignment(prop) &&
+                    getPropertyKey(ctx, ts, prop) === 'src',
+                );
+
+                if (!srcProperty) {
+                  return;
+                }
+
+                const idProperty = element.properties.find(
+                  (prop): prop is PropertyAssignment =>
+                    ts.isPropertyAssignment(prop) &&
+                    getPropertyKey(ctx, ts, prop) === 'id',
+                );
+
+                return createActorBlock({
+                  sourceId: ts.isStringLiteralLike(srcProperty.initializer)
+                    ? srcProperty.initializer.text
+                    : `inline:${uniqueId()}`,
+                  parentId: node.uniqueId,
+                  actorId: getActorId(ts, node.uniqueId, index, idProperty),
+                });
+              }
+
+              return createActorBlock({
+                sourceId: `inline:${uniqueId()}`,
+                parentId: node.uniqueId,
+                actorId: getActorId(ts, node.uniqueId, index, undefined),
+              });
+            },
+          );
+
+          if (!everyDefined(blocks)) {
+            ctx.errors.push({
+              type: 'state_property_unhandled',
+            });
+            continue;
+          }
+
+          for (const block of blocks) {
+            node.data[key].push(block.uniqueId);
+            ctx.digraph.blocks[block.uniqueId] = block;
+            ctx.digraph.implementations.actors[block.sourceId] ??= {
+              type: 'actor',
               id: block.sourceId,
               name: block.sourceId,
             };

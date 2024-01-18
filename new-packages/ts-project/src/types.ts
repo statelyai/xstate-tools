@@ -47,6 +47,13 @@ export interface ActionBlock extends BlockBase {
     params: {};
   };
 }
+export interface ActorBlock extends BlockBase {
+  blockType: 'actor';
+  properties: {
+    src: string;
+    id: string;
+  };
+}
 
 export interface ActorBlock extends BlockBase {
   blockType: 'actor';
@@ -97,7 +104,7 @@ export type ExtractorDigraphDef = {
   edges: Record<string, never>;
   implementations: {
     actions: Record<string, { type: 'action'; id: string; name: string }>;
-    actors: Record<string, never>;
+    actors: Record<string, { type: 'actor'; id: string; name: string }>;
     guards: Record<string, never>;
   };
   data: {
