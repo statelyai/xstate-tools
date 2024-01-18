@@ -1,5 +1,11 @@
 import type { SourceFile } from 'typescript';
 
+export interface TreeNode {
+  uniqueId: string;
+  parentId: string | undefined;
+  children: Record<string, TreeNode>;
+}
+
 export interface ExtractionContext {
   sourceFile: SourceFile;
   errors: ExtractionError[];
@@ -7,6 +13,9 @@ export interface ExtractionContext {
     ExtractorDigraphDef,
     'blocks' | 'nodes' | 'edges' | 'implementations' | 'data'
   >;
+  treeNodes: Record<string, TreeNode>;
+  idMap: Record<string, string>;
+  originalTargets: Record<string, string[]>;
 }
 
 // TODO: add error location/span
@@ -27,11 +36,17 @@ export type ExtractionError =
       type: 'state_history_invalid';
     }
   | {
+      type: 'transition_property_unhandled';
+    }
+  | {
       type: 'property_key_no_roundtrip';
     }
   | {
       type: 'property_key_unhandled';
       propertyKind: 'computed' | 'private';
+    }
+  | {
+      type: 'transition_target_unresolved';
     };
 
 interface BlockBase {
@@ -95,13 +110,60 @@ export type Node = {
   };
 };
 
+interface NamedEventTypeData {
+  type: 'named';
+  eventType: string;
+}
+
+type InvocationEventTypeData =
+  | {
+      type: 'invocation.done';
+      invocationId: string;
+    }
+  | {
+      type: 'invocation.error';
+      invocationId: string;
+    };
+
+type EventTypeData =
+  | {
+      type: 'after';
+      delay: string;
+    }
+  | NamedEventTypeData
+  | InvocationEventTypeData
+  | {
+      type: 'state.done';
+    }
+  | {
+      type: 'always';
+    }
+  | {
+      type: 'wildcard';
+    }
+  | { type: 'init' };
+
+export type Edge = {
+  type: 'edge';
+  uniqueId: string;
+  source: string;
+  targets: string[];
+  data: {
+    eventTypeData: EventTypeData;
+    actions: string[];
+    guard: string | undefined;
+    description: string | undefined;
+    internal: boolean;
+  };
+};
+
 type ExtractorMetaEntry = [string, unknown];
 
 export type ExtractorDigraphDef = {
   root: string;
   blocks: Record<string, Block>;
   nodes: Record<string, Node>;
-  edges: Record<string, never>;
+  edges: Record<string, Edge>;
   implementations: {
     actions: Record<string, { type: 'action'; id: string; name: string }>;
     actors: Record<string, { type: 'actor'; id: string; name: string }>;

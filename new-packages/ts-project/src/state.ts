@@ -1,7 +1,19 @@
-import type { Expression, PropertyAssignment } from 'typescript';
-import { ActionBlock, ActorBlock, ExtractionContext, Node } from './types';
+import type {
+  Expression,
+  ObjectLiteralExpression,
+  PropertyAssignment,
+} from 'typescript';
+import {
+  ActionBlock,
+  ActorBlock,
+  Edge,
+  ExtractionContext,
+  Node,
+  TreeNode,
+} from './types';
 import {
   everyDefined,
+  findProperty,
   getJsonObject,
   getJsonValue,
   getPropertyKey,
@@ -51,12 +63,72 @@ export function createActorBlock({
   };
 }
 
+function createEdge({
+  sourceId,
+  eventTypeData,
+  description,
+}: {
+  sourceId: string;
+  eventTypeData: Edge['data']['eventTypeData'];
+  description?: string | undefined;
+}): Edge {
+  return {
+    type: 'edge',
+    uniqueId: uniqueId(),
+    source: sourceId,
+    targets: [],
+    data: {
+      eventTypeData,
+      actions: [],
+      guard: undefined,
+      description,
+      // TODO: to compute this correctly we need to know if we are extracting v4 or v5
+      internal: true,
+    },
+  };
+}
+
+function isForbiddenTarget(
+  ts: typeof import('typescript'),
+  element: Expression,
+): boolean {
+  return (
+    isUndefined(ts, element) ||
+    // null isn't technically allowe by the XState's types but it behaves in the same way at runtime
+    // and it's an easy thing to handle here
+    element.kind === ts.SyntaxKind.NullKeyword
+  );
+}
+
+function getObjectTransitionTargets(
+  ctx: ExtractionContext,
+  ts: typeof import('typescript'),
+  transition: ObjectLiteralExpression,
+) {
+  const targetProperty = findProperty(ctx, ts, transition, 'target');
+
+  if (!targetProperty) {
+    // TODO: if we failed to find this it doesn't exactly mean that it is a targetless transition
+    // for the time being we assume that it is a targetless transition and return undefined as a valid value from here
+    return;
+  }
+
+  if (isForbiddenTarget(ts, targetProperty.initializer)) {
+    return;
+  }
+
+  // if we fail extracting the target here then we treat it as an error further down the road
+  return mapMaybeArrayElements(ts, targetProperty.initializer, (expression) => {
+    return ts.isStringLiteralLike(expression) ? expression.text : undefined;
+  });
+}
+
 export function extractState(
   ctx: ExtractionContext,
   ts: typeof import('typescript'),
   state: Expression | undefined,
   parentId: string | undefined,
-) {
+): TreeNode | undefined {
   const node: Node = {
     type: 'node',
     uniqueId: uniqueId(),
@@ -73,10 +145,19 @@ export function extractState(
       description: undefined,
     },
   };
+
   ctx.digraph.nodes[node.uniqueId] = node;
 
+  const treeNode: TreeNode = {
+    uniqueId: node.uniqueId,
+    parentId,
+    children: {},
+  };
+
+  ctx.treeNodes[node.uniqueId] = treeNode;
+
   if (!state) {
-    return node;
+    return treeNode;
   }
 
   if (!ts.isObjectLiteralExpression(state)) {
@@ -85,7 +166,7 @@ export function extractState(
     });
     // TODO: rethink if the state should be returned here
     // this is a severe error that impacts a lot
-    return node;
+    return treeNode;
   }
 
   for (const prop of state.properties) {
@@ -93,6 +174,13 @@ export function extractState(
       const key = getPropertyKey(ctx, ts, prop);
 
       switch (key) {
+        case 'id': {
+          if (ts.isStringLiteralLike(prop.initializer)) {
+            ctx.idMap[prop.initializer.text] = node.uniqueId;
+            continue;
+          }
+          break;
+        }
         case 'context': {
           if (parentId !== undefined) {
             ctx.errors.push({
@@ -101,11 +189,10 @@ export function extractState(
             continue;
           }
           if (ts.isObjectLiteralExpression(prop.initializer)) {
-            ctx.digraph.data.context = getJsonObject(
-              ctx,
-              ts,
-              prop.initializer,
-            )!;
+            const obj = getJsonObject(ctx, ts, prop.initializer);
+            if (obj) {
+              ctx.digraph.data.context = obj;
+            }
             continue;
           }
           if (
@@ -121,6 +208,96 @@ export function extractState(
           ctx.errors.push({ type: 'state_property_unhandled' });
           break;
         }
+        case 'on': {
+          if (!ts.isObjectLiteralExpression(prop.initializer)) {
+            ctx.errors.push({ type: 'state_property_unhandled' });
+            continue;
+          }
+          for (const transition of prop.initializer.properties) {
+            if (!ts.isPropertyAssignment(transition)) {
+              ctx.errors.push({ type: 'transition_property_unhandled' });
+              continue;
+            }
+            const event = getPropertyKey(ctx, ts, transition);
+            if (!event) {
+              ctx.errors.push({ type: 'transition_property_unhandled' });
+              continue;
+            }
+            const eventTypeData =
+              event === '*'
+                ? { type: 'wildcard' as const }
+                : {
+                    type: 'named' as const,
+                    eventType: event,
+                  };
+
+            const mapped = mapMaybeArrayElements(
+              ts,
+              transition.initializer,
+              (element): [Edge, string[] | undefined] | undefined => {
+                if (isForbiddenTarget(ts, element)) {
+                  return [
+                    createEdge({
+                      sourceId: node.uniqueId,
+                      eventTypeData,
+                    }),
+                    undefined,
+                  ];
+                }
+                if (ts.isStringLiteralLike(element)) {
+                  return [
+                    createEdge({
+                      sourceId: node.uniqueId,
+                      eventTypeData,
+                    }),
+                    [element.text],
+                  ];
+                }
+                if (ts.isObjectLiteralExpression(element)) {
+                  const targets = getObjectTransitionTargets(ctx, ts, element);
+
+                  if (targets && !everyDefined(targets)) {
+                    ctx.errors.push({ type: 'transition_property_unhandled' });
+                    return;
+                  }
+
+                  const description = findProperty(
+                    ctx,
+                    ts,
+                    element,
+                    'description',
+                  );
+
+                  return [
+                    createEdge({
+                      sourceId: node.uniqueId,
+                      eventTypeData,
+                      description:
+                        description &&
+                        ts.isStringLiteralLike(description.initializer)
+                          ? description.initializer.text
+                          : undefined,
+                    }),
+                    targets,
+                  ];
+                }
+              },
+            );
+
+            if (!everyDefined(mapped)) {
+              ctx.errors.push({ type: 'transition_property_unhandled' });
+              continue;
+            }
+
+            for (const [edge, targets] of mapped) {
+              ctx.digraph.edges[edge.uniqueId] = edge;
+              if (targets) {
+                ctx.originalTargets[edge.uniqueId] = targets;
+              }
+            }
+          }
+          break;
+        }
         case 'states':
           if (!ts.isObjectLiteralExpression(prop.initializer)) {
             ctx.errors.push({
@@ -132,34 +309,23 @@ export function extractState(
             if (ts.isPropertyAssignment(state)) {
               const childKey = getPropertyKey(ctx, ts, state);
               if (childKey) {
-                extractState(ctx, ts, state.initializer, node.uniqueId);
+                const childTreeNode = extractState(
+                  ctx,
+                  ts,
+                  state.initializer,
+                  node.uniqueId,
+                );
+                if (!childTreeNode) {
+                  continue;
+                }
+                treeNode.children[childKey] = childTreeNode;
               }
               continue;
             }
-            if (ts.isShorthandPropertyAssignment(state)) {
-              ctx.errors.push({
-                type: 'state_property_unhandled',
-              });
-              continue;
-            }
-            if (ts.isSpreadAssignment(state)) {
-              ctx.errors.push({
-                type: 'state_property_unhandled',
-              });
-              continue;
-            }
-            if (
-              ts.isMethodDeclaration(state) ||
-              ts.isGetAccessorDeclaration(state) ||
-              ts.isSetAccessorDeclaration(state)
-            ) {
-              ctx.errors.push({
-                type: 'state_property_unhandled',
-              });
-              continue;
-            }
-
-            state satisfies never;
+            ctx.errors.push({
+              type: 'state_property_unhandled',
+            });
+            continue;
           }
           break;
         case 'initial': {
@@ -183,6 +349,7 @@ export function extractState(
               continue;
             }
             if (text === 'atomic' || text === 'compound') {
+              // type already starts as 'normal' so it doesn't have to be chamged here
               continue;
             }
             ctx.errors.push({
@@ -280,11 +447,7 @@ export function extractState(
                 });
               }
               if (ts.isObjectLiteralExpression(element)) {
-                const typeProperty = element.properties.find(
-                  (prop): prop is PropertyAssignment =>
-                    ts.isPropertyAssignment(prop) &&
-                    getPropertyKey(ctx, ts, prop) === 'type',
-                );
+                const typeProperty = findProperty(ctx, ts, element, 'type');
 
                 if (!typeProperty) {
                   return;
@@ -416,5 +579,5 @@ export function extractState(
     prop satisfies never;
   }
 
-  return node;
+  return treeNode;
 }

@@ -132,3 +132,15 @@ export function mapMaybeArrayElements<T>(
 export function everyDefined<T>(arr: T[]): arr is NonNullable<T>[] {
   return arr.every((item) => item !== undefined);
 }
+
+export function findProperty(
+  ctx: ExtractionContext,
+  ts: typeof import('typescript'),
+  obj: ObjectLiteralExpression,
+  key: string,
+) {
+  return obj.properties.find(
+    (prop): prop is PropertyAssignment =>
+      ts.isPropertyAssignment(prop) && getPropertyKey(ctx, ts, prop) === key,
+  );
+}
