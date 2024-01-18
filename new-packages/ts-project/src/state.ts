@@ -51,19 +51,6 @@ export function createActorBlock({
   };
 }
 
-function getActorId(
-  ts: typeof import('typescript'),
-  parentId: string,
-  index: number,
-  idProperty: PropertyAssignment | undefined,
-) {
-  if (idProperty && ts.isStringLiteralLike(idProperty.initializer)) {
-    return idProperty.initializer.text;
-  }
-  // TODO: replace this with `:serializableId:invocation[:index]`
-  return `${parentId}:invocation[${index}]`;
-}
-
 export function extractState(
   ctx: ExtractionContext,
   ts: typeof import('typescript'),
@@ -366,14 +353,17 @@ export function extractState(
                     ? srcProperty.initializer.text
                     : `inline:${uniqueId()}`,
                   parentId: node.uniqueId,
-                  actorId: getActorId(ts, node.uniqueId, index, idProperty),
+                  actorId:
+                    idProperty && ts.isStringLiteralLike(idProperty.initializer)
+                      ? idProperty.initializer.text
+                      : `inline:${uniqueId()}`,
                 });
               }
 
               return createActorBlock({
                 sourceId: `inline:${uniqueId()}`,
                 parentId: node.uniqueId,
-                actorId: getActorId(ts, node.uniqueId, index, undefined),
+                actorId: `inline:${uniqueId()}}`,
               });
             },
           );
