@@ -675,7 +675,7 @@ test('should extract actor id if it is present with a string value', async () =>
           foo: {
             invoke: {
               src: "actor1",
-              id: "actor1-id",
+              id: "user-provided-id",
             },
           },
         },
@@ -686,76 +686,76 @@ test('should extract actor id if it is present with a string value', async () =>
   const project = await createTestProject(tmpPath);
   expect(replaceUniqueIds(project.extractMachines('index.ts')))
     .toMatchInlineSnapshot(`
+    [
       [
-        [
-          {
-            "blocks": {
-              "block-0": {
-                "blockType": "actor",
-                "parentId": "state-1",
-                "properties": {
-                  "id": "inline:actor-id-0",
-                  "src": "actor1",
-                },
-                "sourceId": "actor1",
-                "uniqueId": "block-0",
+        {
+          "blocks": {
+            "block-0": {
+              "blockType": "actor",
+              "parentId": "state-1",
+              "properties": {
+                "id": "user-provided-id",
+                "src": "actor1",
               },
+              "sourceId": "actor1",
+              "uniqueId": "block-0",
             },
-            "data": {
-              "context": {},
-            },
-            "edges": {},
-            "implementations": {
-              "actions": {},
-              "actors": {
-                "actor1": {
-                  "id": "actor1",
-                  "name": "actor1",
-                  "type": "actor",
-                },
-              },
-              "guards": {},
-            },
-            "nodes": {
-              "state-0": {
-                "data": {
-                  "description": undefined,
-                  "entry": [],
-                  "exit": [],
-                  "history": undefined,
-                  "initial": "foo",
-                  "invoke": [],
-                  "metaEntries": [],
-                  "tags": [],
-                  "type": "normal",
-                },
-                "parentId": undefined,
-                "type": "node",
-                "uniqueId": "state-0",
-              },
-              "state-1": {
-                "data": {
-                  "description": undefined,
-                  "entry": [],
-                  "exit": [],
-                  "history": undefined,
-                  "initial": undefined,
-                  "invoke": [
-                    "block-0",
-                  ],
-                  "metaEntries": [],
-                  "tags": [],
-                  "type": "normal",
-                },
-                "parentId": "state-0",
-                "type": "node",
-                "uniqueId": "state-1",
-              },
-            },
-            "root": "state-0",
           },
-          [],
-        ],
-      ]
-    `);
+          "data": {
+            "context": {},
+          },
+          "edges": {},
+          "implementations": {
+            "actions": {},
+            "actors": {
+              "actor1": {
+                "id": "actor1",
+                "name": "actor1",
+                "type": "actor",
+              },
+            },
+            "guards": {},
+          },
+          "nodes": {
+            "state-0": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": "foo",
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": "normal",
+              },
+              "parentId": undefined,
+              "type": "node",
+              "uniqueId": "state-0",
+            },
+            "state-1": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": undefined,
+                "invoke": [
+                  "block-0",
+                ],
+                "metaEntries": [],
+                "tags": [],
+                "type": "normal",
+              },
+              "parentId": "state-0",
+              "type": "node",
+              "uniqueId": "state-1",
+            },
+          },
+          "root": "state-0",
+        },
+        [],
+      ],
+    ]
+  `);
 });
