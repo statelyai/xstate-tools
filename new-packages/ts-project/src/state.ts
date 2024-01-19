@@ -281,6 +281,16 @@ export function extractState(
           ctx.errors.push({ type: 'state_property_unhandled' });
           break;
         }
+        case 'always': {
+          if (!ts.isPropertyAssignment(prop)) {
+            ctx.errors.push({ type: 'state_property_unhandled' });
+          }
+          extractEdgeGroup(ctx, ts, prop, {
+            sourceId: node.uniqueId,
+            eventTypeData: { type: 'always' },
+          });
+          break;
+        }
         case 'on': {
           if (!ts.isObjectLiteralExpression(prop.initializer)) {
             ctx.errors.push({ type: 'state_property_unhandled' });
