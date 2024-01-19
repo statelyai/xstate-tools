@@ -8,6 +8,7 @@ import {
   ActorBlock,
   Edge,
   ExtractionContext,
+  GuardBlock,
   Node,
   TreeNode,
 } from './types';
@@ -62,15 +63,36 @@ export function createActorBlock({
     },
   };
 }
+const createGuardBlock = ({
+  sourceId,
+  parentId,
+}: {
+  sourceId: string;
+  parentId: string;
+}): GuardBlock => {
+  const blockId = uniqueId();
+  return {
+    blockType: 'guard',
+    uniqueId: blockId,
+    parentId,
+    sourceId,
+    properties: {
+      type: sourceId,
+      params: {},
+    },
+  };
+};
 
 function createEdge({
   sourceId,
   eventTypeData,
   description,
+  guard,
 }: {
   sourceId: string;
   eventTypeData: Edge['data']['eventTypeData'];
   description?: string | undefined;
+  guard?: string | undefined;
 }): Edge {
   return {
     type: 'edge',
@@ -80,7 +102,7 @@ function createEdge({
     data: {
       eventTypeData,
       actions: [],
-      guard: undefined,
+      guard,
       description,
       // TODO: to compute this correctly we need to know if we are extracting v4 or v5
       internal: true,
@@ -268,6 +290,34 @@ export function extractState(
                     'description',
                   );
 
+                  const guardV4 = findProperty(ctx, ts, element, 'cond');
+                  const guardV5 = findProperty(ctx, ts, element, 'guard');
+
+                  if (guardV4 && guardV5) {
+                    ctx.errors.push({
+                      type: 'property_mixed',
+                    });
+                  }
+                  const guard = guardV5 ?? guardV4;
+
+                  let guardBlock;
+
+                  if (guard) {
+                    guardBlock = createGuardBlock({
+                      sourceId: ts.isStringLiteralLike(guard.initializer)
+                        ? guard.initializer.text
+                        : `inline:${uniqueId()}`,
+                      parentId: node.uniqueId,
+                    });
+                    ctx.digraph.blocks[guardBlock.uniqueId] = guardBlock;
+                    ctx.digraph.implementations.guards[guardBlock.sourceId] ??=
+                      {
+                        type: 'guard',
+                        id: guardBlock.sourceId,
+                        name: guardBlock.sourceId,
+                      };
+                  }
+
                   return [
                     createEdge({
                       sourceId: node.uniqueId,
@@ -277,6 +327,7 @@ export function extractState(
                         ts.isStringLiteralLike(description.initializer)
                           ? description.initializer.text
                           : undefined,
+                      guard: guardBlock?.uniqueId,
                     }),
                     targets,
                   ];
