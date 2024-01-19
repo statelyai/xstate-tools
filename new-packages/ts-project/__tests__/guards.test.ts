@@ -265,6 +265,140 @@ test('should extract guard (inline)', async () => {
     ]
   `);
 });
+test('should extract parameterized guards', async () => {
+  const tmpPath = await testdir({
+    'tsconfig.json': JSON.stringify({}),
+    'index.ts': ts`
+      import { createMachine } from "xstate";
+
+      createMachine({
+        initial: "foo",
+        states: {
+          foo: {
+            on: {
+              EV: {
+                target: "bar",
+                guard: {
+                  type: "condition",
+                },
+              },
+            },
+          },
+          bar: {},
+        },
+      });
+    `,
+  });
+
+  const project = await createTestProject(tmpPath);
+  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+    .toMatchInlineSnapshot(`
+    [
+      [
+        {
+          "blocks": {
+            "block-0": {
+              "blockType": "guard",
+              "parentId": "state-1",
+              "properties": {
+                "params": {},
+                "type": "condition",
+              },
+              "sourceId": "condition",
+              "uniqueId": "block-0",
+            },
+          },
+          "data": {
+            "context": {},
+          },
+          "edges": {
+            "edge-0": {
+              "data": {
+                "actions": [],
+                "description": undefined,
+                "eventTypeData": {
+                  "eventType": "EV",
+                  "type": "named",
+                },
+                "guard": "block-0",
+                "internal": true,
+              },
+              "source": "state-1",
+              "targets": [
+                "state-2",
+              ],
+              "type": "edge",
+              "uniqueId": "edge-0",
+            },
+          },
+          "implementations": {
+            "actions": {},
+            "actors": {},
+            "guards": {
+              "condition": {
+                "id": "condition",
+                "name": "condition",
+                "type": "guard",
+              },
+            },
+          },
+          "nodes": {
+            "state-0": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": "foo",
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": "normal",
+              },
+              "parentId": undefined,
+              "type": "node",
+              "uniqueId": "state-0",
+            },
+            "state-1": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": undefined,
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": "normal",
+              },
+              "parentId": "state-0",
+              "type": "node",
+              "uniqueId": "state-1",
+            },
+            "state-2": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": undefined,
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": "normal",
+              },
+              "parentId": "state-0",
+              "type": "node",
+              "uniqueId": "state-2",
+            },
+          },
+          "root": "state-0",
+        },
+        [],
+      ],
+    ]
+  `);
+});
 test('should extract higher order guards as inline', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
@@ -889,6 +1023,246 @@ test('should raise error if both guard and cond are provided, pick guard over co
         [
           {
             "type": "property_mixed",
+          },
+        ],
+      ],
+    ]
+  `);
+});
+test('should raise error for parameterized guard is missing type property', async () => {
+  const tmpPath = await testdir({
+    'tsconfig.json': JSON.stringify({}),
+    'index.ts': ts`
+      import { createMachine } from "xstate";
+
+      createMachine({
+        initial: "foo",
+        states: {
+          foo: {
+            on: {
+              EV: {
+                target: "bar",
+                guard: {},
+              },
+            },
+          },
+          bar: {},
+        },
+      });
+    `,
+  });
+
+  const project = await createTestProject(tmpPath);
+  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+    .toMatchInlineSnapshot(`
+    [
+      [
+        {
+          "blocks": {},
+          "data": {
+            "context": {},
+          },
+          "edges": {
+            "edge-0": {
+              "data": {
+                "actions": [],
+                "description": undefined,
+                "eventTypeData": {
+                  "eventType": "EV",
+                  "type": "named",
+                },
+                "guard": undefined,
+                "internal": true,
+              },
+              "source": "state-1",
+              "targets": [
+                "state-2",
+              ],
+              "type": "edge",
+              "uniqueId": "edge-0",
+            },
+          },
+          "implementations": {
+            "actions": {},
+            "actors": {},
+            "guards": {},
+          },
+          "nodes": {
+            "state-0": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": "foo",
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": "normal",
+              },
+              "parentId": undefined,
+              "type": "node",
+              "uniqueId": "state-0",
+            },
+            "state-1": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": undefined,
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": "normal",
+              },
+              "parentId": "state-0",
+              "type": "node",
+              "uniqueId": "state-1",
+            },
+            "state-2": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": undefined,
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": "normal",
+              },
+              "parentId": "state-0",
+              "type": "node",
+              "uniqueId": "state-2",
+            },
+          },
+          "root": "state-0",
+        },
+        [
+          {
+            "type": "transition_property_unhandled",
+          },
+        ],
+      ],
+    ]
+  `);
+});
+test('should raise error for parameterized guard with invalid type property', async () => {
+  const tmpPath = await testdir({
+    'tsconfig.json': JSON.stringify({}),
+    'index.ts': ts`
+      import { createMachine } from "xstate";
+
+      createMachine({
+        initial: "foo",
+        states: {
+          foo: {
+            on: {
+              EV: {
+                target: "bar",
+                guard: {
+                  type: {},
+                },
+              },
+            },
+          },
+          bar: {},
+        },
+      });
+    `,
+  });
+
+  const project = await createTestProject(tmpPath);
+  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+    .toMatchInlineSnapshot(`
+    [
+      [
+        {
+          "blocks": {},
+          "data": {
+            "context": {},
+          },
+          "edges": {
+            "edge-0": {
+              "data": {
+                "actions": [],
+                "description": undefined,
+                "eventTypeData": {
+                  "eventType": "EV",
+                  "type": "named",
+                },
+                "guard": undefined,
+                "internal": true,
+              },
+              "source": "state-1",
+              "targets": [
+                "state-2",
+              ],
+              "type": "edge",
+              "uniqueId": "edge-0",
+            },
+          },
+          "implementations": {
+            "actions": {},
+            "actors": {},
+            "guards": {},
+          },
+          "nodes": {
+            "state-0": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": "foo",
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": "normal",
+              },
+              "parentId": undefined,
+              "type": "node",
+              "uniqueId": "state-0",
+            },
+            "state-1": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": undefined,
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": "normal",
+              },
+              "parentId": "state-0",
+              "type": "node",
+              "uniqueId": "state-1",
+            },
+            "state-2": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": undefined,
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": "normal",
+              },
+              "parentId": "state-0",
+              "type": "node",
+              "uniqueId": "state-2",
+            },
+          },
+          "root": "state-0",
+        },
+        [
+          {
+            "type": "transition_property_unhandled",
           },
         ],
       ],

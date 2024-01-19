@@ -1,8 +1,4 @@
-import type {
-  Expression,
-  ObjectLiteralExpression,
-  PropertyAssignment,
-} from 'typescript';
+import type { Expression, ObjectLiteralExpression } from 'typescript';
 import {
   ActionBlock,
   ActorBlock,
@@ -298,17 +294,48 @@ export function extractState(
                       type: 'property_mixed',
                     });
                   }
-                  const guard = guardV5 ?? guardV4;
 
                   let guardBlock;
+                  const guard = guardV5 ?? guardV4;
 
                   if (guard) {
-                    guardBlock = createGuardBlock({
-                      sourceId: ts.isStringLiteralLike(guard.initializer)
-                        ? guard.initializer.text
-                        : `inline:${uniqueId()}`,
-                      parentId: node.uniqueId,
-                    });
+                    if (ts.isStringLiteralLike(guard.initializer)) {
+                      guardBlock = createGuardBlock({
+                        sourceId: guard.initializer.text,
+                        parentId: node.uniqueId,
+                      });
+                    } else if (
+                      ts.isObjectLiteralExpression(guard.initializer)
+                    ) {
+                      const typeProperty = findProperty(
+                        ctx,
+                        ts,
+                        guard.initializer,
+                        'type',
+                      );
+
+                      if (
+                        typeProperty &&
+                        ts.isStringLiteralLike(typeProperty.initializer)
+                      ) {
+                        guardBlock = createGuardBlock({
+                          sourceId: typeProperty.initializer.text,
+                          parentId: node.uniqueId,
+                        });
+                      } else {
+                        ctx.errors.push({
+                          type: 'transition_property_unhandled',
+                        });
+                      }
+                    } else {
+                      guardBlock = createGuardBlock({
+                        sourceId: `inline:${uniqueId()}`,
+                        parentId: node.uniqueId,
+                      });
+                    }
+                  }
+
+                  if (guardBlock) {
                     ctx.digraph.blocks[guardBlock.uniqueId] = guardBlock;
                     ctx.digraph.implementations.guards[guardBlock.sourceId] ??=
                       {

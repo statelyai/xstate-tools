@@ -39,14 +39,14 @@ export type ExtractionError =
       type: 'transition_property_unhandled';
     }
   | {
+      type: 'transition_target_unresolved';
+    }
+  | {
       type: 'property_key_no_roundtrip';
     }
   | {
       type: 'property_key_unhandled';
       propertyKind: 'computed' | 'private';
-    }
-  | {
-      type: 'transition_target_unresolved';
     }
   | {
       type: 'property_mixed';
