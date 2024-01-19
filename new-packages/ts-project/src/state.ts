@@ -15,6 +15,7 @@ import {
 import {
   everyDefined,
   findProperty,
+  forEachStaticProperty,
   getJsonObject,
   getJsonValue,
   getPropertyKey,
@@ -392,9 +393,6 @@ export function extractState(
           break;
         }
         case 'always': {
-          if (!ts.isPropertyAssignment(prop)) {
-            ctx.errors.push({ type: 'state_property_unhandled' });
-          }
           extractEdgeGroup(ctx, ts, prop, {
             sourceId: node.uniqueId,
             eventTypeData: { type: 'always' },
@@ -593,18 +591,59 @@ export function extractState(
                   return;
                 }
 
-                const idProperty = findProperty(ctx, ts, element, 'id');
+                let actorId: string | undefined;
+                let onDone: PropertyAssignment | undefined;
+                let onError: PropertyAssignment | undefined;
 
-                return createActorBlock({
+                forEachStaticProperty(ctx, ts, element, (prop, key) => {
+                  switch (key) {
+                    case 'id': {
+                      if (ts.isStringLiteralLike(prop.initializer)) {
+                        actorId = prop.initializer.text;
+                        return;
+                      }
+                      return;
+                    }
+                    case 'onDone': {
+                      onDone = prop;
+                      return;
+                    }
+                    case 'onError': {
+                      onError = prop;
+                      return;
+                    }
+                  }
+                });
+
+                const block = createActorBlock({
                   sourceId: ts.isStringLiteralLike(srcProperty.initializer)
                     ? srcProperty.initializer.text
                     : `inline:${uniqueId()}`,
                   parentId: node.uniqueId,
-                  actorId:
-                    idProperty && ts.isStringLiteralLike(idProperty.initializer)
-                      ? idProperty.initializer.text
-                      : `inline:${uniqueId()}`,
+                  actorId: actorId ?? `inline:${uniqueId()}`,
                 });
+
+                if (onDone) {
+                  extractEdgeGroup(ctx, ts, onDone, {
+                    sourceId: node.uniqueId,
+                    eventTypeData: {
+                      type: 'invocation.done',
+                      invocationId: block.uniqueId,
+                    },
+                  });
+                }
+
+                if (onError) {
+                  extractEdgeGroup(ctx, ts, onError, {
+                    sourceId: node.uniqueId,
+                    eventTypeData: {
+                      type: 'invocation.error',
+                      invocationId: block.uniqueId,
+                    },
+                  });
+                }
+
+                return block;
               }
 
               return createActorBlock({

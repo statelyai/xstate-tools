@@ -138,9 +138,44 @@ export function findProperty(
   ts: typeof import('typescript'),
   obj: ObjectLiteralExpression,
   key: string,
+): PropertyAssignment | undefined {
+  for (let i = obj.properties.length - 1; i >= 0; i--) {
+    const prop = obj.properties[i];
+    if (
+      ts.isPropertyAssignment(prop) &&
+      getPropertyKey(ctx, ts, prop) === key
+    ) {
+      return prop;
+    }
+  }
+}
+
+export function forEachStaticProperty(
+  ctx: ExtractionContext,
+  ts: typeof import('typescript'),
+  obj: ObjectLiteralExpression,
+  cb: (prop: PropertyAssignment, key: string) => void,
 ) {
-  return obj.properties.find(
-    (prop): prop is PropertyAssignment =>
-      ts.isPropertyAssignment(prop) && getPropertyKey(ctx, ts, prop) === key,
-  );
+  const seen = new Set<string>();
+  for (let i = obj.properties.length - 1; i >= 0; i--) {
+    const prop = obj.properties[i];
+
+    if (!ts.isPropertyAssignment(prop)) {
+      // TODO: raise error
+      continue;
+    }
+    const key = getPropertyKey(ctx, ts, prop);
+
+    if (!key) {
+      // TODO: raise error
+      continue;
+    }
+
+    if (seen.has(key)) {
+      continue;
+    }
+
+    seen.add(key);
+    cb(prop, key);
+  }
 }
