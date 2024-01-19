@@ -347,7 +347,7 @@ test('should extract transition to a sibling (object with target in array)', asy
         states: {
           foo: {
             on: {
-              FOO: { target: "bar" },
+              FOO: [{ target: "bar" }],
             },
           },
           bar: {},
@@ -1495,99 +1495,6 @@ test('should extract forbidden transition (null)', async () => {
     `);
 });
 
-test('should extract forbidden transition (null)', async () => {
-  const tmpPath = await testdir({
-    'tsconfig.json': JSON.stringify({}),
-    'index.ts': ts`
-      import { createMachine } from "xstate";
-
-      createMachine({
-        states: {
-          a: {
-            on: {
-              EVENT: null,
-            },
-          },
-        },
-      });
-    `,
-  });
-
-  const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
-    .toMatchInlineSnapshot(`
-      [
-        [
-          {
-            "blocks": {},
-            "data": {
-              "context": {},
-            },
-            "edges": {
-              "edge-0": {
-                "data": {
-                  "actions": [],
-                  "description": undefined,
-                  "eventTypeData": {
-                    "eventType": "EVENT",
-                    "type": "named",
-                  },
-                  "guard": undefined,
-                  "internal": true,
-                },
-                "source": "state-1",
-                "targets": [],
-                "type": "edge",
-                "uniqueId": "edge-0",
-              },
-            },
-            "implementations": {
-              "actions": {},
-              "actors": {},
-              "guards": {},
-            },
-            "nodes": {
-              "state-0": {
-                "data": {
-                  "description": undefined,
-                  "entry": [],
-                  "exit": [],
-                  "history": undefined,
-                  "initial": undefined,
-                  "invoke": [],
-                  "metaEntries": [],
-                  "tags": [],
-                  "type": "normal",
-                },
-                "parentId": undefined,
-                "type": "node",
-                "uniqueId": "state-0",
-              },
-              "state-1": {
-                "data": {
-                  "description": undefined,
-                  "entry": [],
-                  "exit": [],
-                  "history": undefined,
-                  "initial": undefined,
-                  "invoke": [],
-                  "metaEntries": [],
-                  "tags": [],
-                  "type": "normal",
-                },
-                "parentId": "state-0",
-                "type": "node",
-                "uniqueId": "state-1",
-              },
-            },
-            "root": "state-0",
-          },
-          [],
-        ],
-      ]
-    `);
-});
-
 test('should extract deep sibling transition', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
@@ -2138,7 +2045,7 @@ test('should extract a wildcard transition', async () => {
     `);
 });
 
-test('should extract transition description', async () => {
+test('should extract transition description (single-line)', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
@@ -2174,6 +2081,108 @@ test('should extract transition description', async () => {
                 "data": {
                   "actions": [],
                   "description": "test",
+                  "eventTypeData": {
+                    "eventType": "EVENT",
+                    "type": "named",
+                  },
+                  "guard": undefined,
+                  "internal": true,
+                },
+                "source": "state-1",
+                "targets": [],
+                "type": "edge",
+                "uniqueId": "edge-0",
+              },
+            },
+            "implementations": {
+              "actions": {},
+              "actors": {},
+              "guards": {},
+            },
+            "nodes": {
+              "state-0": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": undefined,
+                "type": "node",
+                "uniqueId": "state-0",
+              },
+              "state-1": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": "state-0",
+                "type": "node",
+                "uniqueId": "state-1",
+              },
+            },
+            "root": "state-0",
+          },
+          [],
+        ],
+      ]
+    `);
+});
+
+test('should extract transition description (multi-line)', async () => {
+  const tmpPath = await testdir({
+    'tsconfig.json': JSON.stringify({}),
+    // it doesn't properly escape backticks when inserting into the template literal
+    // eslint-disable-next-line @preconstruct/format-js-tag/format
+    'index.ts': ts`
+      import { createMachine } from "xstate";
+
+      createMachine({
+        states: {
+          a: {
+            on: {
+              EVENT: {
+                description: \`wow
+                            much
+                            awesome\`,
+                target: undefined,
+              },
+            },
+          },
+        },
+      });
+    `,
+  });
+
+  const project = await createTestProject(tmpPath);
+  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+    .toMatchInlineSnapshot(`
+      [
+        [
+          {
+            "blocks": {},
+            "data": {
+              "context": {},
+            },
+            "edges": {
+              "edge-0": {
+                "data": {
+                  "actions": [],
+                  "description": "wow
+                            much
+                            awesome",
                   "eventTypeData": {
                     "eventType": "EVENT",
                     "type": "named",
