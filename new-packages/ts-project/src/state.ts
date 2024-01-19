@@ -94,7 +94,7 @@ function isForbiddenTarget(
 ): boolean {
   return (
     isUndefined(ts, element) ||
-    // null isn't technically allowe by the XState's types but it behaves in the same way at runtime
+    // null isn't technically allowed by the XState's types but it behaves in the same way at runtime
     // and it's an easy thing to handle here
     element.kind === ts.SyntaxKind.NullKeyword
   );
