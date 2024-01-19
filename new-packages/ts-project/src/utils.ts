@@ -161,13 +161,13 @@ export function forEachStaticProperty(
     const prop = obj.properties[i];
 
     if (!ts.isPropertyAssignment(prop)) {
-      // TODO: raise error
+      ctx.errors.push({ type: 'property_unhandled' });
       continue;
     }
     const key = getPropertyKey(ctx, ts, prop);
 
     if (!key) {
-      // TODO: raise error
+      // error should already be reported by `getPropertyKey`
       continue;
     }
 
