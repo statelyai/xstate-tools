@@ -175,7 +175,7 @@ export type Edge = {
   };
 };
 
-type ExtractorMetaEntry = [string, unknown];
+export type ExtractorMetaEntry = [string, unknown];
 
 export type ExtractorDigraphDef = {
   root: string;

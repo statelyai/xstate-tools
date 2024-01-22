@@ -3744,97 +3744,97 @@ test('should raise error when transition.meta contains any value other than a pl
 
   expect(replaceUniqueIds(project.extractMachines('index.ts')))
     .toMatchInlineSnapshot(`
-    [
       [
-        {
-          "blocks": {},
-          "data": {
-            "context": {},
-          },
-          "edges": {
-            "edge-0": {
-              "data": {
-                "actions": [],
-                "description": undefined,
-                "eventTypeData": {
-                  "eventType": "EV",
-                  "type": "named",
-                },
-                "guard": undefined,
-                "internal": true,
-                "metaEntries": [],
-              },
-              "source": "state-1",
-              "targets": [
-                "state-2",
-              ],
-              "type": "edge",
-              "uniqueId": "edge-0",
-            },
-          },
-          "implementations": {
-            "actions": {},
-            "actors": {},
-            "guards": {},
-          },
-          "nodes": {
-            "state-0": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": "foo",
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
-              },
-              "parentId": undefined,
-              "type": "node",
-              "uniqueId": "state-0",
-            },
-            "state-1": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
-              },
-              "parentId": "state-0",
-              "type": "node",
-              "uniqueId": "state-1",
-            },
-            "state-2": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
-              },
-              "parentId": "state-0",
-              "type": "node",
-              "uniqueId": "state-2",
-            },
-          },
-          "root": "state-0",
-        },
         [
           {
-            "type": "state_property_unhandled",
+            "blocks": {},
+            "data": {
+              "context": {},
+            },
+            "edges": {
+              "edge-0": {
+                "data": {
+                  "actions": [],
+                  "description": undefined,
+                  "eventTypeData": {
+                    "eventType": "EV",
+                    "type": "named",
+                  },
+                  "guard": undefined,
+                  "internal": true,
+                  "metaEntries": [],
+                },
+                "source": "state-1",
+                "targets": [
+                  "state-2",
+                ],
+                "type": "edge",
+                "uniqueId": "edge-0",
+              },
+            },
+            "implementations": {
+              "actions": {},
+              "actors": {},
+              "guards": {},
+            },
+            "nodes": {
+              "state-0": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": "foo",
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": undefined,
+                "type": "node",
+                "uniqueId": "state-0",
+              },
+              "state-1": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": "state-0",
+                "type": "node",
+                "uniqueId": "state-1",
+              },
+              "state-2": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": "state-0",
+                "type": "node",
+                "uniqueId": "state-2",
+              },
+            },
+            "root": "state-0",
           },
+          [
+            {
+              "type": "property_unhandled",
+            },
+          ],
         ],
-      ],
-    ]
-  `);
+      ]
+    `);
 });

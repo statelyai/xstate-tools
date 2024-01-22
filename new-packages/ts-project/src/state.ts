@@ -9,6 +9,7 @@ import {
   Edge,
   EventTypeData,
   ExtractionContext,
+  ExtractorMetaEntry,
   GuardBlock,
   Node,
   TreeNode,
@@ -354,27 +355,7 @@ function extractEdgeGroup(
               return;
             }
             case 'meta': {
-              if (ts.isObjectLiteralExpression(prop.initializer)) {
-                for (const meta of prop.initializer.properties) {
-                  if (ts.isPropertyAssignment(meta)) {
-                    const metaKey = getPropertyKey(ctx, ts, meta);
-                    if (metaKey) {
-                      edge.data.metaEntries.push([
-                        metaKey,
-                        getJsonValue(ctx, ts, meta.initializer),
-                      ]);
-                    }
-                  }
-                }
-                return;
-              }
-              if (isUndefined(ts, prop.initializer)) {
-                return;
-              }
-
-              ctx.errors.push({
-                type: 'state_property_unhandled',
-              });
+              extractMetaEntries(ctx, ts, prop, edge.data.metaEntries);
               return;
             }
           }
@@ -396,6 +377,33 @@ function extractEdgeGroup(
       ctx.originalTargets[edge.uniqueId] = targets;
     }
   }
+}
+
+function extractMetaEntries(
+  ctx: ExtractionContext,
+  ts: typeof import('typescript'),
+  prop: PropertyAssignment,
+  metaEntries: ExtractorMetaEntry[],
+) {
+  if (isUndefined(ts, prop.initializer)) {
+    return;
+  }
+
+  if (ts.isObjectLiteralExpression(prop.initializer)) {
+    for (const meta of prop.initializer.properties) {
+      if (ts.isPropertyAssignment(meta)) {
+        const metaKey = getPropertyKey(ctx, ts, meta);
+        if (metaKey) {
+          metaEntries.push([metaKey, getJsonValue(ctx, ts, meta.initializer)]);
+        }
+      }
+    }
+    return;
+  }
+
+  ctx.errors.push({
+    type: 'property_unhandled',
+  });
 }
 
 export function extractState(
@@ -622,27 +630,7 @@ export function extractState(
         return;
       }
       case 'meta': {
-        if (ts.isObjectLiteralExpression(prop.initializer)) {
-          for (const meta of prop.initializer.properties) {
-            if (ts.isPropertyAssignment(meta)) {
-              const metaKey = getPropertyKey(ctx, ts, meta);
-              if (metaKey) {
-                node.data.metaEntries.push([
-                  metaKey,
-                  getJsonValue(ctx, ts, meta.initializer),
-                ]);
-              }
-            }
-          }
-          return;
-        }
-        if (isUndefined(ts, prop.initializer)) {
-          return;
-        }
-
-        ctx.errors.push({
-          type: 'state_property_unhandled',
-        });
+        extractMetaEntries(ctx, ts, prop, node.data.metaEntries);
         return;
       }
       case 'entry':
