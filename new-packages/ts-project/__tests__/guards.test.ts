@@ -1408,3 +1408,165 @@ test('should raise error for parameterized guard with invalid type property', as
     ]
   `);
 });
+test('should extract guard parameters from parameterized guards', async () => {
+  const tmpPath = await testdir({
+    'tsconfig.json': JSON.stringify({}),
+    'index.ts': ts`
+      import { createMachine } from "xstate";
+
+      createMachine({
+        initial: "foo",
+        states: {
+          foo: {
+            on: {
+              EV: {
+                target: "bar",
+                guard: {
+                  type: "my condition",
+                  params: {
+                    string: "some string",
+                    number: 123,
+                    bool: true,
+                    object: {
+                      x: {
+                        y: 1,
+                      },
+                    },
+                    array: [1, 2, [3, 4]],
+                  },
+                },
+              },
+            },
+          },
+          bar: {},
+        },
+      });
+    `,
+  });
+
+  const project = await createTestProject(tmpPath);
+  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+    .toMatchInlineSnapshot(`
+    [
+      [
+        {
+          "blocks": {
+            "block-0": {
+              "blockType": "guard",
+              "parentId": "edge-0",
+              "properties": {
+                "params": {
+                  "array": [
+                    1,
+                    2,
+                    [
+                      3,
+                      4,
+                    ],
+                  ],
+                  "bool": true,
+                  "number": 123,
+                  "object": {
+                    "x": {
+                      "y": 1,
+                    },
+                  },
+                  "string": "some string",
+                },
+                "type": "my condition",
+              },
+              "sourceId": "my condition",
+              "uniqueId": "block-0",
+            },
+          },
+          "data": {
+            "context": {},
+          },
+          "edges": {
+            "edge-0": {
+              "data": {
+                "actions": [],
+                "description": undefined,
+                "eventTypeData": {
+                  "eventType": "EV",
+                  "type": "named",
+                },
+                "guard": "block-0",
+                "internal": true,
+              },
+              "source": "state-1",
+              "targets": [
+                "state-2",
+              ],
+              "type": "edge",
+              "uniqueId": "edge-0",
+            },
+          },
+          "implementations": {
+            "actions": {},
+            "actors": {},
+            "guards": {
+              "my condition": {
+                "id": "my condition",
+                "name": "my condition",
+                "type": "guard",
+              },
+            },
+          },
+          "nodes": {
+            "state-0": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": "foo",
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": "normal",
+              },
+              "parentId": undefined,
+              "type": "node",
+              "uniqueId": "state-0",
+            },
+            "state-1": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": undefined,
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": "normal",
+              },
+              "parentId": "state-0",
+              "type": "node",
+              "uniqueId": "state-1",
+            },
+            "state-2": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": undefined,
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": "normal",
+              },
+              "parentId": "state-0",
+              "type": "node",
+              "uniqueId": "state-2",
+            },
+          },
+          "root": "state-0",
+        },
+        [],
+      ],
+    ]
+  `);
+});

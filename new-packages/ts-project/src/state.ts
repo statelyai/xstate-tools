@@ -71,9 +71,11 @@ export function createActorBlock({
 const createGuardBlock = ({
   sourceId,
   parentId,
+  params,
 }: {
   sourceId: string;
   parentId: string;
+  params?: JsonObject | undefined;
 }): GuardBlock => {
   const blockId = uniqueId();
   return {
@@ -83,7 +85,7 @@ const createGuardBlock = ({
     sourceId,
     properties: {
       type: sourceId,
-      params: {},
+      params: params ?? {},
     },
   };
 };
@@ -322,9 +324,22 @@ function extractEdgeGroup(
                   typeProperty &&
                   ts.isStringLiteralLike(typeProperty.initializer)
                 ) {
+                  const paramsProperty = findProperty(
+                    ctx,
+                    ts,
+                    prop.initializer,
+                    'params',
+                  );
+
                   const block = createGuardBlock({
                     sourceId: typeProperty.initializer.text,
                     parentId: edge.uniqueId,
+                    params:
+                      // TODO: Handle invalid params values
+                      paramsProperty &&
+                      ts.isObjectLiteralExpression(paramsProperty.initializer)
+                        ? getJsonObject(ctx, ts, paramsProperty.initializer)
+                        : {},
                   });
                   registerGuardBlock(ctx, block, edge);
                   return;
