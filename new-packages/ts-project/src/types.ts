@@ -76,6 +76,7 @@ export interface ActorBlock extends BlockBase {
   properties: {
     src: string;
     id: string;
+    input: JsonObject;
   };
 }
 

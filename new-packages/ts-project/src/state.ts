@@ -11,6 +11,7 @@ import {
   ExtractionContext,
   ExtractorMetaEntry,
   GuardBlock,
+  JsonObject,
   Node,
   TreeNode,
 } from './types';
@@ -29,9 +30,11 @@ import {
 const createActionBlock = ({
   sourceId,
   parentId,
+  params,
 }: {
   sourceId: string;
   parentId: string;
+  params?: JsonObject | undefined;
 }): ActionBlock => {
   const blockId = uniqueId();
   return {
@@ -41,7 +44,7 @@ const createActionBlock = ({
     sourceId,
     properties: {
       type: sourceId,
-      params: {},
+      params: params ?? {},
     },
   };
 };
@@ -49,10 +52,12 @@ export function createActorBlock({
   sourceId,
   parentId,
   actorId,
+  input,
 }: {
   sourceId: string;
   parentId: string;
   actorId: string;
+  input?: JsonObject | undefined;
 }): ActorBlock {
   const blockId = uniqueId();
   return {
@@ -63,15 +68,18 @@ export function createActorBlock({
     properties: {
       src: sourceId,
       id: actorId,
+      input: input ?? {},
     },
   };
 }
 const createGuardBlock = ({
   sourceId,
   parentId,
+  params,
 }: {
   sourceId: string;
   parentId: string;
+  params?: JsonObject | undefined;
 }): GuardBlock => {
   const blockId = uniqueId();
   return {
@@ -81,7 +89,7 @@ const createGuardBlock = ({
     sourceId,
     properties: {
       type: sourceId,
-      params: {},
+      params: params ?? {},
     },
   };
 };
@@ -171,10 +179,18 @@ function extractActionBlocks(
           return;
         }
 
+        const paramsProperty = findProperty(ctx, ts, element, 'params');
+
         if (ts.isStringLiteralLike(typeProperty.initializer)) {
           return createActionBlock({
             sourceId: typeProperty.initializer.text,
             parentId,
+            params:
+              // TODO: Handle invalid params values
+              paramsProperty &&
+              ts.isObjectLiteralExpression(paramsProperty.initializer)
+                ? getJsonObject(ctx, ts, paramsProperty.initializer)
+                : {},
           });
         }
         ctx.errors.push({
@@ -313,9 +329,22 @@ function extractEdgeGroup(
                   typeProperty &&
                   ts.isStringLiteralLike(typeProperty.initializer)
                 ) {
+                  const paramsProperty = findProperty(
+                    ctx,
+                    ts,
+                    prop.initializer,
+                    'params',
+                  );
+
                   const block = createGuardBlock({
                     sourceId: typeProperty.initializer.text,
                     parentId: edge.uniqueId,
+                    params:
+                      // TODO: Handle invalid params values
+                      paramsProperty &&
+                      ts.isObjectLiteralExpression(paramsProperty.initializer)
+                        ? getJsonObject(ctx, ts, paramsProperty.initializer)
+                        : {},
                   });
                   registerGuardBlock(ctx, block, edge);
                   return;
@@ -667,6 +696,7 @@ export function extractState(
               let actorId: string | undefined;
               let onDone: PropertyAssignment | undefined;
               let onError: PropertyAssignment | undefined;
+              let input: PropertyAssignment | undefined;
 
               forEachStaticProperty(ctx, ts, element, (prop, key) => {
                 switch (key) {
@@ -685,6 +715,10 @@ export function extractState(
                     onError = prop;
                     return;
                   }
+                  case 'input': {
+                    input = prop;
+                    return;
+                  }
                 }
               });
 
@@ -694,6 +728,11 @@ export function extractState(
                   : `inline:${uniqueId()}`,
                 parentId: node.uniqueId,
                 actorId: actorId ?? `inline:${uniqueId()}`,
+                input:
+                  // TODO: Handle invalid input values
+                  input && ts.isObjectLiteralExpression(input.initializer)
+                    ? getJsonObject(ctx, ts, input.initializer)
+                    : {},
               });
 
               if (onDone) {

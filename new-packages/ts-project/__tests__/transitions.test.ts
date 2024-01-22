@@ -2304,6 +2304,7 @@ test('should extract invoke.onDone transition (with invoke.id)', async () => {
                 "parentId": "state-1",
                 "properties": {
                   "id": "urgentCall",
+                  "input": {},
                   "src": "callDavid",
                 },
                 "sourceId": "callDavid",
@@ -2437,6 +2438,7 @@ test('should extract invoke.onDone transition (without invoke.id)', async () => 
                 "parentId": "state-1",
                 "properties": {
                   "id": "inline:actor-id-0",
+                  "input": {},
                   "src": "callDavid",
                 },
                 "sourceId": "callDavid",
@@ -2583,6 +2585,7 @@ test('should extract invoke.onDone action', async () => {
                 "parentId": "state-1",
                 "properties": {
                   "id": "inline:actor-id-0",
+                  "input": {},
                   "src": "callDavid",
                 },
                 "sourceId": "callDavid",
@@ -2725,6 +2728,7 @@ test('should extract invoke.onError transition (with invoke.id)', async () => {
                 "parentId": "state-1",
                 "properties": {
                   "id": "urgentCall",
+                  "input": {},
                   "src": "callDavid",
                 },
                 "sourceId": "callDavid",
@@ -2858,6 +2862,7 @@ test('should extract invoke.onError transition (without invoke.id)', async () =>
                 "parentId": "state-1",
                 "properties": {
                   "id": "inline:actor-id-0",
+                  "input": {},
                   "src": "callDavid",
                 },
                 "sourceId": "callDavid",
