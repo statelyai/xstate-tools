@@ -49,7 +49,16 @@ export type ExtractionError =
       propertyKind: 'computed' | 'private';
     }
   | {
+      type: 'property_unhandled';
+    }
+  | {
       type: 'property_mixed';
+    }
+  | {
+      type: 'transition_target_unresolved';
+    }
+  | {
+      type: 'action_unhandled';
     };
 
 interface BlockBase {
@@ -136,7 +145,7 @@ type InvocationEventTypeData =
       invocationId: string;
     };
 
-type EventTypeData =
+export type EventTypeData =
   | {
       type: 'after';
       delay: string;
