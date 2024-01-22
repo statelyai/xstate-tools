@@ -370,27 +370,18 @@ export function extractState(
           ctx.errors.push({ type: 'state_property_unhandled' });
           return;
         }
-        for (const transition of prop.initializer.properties) {
-          if (!ts.isPropertyAssignment(transition)) {
-            ctx.errors.push({ type: 'transition_property_unhandled' });
-            return;
-          }
-          const event = getPropertyKey(ctx, ts, transition);
-          if (!event) {
-            ctx.errors.push({ type: 'transition_property_unhandled' });
-            return;
-          }
-          extractEdgeGroup(ctx, ts, transition, {
+        forEachStaticProperty(ctx, ts, prop.initializer, (prop, key) => {
+          extractEdgeGroup(ctx, ts, prop, {
             sourceId: node.uniqueId,
             eventTypeData:
-              event === '*'
+              key === '*'
                 ? { type: 'wildcard' }
                 : {
                     type: 'named',
-                    eventType: event,
+                    eventType: key,
                   },
           });
-        }
+        });
         return;
       }
       case 'states':
