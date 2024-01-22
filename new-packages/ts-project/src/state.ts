@@ -495,6 +495,23 @@ export function extractState(
         });
         return;
       }
+      case 'after': {
+        if (!ts.isObjectLiteralExpression(prop.initializer)) {
+          ctx.errors.push({ type: 'state_property_unhandled' });
+          return;
+        }
+
+        forEachStaticProperty(ctx, ts, prop.initializer, (transition, key) => {
+          extractEdgeGroup(ctx, ts, transition, {
+            sourceId: node.uniqueId,
+            eventTypeData: {
+              type: 'after',
+              delay: key,
+            },
+          });
+        });
+        return;
+      }
       case 'on': {
         if (!ts.isObjectLiteralExpression(prop.initializer)) {
           ctx.errors.push({ type: 'state_property_unhandled' });
