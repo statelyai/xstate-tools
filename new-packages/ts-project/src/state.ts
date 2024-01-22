@@ -479,9 +479,7 @@ export function extractState(
           ts.isFunctionExpression(prop.initializer) ||
           ts.isArrowFunction(prop.initializer)
         ) {
-          ctx.digraph.data.context = `{{${prop.initializer.getText(
-            ctx.sourceFile,
-          )}}}`;
+          ctx.digraph.data.context = `{{${prop.initializer.getText()}}}`;
           return;
         }
 
