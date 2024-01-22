@@ -987,3 +987,126 @@ test('should not register multiple transition actions with duplicated actions pr
       ]
     `);
 });
+test('should extract action params from parameterized action', async () => {
+  const tmpPath = await testdir({
+    'tsconfig.json': JSON.stringify({}),
+    'index.ts': ts`
+      import { createMachine } from "xstate";
+
+      createMachine({
+        initial: "foo",
+        states: {
+          foo: {
+            entry: {
+              type: "callDavid",
+              params: {
+                str: "some string",
+                num: 123,
+                bool: true,
+                arr: [1, 2, [3, 4]],
+                obj: {
+                  x: {
+                    y: 1,
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+    `,
+  });
+
+  const project = await createTestProject(tmpPath);
+  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+    .toMatchInlineSnapshot(`
+    [
+      [
+        {
+          "blocks": {
+            "block-0": {
+              "blockType": "action",
+              "parentId": "state-1",
+              "properties": {
+                "params": {
+                  "arr": [
+                    1,
+                    2,
+                    [
+                      3,
+                      4,
+                    ],
+                  ],
+                  "bool": true,
+                  "num": 123,
+                  "obj": {
+                    "x": {
+                      "y": 1,
+                    },
+                  },
+                  "str": "some string",
+                },
+                "type": "callDavid",
+              },
+              "sourceId": "callDavid",
+              "uniqueId": "block-0",
+            },
+          },
+          "data": {
+            "context": {},
+          },
+          "edges": {},
+          "implementations": {
+            "actions": {
+              "callDavid": {
+                "id": "callDavid",
+                "name": "callDavid",
+                "type": "action",
+              },
+            },
+            "actors": {},
+            "guards": {},
+          },
+          "nodes": {
+            "state-0": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": "foo",
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": "normal",
+              },
+              "parentId": undefined,
+              "type": "node",
+              "uniqueId": "state-0",
+            },
+            "state-1": {
+              "data": {
+                "description": undefined,
+                "entry": [
+                  "block-0",
+                ],
+                "exit": [],
+                "history": undefined,
+                "initial": undefined,
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": "normal",
+              },
+              "parentId": "state-0",
+              "type": "node",
+              "uniqueId": "state-1",
+            },
+          },
+          "root": "state-0",
+        },
+        [],
+      ],
+    ]
+  `);
+});

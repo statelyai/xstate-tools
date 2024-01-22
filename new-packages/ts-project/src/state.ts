@@ -10,6 +10,7 @@ import {
   EventTypeData,
   ExtractionContext,
   GuardBlock,
+  JsonObject,
   Node,
   TreeNode,
 } from './types';
@@ -28,9 +29,11 @@ import {
 const createActionBlock = ({
   sourceId,
   parentId,
+  params,
 }: {
   sourceId: string;
   parentId: string;
+  params?: JsonObject | undefined;
 }): ActionBlock => {
   const blockId = uniqueId();
   return {
@@ -40,7 +43,7 @@ const createActionBlock = ({
     sourceId,
     properties: {
       type: sourceId,
-      params: {},
+      params: params ?? {},
     },
   };
 };
@@ -169,10 +172,18 @@ function extractActionBlocks(
           return;
         }
 
+        const paramsProperty = findProperty(ctx, ts, element, 'params');
+
         if (ts.isStringLiteralLike(typeProperty.initializer)) {
           return createActionBlock({
             sourceId: typeProperty.initializer.text,
             parentId,
+            params:
+              // TODO: Handle invalid params values
+              paramsProperty &&
+              ts.isObjectLiteralExpression(paramsProperty.initializer)
+                ? getJsonObject(ctx, ts, paramsProperty.initializer)
+                : {},
           });
         }
         ctx.errors.push({
