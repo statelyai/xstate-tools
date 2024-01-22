@@ -67,11 +67,9 @@ export function createActorBlock({
 function createEdge({
   sourceId,
   eventTypeData,
-  description,
 }: {
   sourceId: string;
   eventTypeData: Edge['data']['eventTypeData'];
-  description?: string | undefined;
 }): Edge {
   return {
     type: 'edge',
@@ -82,7 +80,7 @@ function createEdge({
       eventTypeData,
       actions: [],
       guard: undefined,
-      description,
+      description: undefined,
       // TODO: to compute this correctly we need to know if we are extracting v4 or v5
       internal: true,
     },
@@ -122,6 +120,68 @@ function getObjectTransitionTargets(
   return mapMaybeArrayElements(ts, targetProperty.initializer, (expression) => {
     return ts.isStringLiteralLike(expression) ? expression.text : undefined;
   });
+}
+
+function extractActionBlocks(
+  ctx: ExtractionContext,
+  ts: typeof import('typescript'),
+  expression: Expression,
+  { parentId }: { parentId: string },
+) {
+  return mapMaybeArrayElements(
+    ts,
+    expression,
+    (element): ActionBlock | undefined => {
+      if (isUndefined(ts, element)) {
+        return;
+      }
+      if (ts.isStringLiteralLike(element)) {
+        return createActionBlock({
+          sourceId: element.text,
+          parentId,
+        });
+      }
+      if (ts.isObjectLiteralExpression(element)) {
+        const typeProperty = findProperty(ctx, ts, element, 'type');
+
+        if (!typeProperty) {
+          return;
+        }
+
+        if (ts.isStringLiteralLike(typeProperty.initializer)) {
+          return createActionBlock({
+            sourceId: typeProperty.initializer.text,
+            parentId,
+          });
+        }
+        ctx.errors.push({
+          type: 'action_unhandled',
+        });
+        // fallthrough to creating inline action
+      }
+
+      return createActionBlock({
+        sourceId: `inline:${uniqueId()}`,
+        parentId,
+      });
+    },
+  );
+}
+
+function registerActionBlocks(
+  ctx: ExtractionContext,
+  blocks: ActionBlock[],
+  parentContainer: string[],
+) {
+  for (const block of blocks) {
+    parentContainer.push(block.uniqueId);
+    ctx.digraph.blocks[block.uniqueId] = block;
+    ctx.digraph.implementations.actions[block.sourceId] ??= {
+      type: 'action',
+      id: block.sourceId,
+      name: block.sourceId,
+    };
+  }
 }
 
 function extractEdgeGroup(
@@ -166,19 +226,56 @@ function extractEdgeGroup(
           return;
         }
 
-        const description = findProperty(ctx, ts, element, 'description');
+        const edge = createEdge({
+          sourceId,
+          eventTypeData,
+        });
 
-        return [
-          createEdge({
-            sourceId,
-            eventTypeData,
-            description:
-              description && ts.isStringLiteralLike(description.initializer)
-                ? description.initializer.text
-                : undefined,
-          }),
-          targets,
-        ];
+        const seen = new Set<string>();
+
+        for (let i = element.properties.length - 1; i >= 0; i--) {
+          const prop = element.properties[i];
+          if (!ts.isPropertyAssignment(prop)) {
+            ctx.errors.push({ type: 'transition_property_unhandled' });
+            continue;
+          }
+          const key = getPropertyKey(ctx, ts, prop);
+
+          if (!key) {
+            ctx.errors.push({ type: 'transition_property_unhandled' });
+            continue;
+          }
+          if (seen.has(key)) {
+            continue;
+          }
+          seen.add(key);
+
+          switch (key) {
+            case 'actions': {
+              const blocks = extractActionBlocks(ctx, ts, prop.initializer, {
+                parentId: edge.uniqueId,
+              });
+
+              if (!everyDefined(blocks)) {
+                ctx.errors.push({
+                  type: 'transition_property_unhandled',
+                });
+                continue;
+              }
+
+              registerActionBlocks(ctx, blocks, edge.data.actions);
+              break;
+            }
+            case 'description': {
+              edge.data.description = ts.isStringLiteralLike(prop.initializer)
+                ? prop.initializer.text
+                : undefined;
+              break;
+            }
+          }
+        }
+
+        return [edge, targets];
       }
     },
   );
@@ -242,9 +339,22 @@ export function extractState(
     return treeNode;
   }
 
-  for (const prop of state.properties) {
+  const seen = new Set<string>();
+
+  for (let i = state.properties.length - 1; i >= 0; i--) {
+    const prop = state.properties[i];
     if (ts.isPropertyAssignment(prop)) {
       const key = getPropertyKey(ctx, ts, prop);
+
+      if (!key) {
+        ctx.errors.push({ type: 'state_property_unhandled' });
+        continue;
+      }
+
+      if (seen.has(key)) {
+        continue;
+      }
+      seen.add(key);
 
       switch (key) {
         case 'id': {
@@ -454,40 +564,9 @@ export function extractState(
         }
         case 'entry':
         case 'exit': {
-          const blocks = mapMaybeArrayElements(
-            ts,
-            prop.initializer,
-            (element): ActionBlock | undefined => {
-              if (isUndefined(ts, element)) {
-                return;
-              }
-              if (ts.isStringLiteralLike(element)) {
-                return createActionBlock({
-                  sourceId: element.text,
-                  parentId: node.uniqueId,
-                });
-              }
-              if (ts.isObjectLiteralExpression(element)) {
-                const typeProperty = findProperty(ctx, ts, element, 'type');
-
-                if (!typeProperty) {
-                  return;
-                }
-
-                if (ts.isStringLiteralLike(typeProperty.initializer)) {
-                  return createActionBlock({
-                    sourceId: typeProperty.initializer.text,
-                    parentId: node.uniqueId,
-                  });
-                }
-              }
-
-              return createActionBlock({
-                sourceId: `inline:${uniqueId()}`,
-                parentId: node.uniqueId,
-              });
-            },
-          );
+          const blocks = extractActionBlocks(ctx, ts, prop.initializer, {
+            parentId: node.uniqueId,
+          });
 
           if (!everyDefined(blocks)) {
             ctx.errors.push({
@@ -496,15 +575,7 @@ export function extractState(
             continue;
           }
 
-          for (const block of blocks) {
-            node.data[key].push(block.uniqueId);
-            ctx.digraph.blocks[block.uniqueId] = block;
-            ctx.digraph.implementations.actions[block.sourceId] ??= {
-              type: 'action',
-              id: block.sourceId,
-              name: block.sourceId,
-            };
-          }
+          registerActionBlocks(ctx, blocks, node.data[key]);
           break;
         }
         case 'invoke': {
