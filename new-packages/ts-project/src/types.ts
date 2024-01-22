@@ -159,6 +159,7 @@ export type Edge = {
     actions: string[];
     guard: string | undefined;
     description: string | undefined;
+    metaEntries: ExtractorMetaEntry[];
     internal: boolean;
   };
 };

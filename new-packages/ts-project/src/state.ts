@@ -82,6 +82,7 @@ function createEdge({
       actions: [],
       guard: undefined,
       description: undefined,
+      metaEntries: [],
       // TODO: to compute this correctly we need to know if we are extracting v4 or v5
       internal: true,
     },
@@ -253,6 +254,30 @@ function extractEdgeGroup(
               edge.data.description = ts.isStringLiteralLike(prop.initializer)
                 ? prop.initializer.text
                 : undefined;
+              return;
+            }
+            case 'meta': {
+              if (ts.isObjectLiteralExpression(prop.initializer)) {
+                for (const meta of prop.initializer.properties) {
+                  if (ts.isPropertyAssignment(meta)) {
+                    const metaKey = getPropertyKey(ctx, ts, meta);
+                    if (metaKey) {
+                      edge.data.metaEntries.push([
+                        metaKey,
+                        getJsonValue(ctx, ts, meta.initializer),
+                      ]);
+                    }
+                  }
+                }
+                return;
+              }
+              if (isUndefined(ts, prop.initializer)) {
+                return;
+              }
+
+              ctx.errors.push({
+                type: 'state_property_unhandled',
+              });
               return;
             }
           }
