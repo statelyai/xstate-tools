@@ -27,7 +27,7 @@ export function getPropertyKey(
   if (ts.isNumericLiteral(prop.name)) {
     // `.getText()` returns original text whereas `.text` on numeric literals return `(+originalText).toString()`
     // for big ints this loses precision or might even return `'Infinity'`
-    const text = prop.name.getText(ctx.sourceFile);
+    const text = prop.name.getText();
     if (text !== prop.name.text) {
       ctx.errors.push({
         type: 'property_key_no_roundtrip',
