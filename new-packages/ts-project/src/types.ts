@@ -47,6 +47,9 @@ export type ExtractionError =
     }
   | {
       type: 'transition_target_unresolved';
+    }
+  | {
+      type: 'action_unhandled';
     };
 
 interface BlockBase {

@@ -154,6 +154,10 @@ function extractActionBlocks(
             parentId,
           });
         }
+        ctx.errors.push({
+          type: 'action_unhandled',
+        });
+        // fallthrough to creating inline action
       }
 
       return createActionBlock({
