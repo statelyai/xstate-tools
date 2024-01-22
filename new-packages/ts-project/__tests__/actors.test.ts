@@ -27,6 +27,7 @@ test('should extract an actor with string src (direct)', async () => {
                 "parentId": "state-0",
                 "properties": {
                   "id": "inline:actor-id-0",
+                  "input": {},
                   "src": "foo",
                 },
                 "sourceId": "foo",
@@ -111,6 +112,7 @@ test('should extract multiple actors with different string sources (direct)', as
                 "parentId": "state-1",
                 "properties": {
                   "id": "inline:actor-id-0",
+                  "input": {},
                   "src": "actor1",
                 },
                 "sourceId": "actor1",
@@ -121,6 +123,7 @@ test('should extract multiple actors with different string sources (direct)', as
                 "parentId": "state-2",
                 "properties": {
                   "id": "inline:actor-id-1",
+                  "input": {},
                   "src": "actor2",
                 },
                 "sourceId": "actor2",
@@ -244,6 +247,7 @@ test('should extract multiple actors with the same string source (direct)', asyn
                 "parentId": "state-1",
                 "properties": {
                   "id": "inline:actor-id-0",
+                  "input": {},
                   "src": "actor1",
                 },
                 "sourceId": "actor1",
@@ -254,6 +258,7 @@ test('should extract multiple actors with the same string source (direct)', asyn
                 "parentId": "state-2",
                 "properties": {
                   "id": "inline:actor-id-1",
+                  "input": {},
                   "src": "actor1",
                 },
                 "sourceId": "actor1",
@@ -372,6 +377,7 @@ test('should extract multiple actors with string source (array)', async () => {
                 "parentId": "state-1",
                 "properties": {
                   "id": "inline:actor-id-0",
+                  "input": {},
                   "src": "actor1",
                 },
                 "sourceId": "actor1",
@@ -382,6 +388,7 @@ test('should extract multiple actors with string source (array)', async () => {
                 "parentId": "state-1",
                 "properties": {
                   "id": "inline:actor-id-1",
+                  "input": {},
                   "src": "actor2",
                 },
                 "sourceId": "actor2",
@@ -488,6 +495,7 @@ test('should extract actor with inline source (direct)', async () => {
                 "parentId": "state-1",
                 "properties": {
                   "id": "inline:actor-id-0",
+                  "input": {},
                   "src": "inline:actor-0",
                 },
                 "sourceId": "inline:actor-0",
@@ -498,6 +506,7 @@ test('should extract actor with inline source (direct)', async () => {
                 "parentId": "state-2",
                 "properties": {
                   "id": "inline:actor-id-1",
+                  "input": {},
                   "src": "inline:actor-1",
                 },
                 "sourceId": "inline:actor-1",
@@ -695,6 +704,127 @@ test('should extract actor id if it is present with a string value', async () =>
               "parentId": "state-1",
               "properties": {
                 "id": "user-provided-id",
+                "input": {},
+                "src": "actor1",
+              },
+              "sourceId": "actor1",
+              "uniqueId": "block-0",
+            },
+          },
+          "data": {
+            "context": {},
+          },
+          "edges": {},
+          "implementations": {
+            "actions": {},
+            "actors": {
+              "actor1": {
+                "id": "actor1",
+                "name": "actor1",
+                "type": "actor",
+              },
+            },
+            "guards": {},
+          },
+          "nodes": {
+            "state-0": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": "foo",
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": "normal",
+              },
+              "parentId": undefined,
+              "type": "node",
+              "uniqueId": "state-0",
+            },
+            "state-1": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": undefined,
+                "invoke": [
+                  "block-0",
+                ],
+                "metaEntries": [],
+                "tags": [],
+                "type": "normal",
+              },
+              "parentId": "state-0",
+              "type": "node",
+              "uniqueId": "state-1",
+            },
+          },
+          "root": "state-0",
+        },
+        [],
+      ],
+    ]
+  `);
+});
+test('should extract actor input', async () => {
+  const tmpPath = await testdir({
+    'tsconfig.json': JSON.stringify({}),
+    'index.ts': ts`
+      import { createMachine } from "xstate";
+
+      createMachine({
+        initial: "foo",
+        states: {
+          foo: {
+            invoke: {
+              src: "actor1",
+              input: {
+                str: "some string",
+                num: 123,
+                bool: true,
+                arr: [1, 2, [3, 4]],
+                obj: { x: { y: 1 } },
+              },
+            },
+          },
+        },
+      });
+    `,
+  });
+
+  const project = await createTestProject(tmpPath);
+  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+    .toMatchInlineSnapshot(`
+    [
+      [
+        {
+          "blocks": {
+            "block-0": {
+              "blockType": "actor",
+              "parentId": "state-1",
+              "properties": {
+                "id": "inline:actor-id-0",
+                "input": {
+                  "arr": [
+                    1,
+                    2,
+                    [
+                      3,
+                      4,
+                    ],
+                  ],
+                  "bool": true,
+                  "num": 123,
+                  "obj": {
+                    "x": {
+                      "y": 1,
+                    },
+                  },
+                  "str": "some string",
+                },
                 "src": "actor1",
               },
               "sourceId": "actor1",
