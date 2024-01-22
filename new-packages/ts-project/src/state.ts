@@ -481,6 +481,13 @@ export function extractState(
         });
         return;
       }
+      case 'onDone': {
+        extractEdgeGroup(ctx, ts, prop, {
+          sourceId: node.uniqueId,
+          eventTypeData: { type: 'state.done' },
+        });
+        return;
+      }
       case 'states':
         if (!ts.isObjectLiteralExpression(prop.initializer)) {
           ctx.errors.push({
