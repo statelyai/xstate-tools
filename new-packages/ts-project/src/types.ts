@@ -125,7 +125,7 @@ type InvocationEventTypeData =
       invocationId: string;
     };
 
-type EventTypeData =
+export type EventTypeData =
   | {
       type: 'after';
       delay: string;

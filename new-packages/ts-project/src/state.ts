@@ -7,6 +7,7 @@ import {
   ActionBlock,
   ActorBlock,
   Edge,
+  EventTypeData,
   ExtractionContext,
   Node,
   TreeNode,
@@ -123,6 +124,78 @@ function getObjectTransitionTargets(
   });
 }
 
+function extractEdgeGroup(
+  ctx: ExtractionContext,
+  ts: typeof import('typescript'),
+  transition: PropertyAssignment,
+  {
+    sourceId,
+    eventTypeData,
+  }: {
+    sourceId: string;
+    eventTypeData: EventTypeData;
+  },
+) {
+  const mapped = mapMaybeArrayElements(
+    ts,
+    transition.initializer,
+    (element): [Edge, string[] | undefined] | undefined => {
+      if (isForbiddenTarget(ts, element)) {
+        return [
+          createEdge({
+            sourceId,
+            eventTypeData,
+          }),
+          undefined,
+        ];
+      }
+      if (ts.isStringLiteralLike(element)) {
+        return [
+          createEdge({
+            sourceId,
+            eventTypeData,
+          }),
+          [element.text],
+        ];
+      }
+      if (ts.isObjectLiteralExpression(element)) {
+        const targets = getObjectTransitionTargets(ctx, ts, element);
+
+        if (targets && !everyDefined(targets)) {
+          ctx.errors.push({ type: 'transition_property_unhandled' });
+          return;
+        }
+
+        const description = findProperty(ctx, ts, element, 'description');
+
+        return [
+          createEdge({
+            sourceId,
+            eventTypeData,
+            description:
+              description && ts.isStringLiteralLike(description.initializer)
+                ? description.initializer.text
+                : undefined,
+          }),
+          targets,
+        ];
+      }
+    },
+  );
+
+  if (!everyDefined(mapped)) {
+    ctx.errors.push({ type: 'transition_property_unhandled' });
+    return;
+  }
+
+  for (const [edge, targets] of mapped) {
+    ctx.digraph.edges[edge.uniqueId] = edge;
+    if (targets) {
+      ctx.originalTargets[edge.uniqueId] = targets;
+    }
+  }
+}
+
 export function extractState(
   ctx: ExtractionContext,
   ts: typeof import('typescript'),
@@ -208,6 +281,16 @@ export function extractState(
           ctx.errors.push({ type: 'state_property_unhandled' });
           break;
         }
+        case 'always': {
+          if (!ts.isPropertyAssignment(prop)) {
+            ctx.errors.push({ type: 'state_property_unhandled' });
+          }
+          extractEdgeGroup(ctx, ts, prop, {
+            sourceId: node.uniqueId,
+            eventTypeData: { type: 'always' },
+          });
+          break;
+        }
         case 'on': {
           if (!ts.isObjectLiteralExpression(prop.initializer)) {
             ctx.errors.push({ type: 'state_property_unhandled' });
@@ -216,85 +299,23 @@ export function extractState(
           for (const transition of prop.initializer.properties) {
             if (!ts.isPropertyAssignment(transition)) {
               ctx.errors.push({ type: 'transition_property_unhandled' });
-              continue;
+              return;
             }
             const event = getPropertyKey(ctx, ts, transition);
             if (!event) {
               ctx.errors.push({ type: 'transition_property_unhandled' });
-              continue;
+              return;
             }
-            const eventTypeData =
-              event === '*'
-                ? { type: 'wildcard' as const }
-                : {
-                    type: 'named' as const,
-                    eventType: event,
-                  };
-
-            const mapped = mapMaybeArrayElements(
-              ts,
-              transition.initializer,
-              (element): [Edge, string[] | undefined] | undefined => {
-                if (isForbiddenTarget(ts, element)) {
-                  return [
-                    createEdge({
-                      sourceId: node.uniqueId,
-                      eventTypeData,
-                    }),
-                    undefined,
-                  ];
-                }
-                if (ts.isStringLiteralLike(element)) {
-                  return [
-                    createEdge({
-                      sourceId: node.uniqueId,
-                      eventTypeData,
-                    }),
-                    [element.text],
-                  ];
-                }
-                if (ts.isObjectLiteralExpression(element)) {
-                  const targets = getObjectTransitionTargets(ctx, ts, element);
-
-                  if (targets && !everyDefined(targets)) {
-                    ctx.errors.push({ type: 'transition_property_unhandled' });
-                    return;
-                  }
-
-                  const description = findProperty(
-                    ctx,
-                    ts,
-                    element,
-                    'description',
-                  );
-
-                  return [
-                    createEdge({
-                      sourceId: node.uniqueId,
-                      eventTypeData,
-                      description:
-                        description &&
-                        ts.isStringLiteralLike(description.initializer)
-                          ? description.initializer.text
-                          : undefined,
-                    }),
-                    targets,
-                  ];
-                }
-              },
-            );
-
-            if (!everyDefined(mapped)) {
-              ctx.errors.push({ type: 'transition_property_unhandled' });
-              continue;
-            }
-
-            for (const [edge, targets] of mapped) {
-              ctx.digraph.edges[edge.uniqueId] = edge;
-              if (targets) {
-                ctx.originalTargets[edge.uniqueId] = targets;
-              }
-            }
+            extractEdgeGroup(ctx, ts, transition, {
+              sourceId: node.uniqueId,
+              eventTypeData:
+                event === '*'
+                  ? { type: 'wildcard' }
+                  : {
+                      type: 'named',
+                      eventType: event,
+                    },
+            });
           }
           break;
         }
