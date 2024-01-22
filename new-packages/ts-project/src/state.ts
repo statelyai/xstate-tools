@@ -15,6 +15,7 @@ import {
 import {
   everyDefined,
   findProperty,
+  forEachStaticProperty,
   getJsonObject,
   getJsonValue,
   getPropertyKey,
@@ -231,25 +232,7 @@ function extractEdgeGroup(
           eventTypeData,
         });
 
-        const seen = new Set<string>();
-
-        for (let i = element.properties.length - 1; i >= 0; i--) {
-          const prop = element.properties[i];
-          if (!ts.isPropertyAssignment(prop)) {
-            ctx.errors.push({ type: 'transition_property_unhandled' });
-            continue;
-          }
-          const key = getPropertyKey(ctx, ts, prop);
-
-          if (!key) {
-            ctx.errors.push({ type: 'transition_property_unhandled' });
-            continue;
-          }
-          if (seen.has(key)) {
-            continue;
-          }
-          seen.add(key);
-
+        forEachStaticProperty(ctx, ts, element, (prop, key) => {
           switch (key) {
             case 'actions': {
               const blocks = extractActionBlocks(ctx, ts, prop.initializer, {
@@ -260,20 +243,20 @@ function extractEdgeGroup(
                 ctx.errors.push({
                   type: 'transition_property_unhandled',
                 });
-                continue;
+                return;
               }
 
               registerActionBlocks(ctx, blocks, edge.data.actions);
-              break;
+              return;
             }
             case 'description': {
               edge.data.description = ts.isStringLiteralLike(prop.initializer)
                 ? prop.initializer.text
                 : undefined;
-              break;
+              return;
             }
           }
-        }
+        });
 
         return [edge, targets];
       }
@@ -339,329 +322,314 @@ export function extractState(
     return treeNode;
   }
 
-  const seen = new Set<string>();
+  forEachStaticProperty(ctx, ts, state, (prop, key) => {
+    switch (key) {
+      case 'id': {
+        if (ts.isStringLiteralLike(prop.initializer)) {
+          ctx.idMap[prop.initializer.text] = node.uniqueId;
+          return;
+        }
+        return;
+      }
+      case 'context': {
+        if (parentId !== undefined) {
+          ctx.errors.push({
+            type: 'state_property_invalid',
+          });
+          return;
+        }
+        if (ts.isObjectLiteralExpression(prop.initializer)) {
+          const obj = getJsonObject(ctx, ts, prop.initializer);
+          if (obj) {
+            ctx.digraph.data.context = obj;
+          }
+          return;
+        }
+        if (
+          ts.isFunctionExpression(prop.initializer) ||
+          ts.isArrowFunction(prop.initializer)
+        ) {
+          ctx.digraph.data.context = `{{${prop.initializer.getText(
+            ctx.sourceFile,
+          )}}}`;
+          return;
+        }
 
-  for (let i = state.properties.length - 1; i >= 0; i--) {
-    const prop = state.properties[i];
-    if (ts.isPropertyAssignment(prop)) {
-      const key = getPropertyKey(ctx, ts, prop);
-
-      if (!key) {
         ctx.errors.push({ type: 'state_property_unhandled' });
-        continue;
+        return;
       }
-
-      if (seen.has(key)) {
-        continue;
+      case 'always': {
+        extractEdgeGroup(ctx, ts, prop, {
+          sourceId: node.uniqueId,
+          eventTypeData: { type: 'always' },
+        });
+        return;
       }
-      seen.add(key);
-
-      switch (key) {
-        case 'id': {
-          if (ts.isStringLiteralLike(prop.initializer)) {
-            ctx.idMap[prop.initializer.text] = node.uniqueId;
-            continue;
-          }
-          break;
-        }
-        case 'context': {
-          if (parentId !== undefined) {
-            ctx.errors.push({
-              type: 'state_property_invalid',
-            });
-            continue;
-          }
-          if (ts.isObjectLiteralExpression(prop.initializer)) {
-            const obj = getJsonObject(ctx, ts, prop.initializer);
-            if (obj) {
-              ctx.digraph.data.context = obj;
-            }
-            continue;
-          }
-          if (
-            ts.isFunctionExpression(prop.initializer) ||
-            ts.isArrowFunction(prop.initializer)
-          ) {
-            ctx.digraph.data.context = `{{${prop.initializer.getText(
-              ctx.sourceFile,
-            )}}}`;
-            continue;
-          }
-
+      case 'on': {
+        if (!ts.isObjectLiteralExpression(prop.initializer)) {
           ctx.errors.push({ type: 'state_property_unhandled' });
-          break;
+          return;
         }
-        case 'always': {
-          if (!ts.isPropertyAssignment(prop)) {
-            ctx.errors.push({ type: 'state_property_unhandled' });
-          }
+        forEachStaticProperty(ctx, ts, prop.initializer, (prop, key) => {
           extractEdgeGroup(ctx, ts, prop, {
             sourceId: node.uniqueId,
-            eventTypeData: { type: 'always' },
+            eventTypeData:
+              key === '*'
+                ? { type: 'wildcard' }
+                : {
+                    type: 'named',
+                    eventType: key,
+                  },
           });
-          break;
-        }
-        case 'on': {
-          if (!ts.isObjectLiteralExpression(prop.initializer)) {
-            ctx.errors.push({ type: 'state_property_unhandled' });
-            continue;
-          }
-          for (const transition of prop.initializer.properties) {
-            if (!ts.isPropertyAssignment(transition)) {
-              ctx.errors.push({ type: 'transition_property_unhandled' });
-              return;
-            }
-            const event = getPropertyKey(ctx, ts, transition);
-            if (!event) {
-              ctx.errors.push({ type: 'transition_property_unhandled' });
-              return;
-            }
-            extractEdgeGroup(ctx, ts, transition, {
-              sourceId: node.uniqueId,
-              eventTypeData:
-                event === '*'
-                  ? { type: 'wildcard' }
-                  : {
-                      type: 'named',
-                      eventType: event,
-                    },
-            });
-          }
-          break;
-        }
-        case 'states':
-          if (!ts.isObjectLiteralExpression(prop.initializer)) {
-            ctx.errors.push({
-              type: 'state_unhandled',
-            });
-            break;
-          }
-          for (const state of prop.initializer.properties) {
-            if (ts.isPropertyAssignment(state)) {
-              const childKey = getPropertyKey(ctx, ts, state);
-              if (childKey) {
-                const childTreeNode = extractState(
-                  ctx,
-                  ts,
-                  state.initializer,
-                  node.uniqueId,
-                );
-                if (!childTreeNode) {
-                  continue;
-                }
-                treeNode.children[childKey] = childTreeNode;
-              }
-              continue;
-            }
-            ctx.errors.push({
-              type: 'state_property_unhandled',
-            });
-            continue;
-          }
-          break;
-        case 'initial': {
-          if (ts.isStringLiteralLike(prop.initializer)) {
-            node.data.initial = prop.initializer.text;
-            continue;
-          }
-          if (isUndefined(ts, prop.initializer)) {
-            continue;
-          }
+        });
+        return;
+      }
+      case 'states':
+        if (!ts.isObjectLiteralExpression(prop.initializer)) {
           ctx.errors.push({
-            type: 'state_property_unhandled',
+            type: 'state_unhandled',
           });
-          break;
+          return;
         }
-        case 'type': {
-          if (ts.isStringLiteralLike(prop.initializer)) {
-            const text = prop.initializer.text;
-            if (text === 'history' || text === 'parallel' || text === 'final') {
-              node.data.type = text;
-              continue;
-            }
-            if (text === 'atomic' || text === 'compound') {
-              // type already starts as 'normal' so it doesn't have to be chamged here
-              continue;
-            }
-            ctx.errors.push({
-              type: 'state_type_invalid',
-            });
-            continue;
-          }
-          if (isUndefined(ts, prop.initializer)) {
-            continue;
-          }
-          ctx.errors.push({
-            type: 'state_property_unhandled',
-          });
-          break;
-        }
-        // TODO: this property only has effect if type is set to history
-        case 'history': {
-          if (ts.isStringLiteralLike(prop.initializer)) {
-            const text = prop.initializer.text;
-            if (text === 'shallow' || text === 'deep') {
-              node.data.history = text;
-              continue;
-            }
-            ctx.errors.push({
-              type: 'state_history_invalid',
-            });
-          }
-          if (prop.initializer.kind === ts.SyntaxKind.TrueKeyword) {
-            node.data.history = 'deep';
-            continue;
-          }
-          if (prop.initializer.kind === ts.SyntaxKind.FalseKeyword) {
-            node.data.history = 'shallow';
-            continue;
-          }
-          if (isUndefined(ts, prop.initializer)) {
-            continue;
-          }
-          ctx.errors.push({
-            type: 'state_property_unhandled',
-          });
-          break;
-        }
-        case 'description': {
-          if (ts.isStringLiteralLike(prop.initializer)) {
-            node.data.description = prop.initializer.text;
-            continue;
-          }
-          if (isUndefined(ts, prop.initializer)) {
-            continue;
-          }
-          ctx.errors.push({
-            type: 'state_property_unhandled',
-          });
-          break;
-        }
-        case 'meta': {
-          if (ts.isObjectLiteralExpression(prop.initializer)) {
-            for (const meta of prop.initializer.properties) {
-              if (ts.isPropertyAssignment(meta)) {
-                const metaKey = getPropertyKey(ctx, ts, meta);
-                if (metaKey) {
-                  node.data.metaEntries.push([
-                    metaKey,
-                    getJsonValue(ctx, ts, meta.initializer),
-                  ]);
-                }
+        for (const state of prop.initializer.properties) {
+          if (ts.isPropertyAssignment(state)) {
+            const childKey = getPropertyKey(ctx, ts, state);
+            if (childKey) {
+              const childTreeNode = extractState(
+                ctx,
+                ts,
+                state.initializer,
+                node.uniqueId,
+              );
+              if (!childTreeNode) {
                 continue;
               }
+              treeNode.children[childKey] = childTreeNode;
             }
             continue;
           }
-          if (isUndefined(ts, prop.initializer)) {
-            continue;
-          }
-
           ctx.errors.push({
             type: 'state_property_unhandled',
           });
-          break;
+          continue;
         }
-        case 'entry':
-        case 'exit': {
-          const blocks = extractActionBlocks(ctx, ts, prop.initializer, {
-            parentId: node.uniqueId,
-          });
-
-          if (!everyDefined(blocks)) {
-            ctx.errors.push({
-              type: 'state_property_unhandled',
-            });
-            continue;
+        return;
+      case 'initial': {
+        if (ts.isStringLiteralLike(prop.initializer)) {
+          node.data.initial = prop.initializer.text;
+          return;
+        }
+        if (isUndefined(ts, prop.initializer)) {
+          return;
+        }
+        ctx.errors.push({
+          type: 'state_property_unhandled',
+        });
+        return;
+      }
+      case 'type': {
+        if (ts.isStringLiteralLike(prop.initializer)) {
+          const text = prop.initializer.text;
+          if (text === 'history' || text === 'parallel' || text === 'final') {
+            node.data.type = text;
+            return;
           }
-
-          registerActionBlocks(ctx, blocks, node.data[key]);
-          break;
+          if (text === 'atomic' || text === 'compound') {
+            // type already starts as 'normal' so it doesn't have to be chamged here
+            return;
+          }
+          ctx.errors.push({
+            type: 'state_type_invalid',
+          });
+          return;
         }
-        case 'invoke': {
-          const blocks = mapMaybeArrayElements(
-            ts,
-            prop.initializer,
-            (element, index): ActorBlock | undefined => {
-              if (isUndefined(ts, element)) {
+        if (isUndefined(ts, prop.initializer)) {
+          return;
+        }
+        ctx.errors.push({
+          type: 'state_property_unhandled',
+        });
+        return;
+      }
+      // TODO: this property only has effect if type is set to history
+      case 'history': {
+        if (ts.isStringLiteralLike(prop.initializer)) {
+          const text = prop.initializer.text;
+          if (text === 'shallow' || text === 'deep') {
+            node.data.history = text;
+            return;
+          }
+          ctx.errors.push({
+            type: 'state_history_invalid',
+          });
+        }
+        if (prop.initializer.kind === ts.SyntaxKind.TrueKeyword) {
+          node.data.history = 'deep';
+          return;
+        }
+        if (prop.initializer.kind === ts.SyntaxKind.FalseKeyword) {
+          node.data.history = 'shallow';
+          return;
+        }
+        if (isUndefined(ts, prop.initializer)) {
+          return;
+        }
+        ctx.errors.push({
+          type: 'state_property_unhandled',
+        });
+        return;
+      }
+      case 'description': {
+        if (ts.isStringLiteralLike(prop.initializer)) {
+          node.data.description = prop.initializer.text;
+          return;
+        }
+        if (isUndefined(ts, prop.initializer)) {
+          return;
+        }
+        ctx.errors.push({
+          type: 'state_property_unhandled',
+        });
+        return;
+      }
+      case 'meta': {
+        if (ts.isObjectLiteralExpression(prop.initializer)) {
+          for (const meta of prop.initializer.properties) {
+            if (ts.isPropertyAssignment(meta)) {
+              const metaKey = getPropertyKey(ctx, ts, meta);
+              if (metaKey) {
+                node.data.metaEntries.push([
+                  metaKey,
+                  getJsonValue(ctx, ts, meta.initializer),
+                ]);
+              }
+            }
+          }
+          return;
+        }
+        if (isUndefined(ts, prop.initializer)) {
+          return;
+        }
+
+        ctx.errors.push({
+          type: 'state_property_unhandled',
+        });
+        return;
+      }
+      case 'entry':
+      case 'exit': {
+        const blocks = extractActionBlocks(ctx, ts, prop.initializer, {
+          parentId: node.uniqueId,
+        });
+
+        if (!everyDefined(blocks)) {
+          ctx.errors.push({
+            type: 'state_property_unhandled',
+          });
+          return;
+        }
+
+        registerActionBlocks(ctx, blocks, node.data[key]);
+        return;
+      }
+      case 'invoke': {
+        const blocks = mapMaybeArrayElements(
+          ts,
+          prop.initializer,
+          (element, index): ActorBlock | undefined => {
+            if (isUndefined(ts, element)) {
+              return;
+            }
+            if (ts.isObjectLiteralExpression(element)) {
+              const srcProperty = findProperty(ctx, ts, element, 'src');
+
+              if (!srcProperty) {
                 return;
               }
-              if (ts.isObjectLiteralExpression(element)) {
-                const srcProperty = findProperty(ctx, ts, element, 'src');
 
-                if (!srcProperty) {
-                  return;
+              let actorId: string | undefined;
+              let onDone: PropertyAssignment | undefined;
+              let onError: PropertyAssignment | undefined;
+
+              forEachStaticProperty(ctx, ts, element, (prop, key) => {
+                switch (key) {
+                  case 'id': {
+                    if (ts.isStringLiteralLike(prop.initializer)) {
+                      actorId = prop.initializer.text;
+                      return;
+                    }
+                    return;
+                  }
+                  case 'onDone': {
+                    onDone = prop;
+                    return;
+                  }
+                  case 'onError': {
+                    onError = prop;
+                    return;
+                  }
                 }
+              });
 
-                const idProperty = findProperty(ctx, ts, element, 'id');
+              const block = createActorBlock({
+                sourceId: ts.isStringLiteralLike(srcProperty.initializer)
+                  ? srcProperty.initializer.text
+                  : `inline:${uniqueId()}`,
+                parentId: node.uniqueId,
+                actorId: actorId ?? `inline:${uniqueId()}`,
+              });
 
-                return createActorBlock({
-                  sourceId: ts.isStringLiteralLike(srcProperty.initializer)
-                    ? srcProperty.initializer.text
-                    : `inline:${uniqueId()}`,
-                  parentId: node.uniqueId,
-                  actorId:
-                    idProperty && ts.isStringLiteralLike(idProperty.initializer)
-                      ? idProperty.initializer.text
-                      : `inline:${uniqueId()}`,
+              if (onDone) {
+                extractEdgeGroup(ctx, ts, onDone, {
+                  sourceId: node.uniqueId,
+                  eventTypeData: {
+                    type: 'invocation.done',
+                    invocationId: block.uniqueId,
+                  },
                 });
               }
 
-              return createActorBlock({
-                sourceId: `inline:${uniqueId()}`,
-                parentId: node.uniqueId,
-                actorId: `inline:${uniqueId()}}`,
-              });
-            },
-          );
+              if (onError) {
+                extractEdgeGroup(ctx, ts, onError, {
+                  sourceId: node.uniqueId,
+                  eventTypeData: {
+                    type: 'invocation.error',
+                    invocationId: block.uniqueId,
+                  },
+                });
+              }
 
-          if (!everyDefined(blocks)) {
-            ctx.errors.push({
-              type: 'state_property_unhandled',
+              return block;
+            }
+
+            return createActorBlock({
+              sourceId: `inline:${uniqueId()}`,
+              parentId: node.uniqueId,
+              actorId: `inline:${uniqueId()}}`,
             });
-            continue;
-          }
+          },
+        );
 
-          for (const block of blocks) {
-            node.data[key].push(block.uniqueId);
-            ctx.digraph.blocks[block.uniqueId] = block;
-            ctx.digraph.implementations.actors[block.sourceId] ??= {
-              type: 'actor',
-              id: block.sourceId,
-              name: block.sourceId,
-            };
-          }
-          break;
+        if (!everyDefined(blocks)) {
+          ctx.errors.push({
+            type: 'state_property_unhandled',
+          });
+          return;
         }
+
+        for (const block of blocks) {
+          node.data[key].push(block.uniqueId);
+          ctx.digraph.blocks[block.uniqueId] = block;
+          ctx.digraph.implementations.actors[block.sourceId] ??= {
+            type: 'actor',
+            id: block.sourceId,
+            name: block.sourceId,
+          };
+        }
+        return;
       }
-      continue;
     }
-
-    if (ts.isShorthandPropertyAssignment(prop)) {
-      ctx.errors.push({
-        type: 'state_property_unhandled',
-      });
-      continue;
-    }
-    if (ts.isSpreadAssignment(prop)) {
-      ctx.errors.push({
-        type: 'state_property_unhandled',
-      });
-      continue;
-    }
-    if (
-      ts.isMethodDeclaration(prop) ||
-      ts.isGetAccessorDeclaration(prop) ||
-      ts.isSetAccessorDeclaration(prop)
-    ) {
-      ctx.errors.push({
-        type: 'state_property_unhandled',
-      });
-      continue;
-    }
-
-    prop satisfies never;
-  }
+  });
 
   return treeNode;
 }

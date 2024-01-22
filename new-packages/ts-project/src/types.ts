@@ -46,6 +46,9 @@ export type ExtractionError =
       propertyKind: 'computed' | 'private';
     }
   | {
+      type: 'property_unhandled';
+    }
+  | {
       type: 'transition_target_unresolved';
     }
   | {
