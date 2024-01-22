@@ -9,6 +9,7 @@ import {
   Edge,
   EventTypeData,
   ExtractionContext,
+  GuardBlock,
   Node,
   TreeNode,
 } from './types';
@@ -64,6 +65,25 @@ export function createActorBlock({
     },
   };
 }
+const createGuardBlock = ({
+  sourceId,
+  parentId,
+}: {
+  sourceId: string;
+  parentId: string;
+}): GuardBlock => {
+  const blockId = uniqueId();
+  return {
+    blockType: 'guard',
+    uniqueId: blockId,
+    parentId,
+    sourceId,
+    properties: {
+      type: sourceId,
+      params: {},
+    },
+  };
+};
 
 function createEdge({
   sourceId,
@@ -170,6 +190,20 @@ function extractActionBlocks(
   );
 }
 
+function registerGuardBlock(
+  ctx: ExtractionContext,
+  block: GuardBlock,
+  edge: Edge,
+) {
+  edge.data.guard = block.uniqueId;
+  ctx.digraph.blocks[block.uniqueId] = block;
+  ctx.digraph.implementations.guards[block.sourceId] ??= {
+    type: 'guard',
+    id: block.sourceId,
+    name: block.sourceId,
+  };
+}
+
 function registerActionBlocks(
   ctx: ExtractionContext,
   blocks: ActionBlock[],
@@ -233,8 +267,71 @@ function extractEdgeGroup(
           eventTypeData,
         });
 
+        let seenGuardProp = false;
+
         forEachStaticProperty(ctx, ts, element, (prop, key) => {
           switch (key) {
+            case 'cond':
+              if (seenGuardProp) {
+                // `guard` was already seen
+                ctx.errors.push({
+                  type: 'property_mixed',
+                });
+                return;
+              }
+              if (findProperty(ctx, ts, element, 'guard')) {
+                seenGuardProp = true;
+                return;
+              }
+            // fallthrough
+            case 'guard': {
+              if (seenGuardProp) {
+                ctx.errors.push({
+                  type: 'property_mixed',
+                });
+              }
+              seenGuardProp = true;
+
+              if (ts.isStringLiteralLike(prop.initializer)) {
+                const block = createGuardBlock({
+                  sourceId: prop.initializer.text,
+                  parentId: edge.uniqueId,
+                });
+                registerGuardBlock(ctx, block, edge);
+                return;
+              }
+              if (ts.isObjectLiteralExpression(prop.initializer)) {
+                const typeProperty = findProperty(
+                  ctx,
+                  ts,
+                  prop.initializer,
+                  'type',
+                );
+
+                if (
+                  typeProperty &&
+                  ts.isStringLiteralLike(typeProperty.initializer)
+                ) {
+                  const block = createGuardBlock({
+                    sourceId: typeProperty.initializer.text,
+                    parentId: edge.uniqueId,
+                  });
+                  registerGuardBlock(ctx, block, edge);
+                  return;
+                }
+
+                ctx.errors.push({
+                  type: 'transition_property_unhandled',
+                });
+                return;
+              }
+              const block = createGuardBlock({
+                sourceId: `inline:${uniqueId()}`,
+                parentId: edge.uniqueId,
+              });
+              registerGuardBlock(ctx, block, edge);
+              return;
+            }
             case 'actions': {
               const blocks = extractActionBlocks(ctx, ts, prop.initializer, {
                 parentId: edge.uniqueId,
@@ -406,6 +503,13 @@ export function extractState(
                     eventType: key,
                   },
           });
+        });
+        return;
+      }
+      case 'onDone': {
+        extractEdgeGroup(ctx, ts, prop, {
+          sourceId: node.uniqueId,
+          eventTypeData: { type: 'state.done' },
         });
         return;
       }

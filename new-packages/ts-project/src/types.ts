@@ -39,6 +39,9 @@ export type ExtractionError =
       type: 'transition_property_unhandled';
     }
   | {
+      type: 'transition_target_unresolved';
+    }
+  | {
       type: 'property_key_no_roundtrip';
     }
   | {
@@ -49,7 +52,7 @@ export type ExtractionError =
       type: 'property_unhandled';
     }
   | {
-      type: 'transition_target_unresolved';
+      type: 'property_mixed';
     }
   | {
       type: 'action_unhandled';
@@ -73,6 +76,14 @@ export interface ActorBlock extends BlockBase {
   properties: {
     src: string;
     id: string;
+  };
+}
+
+export interface GuardBlock extends BlockBase {
+  blockType: 'guard';
+  properties: {
+    type: string;
+    params: {};
   };
 }
 
@@ -174,7 +185,7 @@ export type ExtractorDigraphDef = {
   implementations: {
     actions: Record<string, { type: 'action'; id: string; name: string }>;
     actors: Record<string, { type: 'actor'; id: string; name: string }>;
-    guards: Record<string, never>;
+    guards: Record<string, { type: 'guard'; id: string; name: string }>;
   };
   data: {
     context: JsonObject | `{{${string}}}`;
