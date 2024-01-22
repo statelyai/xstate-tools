@@ -294,7 +294,7 @@ function extractEdgeGroup(
               if (ts.isStringLiteralLike(prop.initializer)) {
                 const block = createGuardBlock({
                   sourceId: prop.initializer.text,
-                  parentId: sourceId,
+                  parentId: edge.uniqueId,
                 });
                 registerGuardBlock(ctx, block, edge);
                 return;
@@ -313,7 +313,7 @@ function extractEdgeGroup(
                 ) {
                   const block = createGuardBlock({
                     sourceId: typeProperty.initializer.text,
-                    parentId: sourceId,
+                    parentId: edge.uniqueId,
                   });
                   registerGuardBlock(ctx, block, edge);
                   return;
@@ -326,7 +326,7 @@ function extractEdgeGroup(
               }
               const block = createGuardBlock({
                 sourceId: `inline:${uniqueId()}`,
-                parentId: sourceId,
+                parentId: edge.uniqueId,
               });
               registerGuardBlock(ctx, block, edge);
               return;

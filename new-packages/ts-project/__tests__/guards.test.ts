@@ -27,111 +27,111 @@ test('should extract guard from transition (string)', async () => {
   const project = await createTestProject(tmpPath);
   expect(replaceUniqueIds(project.extractMachines('index.ts')))
     .toMatchInlineSnapshot(`
-    [
       [
-        {
-          "blocks": {
-            "block-0": {
-              "blockType": "guard",
-              "parentId": "state-1",
-              "properties": {
-                "params": {},
-                "type": "condition",
-              },
-              "sourceId": "condition",
-              "uniqueId": "block-0",
-            },
-          },
-          "data": {
-            "context": {},
-          },
-          "edges": {
-            "edge-0": {
-              "data": {
-                "actions": [],
-                "description": undefined,
-                "eventTypeData": {
-                  "eventType": "EV",
-                  "type": "named",
+        [
+          {
+            "blocks": {
+              "block-0": {
+                "blockType": "guard",
+                "parentId": "edge-0",
+                "properties": {
+                  "params": {},
+                  "type": "condition",
                 },
-                "guard": "block-0",
-                "internal": true,
+                "sourceId": "condition",
+                "uniqueId": "block-0",
               },
-              "source": "state-1",
-              "targets": [
-                "state-2",
-              ],
-              "type": "edge",
-              "uniqueId": "edge-0",
             },
+            "data": {
+              "context": {},
+            },
+            "edges": {
+              "edge-0": {
+                "data": {
+                  "actions": [],
+                  "description": undefined,
+                  "eventTypeData": {
+                    "eventType": "EV",
+                    "type": "named",
+                  },
+                  "guard": "block-0",
+                  "internal": true,
+                },
+                "source": "state-1",
+                "targets": [
+                  "state-2",
+                ],
+                "type": "edge",
+                "uniqueId": "edge-0",
+              },
+            },
+            "implementations": {
+              "actions": {},
+              "actors": {},
+              "guards": {
+                "condition": {
+                  "id": "condition",
+                  "name": "condition",
+                  "type": "guard",
+                },
+              },
+            },
+            "nodes": {
+              "state-0": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": "foo",
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": undefined,
+                "type": "node",
+                "uniqueId": "state-0",
+              },
+              "state-1": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": "state-0",
+                "type": "node",
+                "uniqueId": "state-1",
+              },
+              "state-2": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": "state-0",
+                "type": "node",
+                "uniqueId": "state-2",
+              },
+            },
+            "root": "state-0",
           },
-          "implementations": {
-            "actions": {},
-            "actors": {},
-            "guards": {
-              "condition": {
-                "id": "condition",
-                "name": "condition",
-                "type": "guard",
-              },
-            },
-          },
-          "nodes": {
-            "state-0": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": "foo",
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
-              },
-              "parentId": undefined,
-              "type": "node",
-              "uniqueId": "state-0",
-            },
-            "state-1": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
-              },
-              "parentId": "state-0",
-              "type": "node",
-              "uniqueId": "state-1",
-            },
-            "state-2": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
-              },
-              "parentId": "state-0",
-              "type": "node",
-              "uniqueId": "state-2",
-            },
-          },
-          "root": "state-0",
-        },
-        [],
-      ],
-    ]
-  `);
+          [],
+        ],
+      ]
+    `);
 });
 test('should extract guard (inline)', async () => {
   const tmpPath = await testdir({
@@ -159,111 +159,111 @@ test('should extract guard (inline)', async () => {
   const project = await createTestProject(tmpPath);
   expect(replaceUniqueIds(project.extractMachines('index.ts')))
     .toMatchInlineSnapshot(`
-    [
       [
-        {
-          "blocks": {
-            "block-0": {
-              "blockType": "guard",
-              "parentId": "state-1",
-              "properties": {
-                "params": {},
-                "type": "inline:guard-0",
-              },
-              "sourceId": "inline:guard-0",
-              "uniqueId": "block-0",
-            },
-          },
-          "data": {
-            "context": {},
-          },
-          "edges": {
-            "edge-0": {
-              "data": {
-                "actions": [],
-                "description": undefined,
-                "eventTypeData": {
-                  "eventType": "EV",
-                  "type": "named",
+        [
+          {
+            "blocks": {
+              "block-0": {
+                "blockType": "guard",
+                "parentId": "edge-0",
+                "properties": {
+                  "params": {},
+                  "type": "inline:guard-0",
                 },
-                "guard": "block-0",
-                "internal": true,
+                "sourceId": "inline:guard-0",
+                "uniqueId": "block-0",
               },
-              "source": "state-1",
-              "targets": [
-                "state-2",
-              ],
-              "type": "edge",
-              "uniqueId": "edge-0",
             },
+            "data": {
+              "context": {},
+            },
+            "edges": {
+              "edge-0": {
+                "data": {
+                  "actions": [],
+                  "description": undefined,
+                  "eventTypeData": {
+                    "eventType": "EV",
+                    "type": "named",
+                  },
+                  "guard": "block-0",
+                  "internal": true,
+                },
+                "source": "state-1",
+                "targets": [
+                  "state-2",
+                ],
+                "type": "edge",
+                "uniqueId": "edge-0",
+              },
+            },
+            "implementations": {
+              "actions": {},
+              "actors": {},
+              "guards": {
+                "inline:guard-0": {
+                  "id": "inline:guard-0",
+                  "name": "inline:guard-0",
+                  "type": "guard",
+                },
+              },
+            },
+            "nodes": {
+              "state-0": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": "foo",
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": undefined,
+                "type": "node",
+                "uniqueId": "state-0",
+              },
+              "state-1": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": "state-0",
+                "type": "node",
+                "uniqueId": "state-1",
+              },
+              "state-2": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": "state-0",
+                "type": "node",
+                "uniqueId": "state-2",
+              },
+            },
+            "root": "state-0",
           },
-          "implementations": {
-            "actions": {},
-            "actors": {},
-            "guards": {
-              "inline:guard-0": {
-                "id": "inline:guard-0",
-                "name": "inline:guard-0",
-                "type": "guard",
-              },
-            },
-          },
-          "nodes": {
-            "state-0": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": "foo",
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
-              },
-              "parentId": undefined,
-              "type": "node",
-              "uniqueId": "state-0",
-            },
-            "state-1": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
-              },
-              "parentId": "state-0",
-              "type": "node",
-              "uniqueId": "state-1",
-            },
-            "state-2": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
-              },
-              "parentId": "state-0",
-              "type": "node",
-              "uniqueId": "state-2",
-            },
-          },
-          "root": "state-0",
-        },
-        [],
-      ],
-    ]
-  `);
+          [],
+        ],
+      ]
+    `);
 });
 test('should extract parameterized guards', async () => {
   const tmpPath = await testdir({
@@ -293,111 +293,111 @@ test('should extract parameterized guards', async () => {
   const project = await createTestProject(tmpPath);
   expect(replaceUniqueIds(project.extractMachines('index.ts')))
     .toMatchInlineSnapshot(`
-    [
       [
-        {
-          "blocks": {
-            "block-0": {
-              "blockType": "guard",
-              "parentId": "state-1",
-              "properties": {
-                "params": {},
-                "type": "condition",
-              },
-              "sourceId": "condition",
-              "uniqueId": "block-0",
-            },
-          },
-          "data": {
-            "context": {},
-          },
-          "edges": {
-            "edge-0": {
-              "data": {
-                "actions": [],
-                "description": undefined,
-                "eventTypeData": {
-                  "eventType": "EV",
-                  "type": "named",
+        [
+          {
+            "blocks": {
+              "block-0": {
+                "blockType": "guard",
+                "parentId": "edge-0",
+                "properties": {
+                  "params": {},
+                  "type": "condition",
                 },
-                "guard": "block-0",
-                "internal": true,
+                "sourceId": "condition",
+                "uniqueId": "block-0",
               },
-              "source": "state-1",
-              "targets": [
-                "state-2",
-              ],
-              "type": "edge",
-              "uniqueId": "edge-0",
             },
+            "data": {
+              "context": {},
+            },
+            "edges": {
+              "edge-0": {
+                "data": {
+                  "actions": [],
+                  "description": undefined,
+                  "eventTypeData": {
+                    "eventType": "EV",
+                    "type": "named",
+                  },
+                  "guard": "block-0",
+                  "internal": true,
+                },
+                "source": "state-1",
+                "targets": [
+                  "state-2",
+                ],
+                "type": "edge",
+                "uniqueId": "edge-0",
+              },
+            },
+            "implementations": {
+              "actions": {},
+              "actors": {},
+              "guards": {
+                "condition": {
+                  "id": "condition",
+                  "name": "condition",
+                  "type": "guard",
+                },
+              },
+            },
+            "nodes": {
+              "state-0": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": "foo",
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": undefined,
+                "type": "node",
+                "uniqueId": "state-0",
+              },
+              "state-1": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": "state-0",
+                "type": "node",
+                "uniqueId": "state-1",
+              },
+              "state-2": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": "state-0",
+                "type": "node",
+                "uniqueId": "state-2",
+              },
+            },
+            "root": "state-0",
           },
-          "implementations": {
-            "actions": {},
-            "actors": {},
-            "guards": {
-              "condition": {
-                "id": "condition",
-                "name": "condition",
-                "type": "guard",
-              },
-            },
-          },
-          "nodes": {
-            "state-0": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": "foo",
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
-              },
-              "parentId": undefined,
-              "type": "node",
-              "uniqueId": "state-0",
-            },
-            "state-1": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
-              },
-              "parentId": "state-0",
-              "type": "node",
-              "uniqueId": "state-1",
-            },
-            "state-2": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
-              },
-              "parentId": "state-0",
-              "type": "node",
-              "uniqueId": "state-2",
-            },
-          },
-          "root": "state-0",
-        },
-        [],
-      ],
-    ]
-  `);
+          [],
+        ],
+      ]
+    `);
 });
 test('should extract higher order guards as inline', async () => {
   const tmpPath = await testdir({
@@ -425,111 +425,111 @@ test('should extract higher order guards as inline', async () => {
   const project = await createTestProject(tmpPath);
   expect(replaceUniqueIds(project.extractMachines('index.ts')))
     .toMatchInlineSnapshot(`
-    [
       [
-        {
-          "blocks": {
-            "block-0": {
-              "blockType": "guard",
-              "parentId": "state-1",
-              "properties": {
-                "params": {},
-                "type": "inline:guard-0",
-              },
-              "sourceId": "inline:guard-0",
-              "uniqueId": "block-0",
-            },
-          },
-          "data": {
-            "context": {},
-          },
-          "edges": {
-            "edge-0": {
-              "data": {
-                "actions": [],
-                "description": undefined,
-                "eventTypeData": {
-                  "eventType": "EV",
-                  "type": "named",
+        [
+          {
+            "blocks": {
+              "block-0": {
+                "blockType": "guard",
+                "parentId": "edge-0",
+                "properties": {
+                  "params": {},
+                  "type": "inline:guard-0",
                 },
-                "guard": "block-0",
-                "internal": true,
+                "sourceId": "inline:guard-0",
+                "uniqueId": "block-0",
               },
-              "source": "state-1",
-              "targets": [
-                "state-2",
-              ],
-              "type": "edge",
-              "uniqueId": "edge-0",
             },
+            "data": {
+              "context": {},
+            },
+            "edges": {
+              "edge-0": {
+                "data": {
+                  "actions": [],
+                  "description": undefined,
+                  "eventTypeData": {
+                    "eventType": "EV",
+                    "type": "named",
+                  },
+                  "guard": "block-0",
+                  "internal": true,
+                },
+                "source": "state-1",
+                "targets": [
+                  "state-2",
+                ],
+                "type": "edge",
+                "uniqueId": "edge-0",
+              },
+            },
+            "implementations": {
+              "actions": {},
+              "actors": {},
+              "guards": {
+                "inline:guard-0": {
+                  "id": "inline:guard-0",
+                  "name": "inline:guard-0",
+                  "type": "guard",
+                },
+              },
+            },
+            "nodes": {
+              "state-0": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": "foo",
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": undefined,
+                "type": "node",
+                "uniqueId": "state-0",
+              },
+              "state-1": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": "state-0",
+                "type": "node",
+                "uniqueId": "state-1",
+              },
+              "state-2": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": "state-0",
+                "type": "node",
+                "uniqueId": "state-2",
+              },
+            },
+            "root": "state-0",
           },
-          "implementations": {
-            "actions": {},
-            "actors": {},
-            "guards": {
-              "inline:guard-0": {
-                "id": "inline:guard-0",
-                "name": "inline:guard-0",
-                "type": "guard",
-              },
-            },
-          },
-          "nodes": {
-            "state-0": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": "foo",
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
-              },
-              "parentId": undefined,
-              "type": "node",
-              "uniqueId": "state-0",
-            },
-            "state-1": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
-              },
-              "parentId": "state-0",
-              "type": "node",
-              "uniqueId": "state-1",
-            },
-            "state-2": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
-              },
-              "parentId": "state-0",
-              "type": "node",
-              "uniqueId": "state-2",
-            },
-          },
-          "root": "state-0",
-        },
-        [],
-      ],
-    ]
-  `);
+          [],
+        ],
+      ]
+    `);
 });
 test('should extract multiple guards', async () => {
   const tmpPath = await testdir({
@@ -572,193 +572,193 @@ test('should extract multiple guards', async () => {
   const project = await createTestProject(tmpPath);
   expect(replaceUniqueIds(project.extractMachines('index.ts')))
     .toMatchInlineSnapshot(`
-    [
       [
-        {
-          "blocks": {
-            "block-0": {
-              "blockType": "guard",
-              "parentId": "state-1",
-              "properties": {
-                "params": {},
-                "type": "condition1",
-              },
-              "sourceId": "condition1",
-              "uniqueId": "block-0",
-            },
-            "block-1": {
-              "blockType": "guard",
-              "parentId": "state-2",
-              "properties": {
-                "params": {},
-                "type": "condition2",
-              },
-              "sourceId": "condition2",
-              "uniqueId": "block-1",
-            },
-            "block-2": {
-              "blockType": "guard",
-              "parentId": "state-3",
-              "properties": {
-                "params": {},
-                "type": "condition3",
-              },
-              "sourceId": "condition3",
-              "uniqueId": "block-2",
-            },
-          },
-          "data": {
-            "context": {},
-          },
-          "edges": {
-            "edge-0": {
-              "data": {
-                "actions": [],
-                "description": undefined,
-                "eventTypeData": {
-                  "eventType": "EV1",
-                  "type": "named",
+        [
+          {
+            "blocks": {
+              "block-0": {
+                "blockType": "guard",
+                "parentId": "edge-0",
+                "properties": {
+                  "params": {},
+                  "type": "condition1",
                 },
-                "guard": "block-0",
-                "internal": true,
+                "sourceId": "condition1",
+                "uniqueId": "block-0",
               },
-              "source": "state-1",
-              "targets": [
-                "state-2",
-              ],
-              "type": "edge",
-              "uniqueId": "edge-0",
-            },
-            "edge-1": {
-              "data": {
-                "actions": [],
-                "description": undefined,
-                "eventTypeData": {
-                  "eventType": "EV1",
-                  "type": "named",
+              "block-1": {
+                "blockType": "guard",
+                "parentId": "edge-1",
+                "properties": {
+                  "params": {},
+                  "type": "condition2",
                 },
-                "guard": "block-1",
-                "internal": true,
+                "sourceId": "condition2",
+                "uniqueId": "block-1",
               },
-              "source": "state-2",
-              "targets": [
-                "state-3",
-              ],
-              "type": "edge",
-              "uniqueId": "edge-1",
-            },
-            "edge-2": {
-              "data": {
-                "actions": [],
-                "description": undefined,
-                "eventTypeData": {
-                  "eventType": "EV2",
-                  "type": "named",
+              "block-2": {
+                "blockType": "guard",
+                "parentId": "edge-2",
+                "properties": {
+                  "params": {},
+                  "type": "condition3",
                 },
-                "guard": "block-2",
-                "internal": true,
+                "sourceId": "condition3",
+                "uniqueId": "block-2",
               },
-              "source": "state-3",
-              "targets": [
-                "state-1",
-              ],
-              "type": "edge",
-              "uniqueId": "edge-2",
             },
+            "data": {
+              "context": {},
+            },
+            "edges": {
+              "edge-0": {
+                "data": {
+                  "actions": [],
+                  "description": undefined,
+                  "eventTypeData": {
+                    "eventType": "EV1",
+                    "type": "named",
+                  },
+                  "guard": "block-0",
+                  "internal": true,
+                },
+                "source": "state-1",
+                "targets": [
+                  "state-2",
+                ],
+                "type": "edge",
+                "uniqueId": "edge-0",
+              },
+              "edge-1": {
+                "data": {
+                  "actions": [],
+                  "description": undefined,
+                  "eventTypeData": {
+                    "eventType": "EV1",
+                    "type": "named",
+                  },
+                  "guard": "block-1",
+                  "internal": true,
+                },
+                "source": "state-2",
+                "targets": [
+                  "state-3",
+                ],
+                "type": "edge",
+                "uniqueId": "edge-1",
+              },
+              "edge-2": {
+                "data": {
+                  "actions": [],
+                  "description": undefined,
+                  "eventTypeData": {
+                    "eventType": "EV2",
+                    "type": "named",
+                  },
+                  "guard": "block-2",
+                  "internal": true,
+                },
+                "source": "state-3",
+                "targets": [
+                  "state-1",
+                ],
+                "type": "edge",
+                "uniqueId": "edge-2",
+              },
+            },
+            "implementations": {
+              "actions": {},
+              "actors": {},
+              "guards": {
+                "condition1": {
+                  "id": "condition1",
+                  "name": "condition1",
+                  "type": "guard",
+                },
+                "condition2": {
+                  "id": "condition2",
+                  "name": "condition2",
+                  "type": "guard",
+                },
+                "condition3": {
+                  "id": "condition3",
+                  "name": "condition3",
+                  "type": "guard",
+                },
+              },
+            },
+            "nodes": {
+              "state-0": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": "foo",
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": undefined,
+                "type": "node",
+                "uniqueId": "state-0",
+              },
+              "state-1": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": "state-0",
+                "type": "node",
+                "uniqueId": "state-1",
+              },
+              "state-2": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": "state-0",
+                "type": "node",
+                "uniqueId": "state-2",
+              },
+              "state-3": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": "state-0",
+                "type": "node",
+                "uniqueId": "state-3",
+              },
+            },
+            "root": "state-0",
           },
-          "implementations": {
-            "actions": {},
-            "actors": {},
-            "guards": {
-              "condition1": {
-                "id": "condition1",
-                "name": "condition1",
-                "type": "guard",
-              },
-              "condition2": {
-                "id": "condition2",
-                "name": "condition2",
-                "type": "guard",
-              },
-              "condition3": {
-                "id": "condition3",
-                "name": "condition3",
-                "type": "guard",
-              },
-            },
-          },
-          "nodes": {
-            "state-0": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": "foo",
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
-              },
-              "parentId": undefined,
-              "type": "node",
-              "uniqueId": "state-0",
-            },
-            "state-1": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
-              },
-              "parentId": "state-0",
-              "type": "node",
-              "uniqueId": "state-1",
-            },
-            "state-2": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
-              },
-              "parentId": "state-0",
-              "type": "node",
-              "uniqueId": "state-2",
-            },
-            "state-3": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
-              },
-              "parentId": "state-0",
-              "type": "node",
-              "uniqueId": "state-3",
-            },
-          },
-          "root": "state-0",
-        },
-        [],
-      ],
-    ]
-  `);
+          [],
+        ],
+      ]
+    `);
 });
 test('should support XState v4 guard', async () => {
   const tmpPath = await testdir({
@@ -786,111 +786,111 @@ test('should support XState v4 guard', async () => {
   const project = await createTestProject(tmpPath);
   expect(replaceUniqueIds(project.extractMachines('index.ts')))
     .toMatchInlineSnapshot(`
-    [
       [
-        {
-          "blocks": {
-            "block-0": {
-              "blockType": "guard",
-              "parentId": "state-1",
-              "properties": {
-                "params": {},
-                "type": "condition",
-              },
-              "sourceId": "condition",
-              "uniqueId": "block-0",
-            },
-          },
-          "data": {
-            "context": {},
-          },
-          "edges": {
-            "edge-0": {
-              "data": {
-                "actions": [],
-                "description": undefined,
-                "eventTypeData": {
-                  "eventType": "EV",
-                  "type": "named",
+        [
+          {
+            "blocks": {
+              "block-0": {
+                "blockType": "guard",
+                "parentId": "edge-0",
+                "properties": {
+                  "params": {},
+                  "type": "condition",
                 },
-                "guard": "block-0",
-                "internal": true,
+                "sourceId": "condition",
+                "uniqueId": "block-0",
               },
-              "source": "state-1",
-              "targets": [
-                "state-2",
-              ],
-              "type": "edge",
-              "uniqueId": "edge-0",
             },
+            "data": {
+              "context": {},
+            },
+            "edges": {
+              "edge-0": {
+                "data": {
+                  "actions": [],
+                  "description": undefined,
+                  "eventTypeData": {
+                    "eventType": "EV",
+                    "type": "named",
+                  },
+                  "guard": "block-0",
+                  "internal": true,
+                },
+                "source": "state-1",
+                "targets": [
+                  "state-2",
+                ],
+                "type": "edge",
+                "uniqueId": "edge-0",
+              },
+            },
+            "implementations": {
+              "actions": {},
+              "actors": {},
+              "guards": {
+                "condition": {
+                  "id": "condition",
+                  "name": "condition",
+                  "type": "guard",
+                },
+              },
+            },
+            "nodes": {
+              "state-0": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": "foo",
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": undefined,
+                "type": "node",
+                "uniqueId": "state-0",
+              },
+              "state-1": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": "state-0",
+                "type": "node",
+                "uniqueId": "state-1",
+              },
+              "state-2": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": "state-0",
+                "type": "node",
+                "uniqueId": "state-2",
+              },
+            },
+            "root": "state-0",
           },
-          "implementations": {
-            "actions": {},
-            "actors": {},
-            "guards": {
-              "condition": {
-                "id": "condition",
-                "name": "condition",
-                "type": "guard",
-              },
-            },
-          },
-          "nodes": {
-            "state-0": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": "foo",
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
-              },
-              "parentId": undefined,
-              "type": "node",
-              "uniqueId": "state-0",
-            },
-            "state-1": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
-              },
-              "parentId": "state-0",
-              "type": "node",
-              "uniqueId": "state-1",
-            },
-            "state-2": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
-              },
-              "parentId": "state-0",
-              "type": "node",
-              "uniqueId": "state-2",
-            },
-          },
-          "root": "state-0",
-        },
-        [],
-      ],
-    ]
-  `);
+          [],
+        ],
+      ]
+    `);
 });
 test('should raise error if both guard and cond are provided, pick guard over cond and extract transition (cond before guard)', async () => {
   const tmpPath = await testdir({
@@ -925,7 +925,7 @@ test('should raise error if both guard and cond are provided, pick guard over co
             "blocks": {
               "block-0": {
                 "blockType": "guard",
-                "parentId": "state-1",
+                "parentId": "edge-0",
                 "properties": {
                   "params": {},
                   "type": "condition2",
@@ -1063,7 +1063,7 @@ test('should raise error if both guard and cond are provided, pick guard over co
             "blocks": {
               "block-0": {
                 "blockType": "guard",
-                "parentId": "state-1",
+                "parentId": "edge-0",
                 "properties": {
                   "params": {},
                   "type": "condition1",
