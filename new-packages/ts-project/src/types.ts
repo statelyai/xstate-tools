@@ -55,9 +55,6 @@ export type ExtractionError =
       type: 'property_mixed';
     }
   | {
-      type: 'transition_target_unresolved';
-    }
-  | {
       type: 'action_unhandled';
     };
 
