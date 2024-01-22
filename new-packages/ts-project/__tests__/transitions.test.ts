@@ -41,6 +41,7 @@ test('should extract transition to a sibling (direct string)', async () => {
                   },
                   "guard": undefined,
                   "internal": true,
+                  "metaEntries": [],
                 },
                 "source": "state-1",
                 "targets": [
@@ -153,6 +154,7 @@ test('should extract transition to a sibling (string in array)', async () => {
                   },
                   "guard": undefined,
                   "internal": true,
+                  "metaEntries": [],
                 },
                 "source": "state-1",
                 "targets": [
@@ -265,6 +267,7 @@ test('should extract transition to a sibling (direct object with target)', async
                   },
                   "guard": undefined,
                   "internal": true,
+                  "metaEntries": [],
                 },
                 "source": "state-1",
                 "targets": [
@@ -377,6 +380,7 @@ test('should extract transition to a sibling (object with target in array)', asy
                   },
                   "guard": undefined,
                   "internal": true,
+                  "metaEntries": [],
                 },
                 "source": "state-1",
                 "targets": [
@@ -491,6 +495,7 @@ test('should extract transition to a child', async () => {
                   },
                   "guard": undefined,
                   "internal": true,
+                  "metaEntries": [],
                 },
                 "source": "state-1",
                 "targets": [
@@ -605,6 +610,7 @@ test('should extract transition to an ID', async () => {
                   },
                   "guard": undefined,
                   "internal": true,
+                  "metaEntries": [],
                 },
                 "source": "state-1",
                 "targets": [
@@ -718,6 +724,7 @@ test('should extract multiple transitions (array of strings)', async () => {
                   },
                   "guard": undefined,
                   "internal": true,
+                  "metaEntries": [],
                 },
                 "source": "state-1",
                 "targets": [
@@ -736,6 +743,7 @@ test('should extract multiple transitions (array of strings)', async () => {
                   },
                   "guard": undefined,
                   "internal": true,
+                  "metaEntries": [],
                 },
                 "source": "state-1",
                 "targets": [
@@ -865,6 +873,7 @@ test('should extract multiple transitions (array of objects)', async () => {
                   },
                   "guard": undefined,
                   "internal": true,
+                  "metaEntries": [],
                 },
                 "source": "state-1",
                 "targets": [
@@ -883,6 +892,7 @@ test('should extract multiple transitions (array of objects)', async () => {
                   },
                   "guard": undefined,
                   "internal": true,
+                  "metaEntries": [],
                 },
                 "source": "state-1",
                 "targets": [
@@ -1012,6 +1022,7 @@ test('should extract multiple transitions (mixed array)', async () => {
                   },
                   "guard": undefined,
                   "internal": true,
+                  "metaEntries": [],
                 },
                 "source": "state-1",
                 "targets": [
@@ -1030,6 +1041,7 @@ test('should extract multiple transitions (mixed array)', async () => {
                   },
                   "guard": undefined,
                   "internal": true,
+                  "metaEntries": [],
                 },
                 "source": "state-1",
                 "targets": [
@@ -1172,6 +1184,7 @@ test('should extract transition with multiple targets (array of strings)', async
                   },
                   "guard": undefined,
                   "internal": true,
+                  "metaEntries": [],
                 },
                 "source": "state-0",
                 "targets": [
@@ -1348,6 +1361,7 @@ test('should extract forbidden transition (undefined)', async () => {
                   },
                   "guard": undefined,
                   "internal": true,
+                  "metaEntries": [],
                 },
                 "source": "state-1",
                 "targets": [],
@@ -1441,6 +1455,7 @@ test('should extract forbidden transition (null)', async () => {
                   },
                   "guard": undefined,
                   "internal": true,
+                  "metaEntries": [],
                 },
                 "source": "state-1",
                 "targets": [],
@@ -1543,6 +1558,7 @@ test('should extract deep sibling transition', async () => {
                   },
                   "guard": undefined,
                   "internal": true,
+                  "metaEntries": [],
                 },
                 "source": "state-1",
                 "targets": [
@@ -1693,6 +1709,7 @@ test('should extract deep descendant transition', async () => {
                   },
                   "guard": undefined,
                   "internal": true,
+                  "metaEntries": [],
                 },
                 "source": "state-1",
                 "targets": [
@@ -1830,6 +1847,7 @@ test('should extract transition to a deep child of an ID target', async () => {
                   },
                   "guard": undefined,
                   "internal": true,
+                  "metaEntries": [],
                 },
                 "source": "state-1",
                 "targets": [
@@ -1973,6 +1991,7 @@ test('should extract a wildcard transition', async () => {
                   },
                   "guard": undefined,
                   "internal": true,
+                  "metaEntries": [],
                 },
                 "source": "state-1",
                 "targets": [
@@ -2087,6 +2106,7 @@ test('should extract transition description (single-line)', async () => {
                   },
                   "guard": undefined,
                   "internal": true,
+                  "metaEntries": [],
                 },
                 "source": "state-1",
                 "targets": [],
@@ -2178,6 +2198,7 @@ test('should extract an always transition (direct string)', async () => {
                   },
                   "guard": undefined,
                   "internal": true,
+                  "metaEntries": [],
                 },
                 "source": "state-1",
                 "targets": [
@@ -2303,6 +2324,7 @@ test('should extract invoke.onDone transition (with invoke.id)', async () => {
                   },
                   "guard": undefined,
                   "internal": true,
+                  "metaEntries": [],
                 },
                 "source": "state-1",
                 "targets": [
@@ -2435,6 +2457,7 @@ test('should extract invoke.onDone transition (without invoke.id)', async () => 
                   },
                   "guard": undefined,
                   "internal": true,
+                  "metaEntries": [],
                 },
                 "source": "state-1",
                 "targets": [
@@ -2582,6 +2605,7 @@ test('should extract invoke.onDone action', async () => {
                   },
                   "guard": undefined,
                   "internal": true,
+                  "metaEntries": [],
                 },
                 "source": "state-1",
                 "targets": [
@@ -2721,6 +2745,7 @@ test('should extract invoke.onError transition (with invoke.id)', async () => {
                   },
                   "guard": undefined,
                   "internal": true,
+                  "metaEntries": [],
                 },
                 "source": "state-1",
                 "targets": [
@@ -2853,6 +2878,7 @@ test('should extract invoke.onError transition (without invoke.id)', async () =>
                   },
                   "guard": undefined,
                   "internal": true,
+                  "metaEntries": [],
                 },
                 "source": "state-1",
                 "targets": [
@@ -2981,6 +3007,7 @@ test('should extract transition description (multi-line)', async () => {
                   },
                   "guard": undefined,
                   "internal": true,
+                  "metaEntries": [],
                 },
                 "source": "state-1",
                 "targets": [],
@@ -3070,126 +3097,126 @@ test("should extract transition.meta when it's a javascript object", async () =>
 
   expect(replaceUniqueIds(project.extractMachines('index.ts')))
     .toMatchInlineSnapshot(`
-    [
       [
-        {
-          "blocks": {},
-          "data": {
-            "context": {},
-          },
-          "edges": {
-            "edge-0": {
-              "data": {
-                "actions": [],
-                "description": undefined,
-                "eventTypeData": {
-                  "eventType": "EV",
-                  "type": "named",
-                },
-                "guard": undefined,
-                "internal": true,
-                "metaEntries": [
-                  [
-                    "str",
-                    "some string",
-                  ],
-                  [
-                    "num",
-                    123,
-                  ],
-                  [
-                    "bool",
-                    true,
-                  ],
-                  [
-                    "arr",
+        [
+          {
+            "blocks": {},
+            "data": {
+              "context": {},
+            },
+            "edges": {
+              "edge-0": {
+                "data": {
+                  "actions": [],
+                  "description": undefined,
+                  "eventTypeData": {
+                    "eventType": "EV",
+                    "type": "named",
+                  },
+                  "guard": undefined,
+                  "internal": true,
+                  "metaEntries": [
                     [
-                      1,
-                      2,
-                      3,
+                      "str",
+                      "some string",
+                    ],
+                    [
+                      "num",
+                      123,
+                    ],
+                    [
+                      "bool",
+                      true,
+                    ],
+                    [
+                      "arr",
+                      [
+                        1,
+                        2,
+                        3,
+                      ],
+                    ],
+                    [
+                      "obj",
+                      {
+                        "foo": "bar",
+                      },
+                    ],
+                    [
+                      "null",
+                      null,
                     ],
                   ],
-                  [
-                    "obj",
-                    {
-                      "foo": "bar",
-                    },
-                  ],
-                  [
-                    "null",
-                    null,
-                  ],
+                },
+                "source": "state-1",
+                "targets": [
+                  "state-2",
                 ],
+                "type": "edge",
+                "uniqueId": "edge-0",
               },
-              "source": "state-1",
-              "targets": [
-                "state-2",
-              ],
-              "type": "edge",
-              "uniqueId": "edge-0",
             },
+            "implementations": {
+              "actions": {},
+              "actors": {},
+              "guards": {},
+            },
+            "nodes": {
+              "state-0": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": "foo",
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": undefined,
+                "type": "node",
+                "uniqueId": "state-0",
+              },
+              "state-1": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": "state-0",
+                "type": "node",
+                "uniqueId": "state-1",
+              },
+              "state-2": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": "state-0",
+                "type": "node",
+                "uniqueId": "state-2",
+              },
+            },
+            "root": "state-0",
           },
-          "implementations": {
-            "actions": {},
-            "actors": {},
-            "guards": {},
-          },
-          "nodes": {
-            "state-0": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": "foo",
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
-              },
-              "parentId": undefined,
-              "type": "node",
-              "uniqueId": "state-0",
-            },
-            "state-1": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
-              },
-              "parentId": "state-0",
-              "type": "node",
-              "uniqueId": "state-1",
-            },
-            "state-2": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
-              },
-              "parentId": "state-0",
-              "type": "node",
-              "uniqueId": "state-2",
-            },
-          },
-          "root": "state-0",
-        },
-        [],
-      ],
-    ]
-  `);
+          [],
+        ],
+      ]
+    `);
 });
 test("should extract transition.meta when it's a javascript object containing nested array items", async () => {
   const tmpPath = await testdir({
