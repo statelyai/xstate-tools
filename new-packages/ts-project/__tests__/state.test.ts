@@ -1794,7 +1794,7 @@ test('should raise error when state.meta contains any value other than a plain j
           },
           [
             {
-              "type": "state_property_unhandled",
+              "type": "property_unhandled",
             },
           ],
         ],

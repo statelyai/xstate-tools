@@ -775,6 +775,7 @@ test('should extract a transition action', async () => {
                   },
                   "guard": undefined,
                   "internal": true,
+                  "metaEntries": [],
                 },
                 "source": "state-0",
                 "targets": [],
@@ -913,77 +914,78 @@ test('should not register multiple transition actions with duplicated actions pr
   const project = await createTestProject(tmpPath);
   expect(replaceUniqueIds(project.extractMachines('index.ts')))
     .toMatchInlineSnapshot(`
+    [
       [
-        [
-          {
-            "blocks": {
-              "block-0": {
-                "blockType": "action",
-                "parentId": "edge-0",
-                "properties": {
-                  "params": {},
-                  "type": "callAnders",
-                },
-                "sourceId": "callAnders",
-                "uniqueId": "block-0",
+        {
+          "blocks": {
+            "block-0": {
+              "blockType": "action",
+              "parentId": "edge-0",
+              "properties": {
+                "params": {},
+                "type": "callAnders",
               },
+              "sourceId": "callAnders",
+              "uniqueId": "block-0",
             },
-            "data": {
-              "context": {},
-            },
-            "edges": {
-              "edge-0": {
-                "data": {
-                  "actions": [
-                    "block-0",
-                  ],
-                  "description": undefined,
-                  "eventTypeData": {
-                    "eventType": "EVENT",
-                    "type": "named",
-                  },
-                  "guard": undefined,
-                  "internal": true,
-                },
-                "source": "state-0",
-                "targets": [],
-                "type": "edge",
-                "uniqueId": "edge-0",
-              },
-            },
-            "implementations": {
-              "actions": {
-                "callAnders": {
-                  "id": "callAnders",
-                  "name": "callAnders",
-                  "type": "action",
-                },
-              },
-              "actors": {},
-              "guards": {},
-            },
-            "nodes": {
-              "state-0": {
-                "data": {
-                  "description": undefined,
-                  "entry": [],
-                  "exit": [],
-                  "history": undefined,
-                  "initial": undefined,
-                  "invoke": [],
-                  "metaEntries": [],
-                  "tags": [],
-                  "type": "normal",
-                },
-                "parentId": undefined,
-                "type": "node",
-                "uniqueId": "state-0",
-              },
-            },
-            "root": "state-0",
           },
-          [],
-        ],
-      ]
-    `);
+          "data": {
+            "context": {},
+          },
+          "edges": {
+            "edge-0": {
+              "data": {
+                "actions": [
+                  "block-0",
+                ],
+                "description": undefined,
+                "eventTypeData": {
+                  "eventType": "EVENT",
+                  "type": "named",
+                },
+                "guard": undefined,
+                "internal": true,
+                "metaEntries": [],
+              },
+              "source": "state-0",
+              "targets": [],
+              "type": "edge",
+              "uniqueId": "edge-0",
+            },
+          },
+          "implementations": {
+            "actions": {
+              "callAnders": {
+                "id": "callAnders",
+                "name": "callAnders",
+                "type": "action",
+              },
+            },
+            "actors": {},
+            "guards": {},
+          },
+          "nodes": {
+            "state-0": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": undefined,
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": "normal",
+              },
+              "parentId": undefined,
+              "type": "node",
+              "uniqueId": "state-0",
+            },
+          },
+          "root": "state-0",
+        },
+        [],
+      ],
+    ]
+  `);
 });

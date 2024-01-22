@@ -56,6 +56,7 @@ test('should extract guard from transition (string)', async () => {
                   },
                   "guard": "block-0",
                   "internal": true,
+                  "metaEntries": [],
                 },
                 "source": "state-1",
                 "targets": [
@@ -188,6 +189,7 @@ test('should extract guard (inline)', async () => {
                   },
                   "guard": "block-0",
                   "internal": true,
+                  "metaEntries": [],
                 },
                 "source": "state-1",
                 "targets": [
@@ -322,6 +324,7 @@ test('should extract parameterized guards', async () => {
                   },
                   "guard": "block-0",
                   "internal": true,
+                  "metaEntries": [],
                 },
                 "source": "state-1",
                 "targets": [
@@ -454,6 +457,7 @@ test('should extract higher order guards as inline', async () => {
                   },
                   "guard": "block-0",
                   "internal": true,
+                  "metaEntries": [],
                 },
                 "source": "state-1",
                 "targets": [
@@ -621,6 +625,7 @@ test('should extract multiple guards', async () => {
                   },
                   "guard": "block-0",
                   "internal": true,
+                  "metaEntries": [],
                 },
                 "source": "state-1",
                 "targets": [
@@ -639,6 +644,7 @@ test('should extract multiple guards', async () => {
                   },
                   "guard": "block-1",
                   "internal": true,
+                  "metaEntries": [],
                 },
                 "source": "state-2",
                 "targets": [
@@ -657,6 +663,7 @@ test('should extract multiple guards', async () => {
                   },
                   "guard": "block-2",
                   "internal": true,
+                  "metaEntries": [],
                 },
                 "source": "state-3",
                 "targets": [
@@ -815,6 +822,7 @@ test('should support XState v4 guard', async () => {
                   },
                   "guard": "block-0",
                   "internal": true,
+                  "metaEntries": [],
                 },
                 "source": "state-1",
                 "targets": [
@@ -948,6 +956,7 @@ test('should raise error if both guard and cond are provided, pick guard over co
                   },
                   "guard": "block-0",
                   "internal": true,
+                  "metaEntries": [],
                 },
                 "source": "state-1",
                 "targets": [
@@ -1086,6 +1095,7 @@ test('should raise error if both guard and cond are provided, pick guard over co
                   },
                   "guard": "block-0",
                   "internal": true,
+                  "metaEntries": [],
                 },
                 "source": "state-1",
                 "targets": [
@@ -1194,98 +1204,99 @@ test('should raise error for parameterized guard is missing type property', asyn
   const project = await createTestProject(tmpPath);
   expect(replaceUniqueIds(project.extractMachines('index.ts')))
     .toMatchInlineSnapshot(`
-    [
       [
-        {
-          "blocks": {},
-          "data": {
-            "context": {},
-          },
-          "edges": {
-            "edge-0": {
-              "data": {
-                "actions": [],
-                "description": undefined,
-                "eventTypeData": {
-                  "eventType": "EV",
-                  "type": "named",
-                },
-                "guard": undefined,
-                "internal": true,
-              },
-              "source": "state-1",
-              "targets": [
-                "state-2",
-              ],
-              "type": "edge",
-              "uniqueId": "edge-0",
-            },
-          },
-          "implementations": {
-            "actions": {},
-            "actors": {},
-            "guards": {},
-          },
-          "nodes": {
-            "state-0": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": "foo",
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
-              },
-              "parentId": undefined,
-              "type": "node",
-              "uniqueId": "state-0",
-            },
-            "state-1": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
-              },
-              "parentId": "state-0",
-              "type": "node",
-              "uniqueId": "state-1",
-            },
-            "state-2": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
-              },
-              "parentId": "state-0",
-              "type": "node",
-              "uniqueId": "state-2",
-            },
-          },
-          "root": "state-0",
-        },
         [
           {
-            "type": "transition_property_unhandled",
+            "blocks": {},
+            "data": {
+              "context": {},
+            },
+            "edges": {
+              "edge-0": {
+                "data": {
+                  "actions": [],
+                  "description": undefined,
+                  "eventTypeData": {
+                    "eventType": "EV",
+                    "type": "named",
+                  },
+                  "guard": undefined,
+                  "internal": true,
+                  "metaEntries": [],
+                },
+                "source": "state-1",
+                "targets": [
+                  "state-2",
+                ],
+                "type": "edge",
+                "uniqueId": "edge-0",
+              },
+            },
+            "implementations": {
+              "actions": {},
+              "actors": {},
+              "guards": {},
+            },
+            "nodes": {
+              "state-0": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": "foo",
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": undefined,
+                "type": "node",
+                "uniqueId": "state-0",
+              },
+              "state-1": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": "state-0",
+                "type": "node",
+                "uniqueId": "state-1",
+              },
+              "state-2": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": "state-0",
+                "type": "node",
+                "uniqueId": "state-2",
+              },
+            },
+            "root": "state-0",
           },
+          [
+            {
+              "type": "transition_property_unhandled",
+            },
+          ],
         ],
-      ],
-    ]
-  `);
+      ]
+    `);
 });
 test('should raise error for parameterized guard with invalid type property', async () => {
   const tmpPath = await testdir({
@@ -1315,96 +1326,97 @@ test('should raise error for parameterized guard with invalid type property', as
   const project = await createTestProject(tmpPath);
   expect(replaceUniqueIds(project.extractMachines('index.ts')))
     .toMatchInlineSnapshot(`
-    [
       [
-        {
-          "blocks": {},
-          "data": {
-            "context": {},
-          },
-          "edges": {
-            "edge-0": {
-              "data": {
-                "actions": [],
-                "description": undefined,
-                "eventTypeData": {
-                  "eventType": "EV",
-                  "type": "named",
-                },
-                "guard": undefined,
-                "internal": true,
-              },
-              "source": "state-1",
-              "targets": [
-                "state-2",
-              ],
-              "type": "edge",
-              "uniqueId": "edge-0",
-            },
-          },
-          "implementations": {
-            "actions": {},
-            "actors": {},
-            "guards": {},
-          },
-          "nodes": {
-            "state-0": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": "foo",
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
-              },
-              "parentId": undefined,
-              "type": "node",
-              "uniqueId": "state-0",
-            },
-            "state-1": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
-              },
-              "parentId": "state-0",
-              "type": "node",
-              "uniqueId": "state-1",
-            },
-            "state-2": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
-              },
-              "parentId": "state-0",
-              "type": "node",
-              "uniqueId": "state-2",
-            },
-          },
-          "root": "state-0",
-        },
         [
           {
-            "type": "transition_property_unhandled",
+            "blocks": {},
+            "data": {
+              "context": {},
+            },
+            "edges": {
+              "edge-0": {
+                "data": {
+                  "actions": [],
+                  "description": undefined,
+                  "eventTypeData": {
+                    "eventType": "EV",
+                    "type": "named",
+                  },
+                  "guard": undefined,
+                  "internal": true,
+                  "metaEntries": [],
+                },
+                "source": "state-1",
+                "targets": [
+                  "state-2",
+                ],
+                "type": "edge",
+                "uniqueId": "edge-0",
+              },
+            },
+            "implementations": {
+              "actions": {},
+              "actors": {},
+              "guards": {},
+            },
+            "nodes": {
+              "state-0": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": "foo",
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": undefined,
+                "type": "node",
+                "uniqueId": "state-0",
+              },
+              "state-1": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": "state-0",
+                "type": "node",
+                "uniqueId": "state-1",
+              },
+              "state-2": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": "state-0",
+                "type": "node",
+                "uniqueId": "state-2",
+              },
+            },
+            "root": "state-0",
           },
+          [
+            {
+              "type": "transition_property_unhandled",
+            },
+          ],
         ],
-      ],
-    ]
-  `);
+      ]
+    `);
 });
