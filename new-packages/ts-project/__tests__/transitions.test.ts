@@ -4062,7 +4062,7 @@ test('should extract delayed transition (identifier delay)', async () => {
     ]
   `);
 });
-test('should extract after transition (string delay)', async () => {
+test('should extract after transition (string with whitespace delay)', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
