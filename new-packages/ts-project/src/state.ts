@@ -269,6 +269,7 @@ function extractEdgeGroup(
         });
 
         let seenGuardProp = false;
+        let seenInternalProp = false;
 
         forEachStaticProperty(ctx, ts, element, (prop, key) => {
           switch (key) {
@@ -348,6 +349,41 @@ function extractEdgeGroup(
               registerActionBlocks(ctx, blocks, edge.data.actions);
               return;
             }
+            case 'internal': {
+              if (seenInternalProp) {
+                // `reenter` was already seen
+                ctx.errors.push({
+                  type: 'property_mixed',
+                });
+                return;
+              }
+              if (findProperty(ctx, ts, element, 'reenter')) {
+                seenInternalProp = true;
+                return;
+              }
+              const value = getJsonValue(ctx, ts, prop.initializer);
+
+              if (typeof value === 'boolean') {
+                edge.data.internal = value;
+                return;
+              }
+              return;
+            }
+            case 'reenter':
+              if (seenInternalProp) {
+                ctx.errors.push({
+                  type: 'property_mixed',
+                });
+              }
+              seenInternalProp = true;
+
+              const value = getJsonValue(ctx, ts, prop.initializer);
+
+              if (typeof value === 'boolean') {
+                edge.data.internal = !value;
+                return;
+              }
+              return;
             case 'description': {
               edge.data.description = ts.isStringLiteralLike(prop.initializer)
                 ? prop.initializer.text
@@ -360,6 +396,16 @@ function extractEdgeGroup(
             }
           }
         });
+
+        if (edge.data.internal === undefined) {
+          if (ctx.version === 'v4') {
+            edge.data.internal = targets
+              ? targets.some((t) => t.startsWith('.'))
+              : true;
+          } else {
+            edge.data.internal = true;
+          }
+        }
 
         return [edge, targets];
       }

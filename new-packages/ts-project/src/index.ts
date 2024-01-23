@@ -5,6 +5,7 @@ import {
   ExtractionError,
   ExtractorDigraphDef,
   TreeNode,
+  XStateVersion,
 } from './types';
 
 function findCreateMachineCalls(
@@ -104,31 +105,10 @@ function resolveTargets(ctx: ExtractionContext) {
 }
 
 function extractMachineConfig(
+  ctx: ExtractionContext,
   ts: typeof import('typescript'),
   createMachineCall: CallExpression,
-  sourceFile: SourceFile,
 ): readonly [ExtractorDigraphDef | undefined, ExtractionError[]] {
-  const ctx: ExtractionContext = {
-    sourceFile,
-    errors: [],
-    digraph: {
-      nodes: {},
-      edges: {},
-      blocks: {},
-      implementations: {
-        actions: {},
-        actors: {},
-        guards: {},
-      },
-      data: {
-        context: {},
-      },
-    },
-    treeNodes: {},
-    idMap: {},
-    originalTargets: {},
-  };
-
   const rootState = createMachineCall.arguments[0];
   const rootNode = extractState(ctx, ts, rootState, undefined);
 
@@ -154,6 +134,7 @@ function extractMachineConfig(
 export function createProject(
   ts: typeof import('typescript'),
   tsProgram: Program,
+  { version = 'v5' }: { version?: XStateVersion },
 ) {
   return {
     extractMachines(fileName: string) {
@@ -162,7 +143,28 @@ export function createProject(
         return [];
       }
       return findCreateMachineCalls(ts, sourceFile).map((call) => {
-        return extractMachineConfig(ts, call, sourceFile);
+        const ctx: ExtractionContext = {
+          sourceFile,
+          version,
+          errors: [],
+          digraph: {
+            nodes: {},
+            edges: {},
+            blocks: {},
+            implementations: {
+              actions: {},
+              actors: {},
+              guards: {},
+            },
+            data: {
+              context: {},
+            },
+          },
+          treeNodes: {},
+          idMap: {},
+          originalTargets: {},
+        };
+        return extractMachineConfig(ctx, ts, call);
       });
     },
   };
