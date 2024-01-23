@@ -479,9 +479,7 @@ export function extractState(
           ts.isFunctionExpression(prop.initializer) ||
           ts.isArrowFunction(prop.initializer)
         ) {
-          ctx.digraph.data.context = `{{${prop.initializer.getText(
-            ctx.sourceFile,
-          )}}}`;
+          ctx.digraph.data.context = `{{${prop.initializer.getText()}}}`;
           return;
         }
 
@@ -492,6 +490,23 @@ export function extractState(
         extractEdgeGroup(ctx, ts, prop, {
           sourceId: node.uniqueId,
           eventTypeData: { type: 'always' },
+        });
+        return;
+      }
+      case 'after': {
+        if (!ts.isObjectLiteralExpression(prop.initializer)) {
+          ctx.errors.push({ type: 'state_property_unhandled' });
+          return;
+        }
+
+        forEachStaticProperty(ctx, ts, prop.initializer, (transition, key) => {
+          extractEdgeGroup(ctx, ts, transition, {
+            sourceId: node.uniqueId,
+            eventTypeData: {
+              type: 'after',
+              delay: key,
+            },
+          });
         });
         return;
       }

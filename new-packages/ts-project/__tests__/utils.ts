@@ -98,7 +98,7 @@ async function createTestProgram(
     );
   }
 
-  const host = ts.createCompilerHost(options);
+  const host = ts.createCompilerHost(options, true);
   host.getCurrentDirectory = () => cwd;
   return ts.createProgram(fileNames, options, host);
 }

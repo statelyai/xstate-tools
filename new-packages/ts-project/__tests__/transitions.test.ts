@@ -3838,3 +3838,504 @@ test('should raise error when transition.meta contains any value other than a pl
       ]
     `);
 });
+test('should extract after transition (number delay)', async () => {
+  const tmpPath = await testdir({
+    'tsconfig.json': JSON.stringify({}),
+    'index.ts': ts`
+      import { createMachine } from "xstate";
+
+      createMachine({
+        initial: "foo",
+        states: {
+          foo: {
+            after: {
+              100: "bar",
+            },
+          },
+          bar: {},
+        },
+      });
+    `,
+  });
+
+  const project = await createTestProject(tmpPath);
+  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+    .toMatchInlineSnapshot(`
+    [
+      [
+        {
+          "blocks": {},
+          "data": {
+            "context": {},
+          },
+          "edges": {
+            "edge-0": {
+              "data": {
+                "actions": [],
+                "description": undefined,
+                "eventTypeData": {
+                  "delay": "100",
+                  "type": "after",
+                },
+                "guard": undefined,
+                "internal": true,
+              },
+              "source": "state-1",
+              "targets": [
+                "state-2",
+              ],
+              "type": "edge",
+              "uniqueId": "edge-0",
+            },
+          },
+          "implementations": {
+            "actions": {},
+            "actors": {},
+            "guards": {},
+          },
+          "nodes": {
+            "state-0": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": "foo",
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": "normal",
+              },
+              "parentId": undefined,
+              "type": "node",
+              "uniqueId": "state-0",
+            },
+            "state-1": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": undefined,
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": "normal",
+              },
+              "parentId": "state-0",
+              "type": "node",
+              "uniqueId": "state-1",
+            },
+            "state-2": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": undefined,
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": "normal",
+              },
+              "parentId": "state-0",
+              "type": "node",
+              "uniqueId": "state-2",
+            },
+          },
+          "root": "state-0",
+        },
+        [],
+      ],
+    ]
+  `);
+});
+test('should extract delayed transition (identifier delay)', async () => {
+  const tmpPath = await testdir({
+    'tsconfig.json': JSON.stringify({}),
+    'index.ts': ts`
+      import { createMachine } from "xstate";
+
+      createMachine({
+        initial: "foo",
+        states: {
+          foo: {
+            after: {
+              myDelay: "bar",
+            },
+          },
+          bar: {},
+        },
+      });
+    `,
+  });
+
+  const project = await createTestProject(tmpPath);
+  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+    .toMatchInlineSnapshot(`
+    [
+      [
+        {
+          "blocks": {},
+          "data": {
+            "context": {},
+          },
+          "edges": {
+            "edge-0": {
+              "data": {
+                "actions": [],
+                "description": undefined,
+                "eventTypeData": {
+                  "delay": "myDelay",
+                  "type": "after",
+                },
+                "guard": undefined,
+                "internal": true,
+              },
+              "source": "state-1",
+              "targets": [
+                "state-2",
+              ],
+              "type": "edge",
+              "uniqueId": "edge-0",
+            },
+          },
+          "implementations": {
+            "actions": {},
+            "actors": {},
+            "guards": {},
+          },
+          "nodes": {
+            "state-0": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": "foo",
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": "normal",
+              },
+              "parentId": undefined,
+              "type": "node",
+              "uniqueId": "state-0",
+            },
+            "state-1": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": undefined,
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": "normal",
+              },
+              "parentId": "state-0",
+              "type": "node",
+              "uniqueId": "state-1",
+            },
+            "state-2": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": undefined,
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": "normal",
+              },
+              "parentId": "state-0",
+              "type": "node",
+              "uniqueId": "state-2",
+            },
+          },
+          "root": "state-0",
+        },
+        [],
+      ],
+    ]
+  `);
+});
+test('should extract after transition (string with whitespace delay)', async () => {
+  const tmpPath = await testdir({
+    'tsconfig.json': JSON.stringify({}),
+    'index.ts': ts`
+      import { createMachine } from "xstate";
+
+      createMachine({
+        initial: "foo",
+        states: {
+          foo: {
+            after: {
+              "my delay": "bar",
+            },
+          },
+          bar: {},
+        },
+      });
+    `,
+  });
+
+  const project = await createTestProject(tmpPath);
+  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+    .toMatchInlineSnapshot(`
+    [
+      [
+        {
+          "blocks": {},
+          "data": {
+            "context": {},
+          },
+          "edges": {
+            "edge-0": {
+              "data": {
+                "actions": [],
+                "description": undefined,
+                "eventTypeData": {
+                  "delay": "named delay",
+                  "type": "after",
+                },
+                "guard": undefined,
+                "internal": true,
+              },
+              "source": "state-1",
+              "targets": [
+                "state-2",
+              ],
+              "type": "edge",
+              "uniqueId": "edge-0",
+            },
+          },
+          "implementations": {
+            "actions": {},
+            "actors": {},
+            "guards": {},
+          },
+          "nodes": {
+            "state-0": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": "foo",
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": "normal",
+              },
+              "parentId": undefined,
+              "type": "node",
+              "uniqueId": "state-0",
+            },
+            "state-1": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": undefined,
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": "normal",
+              },
+              "parentId": "state-0",
+              "type": "node",
+              "uniqueId": "state-1",
+            },
+            "state-2": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": undefined,
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": "normal",
+              },
+              "parentId": "state-0",
+              "type": "node",
+              "uniqueId": "state-2",
+            },
+          },
+          "root": "state-0",
+        },
+        [],
+      ],
+    ]
+  `);
+});
+test('should extract multiple delayed transitions', async () => {
+  const tmpPath = await testdir({
+    'tsconfig.json': JSON.stringify({}),
+    'index.ts': ts`
+      import { createMachine } from "xstate";
+
+      createMachine({
+        initial: "foo",
+        states: {
+          foo: {
+            after: {
+              100: { guard: "condition", target: "bar" },
+              200: "baz",
+            },
+          },
+          bar: {},
+          baz: {},
+        },
+      });
+    `,
+  });
+
+  const project = await createTestProject(tmpPath);
+  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+    .toMatchInlineSnapshot(`
+    [
+      [
+        {
+          "blocks": {
+            "block-0": {
+              "blockType": "guard",
+              "parentId": "edge-1",
+              "properties": {
+                "params": {},
+                "type": "condition",
+              },
+              "sourceId": "condition",
+              "uniqueId": "block-0",
+            },
+          },
+          "data": {
+            "context": {},
+          },
+          "edges": {
+            "edge-0": {
+              "data": {
+                "actions": [],
+                "description": undefined,
+                "eventTypeData": {
+                  "delay": "200",
+                  "type": "after",
+                },
+                "guard": undefined,
+                "internal": true,
+              },
+              "source": "state-1",
+              "targets": [
+                "state-3",
+              ],
+              "type": "edge",
+              "uniqueId": "edge-0",
+            },
+            "edge-1": {
+              "data": {
+                "actions": [],
+                "description": undefined,
+                "eventTypeData": {
+                  "delay": "100",
+                  "type": "after",
+                },
+                "guard": "block-0",
+                "internal": true,
+              },
+              "source": "state-1",
+              "targets": [
+                "state-2",
+              ],
+              "type": "edge",
+              "uniqueId": "edge-1",
+            },
+          },
+          "implementations": {
+            "actions": {},
+            "actors": {},
+            "guards": {
+              "condition": {
+                "id": "condition",
+                "name": "condition",
+                "type": "guard",
+              },
+            },
+          },
+          "nodes": {
+            "state-0": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": "foo",
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": "normal",
+              },
+              "parentId": undefined,
+              "type": "node",
+              "uniqueId": "state-0",
+            },
+            "state-1": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": undefined,
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": "normal",
+              },
+              "parentId": "state-0",
+              "type": "node",
+              "uniqueId": "state-1",
+            },
+            "state-2": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": undefined,
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": "normal",
+              },
+              "parentId": "state-0",
+              "type": "node",
+              "uniqueId": "state-2",
+            },
+            "state-3": {
+              "data": {
+                "description": undefined,
+                "entry": [],
+                "exit": [],
+                "history": undefined,
+                "initial": undefined,
+                "invoke": [],
+                "metaEntries": [],
+                "tags": [],
+                "type": "normal",
+              },
+              "parentId": "state-0",
+              "type": "node",
+              "uniqueId": "state-3",
+            },
+          },
+          "root": "state-0",
+        },
+        [],
+      ],
+    ]
+  `);
+});
