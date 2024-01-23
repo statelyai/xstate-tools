@@ -3950,7 +3950,7 @@ test('should extract after transition (number delay)', async () => {
     ]
   `);
 });
-test.only('should extract delayed transition (identifier delay)', async () => {
+test('should extract delayed transition (identifier delay)', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
