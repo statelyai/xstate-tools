@@ -89,9 +89,11 @@ const createGuardBlock = ({
 function createEdge({
   sourceId,
   eventTypeData,
+  internal = true,
 }: {
   sourceId: string;
   eventTypeData: Edge['data']['eventTypeData'];
+  internal?: boolean;
 }): Edge {
   return {
     type: 'edge',
@@ -104,8 +106,7 @@ function createEdge({
       guard: undefined,
       description: undefined,
       metaEntries: [],
-      // TODO: to compute this correctly we need to know if we are extracting v4 or v5
-      internal: true,
+      internal,
     },
   };
 }
@@ -221,6 +222,16 @@ function registerActionBlocks(
   }
 }
 
+function getDefaultInternalValue(
+  ctx: ExtractionContext,
+  targets: string[] | undefined,
+) {
+  if (ctx.version !== 'v4') {
+    return true;
+  }
+  return targets ? targets.some((t) => t.startsWith('.')) : true;
+}
+
 function extractEdgeGroup(
   ctx: ExtractionContext,
   ts: typeof import('typescript'),
@@ -251,6 +262,7 @@ function extractEdgeGroup(
           createEdge({
             sourceId,
             eventTypeData,
+            internal: getDefaultInternalValue(ctx, [element.text]),
           }),
           [element.text],
         ];
@@ -357,10 +369,12 @@ function extractEdgeGroup(
                 });
                 return;
               }
+              seenInternalProp = true;
+
               if (findProperty(ctx, ts, element, 'reenter')) {
-                seenInternalProp = true;
                 return;
               }
+
               const value = getJsonValue(ctx, ts, prop.initializer);
 
               if (typeof value === 'boolean') {
@@ -397,14 +411,8 @@ function extractEdgeGroup(
           }
         });
 
-        if (edge.data.internal === undefined) {
-          if (ctx.version === 'v4') {
-            edge.data.internal = targets
-              ? targets.some((t) => t.startsWith('.'))
-              : true;
-          } else {
-            edge.data.internal = true;
-          }
+        if (!seenInternalProp) {
+          edge.data.internal = getDefaultInternalValue(ctx, targets);
         }
 
         return [edge, targets];

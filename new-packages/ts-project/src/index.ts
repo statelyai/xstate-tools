@@ -131,10 +131,14 @@ function extractMachineConfig(
   ];
 }
 
+export interface TSProjectOptions {
+  version?: XStateVersion | undefined;
+}
+
 export function createProject(
   ts: typeof import('typescript'),
   tsProgram: Program,
-  { version = 'v5' }: { version?: XStateVersion },
+  { version = 'v5' }: TSProjectOptions = {},
 ) {
   return {
     extractMachines(fileName: string) {

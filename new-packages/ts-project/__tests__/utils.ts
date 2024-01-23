@@ -5,7 +5,7 @@ import path from 'path';
 import { onExit } from 'signal-exit';
 import { temporaryDirectory } from 'tempy';
 import typescript from 'typescript';
-import { XStateProject, createProject } from '../src/index';
+import { TSProjectOptions, XStateProject, createProject } from '../src/index';
 import { ActorBlock } from '../src/types';
 
 export const js = outdent;
@@ -105,13 +105,17 @@ async function createTestProgram(
 
 export async function createTestProject(
   cwd: string,
-  { ts = typescript, ...options }: Partial<TypeScriptTestProgramOptions> = {},
+  {
+    ts = typescript,
+    version,
+    ...options
+  }: Partial<TypeScriptTestProgramOptions & TSProjectOptions> = {},
 ) {
   const program = await createTestProgram(cwd, {
     ts: typescript,
     ...options,
   });
-  return createProject(ts, program);
+  return createProject(ts, program, { version });
 }
 
 function replaceUniqueIdsRecursively(

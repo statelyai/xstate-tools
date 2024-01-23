@@ -275,6 +275,7 @@ test('should extract state.initial with string value', async () => {
       ]
     `);
 });
+
 test('should extract state.initial with template literal value', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
@@ -804,6 +805,7 @@ test('should extract state.history with value "shallow"', async () => {
       ]
     `);
 });
+
 test('should extract state.history with value "deep"', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
@@ -1455,6 +1457,7 @@ test("should extract state.meta when it's a javascript object", async () => {
       ]
     `);
 });
+
 test("should extract state.meta when it's a javascript object containing nested array items", async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
@@ -1550,6 +1553,7 @@ test("should extract state.meta when it's a javascript object containing nested 
       ]
     `);
 });
+
 test("should extract state.meta when it's a javascript object and contains multi level object value", async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
@@ -1732,7 +1736,7 @@ test('should raise error when state.meta contains any value other than a plain j
         initial: 'foo'
         states: {
           foo: {
-            meta: 'some string meta' 
+            meta: 'some string meta'
           }
         },
       });
