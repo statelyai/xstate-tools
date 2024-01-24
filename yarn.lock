@@ -2521,22 +2521,22 @@
     loupe "^2.3.7"
     pretty-format "^29.7.0"
 
-"@volar/language-core@2.0.0-alpha.3":
-  version "2.0.0-alpha.3"
-  resolved "https://registry.yarnpkg.com/@volar/language-core/-/language-core-2.0.0-alpha.3.tgz#dfaae0e1343bd60dc2bbcf4903fae57339a2c4ce"
-  integrity sha512-+IFYZ6YaCtLoaoBxa5b6zj6HnNGGKtiXguVyK9LteJWI8QMNit6aeVhvevQAJKSeIMJEzbJBSBDI4fiZvumlSg==
+"@volar/language-core@2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@volar/language-core/-/language-core-2.0.0.tgz#c0ebf98659aa294fd71ca8b1e39b62c9aa299efc"
+  integrity sha512-1L9GB7CwI4LKKwpKOxFSICJ54GdWGwjIUkI7UwAjJpnFIFm8+xteSf86nsEknFh0k7MHScm+Xb0x8eEx/8Qdrg==
   dependencies:
-    "@volar/source-map" "2.0.0-alpha.3"
+    "@volar/source-map" "2.0.0"
 
-"@volar/language-server@2.0.0-alpha.3":
-  version "2.0.0-alpha.3"
-  resolved "https://registry.yarnpkg.com/@volar/language-server/-/language-server-2.0.0-alpha.3.tgz#c4af6f731b7474cafa2f91afec83150b513626d4"
-  integrity sha512-8lorXbuk4JXFF5GuYJ3ngb0DMtK4hop6mdsT3x+R/gfaq1/9qqVjUarXcfab25YtzET89TIplszMYRBwjZmZHw==
+"@volar/language-server@2.0.0", "@volar/language-server@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@volar/language-server/-/language-server-2.0.0.tgz#c968fa9a3d3a05aa57627b5d739f5deea3489d95"
+  integrity sha512-sfSXbCgVf7wiyKsGmeCt0y6qpFE4sma45LUd87Rs/Wv6I1UH/B8TP7UZ/6grAKh5YO5GF8WOv2zovn5Nmw7z3g==
   dependencies:
-    "@volar/language-core" "2.0.0-alpha.3"
-    "@volar/language-service" "2.0.0-alpha.3"
-    "@volar/snapshot-document" "2.0.0-alpha.3"
-    "@volar/typescript" "2.0.0-alpha.3"
+    "@volar/language-core" "2.0.0"
+    "@volar/language-service" "2.0.0"
+    "@volar/snapshot-document" "2.0.0"
+    "@volar/typescript" "2.0.0"
     "@vscode/l10n" "^0.0.16"
     path-browserify "^1.0.1"
     request-light "^0.7.0"
@@ -2545,45 +2545,45 @@
     vscode-languageserver-textdocument "^1.0.11"
     vscode-uri "^3.0.8"
 
-"@volar/language-service@2.0.0-alpha.3":
-  version "2.0.0-alpha.3"
-  resolved "https://registry.yarnpkg.com/@volar/language-service/-/language-service-2.0.0-alpha.3.tgz#2d65f4731f1ea3aa686479d8515569f0a35366f3"
-  integrity sha512-rlVj5OF5lFnLYlMdYJWMQ79UP5BYcewy0Yy6Vd/IBuI6z/tkjAsARTbHaXdeHiTDCfLWtZ2HCKNTyqnQ0GjhYA==
+"@volar/language-service@2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@volar/language-service/-/language-service-2.0.0.tgz#575f5193c565987cee3caf3ed8fe070c69d52ae4"
+  integrity sha512-aWalwQ54DAEvJ9dfEyJN/pr6ID5GWL7dBR46CMx6fr9JK/m9NkXaK7qJRcxKXaaSTYtlWA342dEhYESLB2dAYw==
   dependencies:
-    "@volar/language-core" "2.0.0-alpha.3"
+    "@volar/language-core" "2.0.0"
     vscode-languageserver-protocol "^3.17.5"
     vscode-languageserver-textdocument "^1.0.11"
     vscode-uri "^3.0.8"
 
-"@volar/snapshot-document@2.0.0-alpha.3":
-  version "2.0.0-alpha.3"
-  resolved "https://registry.yarnpkg.com/@volar/snapshot-document/-/snapshot-document-2.0.0-alpha.3.tgz#8acab2536630b10de938d67ff84311aaab4f4de7"
-  integrity sha512-CLunbI4CxZQb2Ta9dsuCR7HVebvV3HyzeqT+lgxLlf+L0BeyLke1vMPL92TpaIhiv9bPeycwAqpFLSAsUtM8kA==
+"@volar/snapshot-document@2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@volar/snapshot-document/-/snapshot-document-2.0.0.tgz#0187446287d0d04d8180f51ca33a85f5f05ab895"
+  integrity sha512-hf2meJIrJw848KaOr8dCQlCgGS0UWUVd/m4DkTnM4Rlo+fVmzd7CjZoYqjYMiuIqxeu3OxpypcP++fv4Rp28Ew==
   dependencies:
     vscode-languageserver-protocol "^3.17.5"
     vscode-languageserver-textdocument "^1.0.11"
 
-"@volar/source-map@2.0.0-alpha.3":
-  version "2.0.0-alpha.3"
-  resolved "https://registry.yarnpkg.com/@volar/source-map/-/source-map-2.0.0-alpha.3.tgz#ca59b0c22c5befb9e3019ce493e2a31c1976a76f"
-  integrity sha512-Y/1JI1ds2SsWgE2FdbFyqCdFzvd6inX2P//sxvdR3UohChcMY8GXWrVBBdRN3TJaKvRCBR6B9LMHkG/bMy7F+g==
+"@volar/source-map@2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@volar/source-map/-/source-map-2.0.0.tgz#2d50233e84c610095c5e8aa3aab25c871024ec38"
+  integrity sha512-WZO1hZPqMGyCmWs9j4ZV090D7jfMjQUwALuz5CCbrMVSCGlvYxv5jhw0M5G39thJmiNV/ttgdgiavzvtOMe5/w==
   dependencies:
     muggle-string "^0.4.0"
 
-"@volar/typescript@2.0.0-alpha.3":
-  version "2.0.0-alpha.3"
-  resolved "https://registry.yarnpkg.com/@volar/typescript/-/typescript-2.0.0-alpha.3.tgz#9b0aa8f3b70f0c5396dd2017438e5b7d7d44be19"
-  integrity sha512-3f6oJvcJed5Ovvip7ge3iSm8MeVSZk+uwQp9+k3JPHz0rpGdgBVMW0/Gn36by65lrxumCDhj6HPUV05oSAPgzQ==
+"@volar/typescript@2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@volar/typescript/-/typescript-2.0.0.tgz#434a4e634fba94ef703e668ae219c5592d8fb70c"
+  integrity sha512-6HGiCOMe612taDDRTX1N5938hY2ThjdLdW3TXHsIgcQz8Y+2H8o94BDwXnMOGf+XksektuXMZkDBalgLPFhBbg==
   dependencies:
-    "@volar/language-core" "2.0.0-alpha.3"
+    "@volar/language-core" "2.0.0"
     path-browserify "^1.0.1"
 
-"@volar/vscode@2.0.0-alpha.3":
-  version "2.0.0-alpha.3"
-  resolved "https://registry.yarnpkg.com/@volar/vscode/-/vscode-2.0.0-alpha.3.tgz#d535e4edd6fc719b6fa9dc629dfedd0375082a31"
-  integrity sha512-7bHWT3nKmb9Nn6rze4+YcZuE85ephJZDbDUK1pm/BGzAFSvVvPaW9ujAiiWerCV4R7wj96xWo6emBzbH+8WUpA==
+"@volar/vscode@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@volar/vscode/-/vscode-2.0.0.tgz#73ea31cb4b78a413040b17624d235549ddbf85b5"
+  integrity sha512-FqNMA5MwAARbjP6vZQYJd2a6ydyzUfFO8XTV6+mJPQVzSlCKoxIvV5QbfgEa1P7AGT1DuuiSr/1WcfFEF5/s1A==
   dependencies:
-    "@volar/language-server" "2.0.0-alpha.3"
+    "@volar/language-server" "2.0.0"
     path-browserify "^1.0.1"
     vscode-languageclient "^9.0.1"
     vscode-nls "^5.2.0"
@@ -8123,10 +8123,10 @@ typedarray-to-buffer@^3.1.5:
   dependencies:
     is-typedarray "^1.0.0"
 
-typescript-auto-import-cache@^0.3.0:
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/typescript-auto-import-cache/-/typescript-auto-import-cache-0.3.0.tgz#5e96dab0a7cad90062c51c85e3f6aea3e5859ff0"
-  integrity sha512-Rq6/q4O9iyqUdjvOoyas7x/Qf9nWUMeqpP3YeTaLA+uECgfy5wOhfOS+SW/+fZ/uI/ZcKaf+2/ZhFzXh8xfofQ==
+typescript-auto-import-cache@^0.3.1:
+  version "0.3.2"
+  resolved "https://registry.yarnpkg.com/typescript-auto-import-cache/-/typescript-auto-import-cache-0.3.2.tgz#89b1ab7cb6786b8e18dda735a30ec1e7d48a2679"
+  integrity sha512-+laqe5SFL1vN62FPOOJSUDTZxtgsoOXjneYOXIpx5rQ4UMiN89NAtJLpqLqyebv9fgQ/IMeeTX+mQyRnwvJzvg==
   dependencies:
     semver "^7.3.8"
 
@@ -8340,14 +8340,14 @@ vitest@^1.1.3:
     vite-node "1.1.3"
     why-is-node-running "^2.2.2"
 
-volar-service-typescript@0.0.20:
-  version "0.0.20"
-  resolved "https://registry.yarnpkg.com/volar-service-typescript/-/volar-service-typescript-0.0.20.tgz#bc74f751c15dca8dced345f85b4e3a1cbb35d2c7"
-  integrity sha512-7HNalHrkB1BUQI3x/RyQatUFw7QiuqueqFS1TFoUmnfKPL1r7lda6J83397u3GPI14ZfirFhFoafzYoYSVPS8A==
+volar-service-typescript@0.0.27:
+  version "0.0.27"
+  resolved "https://registry.yarnpkg.com/volar-service-typescript/-/volar-service-typescript-0.0.27.tgz#c3a532675d7344b665851594a4b202805f4eb774"
+  integrity sha512-O8BEz5NFy4bYU36LKCXEQl08pl9mf6AOV/xpLo3VTiMK1CJiwax7XbPkE6SZKb1QfQe0gn5RbvHeRpzSCz6H5g==
   dependencies:
     path-browserify "^1.0.1"
     semver "^7.5.4"
-    typescript-auto-import-cache "^0.3.0"
+    typescript-auto-import-cache "^0.3.1"
     vscode-languageserver-textdocument "^1.0.11"
     vscode-nls "^5.2.0"
     vscode-uri "^3.0.8"

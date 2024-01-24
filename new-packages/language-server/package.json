@@ -28,9 +28,9 @@
   },
   "scripts": {},
   "dependencies": {
-    "@volar/language-server": "2.0.0-alpha.3",
+    "@volar/language-server": "^2.0.0",
     "@xstate/ts-project": "0.0.0",
-    "volar-service-typescript": "0.0.20",
+    "volar-service-typescript": "0.0.27",
     "vscode-languageserver-protocol": "^3.17.5"
   },
   "devDependencies": {},
