@@ -107,7 +107,7 @@ export async function createTestProject(
   cwd: string,
   {
     ts = typescript,
-    version,
+    xstateVersion: version,
     ...options
   }: Partial<TypeScriptTestProgramOptions & TSProjectOptions> = {},
 ) {
@@ -115,7 +115,7 @@ export async function createTestProject(
     ts: typescript,
     ...options,
   });
-  return createProject(ts, program, { version });
+  return createProject(ts, program, { xstateVersion: version });
 }
 
 function replaceUniqueIdsRecursively(

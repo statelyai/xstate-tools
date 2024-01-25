@@ -5062,7 +5062,7 @@ test('should extract a sibling transition as not internal by default (direct str
     `,
   });
 
-  const project = await createTestProject(tmpPath, { version: 'v4' });
+  const project = await createTestProject(tmpPath, { xstateVersion: '4' });
   expect(replaceUniqueIds(project.extractMachines('index.ts')))
     .toMatchInlineSnapshot(`
       [
@@ -5178,7 +5178,7 @@ test('should extract a descendant transition as internal by default (direct stri
     `,
   });
 
-  const project = await createTestProject(tmpPath, { version: 'v4' });
+  const project = await createTestProject(tmpPath, { xstateVersion: '4' });
   expect(replaceUniqueIds(project.extractMachines('index.ts')))
     .toMatchInlineSnapshot(`
       [
@@ -5292,7 +5292,7 @@ test('should extract a sibling transition as internal by default (direct object 
     `,
   });
 
-  const project = await createTestProject(tmpPath, { version: 'v4' });
+  const project = await createTestProject(tmpPath, { xstateVersion: '4' });
   expect(replaceUniqueIds(project.extractMachines('index.ts')))
     .toMatchInlineSnapshot(`
       [
@@ -5410,7 +5410,7 @@ test('should extract a descendant transition as internal by default (direct obje
     `,
   });
 
-  const project = await createTestProject(tmpPath, { version: 'v4' });
+  const project = await createTestProject(tmpPath, { xstateVersion: '4' });
   expect(replaceUniqueIds(project.extractMachines('index.ts')))
     .toMatchInlineSnapshot(`
       [
@@ -5524,7 +5524,7 @@ test('should extract an explicit internal transition as internal (v4)', async ()
     `,
   });
 
-  const project = await createTestProject(tmpPath, { version: 'v4' });
+  const project = await createTestProject(tmpPath, { xstateVersion: '4' });
   expect(replaceUniqueIds(project.extractMachines('index.ts')))
     .toMatchInlineSnapshot(`
       [
@@ -5638,7 +5638,7 @@ test('should extract an explicit non-internal transition as not internal (v4)', 
     `,
   });
 
-  const project = await createTestProject(tmpPath, { version: 'v4' });
+  const project = await createTestProject(tmpPath, { xstateVersion: '4' });
   expect(replaceUniqueIds(project.extractMachines('index.ts')))
     .toMatchInlineSnapshot(`
       [
@@ -5767,7 +5767,7 @@ test('should extract transition with multiple targets as internal when any of it
     `,
   });
 
-  const project = await createTestProject(tmpPath, { version: 'v4' });
+  const project = await createTestProject(tmpPath, { xstateVersion: '4' });
   expect(replaceUniqueIds(project.extractMachines('index.ts')))
     .toMatchInlineSnapshot(`
       [
@@ -5963,7 +5963,7 @@ test('should extract transition with multiple targets as not internal when none 
     `,
   });
 
-  const project = await createTestProject(tmpPath, { version: 'v4' });
+  const project = await createTestProject(tmpPath, { xstateVersion: '4' });
   expect(replaceUniqueIds(project.extractMachines('index.ts')))
     .toMatchInlineSnapshot(`
       [

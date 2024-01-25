@@ -222,11 +222,14 @@ function registerActionBlocks(
   }
 }
 
-function getDefaultInternalValue(
+/**
+ * returns the auto-assigned internal value when no explicit configuration for this property is found
+ */
+function getImpliedInternalValue(
   ctx: ExtractionContext,
   targets: string[] | undefined,
 ) {
-  if (ctx.version !== 'v4') {
+  if (ctx.xstateVersion !== '4') {
     return true;
   }
   return targets ? targets.some((t) => t.startsWith('.')) : true;
@@ -262,7 +265,7 @@ function extractEdgeGroup(
           createEdge({
             sourceId,
             eventTypeData,
-            internal: getDefaultInternalValue(ctx, [element.text]),
+            internal: getImpliedInternalValue(ctx, [element.text]),
           }),
           [element.text],
         ];
@@ -375,12 +378,15 @@ function extractEdgeGroup(
                 return;
               }
 
-              const value = getJsonValue(ctx, ts, prop.initializer);
-
-              if (typeof value === 'boolean') {
-                edge.data.internal = value;
+              if (prop.initializer.kind === ts.SyntaxKind.TrueKeyword) {
+                edge.data.internal = true;
                 return;
               }
+              if (prop.initializer.kind === ts.SyntaxKind.FalseKeyword) {
+                edge.data.internal = false;
+                return;
+              }
+
               return;
             }
             case 'reenter':
@@ -391,12 +397,15 @@ function extractEdgeGroup(
               }
               seenInternalProp = true;
 
-              const value = getJsonValue(ctx, ts, prop.initializer);
-
-              if (typeof value === 'boolean') {
-                edge.data.internal = !value;
+              if (prop.initializer.kind === ts.SyntaxKind.TrueKeyword) {
+                edge.data.internal = false;
                 return;
               }
+              if (prop.initializer.kind === ts.SyntaxKind.FalseKeyword) {
+                edge.data.internal = true;
+                return;
+              }
+
               return;
             case 'description': {
               edge.data.description = ts.isStringLiteralLike(prop.initializer)
@@ -412,7 +421,7 @@ function extractEdgeGroup(
         });
 
         if (!seenInternalProp) {
-          edge.data.internal = getDefaultInternalValue(ctx, targets);
+          edge.data.internal = getImpliedInternalValue(ctx, targets);
         }
 
         return [edge, targets];

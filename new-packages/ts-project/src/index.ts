@@ -132,13 +132,13 @@ function extractMachineConfig(
 }
 
 export interface TSProjectOptions {
-  version?: XStateVersion | undefined;
+  xstateVersion?: XStateVersion | undefined;
 }
 
 export function createProject(
   ts: typeof import('typescript'),
   tsProgram: Program,
-  { version = 'v5' }: TSProjectOptions = {},
+  { xstateVersion = '5' }: TSProjectOptions = {},
 ) {
   return {
     extractMachines(fileName: string) {
@@ -149,7 +149,7 @@ export function createProject(
       return findCreateMachineCalls(ts, sourceFile).map((call) => {
         const ctx: ExtractionContext = {
           sourceFile,
-          version,
+          xstateVersion,
           errors: [],
           digraph: {
             nodes: {},
