@@ -1,3 +1,13 @@
 import { createMachine } from 'xstate';
 
-createMachine({});
+createMachine({
+  initial: 'a',
+  states: {
+    a: {
+      on: {
+        NEXT: 'b',
+      },
+    },
+    b: {},
+  },
+});
