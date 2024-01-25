@@ -1,5 +1,5 @@
 import { machineFromStately } from '@statelyai/sky';
-import { createActor } from 'xstate-beta';
+import { createActor } from 'xstate5';
 import { skyConfig } from './machineFromStately.sky';
 
 // TODO: The Sky SDK is using xstate v5 so we can't really create meaningful test until we upgrade to v5 in this repo

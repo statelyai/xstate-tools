@@ -8632,10 +8632,10 @@ xmlchars@^2.2.0:
   resolved "https://registry.yarnpkg.com/xmlchars/-/xmlchars-2.2.0.tgz#060fe1bcb7f9c76fe2a17db86a9bc3ab894210cb"
   integrity sha512-JZnDKK8B0RCDw84FNdDAIpZK+JuJw+s7Lz8nksI7SIuU3UXJJslUthsi+uWBUYOwPFwW7W7PRLRfUKpxjtjFCw==
 
-"xstate-beta@npm:xstate@beta":
-  version "5.0.0-beta.30"
-  resolved "https://registry.yarnpkg.com/xstate/-/xstate-5.0.0-beta.30.tgz#8eb7e8551ac6dd24e06bcdfdc834ce6aea3f1f5f"
-  integrity sha512-ZWNf48jEZxasco7oi4vyKJRgjpwc1+Q0AgzfVF+nrWeghAwc8oW+W2rBQaQWldyZ9zXORBzX7xZAfgu81oANkA==
+"xstate5@npm:xstate@^5.5.2", "xstate@npm:xstate@^5.5.2":
+  version "5.5.2"
+  resolved "https://registry.yarnpkg.com/xstate/-/xstate-5.5.2.tgz#a196495b037bff06b5523b37a8f51514be73fd81"
+  integrity sha512-RLf9wc5HDO0pvj2TQQ+lY6tDW8CU8Entfgmtzzo6NhkC8qOEBXSN6WUSvnUM7NHZgdih06+by1b4nbaHVu1c+g==
 
 xstate@5.0.0-beta.37:
   version "5.0.0-beta.37"

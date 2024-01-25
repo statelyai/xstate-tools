@@ -16,7 +16,8 @@
     "@types/jest": "^27.4.0",
     "@types/node": "^16.0.1",
     "esbuild": "^0.19.9",
-    "jest": "^27.4.7"
+    "jest": "^27.4.7",
+    "xstate5": "npm:xstate@^5.5.2"
   },
   "dependencies": {
     "@babel/core": "^7.21.4",
@@ -27,8 +28,7 @@
     "dotenv": "^16.0.3",
     "isomorphic-fetch": "^3.0.0",
     "prettier": "^2.8.8",
-    "xstate": "^4.33.4",
-    "xstate-beta": "npm:xstate@beta"
+    "xstate": "^4.33.4"
   },
   "author": "Stately Team",
   "license": "MIT"

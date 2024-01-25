@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "module": "node16",
+    "moduleResolution": "node16",
+    "target": "es2019",
+    "lib": ["ES2019", "DOM"],
+    "strict": true
+    // "exactOptionalPropertyTypes": true
+  },
+  "exclude": ["node_modules"]
+}
