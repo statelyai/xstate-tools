@@ -15,7 +15,8 @@
     "@volar/language-server": "^2.0.0",
     "@volar/vscode": "^2.0.0",
     "@xstate/language-server": "0.0.0",
-    "vscode-languageserver-protocol": "^3.17.5"
+    "vscode-languageserver-protocol": "^3.17.5",
+    "xstate": "npm:xstate@^5.5.2"
   },
   "devDependencies": {
     "esbuild": "^0.19.9"
@@ -31,7 +32,7 @@
       {
         "title": "XState",
         "properties": {
-          "xstate.server.enable": {
+          "xstate.server.enabled": {
             "type": "boolean",
             "default": true
           }
