@@ -59,6 +59,7 @@ test('should extract an actor with string src (direct)', async () => {
                   "invoke": [
                     "block-0",
                   ],
+                  "key": "(machine)",
                   "metaEntries": [],
                   "tags": [],
                   "type": "normal",
@@ -157,6 +158,7 @@ test('should extract multiple actors with different string sources (direct)', as
                   "history": undefined,
                   "initial": "foo",
                   "invoke": [],
+                  "key": "(machine)",
                   "metaEntries": [],
                   "tags": [],
                   "type": "normal",
@@ -175,6 +177,7 @@ test('should extract multiple actors with different string sources (direct)', as
                   "invoke": [
                     "block-0",
                   ],
+                  "key": "foo",
                   "metaEntries": [],
                   "tags": [],
                   "type": "normal",
@@ -193,6 +196,7 @@ test('should extract multiple actors with different string sources (direct)', as
                   "invoke": [
                     "block-1",
                   ],
+                  "key": "bar",
                   "metaEntries": [],
                   "tags": [],
                   "type": "normal",
@@ -286,6 +290,7 @@ test('should extract multiple actors with the same string source (direct)', asyn
                   "history": undefined,
                   "initial": "foo",
                   "invoke": [],
+                  "key": "(machine)",
                   "metaEntries": [],
                   "tags": [],
                   "type": "normal",
@@ -304,6 +309,7 @@ test('should extract multiple actors with the same string source (direct)', asyn
                   "invoke": [
                     "block-0",
                   ],
+                  "key": "foo",
                   "metaEntries": [],
                   "tags": [],
                   "type": "normal",
@@ -322,6 +328,7 @@ test('should extract multiple actors with the same string source (direct)', asyn
                   "invoke": [
                     "block-1",
                   ],
+                  "key": "bar",
                   "metaEntries": [],
                   "tags": [],
                   "type": "normal",
@@ -420,6 +427,7 @@ test('should extract multiple actors with string source (array)', async () => {
                   "history": undefined,
                   "initial": "foo",
                   "invoke": [],
+                  "key": "(machine)",
                   "metaEntries": [],
                   "tags": [],
                   "type": "normal",
@@ -439,6 +447,7 @@ test('should extract multiple actors with string source (array)', async () => {
                     "block-0",
                     "block-1",
                   ],
+                  "key": "foo",
                   "metaEntries": [],
                   "tags": [],
                   "type": "normal",
@@ -537,6 +546,7 @@ test('should extract actor with inline source (direct)', async () => {
                   "history": undefined,
                   "initial": "foo",
                   "invoke": [],
+                  "key": "(machine)",
                   "metaEntries": [],
                   "tags": [],
                   "type": "normal",
@@ -555,6 +565,7 @@ test('should extract actor with inline source (direct)', async () => {
                   "invoke": [
                     "block-0",
                   ],
+                  "key": "foo",
                   "metaEntries": [],
                   "tags": [],
                   "type": "normal",
@@ -573,6 +584,7 @@ test('should extract actor with inline source (direct)', async () => {
                   "invoke": [
                     "block-1",
                   ],
+                  "key": "bar",
                   "metaEntries": [],
                   "tags": [],
                   "type": "normal",
@@ -610,63 +622,65 @@ test('should raise error if actor is missing src property', async () => {
   const project = await createTestProject(tmpPath);
   expect(replaceUniqueIds(project.extractMachines('index.ts')))
     .toMatchInlineSnapshot(`
-    [
       [
-        {
-          "blocks": {},
-          "data": {
-            "context": {},
-          },
-          "edges": {},
-          "implementations": {
-            "actions": {},
-            "actors": {},
-            "guards": {},
-          },
-          "nodes": {
-            "state-0": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": "foo",
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
-              },
-              "parentId": undefined,
-              "type": "node",
-              "uniqueId": "state-0",
-            },
-            "state-1": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
-              },
-              "parentId": "state-0",
-              "type": "node",
-              "uniqueId": "state-1",
-            },
-          },
-          "root": "state-0",
-        },
         [
           {
-            "type": "state_property_unhandled",
+            "blocks": {},
+            "data": {
+              "context": {},
+            },
+            "edges": {},
+            "implementations": {
+              "actions": {},
+              "actors": {},
+              "guards": {},
+            },
+            "nodes": {
+              "state-0": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": "foo",
+                  "invoke": [],
+                  "key": "(machine)",
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": undefined,
+                "type": "node",
+                "uniqueId": "state-0",
+              },
+              "state-1": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "key": "foo",
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": "state-0",
+                "type": "node",
+                "uniqueId": "state-1",
+              },
+            },
+            "root": "state-0",
           },
+          [
+            {
+              "type": "state_property_unhandled",
+            },
+          ],
         ],
-      ],
-    ]
-  `);
+      ]
+    `);
 });
 
 test('should extract actor id if it is present with a string value', async () => {
@@ -692,76 +706,78 @@ test('should extract actor id if it is present with a string value', async () =>
   const project = await createTestProject(tmpPath);
   expect(replaceUniqueIds(project.extractMachines('index.ts')))
     .toMatchInlineSnapshot(`
-    [
       [
-        {
-          "blocks": {
-            "block-0": {
-              "blockType": "actor",
-              "parentId": "state-1",
-              "properties": {
-                "id": "user-provided-id",
-                "src": "actor1",
-              },
-              "sourceId": "actor1",
-              "uniqueId": "block-0",
-            },
-          },
-          "data": {
-            "context": {},
-          },
-          "edges": {},
-          "implementations": {
-            "actions": {},
-            "actors": {
-              "actor1": {
-                "id": "actor1",
-                "name": "actor1",
-                "type": "actor",
+        [
+          {
+            "blocks": {
+              "block-0": {
+                "blockType": "actor",
+                "parentId": "state-1",
+                "properties": {
+                  "id": "user-provided-id",
+                  "src": "actor1",
+                },
+                "sourceId": "actor1",
+                "uniqueId": "block-0",
               },
             },
-            "guards": {},
-          },
-          "nodes": {
-            "state-0": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": "foo",
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
-              },
-              "parentId": undefined,
-              "type": "node",
-              "uniqueId": "state-0",
+            "data": {
+              "context": {},
             },
-            "state-1": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [
-                  "block-0",
-                ],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
+            "edges": {},
+            "implementations": {
+              "actions": {},
+              "actors": {
+                "actor1": {
+                  "id": "actor1",
+                  "name": "actor1",
+                  "type": "actor",
+                },
               },
-              "parentId": "state-0",
-              "type": "node",
-              "uniqueId": "state-1",
+              "guards": {},
             },
+            "nodes": {
+              "state-0": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": "foo",
+                  "invoke": [],
+                  "key": "(machine)",
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": undefined,
+                "type": "node",
+                "uniqueId": "state-0",
+              },
+              "state-1": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [
+                    "block-0",
+                  ],
+                  "key": "foo",
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": "state-0",
+                "type": "node",
+                "uniqueId": "state-1",
+              },
+            },
+            "root": "state-0",
           },
-          "root": "state-0",
-        },
-        [],
-      ],
-    ]
-  `);
+          [],
+        ],
+      ]
+    `);
 });

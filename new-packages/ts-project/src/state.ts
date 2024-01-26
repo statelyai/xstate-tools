@@ -473,13 +473,14 @@ export function extractState(
   ctx: ExtractionContext,
   ts: typeof import('typescript'),
   state: Expression | undefined,
-  parentId: string | undefined,
+  { parentId, key }: { parentId: string | undefined; key: string },
 ): TreeNode | undefined {
   const node: Node = {
     type: 'node',
     uniqueId: uniqueId(),
     parentId,
     data: {
+      key,
       initial: undefined,
       type: 'normal',
       history: undefined,
@@ -515,11 +516,15 @@ export function extractState(
     return treeNode;
   }
 
-  forEachStaticProperty(ctx, ts, state, (prop, key) => {
-    switch (key) {
+  forEachStaticProperty(ctx, ts, state, (prop, propKey) => {
+    switch (propKey) {
       case 'id': {
         if (ts.isStringLiteralLike(prop.initializer)) {
           ctx.idMap[prop.initializer.text] = node.uniqueId;
+
+          if (!node.parentId) {
+            node.data.key = prop.initializer.text;
+          }
           return;
         }
         return;
@@ -610,12 +615,10 @@ export function extractState(
           if (ts.isPropertyAssignment(state)) {
             const childKey = getPropertyKey(ctx, ts, state);
             if (childKey) {
-              const childTreeNode = extractState(
-                ctx,
-                ts,
-                state.initializer,
-                node.uniqueId,
-              );
+              const childTreeNode = extractState(ctx, ts, state.initializer, {
+                parentId: node.uniqueId,
+                key: childKey,
+              });
               if (!childTreeNode) {
                 continue;
               }
@@ -724,7 +727,7 @@ export function extractState(
           return;
         }
 
-        registerActionBlocks(ctx, blocks, node.data[key]);
+        registerActionBlocks(ctx, blocks, node.data[propKey]);
         return;
       }
       case 'invoke': {
@@ -813,7 +816,7 @@ export function extractState(
         }
 
         for (const block of blocks) {
-          node.data[key].push(block.uniqueId);
+          node.data[propKey].push(block.uniqueId);
           ctx.digraph.blocks[block.uniqueId] = block;
           ctx.digraph.implementations.actors[block.sourceId] ??= {
             type: 'actor',

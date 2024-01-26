@@ -110,7 +110,10 @@ function extractMachineConfig(
   createMachineCall: CallExpression,
 ): readonly [ExtractorDigraphDef | undefined, ExtractionError[]] {
   const rootState = createMachineCall.arguments[0];
-  const rootNode = extractState(ctx, ts, rootState, undefined);
+  const rootNode = extractState(ctx, ts, rootState, {
+    parentId: undefined,
+    key: '(machine)', // acts as a default that might be overriden by `rootState.id`
+  });
 
   if (!rootNode) {
     return [undefined, ctx.errors];

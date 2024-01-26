@@ -57,6 +57,7 @@ test('should extract a string entry action (direct)', async () => {
                   "history": undefined,
                   "initial": undefined,
                   "invoke": [],
+                  "key": "(machine)",
                   "metaEntries": [],
                   "tags": [],
                   "type": "normal",
@@ -130,6 +131,7 @@ test('should extract a string exit action (direct)', async () => {
                   "history": undefined,
                   "initial": undefined,
                   "invoke": [],
+                  "key": "(machine)",
                   "metaEntries": [],
                   "tags": [],
                   "type": "normal",
@@ -203,6 +205,7 @@ test('should extract a string action (in array)', async () => {
                   "history": undefined,
                   "initial": undefined,
                   "invoke": [],
+                  "key": "(machine)",
                   "metaEntries": [],
                   "tags": [],
                   "type": "normal",
@@ -292,6 +295,7 @@ test('should extract multiple string actions', async () => {
                   "history": undefined,
                   "initial": undefined,
                   "invoke": [],
+                  "key": "(machine)",
                   "metaEntries": [],
                   "tags": [],
                   "type": "normal",
@@ -367,6 +371,7 @@ test('should extract a simple parameterized action (direct)', async () => {
                   "history": undefined,
                   "initial": undefined,
                   "invoke": [],
+                  "key": "(machine)",
                   "metaEntries": [],
                   "tags": [],
                   "type": "normal",
@@ -444,6 +449,7 @@ test('should extract a simple parameterized action (in array)', async () => {
                   "history": undefined,
                   "initial": undefined,
                   "invoke": [],
+                  "key": "(machine)",
                   "metaEntries": [],
                   "tags": [],
                   "type": "normal",
@@ -517,6 +523,7 @@ test('should extract an inline action (function)', async () => {
                   "history": undefined,
                   "initial": undefined,
                   "invoke": [],
+                  "key": "(machine)",
                   "metaEntries": [],
                   "tags": [],
                   "type": "normal",
@@ -592,6 +599,7 @@ test('should extract an inline action (builtin)', async () => {
                   "history": undefined,
                   "initial": undefined,
                   "invoke": [],
+                  "key": "(machine)",
                   "metaEntries": [],
                   "tags": [],
                   "type": "normal",
@@ -646,6 +654,7 @@ test('should error when extracting undefined action (direct)', async () => {
                   "history": undefined,
                   "initial": undefined,
                   "invoke": [],
+                  "key": "(machine)",
                   "metaEntries": [],
                   "tags": [],
                   "type": "normal",
@@ -704,6 +713,7 @@ test('should error when extracting undefined action (in array)', async () => {
                   "history": undefined,
                   "initial": undefined,
                   "invoke": [],
+                  "key": "(machine)",
                   "metaEntries": [],
                   "tags": [],
                   "type": "normal",
@@ -803,6 +813,7 @@ test('should extract a transition action', async () => {
                   "history": undefined,
                   "initial": undefined,
                   "invoke": [],
+                  "key": "(machine)",
                   "metaEntries": [],
                   "tags": [],
                   "type": "normal",
@@ -877,6 +888,7 @@ test('should not register multiple entry actions with duplicated entry property'
                   "history": undefined,
                   "initial": undefined,
                   "invoke": [],
+                  "key": "(machine)",
                   "metaEntries": [],
                   "tags": [],
                   "type": "normal",
@@ -914,78 +926,79 @@ test('should not register multiple transition actions with duplicated actions pr
   const project = await createTestProject(tmpPath);
   expect(replaceUniqueIds(project.extractMachines('index.ts')))
     .toMatchInlineSnapshot(`
-    [
       [
-        {
-          "blocks": {
-            "block-0": {
-              "blockType": "action",
-              "parentId": "edge-0",
-              "properties": {
-                "params": {},
-                "type": "callAnders",
-              },
-              "sourceId": "callAnders",
-              "uniqueId": "block-0",
-            },
-          },
-          "data": {
-            "context": {},
-          },
-          "edges": {
-            "edge-0": {
-              "data": {
-                "actions": [
-                  "block-0",
-                ],
-                "description": undefined,
-                "eventTypeData": {
-                  "eventType": "EVENT",
-                  "type": "named",
+        [
+          {
+            "blocks": {
+              "block-0": {
+                "blockType": "action",
+                "parentId": "edge-0",
+                "properties": {
+                  "params": {},
+                  "type": "callAnders",
                 },
-                "guard": undefined,
-                "internal": true,
-                "metaEntries": [],
-              },
-              "source": "state-0",
-              "targets": [],
-              "type": "edge",
-              "uniqueId": "edge-0",
-            },
-          },
-          "implementations": {
-            "actions": {
-              "callAnders": {
-                "id": "callAnders",
-                "name": "callAnders",
-                "type": "action",
+                "sourceId": "callAnders",
+                "uniqueId": "block-0",
               },
             },
-            "actors": {},
-            "guards": {},
-          },
-          "nodes": {
-            "state-0": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [],
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
-              },
-              "parentId": undefined,
-              "type": "node",
-              "uniqueId": "state-0",
+            "data": {
+              "context": {},
             },
+            "edges": {
+              "edge-0": {
+                "data": {
+                  "actions": [
+                    "block-0",
+                  ],
+                  "description": undefined,
+                  "eventTypeData": {
+                    "eventType": "EVENT",
+                    "type": "named",
+                  },
+                  "guard": undefined,
+                  "internal": true,
+                  "metaEntries": [],
+                },
+                "source": "state-0",
+                "targets": [],
+                "type": "edge",
+                "uniqueId": "edge-0",
+              },
+            },
+            "implementations": {
+              "actions": {
+                "callAnders": {
+                  "id": "callAnders",
+                  "name": "callAnders",
+                  "type": "action",
+                },
+              },
+              "actors": {},
+              "guards": {},
+            },
+            "nodes": {
+              "state-0": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [],
+                  "key": "(machine)",
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": undefined,
+                "type": "node",
+                "uniqueId": "state-0",
+              },
+            },
+            "root": "state-0",
           },
-          "root": "state-0",
-        },
-        [],
-      ],
-    ]
-  `);
+          [],
+        ],
+      ]
+    `);
 });
