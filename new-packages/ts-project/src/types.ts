@@ -119,7 +119,7 @@ export type Node = {
   uniqueId: string;
   parentId: string | undefined;
   data: {
-    // key: string;
+    key: string;
     type: 'normal' | 'parallel' | 'final' | 'history';
     history: 'shallow' | 'deep' | undefined;
     metaEntries: ExtractorMetaEntry[];
