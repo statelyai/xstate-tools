@@ -89,9 +89,11 @@ const createGuardBlock = ({
 function createEdge({
   sourceId,
   eventTypeData,
+  internal = true,
 }: {
   sourceId: string;
   eventTypeData: Edge['data']['eventTypeData'];
+  internal?: boolean;
 }): Edge {
   return {
     type: 'edge',
@@ -104,8 +106,7 @@ function createEdge({
       guard: undefined,
       description: undefined,
       metaEntries: [],
-      // TODO: to compute this correctly we need to know if we are extracting v4 or v5
-      internal: true,
+      internal,
     },
   };
 }
@@ -221,6 +222,19 @@ function registerActionBlocks(
   }
 }
 
+/**
+ * returns the auto-assigned internal value when no explicit configuration for this property is found
+ */
+function getImpliedInternalValue(
+  ctx: ExtractionContext,
+  targets: string[] | undefined,
+) {
+  if (ctx.xstateVersion !== '4') {
+    return true;
+  }
+  return targets ? targets.some((t) => t.startsWith('.')) : true;
+}
+
 function extractEdgeGroup(
   ctx: ExtractionContext,
   ts: typeof import('typescript'),
@@ -251,6 +265,7 @@ function extractEdgeGroup(
           createEdge({
             sourceId,
             eventTypeData,
+            internal: getImpliedInternalValue(ctx, [element.text]),
           }),
           [element.text],
         ];
@@ -269,6 +284,7 @@ function extractEdgeGroup(
         });
 
         let seenGuardProp = false;
+        let seenInternalProp = false;
 
         forEachStaticProperty(ctx, ts, element, (prop, key) => {
           switch (key) {
@@ -348,6 +364,49 @@ function extractEdgeGroup(
               registerActionBlocks(ctx, blocks, edge.data.actions);
               return;
             }
+            case 'internal': {
+              if (seenInternalProp) {
+                // `reenter` was already seen
+                ctx.errors.push({
+                  type: 'property_mixed',
+                });
+                return;
+              }
+              seenInternalProp = true;
+
+              if (findProperty(ctx, ts, element, 'reenter')) {
+                return;
+              }
+
+              if (prop.initializer.kind === ts.SyntaxKind.TrueKeyword) {
+                edge.data.internal = true;
+                return;
+              }
+              if (prop.initializer.kind === ts.SyntaxKind.FalseKeyword) {
+                edge.data.internal = false;
+                return;
+              }
+
+              return;
+            }
+            case 'reenter':
+              if (seenInternalProp) {
+                ctx.errors.push({
+                  type: 'property_mixed',
+                });
+              }
+              seenInternalProp = true;
+
+              if (prop.initializer.kind === ts.SyntaxKind.TrueKeyword) {
+                edge.data.internal = false;
+                return;
+              }
+              if (prop.initializer.kind === ts.SyntaxKind.FalseKeyword) {
+                edge.data.internal = true;
+                return;
+              }
+
+              return;
             case 'description': {
               edge.data.description = ts.isStringLiteralLike(prop.initializer)
                 ? prop.initializer.text
@@ -360,6 +419,10 @@ function extractEdgeGroup(
             }
           }
         });
+
+        if (!seenInternalProp) {
+          edge.data.internal = getImpliedInternalValue(ctx, targets);
+        }
 
         return [edge, targets];
       }

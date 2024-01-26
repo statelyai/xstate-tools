@@ -1,5 +1,9 @@
 import type { SourceFile } from 'typescript';
 
+// it's acting as a threshold - atm there is no need to know the exact version
+// strings are used to allow for future minor versions
+export type XStateVersion = '4' | '5';
+
 export interface TreeNode {
   uniqueId: string;
   parentId: string | undefined;
@@ -8,6 +12,7 @@ export interface TreeNode {
 
 export interface ExtractionContext {
   sourceFile: SourceFile;
+  xstateVersion: XStateVersion;
   errors: ExtractionError[];
   digraph: Pick<
     ExtractorDigraphDef,

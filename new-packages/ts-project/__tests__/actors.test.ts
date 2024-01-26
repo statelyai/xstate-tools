@@ -75,6 +75,7 @@ test('should extract an actor with string src (direct)', async () => {
       ]
     `);
 });
+
 test('should extract multiple actors with different string sources (direct)', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
@@ -208,6 +209,7 @@ test('should extract multiple actors with different string sources (direct)', as
       ]
     `);
 });
+
 test('should extract multiple actors with the same string source (direct)', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
@@ -336,6 +338,7 @@ test('should extract multiple actors with the same string source (direct)', asyn
       ]
     `);
 });
+
 test('should extract multiple actors with string source (array)', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
@@ -452,6 +455,7 @@ test('should extract multiple actors with string source (array)', async () => {
       ]
     `);
 });
+
 test('should extract actor with inline source (direct)', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
@@ -585,6 +589,7 @@ test('should extract actor with inline source (direct)', async () => {
       ]
     `);
 });
+
 test('should raise error if actor is missing src property', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
@@ -663,6 +668,7 @@ test('should raise error if actor is missing src property', async () => {
     ]
   `);
 });
+
 test('should extract actor id if it is present with a string value', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),

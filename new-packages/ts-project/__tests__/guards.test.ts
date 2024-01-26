@@ -134,6 +134,7 @@ test('should extract guard from transition (string)', async () => {
       ]
     `);
 });
+
 test('should extract guard (inline)', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
@@ -267,6 +268,7 @@ test('should extract guard (inline)', async () => {
       ]
     `);
 });
+
 test('should extract parameterized guards', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
@@ -402,6 +404,7 @@ test('should extract parameterized guards', async () => {
       ]
     `);
 });
+
 test('should extract higher order guards as inline', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
@@ -535,6 +538,7 @@ test('should extract higher order guards as inline', async () => {
       ]
     `);
 });
+
 test('should extract multiple guards', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
@@ -767,6 +771,7 @@ test('should extract multiple guards', async () => {
       ]
     `);
 });
+
 test('should support XState v4 guard', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
@@ -900,6 +905,7 @@ test('should support XState v4 guard', async () => {
       ]
     `);
 });
+
 test('should raise error if both guard and cond are provided, pick guard over cond and extract transition (cond before guard)', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
@@ -1298,6 +1304,7 @@ test('should raise error for parameterized guard is missing type property', asyn
       ]
     `);
 });
+
 test('should raise error for parameterized guard with invalid type property', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
