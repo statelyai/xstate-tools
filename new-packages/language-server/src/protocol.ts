@@ -1,10 +1,11 @@
+import { ExtractorDigraphDef } from '@xstate/ts-project';
 import * as vscode from 'vscode-languageserver-protocol';
 
-export const helloRequest = new vscode.RequestType<
+export const getMachineAtIndex = new vscode.RequestType<
   {
-    textDocument?: vscode.TextDocumentIdentifier | undefined;
-    name: string;
+    uri: string;
+    machineIndex: number;
   },
-  boolean,
+  ExtractorDigraphDef | undefined,
   never
->('xstate/hello');
+>('stately-xstate/get-machine-at-index');

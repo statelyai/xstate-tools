@@ -1,8 +1,16 @@
 import { RequestType, getTsdk } from '@volar/vscode';
 import { LanguageClient, TransportKind } from '@volar/vscode/node.js';
-import { helloRequest } from '@xstate/language-server/protocol';
+import { getMachineAtIndex } from '@xstate/language-server/protocol';
+import type { ExtractorDigraphDef } from '@xstate/ts-project';
 import * as vscode from 'vscode';
-import { ActorRef, Snapshot, fromCallback, fromPromise, setup } from 'xstate';
+import {
+  ActorRef,
+  Snapshot,
+  assertEvent,
+  fromCallback,
+  fromPromise,
+  setup,
+} from 'xstate';
 import { assertExtendedEvent } from './utils';
 import { webviewLogic } from './webview';
 
@@ -14,7 +22,7 @@ type LanguageClientInput = {
 export type LanguageClientEvent =
   | { type: 'SERVER_ENABLED_CHANGE' }
   | { type: 'WEBVIEW_CLOSED' }
-  | { type: 'OPEN_MACHINE' };
+  | { type: 'OPEN_MACHINE'; digraph: ExtractorDigraphDef };
 
 export const languageClientMachine = setup({
   types: {} as {
@@ -51,22 +59,34 @@ export const languageClientMachine = setup({
     ),
     registerCommands: fromCallback(
       ({
-        input: { languageClient },
+        input: { languageClient, parent },
       }: {
-        input: { languageClient: LanguageClient };
+        input: {
+          languageClient: LanguageClient;
+          parent: ActorRef<Snapshot<unknown>, LanguageClientEvent>;
+        };
       }) => {
         const disposable = vscode.commands.registerCommand(
-          'xstate.hello',
-          () => {
-            const activeTextEditorUri =
-              vscode.window.activeTextEditor?.document.uri.toString();
-            sendRequest(languageClient, helloRequest, {
-              name: 'Andarist',
-              textDocument: activeTextEditorUri
-                ? {
-                    uri: activeTextEditorUri,
-                  }
-                : undefined,
+          'stately-xstate/edit-machine',
+          (uri: string, machineIndex: number) => {
+            // TODO: actually use this token to cancel redundant requests
+            const tokenSource = new vscode.CancellationTokenSource();
+            sendRequest(
+              languageClient,
+              getMachineAtIndex,
+              {
+                uri,
+                machineIndex,
+              },
+              tokenSource.token,
+            ).then((digraph) => {
+              if (!digraph) {
+                return;
+              }
+              parent.send({
+                type: 'OPEN_MACHINE',
+                digraph,
+              });
             });
           },
         );
@@ -155,10 +175,10 @@ export const languageClientMachine = setup({
         },
         active: {
           invoke: {
-            // TODO: what about commands executed before we get here?
             src: 'registerCommands',
-            input: ({ context }) => ({
+            input: ({ context, self }) => ({
               languageClient: context.languageClient,
+              parent: self,
             }),
           },
           initial: 'webviewClosed',
@@ -172,10 +192,14 @@ export const languageClientMachine = setup({
               invoke: {
                 src: 'webviewLogic',
                 id: 'webview',
-                input: ({ context, self }) => ({
-                  extensionContext: context.extensionContext,
-                  parent: self,
-                }),
+                input: ({ context, event, self }) => {
+                  assertEvent(event, 'OPEN_MACHINE');
+                  return {
+                    extensionContext: context.extensionContext,
+                    parent: self,
+                    digraph: event.digraph,
+                  };
+                },
               },
               on: {
                 WEBVIEW_CLOSED: 'webviewClosed',
@@ -202,9 +226,10 @@ export const languageClientMachine = setup({
  * This mitigates the problem by defining 1 focused signature.
  */
 function sendRequest<P, R, E>(
-  client: LanguageClient | undefined,
+  client: LanguageClient,
   request: RequestType<P, R, E>,
   params: P,
-): Promise<R> | undefined {
-  return client?.sendRequest(request, params);
+  token: vscode.CancellationToken,
+): Promise<R> {
+  return client.sendRequest(request, params, token);
 }
