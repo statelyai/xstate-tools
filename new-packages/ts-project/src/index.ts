@@ -7,6 +7,7 @@ import {
   TreeNode,
   XStateVersion,
 } from './types';
+export { ExtractorDigraphDef };
 
 function findCreateMachineCalls(
   ts: typeof import('typescript'),
@@ -138,12 +139,34 @@ export interface TSProjectOptions {
   xstateVersion?: XStateVersion | undefined;
 }
 
+interface Position {
+  line: number;
+  character: number;
+}
+
+interface Range {
+  start: Position;
+  end: Position;
+}
+
 export function createProject(
   ts: typeof import('typescript'),
   tsProgram: Program,
   { xstateVersion = '5' }: TSProjectOptions = {},
 ) {
   return {
+    findMachines: (fileName: string): Range[] => {
+      const sourceFile = tsProgram.getSourceFile(fileName);
+      if (!sourceFile) {
+        return [];
+      }
+      return findCreateMachineCalls(ts, sourceFile).map((call) => {
+        return {
+          start: sourceFile.getLineAndCharacterOfPosition(call.getStart()),
+          end: sourceFile.getLineAndCharacterOfPosition(call.getEnd()),
+        };
+      });
+    },
     extractMachines(fileName: string) {
       const sourceFile = tsProgram.getSourceFile(fileName);
       if (!sourceFile) {

@@ -1,3 +1,4 @@
+import type { ExtractorDigraphDef } from '@xstate/ts-project';
 import * as vscode from 'vscode';
 import { ActorRef, EventObject, Snapshot, fromCallback } from 'xstate';
 import { LanguageClientEvent } from './languageClient';
@@ -25,6 +26,11 @@ function createWebviewPanel() {
 async function getWebviewHtml(
   extensionContext: vscode.ExtensionContext,
   webviewPanel: vscode.WebviewPanel,
+  {
+    digraph,
+  }: {
+    digraph: ExtractorDigraphDef;
+  },
 ) {
   const bundledEditorRootUri = vscode.Uri.joinPath(
     vscode.Uri.file(extensionContext.extensionPath),
@@ -43,15 +49,18 @@ async function getWebviewHtml(
   const theme =
     vscode.workspace.getConfiguration('xstate').get('theme') ?? 'dark';
 
-  const initialDataScript = `<script>window.__params = ${JSON.stringify({
-    themeKind:
-      theme === 'auto'
-        ? vscode.window.activeColorTheme.kind === vscode.ColorThemeKind.Dark
-          ? 'dark'
-          : 'light'
-        : theme,
-    distinctId: `vscode:${vscode.env.machineId}`,
-  })}</script>`;
+  const initialDataScript = `<script>window.__vscodeInitParams = ${JSON.stringify(
+    {
+      themeKind:
+        theme === 'auto'
+          ? vscode.window.activeColorTheme.kind === vscode.ColorThemeKind.Dark
+            ? 'dark'
+            : 'light'
+          : theme,
+      distinctId: `vscode:${vscode.env.machineId}`,
+      digraph,
+    },
+  )}</script>`;
 
   return htmlContent.replace('<head>', `<head>${baseTag}${initialDataScript}`);
 }
@@ -61,8 +70,9 @@ export const webviewLogic = fromCallback<
   {
     extensionContext: vscode.ExtensionContext;
     parent: ActorRef<Snapshot<unknown>, LanguageClientEvent>;
+    digraph: ExtractorDigraphDef;
   }
->(({ input: { extensionContext, parent }, receive }) => {
+>(({ input: { extensionContext, parent, digraph }, receive }) => {
   let canceled = false;
   const webviewPanel = createWebviewPanel();
 
@@ -80,7 +90,9 @@ export const webviewLogic = fromCallback<
   );
 
   (async () => {
-    const html = await getWebviewHtml(extensionContext, webviewPanel);
+    const html = await getWebviewHtml(extensionContext, webviewPanel, {
+      digraph,
+    });
     if (canceled) {
       return;
     }

@@ -38,13 +38,6 @@
           }
         }
       }
-    ],
-    "commands": [
-      {
-        "command": "xstate.hello",
-        "title": "Hello from XState!",
-        "category": "XState"
-      }
     ]
   }
 }
