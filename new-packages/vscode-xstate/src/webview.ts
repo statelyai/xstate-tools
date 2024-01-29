@@ -80,10 +80,7 @@ export const webviewLogic = fromCallback<
     switch (event.type) {
       case 'UPDATE_DIGRAPH':
         webviewPanel.reveal(vscode.ViewColumn.Beside);
-        webviewPanel.webview.postMessage({
-          type: 'UPDATE_DIGRAPH',
-          digraph: event.digraph,
-        });
+        webviewPanel.webview.postMessage(event);
         return;
       default:
         event.type satisfies never;
