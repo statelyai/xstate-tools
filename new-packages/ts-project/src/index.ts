@@ -1,6 +1,6 @@
 import type { CallExpression, Program, SourceFile } from 'typescript';
 import { extractState } from './state';
-import {
+import type {
   ExtractionContext,
   ExtractionError,
   ExtractorDigraphDef,
