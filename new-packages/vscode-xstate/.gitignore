@@ -1,0 +1,2 @@
+# to prevent accidental commits and merge conflicts we'll add the bundled editor files forcefully when needed
+bundled-editor
