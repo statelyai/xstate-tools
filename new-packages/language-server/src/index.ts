@@ -9,7 +9,7 @@ import {
   Provide,
   create as createTypeScriptService,
 } from 'volar-service-typescript';
-import { getMachineAtIndex } from './protocol';
+import { applyPatches, getMachineAtIndex } from './protocol';
 
 const projectCache = new WeakMap<Program, XStateProject>();
 
@@ -79,6 +79,25 @@ connection.onRequest(getMachineAtIndex, async ({ uri, machineIndex }) => {
   )[machineIndex];
 
   return digraph;
+});
+
+connection.onRequest(applyPatches, async ({ uri, machineIndex, patches }) => {
+  const xstateProject = await getXStateProject(uri);
+
+  if (!xstateProject) {
+    return [];
+  }
+
+  const edits = xstateProject.applyPatches({
+    fileName: server.env.uriToFileName(uri),
+    machineIndex,
+    patches,
+  });
+
+  return edits.map(({ fileName, ...rest }) => ({
+    ...rest,
+    uri: server.env.fileNameToUri(fileName),
+  }));
 });
 
 connection.onInitialized(() => {

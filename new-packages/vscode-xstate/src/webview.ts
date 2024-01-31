@@ -1,7 +1,7 @@
 import type { ExtractorDigraphDef } from '@xstate/ts-project';
 import * as vscode from 'vscode';
-import { ActorRef, Snapshot, fromCallback } from 'xstate';
-import { LanguageClientEvent } from './languageClient';
+import { ActorRef, ExtractEvent, Snapshot, fromCallback } from 'xstate';
+import { LanguageClientEvent, OpenMachineData } from './languageClient';
 
 // this should not be an async function, it should return `webviewPanel` synchronously
 // to allow the consumer to start listening to events from the webview immediately
@@ -26,11 +26,9 @@ function createWebviewPanel() {
 async function getWebviewHtml(
   extensionContext: vscode.ExtensionContext,
   webviewPanel: vscode.WebviewPanel,
-  {
-    digraph,
-  }: {
+  params: {
     digraph: ExtractorDigraphDef;
-  },
+  } & OpenMachineData,
 ) {
   const bundledEditorRootUri = vscode.Uri.joinPath(
     vscode.Uri.file(extensionContext.extensionPath),
@@ -58,7 +56,7 @@ async function getWebviewHtml(
             : 'light'
           : theme,
       distinctId: `vscode:${vscode.env.machineId}`,
-      digraph,
+      ...params,
     },
   )}</script>`;
 
@@ -66,19 +64,19 @@ async function getWebviewHtml(
 }
 
 export const webviewLogic = fromCallback<
-  { type: 'UPDATE_DIGRAPH'; digraph: ExtractorDigraphDef },
+  ExtractEvent<LanguageClientEvent, 'OPEN_MACHINE'>,
   {
     extensionContext: vscode.ExtensionContext;
     parent: ActorRef<Snapshot<unknown>, LanguageClientEvent>;
     digraph: ExtractorDigraphDef;
-  }
->(({ input: { extensionContext, parent, digraph }, receive }) => {
+  } & OpenMachineData
+>(({ input: { extensionContext, parent, ...initialParams }, receive }) => {
   let canceled = false;
   const webviewPanel = createWebviewPanel();
 
   receive((event) => {
     switch (event.type) {
-      case 'UPDATE_DIGRAPH':
+      case 'OPEN_MACHINE':
         webviewPanel.reveal(vscode.ViewColumn.Beside);
         webviewPanel.webview.postMessage(event);
         return;
@@ -88,8 +86,9 @@ export const webviewLogic = fromCallback<
   });
 
   const disposable = vscode.Disposable.from(
-    webviewPanel.webview.onDidReceiveMessage((event: LanguageClientEvent) =>
-      parent.send(event),
+    webviewPanel.webview.onDidReceiveMessage(
+      (event: ExtractEvent<LanguageClientEvent, 'APPLY_PATCHES'>) =>
+        parent.send(event),
     ),
     webviewPanel.onDidDispose(() => {
       parent.send({ type: 'WEBVIEW_CLOSED' });
@@ -97,9 +96,11 @@ export const webviewLogic = fromCallback<
   );
 
   (async () => {
-    const html = await getWebviewHtml(extensionContext, webviewPanel, {
-      digraph,
-    });
+    const html = await getWebviewHtml(
+      extensionContext,
+      webviewPanel,
+      initialParams,
+    );
     if (canceled) {
       return;
     }
