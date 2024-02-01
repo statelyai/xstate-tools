@@ -1,9 +1,16 @@
-import type { ExtractorDigraphDef, Patch, TextEdit } from '@xstate/ts-project';
+import type { ExtractorDigraphDef, Patch } from '@xstate/ts-project';
 import * as vscode from 'vscode-languageserver-protocol';
 
 type DistributiveOmit<T, K extends PropertyKey> = T extends unknown
   ? Omit<T, K>
   : never;
+
+type TextEdit = DistributiveOmit<
+  import('@xstate/ts-project').TextEdit,
+  'fileName'
+> & {
+  uri: string;
+};
 
 export const getMachineAtIndex = new vscode.RequestType<
   {
@@ -20,6 +27,6 @@ export const applyPatches = new vscode.RequestType<
     machineIndex: number;
     patches: Patch[];
   },
-  (DistributiveOmit<TextEdit, 'fileName'> & { uri: string })[],
+  TextEdit[],
   never
 >('stately-xstate/apply-patches');
