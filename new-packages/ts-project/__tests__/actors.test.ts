@@ -110,22 +110,22 @@ test('should extract multiple actors with different string sources (direct)', as
             "blocks": {
               "block-0": {
                 "blockType": "actor",
-                "parentId": "state-1",
+                "parentId": "state-2",
                 "properties": {
                   "id": "inline:actor-id-0",
-                  "src": "actor1",
+                  "src": "actor2",
                 },
-                "sourceId": "actor1",
+                "sourceId": "actor2",
                 "uniqueId": "block-0",
               },
               "block-1": {
                 "blockType": "actor",
-                "parentId": "state-2",
+                "parentId": "state-1",
                 "properties": {
                   "id": "inline:actor-id-1",
-                  "src": "actor2",
+                  "src": "actor1",
                 },
-                "sourceId": "actor2",
+                "sourceId": "actor1",
                 "uniqueId": "block-1",
               },
             },
@@ -175,7 +175,7 @@ test('should extract multiple actors with different string sources (direct)', as
                   "history": undefined,
                   "initial": undefined,
                   "invoke": [
-                    "block-0",
+                    "block-1",
                   ],
                   "key": "foo",
                   "metaEntries": [],
@@ -194,7 +194,7 @@ test('should extract multiple actors with different string sources (direct)', as
                   "history": undefined,
                   "initial": undefined,
                   "invoke": [
-                    "block-1",
+                    "block-0",
                   ],
                   "key": "bar",
                   "metaEntries": [],
@@ -247,7 +247,7 @@ test('should extract multiple actors with the same string source (direct)', asyn
             "blocks": {
               "block-0": {
                 "blockType": "actor",
-                "parentId": "state-1",
+                "parentId": "state-2",
                 "properties": {
                   "id": "inline:actor-id-0",
                   "src": "actor1",
@@ -257,7 +257,7 @@ test('should extract multiple actors with the same string source (direct)', asyn
               },
               "block-1": {
                 "blockType": "actor",
-                "parentId": "state-2",
+                "parentId": "state-1",
                 "properties": {
                   "id": "inline:actor-id-1",
                   "src": "actor1",
@@ -307,7 +307,7 @@ test('should extract multiple actors with the same string source (direct)', asyn
                   "history": undefined,
                   "initial": undefined,
                   "invoke": [
-                    "block-0",
+                    "block-1",
                   ],
                   "key": "foo",
                   "metaEntries": [],
@@ -326,7 +326,7 @@ test('should extract multiple actors with the same string source (direct)', asyn
                   "history": undefined,
                   "initial": undefined,
                   "invoke": [
-                    "block-1",
+                    "block-0",
                   ],
                   "key": "bar",
                   "metaEntries": [],
@@ -498,7 +498,7 @@ test('should extract actor with inline source (direct)', async () => {
             "blocks": {
               "block-0": {
                 "blockType": "actor",
-                "parentId": "state-1",
+                "parentId": "state-2",
                 "properties": {
                   "id": "inline:actor-id-0",
                   "src": "inline:actor-0",
@@ -508,7 +508,7 @@ test('should extract actor with inline source (direct)', async () => {
               },
               "block-1": {
                 "blockType": "actor",
-                "parentId": "state-2",
+                "parentId": "state-1",
                 "properties": {
                   "id": "inline:actor-id-1",
                   "src": "inline:actor-1",
@@ -563,7 +563,7 @@ test('should extract actor with inline source (direct)', async () => {
                   "history": undefined,
                   "initial": undefined,
                   "invoke": [
-                    "block-0",
+                    "block-1",
                   ],
                   "key": "foo",
                   "metaEntries": [],
@@ -582,7 +582,7 @@ test('should extract actor with inline source (direct)', async () => {
                   "history": undefined,
                   "initial": undefined,
                   "invoke": [
-                    "block-1",
+                    "block-0",
                   ],
                   "key": "bar",
                   "metaEntries": [],

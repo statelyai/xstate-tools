@@ -6,7 +6,13 @@ import { onExit } from 'signal-exit';
 import { temporaryDirectory } from 'tempy';
 import typescript from 'typescript';
 import { TSProjectOptions, XStateProject, createProject } from '../src/index';
-import { ActorBlock } from '../src/types';
+import { ActorBlock, ExtractorDigraphDef } from '../src/types';
+
+function assert(value: unknown): asserts value {
+  if (!value) {
+    throw new Error('It should not happen.');
+  }
+}
 
 export const js = outdent;
 export const ts = outdent;
@@ -142,6 +148,49 @@ function replaceUniqueIdsRecursively(
   return input;
 }
 
+// this is completely redundant but it keeps snapshots more readable for now
+// it's easier to correlate the created nodes if their ordered replacements are in the source order
+function getNodeSourceOrders(digraph: ExtractorDigraphDef) {
+  const rootNode: {
+    id: string;
+    parent: string | undefined;
+    children: string[];
+  } = {
+    id: digraph.root,
+    parent: undefined,
+    children: [],
+  };
+  const treeNodes = new Map([[rootNode.id, rootNode]]);
+  for (const [id, node] of Object.entries(digraph.nodes).slice(1)) {
+    // the root node (the only parentless node) has been skipped with the slice above
+    assert(node.parentId);
+    const treeNode: typeof rootNode = {
+      id,
+      parent: node.parentId,
+      children: [],
+    };
+
+    treeNodes.set(id, treeNode);
+    const parentNode = treeNodes.get(node.parentId);
+    // parents come always before their children so this access should be safe
+    assert(parentNode);
+    parentNode.children.push(id);
+  }
+
+  const orderMap: Record<string, number> = {};
+  let counter = 0;
+
+  (function visit(n) {
+    orderMap[n.id] = counter++;
+
+    for (let i = n.children.length - 1; i >= 0; i--) {
+      visit(treeNodes.get(n.children[i])!);
+    }
+  })(rootNode);
+
+  return orderMap;
+}
+
 export function replaceUniqueIds(
   extracted: ReturnType<XStateProject['extractMachines']>,
 ) {
@@ -149,6 +198,8 @@ export function replaceUniqueIds(
     if (!digraph) {
       return [digraph, errors];
     }
+
+    const nodeSourceOrders = getNodeSourceOrders(digraph);
 
     const replacements = Object.fromEntries([
       ...Object.keys(digraph.blocks).map(
@@ -161,7 +212,9 @@ export function replaceUniqueIds(
           (block, i) => [block.properties.id, `inline:actor-id-${i}`] as const,
         ),
       ...Object.keys(digraph.edges).map((id, i) => [id, `edge-${i}`] as const),
-      ...Object.keys(digraph.nodes).map((id, i) => [id, `state-${i}`] as const),
+      ...Object.keys(digraph.nodes)
+        .sort((a, b) => nodeSourceOrders[a] - nodeSourceOrders[b])
+        .map((id, i) => [id, `state-${i}`] as const),
 
       ...Object.keys(digraph.implementations.actions)
         .filter((key) => key.startsWith('inline:'))

@@ -185,6 +185,11 @@ export function createProject(
           treeNodes: {},
           idMap: {},
           originalTargets: {},
+          currentAstPath: [],
+          astPaths: {
+            nodes: {},
+            edges: {},
+          },
         };
         return extractMachineConfig(ctx, ts, call);
       });

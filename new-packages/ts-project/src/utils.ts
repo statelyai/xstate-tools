@@ -1,10 +1,9 @@
 import type {
   Expression,
-  ObjectLiteralElement,
   ObjectLiteralExpression,
   PropertyAssignment,
 } from 'typescript';
-import { ExtractionContext, JsonObject, JsonValue } from './types';
+import { AstPath, ExtractionContext, JsonObject, JsonValue } from './types';
 
 export const uniqueId = () => {
   return Math.random().toString(36).substring(2);
@@ -118,12 +117,18 @@ export const getJsonObject = (
 };
 
 export function mapMaybeArrayElements<T>(
+  ctx: ExtractionContext,
   ts: typeof import('typescript'),
   expression: Expression,
   cb: (element: Expression, index: number) => T,
 ): T[] {
   if (ts.isArrayLiteralExpression(expression)) {
-    return expression.elements.map((element, index) => cb(element, index));
+    return expression.elements.map((element, index) => {
+      enterAstPathSegment(ctx, index);
+      const result = cb(element, index);
+      exitAstPathSegment(ctx);
+      return result;
+    });
   } else {
     return [cb(expression, 0)];
   }
@@ -150,13 +155,22 @@ export function findProperty(
   }
 }
 
+function enterAstPathSegment(ctx: ExtractionContext, segment: AstPath[number]) {
+  ctx.currentAstPath.push(segment);
+}
+
+function exitAstPathSegment(ctx: ExtractionContext) {
+  ctx.currentAstPath.pop();
+}
+
 export function forEachStaticProperty(
   ctx: ExtractionContext,
   ts: typeof import('typescript'),
   obj: ObjectLiteralExpression,
   cb: (prop: PropertyAssignment, key: string) => void,
+  { allowDuplicates = false }: { allowDuplicates?: boolean } = {},
 ) {
-  const seen = new Set<string>();
+  const seen = !allowDuplicates ? new Set<string>() : undefined;
   for (let i = obj.properties.length - 1; i >= 0; i--) {
     const prop = obj.properties[i];
 
@@ -171,11 +185,14 @@ export function forEachStaticProperty(
       continue;
     }
 
-    if (seen.has(key)) {
+    if (seen?.has(key)) {
       continue;
     }
 
-    seen.add(key);
+    seen?.add(key);
+
+    enterAstPathSegment(ctx, i);
     cb(prop, key);
+    exitAstPathSegment(ctx);
   }
 }

@@ -10,6 +10,8 @@ export interface TreeNode {
   children: Record<string, TreeNode>;
 }
 
+type AstPath = (string | number)[];
+
 export interface ExtractionContext {
   sourceFile: SourceFile;
   xstateVersion: XStateVersion;
@@ -21,6 +23,11 @@ export interface ExtractionContext {
   treeNodes: Record<string, TreeNode>;
   idMap: Record<string, string>;
   originalTargets: Record<string, string[]>;
+  currentAstPath: AstPath;
+  astPaths: {
+    nodes: Record<string, AstPath>;
+    edges: Record<string, AstPath>;
+  };
 }
 
 // TODO: add error location/span
