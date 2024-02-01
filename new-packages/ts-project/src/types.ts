@@ -10,7 +10,7 @@ export interface TreeNode {
   children: Record<string, TreeNode>;
 }
 
-type AstPath = (string | number)[];
+export type AstPath = (string | number)[];
 
 export interface ExtractionContext {
   sourceFile: SourceFile;

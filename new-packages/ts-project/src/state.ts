@@ -24,6 +24,7 @@ import {
   isUndefined,
   mapMaybeArrayElements,
   uniqueId,
+  withAstPathSegment,
 } from './utils';
 
 const createActionBlock = ({
@@ -625,29 +626,29 @@ export function extractState(
           });
           return;
         }
-        forEachStaticProperty(
-          ctx,
-          ts,
-          prop.initializer,
-          (childState, childKey) => {
-            const childTreeNode = extractState(
-              ctx,
-              ts,
-              childState.initializer,
-              {
-                parentId: node.uniqueId,
-                key: childKey,
-              },
-            );
-            if (!childTreeNode) {
-              return;
+        for (let i = 0; i < prop.initializer.properties.length; i++) {
+          const childState = prop.initializer.properties[i];
+          if (ts.isPropertyAssignment(childState)) {
+            const childKey = getPropertyKey(ctx, ts, childState);
+            if (childKey) {
+              const childTreeNode = withAstPathSegment(ctx, i, () =>
+                extractState(ctx, ts, childState.initializer, {
+                  parentId: node.uniqueId,
+                  key: childKey,
+                }),
+              );
+              if (!childTreeNode) {
+                return;
+              }
+              treeNode.children[childKey] = childTreeNode;
             }
-            treeNode.children[childKey] ??= childTreeNode;
-          },
-          {
-            allowDuplicates: true,
-          },
-        );
+            continue;
+          }
+          ctx.errors.push({
+            type: 'state_property_unhandled',
+          });
+          continue;
+        }
         return;
       case 'initial': {
         if (ts.isStringLiteralLike(prop.initializer)) {
