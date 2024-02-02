@@ -25,7 +25,7 @@ test('should extract guard from transition (string)', async () => {
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -162,7 +162,7 @@ test('should extract guard (inline)', async () => {
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -301,7 +301,7 @@ test('should extract parameterized guards', async () => {
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -438,7 +438,7 @@ test('should extract higher order guards as inline', async () => {
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -590,7 +590,7 @@ test('should extract multiple guards', async () => {
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -812,7 +812,7 @@ test('should support XState v4 guard', async () => {
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -950,7 +950,7 @@ test('should raise error if both guard and cond are provided, pick guard over co
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -1092,7 +1092,7 @@ test('should raise error if both guard and cond are provided, pick guard over co
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -1233,7 +1233,7 @@ test('should raise error for parameterized guard is missing type property', asyn
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -1359,7 +1359,7 @@ test('should raise error for parameterized guard with invalid type property', as
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [

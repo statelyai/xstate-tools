@@ -21,7 +21,7 @@ test('should extract transition to a sibling (direct string)', async () => {
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -137,7 +137,7 @@ test('should extract transition to a sibling (string in array)', async () => {
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -253,7 +253,7 @@ test('should extract transition to a sibling (direct object with target)', async
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -369,7 +369,7 @@ test('should extract transition to a sibling (object with target in array)', asy
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -487,7 +487,7 @@ test('should extract transition to a child', async () => {
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -605,7 +605,7 @@ test('should extract transition to an ID', async () => {
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -722,7 +722,7 @@ test('should extract multiple transitions (array of strings)', async () => {
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -875,7 +875,7 @@ test('should extract multiple transitions (array of objects)', async () => {
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -1028,7 +1028,7 @@ test('should extract multiple transitions (mixed array)', async () => {
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -1194,7 +1194,7 @@ test('should extract transition with multiple targets (array of strings)', async
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -1378,7 +1378,7 @@ test('should extract forbidden transition (undefined)', async () => {
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -1474,7 +1474,7 @@ test('should extract forbidden transition (null)', async () => {
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -1579,7 +1579,7 @@ test('should extract deep sibling transition', async () => {
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -1735,7 +1735,7 @@ test('should extract deep descendant transition', async () => {
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -1877,7 +1877,7 @@ test('should extract transition to a deep child of an ID target', async () => {
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -2027,7 +2027,7 @@ test('should extract a wildcard transition', async () => {
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -2144,7 +2144,7 @@ test('should extract transition description (single-line)', async () => {
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -2239,7 +2239,7 @@ test('should extract an always transition (direct string)', async () => {
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -2356,7 +2356,7 @@ test('should extract invoke.onDone transition (with invoke.id)', async () => {
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -2492,7 +2492,7 @@ test('should extract invoke.onDone transition (without invoke.id)', async () => 
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -2631,7 +2631,7 @@ test('should extract invoke.onDone action', async () => {
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -2786,7 +2786,7 @@ test('should extract invoke.onError transition (with invoke.id)', async () => {
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -2922,7 +2922,7 @@ test('should extract invoke.onError transition (without invoke.id)', async () =>
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -3063,7 +3063,7 @@ test('should extract transition description (multi-line)', async () => {
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -3161,7 +3161,7 @@ test('should extract state.onDone transition (direct string)', async () => {
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -3289,7 +3289,7 @@ test("should extract transition.meta when it's a javascript object", async () =>
 
   const project = await createTestProject(tmpPath);
 
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -3442,7 +3442,7 @@ test("should extract transition.meta when it's a javascript object containing ne
 
   const project = await createTestProject(tmpPath);
 
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -3588,7 +3588,7 @@ test("should extract transition.meta when it's a javascript object and contains 
 
   const project = await createTestProject(tmpPath);
 
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -3719,7 +3719,7 @@ test('should not raise error for transition.meta with undefined value', async ()
 
   const project = await createTestProject(tmpPath);
 
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -3840,7 +3840,7 @@ test('should raise error when transition.meta contains any value other than a pl
 
   const project = await createTestProject(tmpPath);
 
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -3961,7 +3961,7 @@ test('should extract after transition (number delay)', async () => {
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -4078,7 +4078,7 @@ test('should extract delayed transition (identifier delay)', async () => {
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -4195,7 +4195,7 @@ test('should extract after transition (string with whitespace delay)', async () 
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -4314,7 +4314,7 @@ test('should extract multiple delayed transitions', async () => {
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -4484,7 +4484,7 @@ test('should extract a sibling transition as internal by default (direct string)
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -4603,7 +4603,7 @@ test('should extract a descendant transition as internal by default (direct stri
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -4720,7 +4720,7 @@ test('should extract a sibling transition as internal by default (direct object 
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -4841,7 +4841,7 @@ test('should extract a descendant transition as internal by default (direct obje
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -4958,7 +4958,7 @@ test('should extract an explicit reentering transition as not internal', async (
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -5075,7 +5075,7 @@ test('should extract an explicit non-reentering transition as internal', async (
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -5192,7 +5192,7 @@ test('should extract a sibling transition as not internal by default (direct str
   });
 
   const project = await createTestProject(tmpPath, { xstateVersion: '4' });
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -5311,7 +5311,7 @@ test('should extract a descendant transition as internal by default (direct stri
   });
 
   const project = await createTestProject(tmpPath, { xstateVersion: '4' });
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -5428,7 +5428,7 @@ test('should extract a sibling transition as internal by default (direct object 
   });
 
   const project = await createTestProject(tmpPath, { xstateVersion: '4' });
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -5549,7 +5549,7 @@ test('should extract a descendant transition as internal by default (direct obje
   });
 
   const project = await createTestProject(tmpPath, { xstateVersion: '4' });
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -5666,7 +5666,7 @@ test('should extract an explicit internal transition as internal (v4)', async ()
   });
 
   const project = await createTestProject(tmpPath, { xstateVersion: '4' });
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -5783,7 +5783,7 @@ test('should extract an explicit non-internal transition as not internal (v4)', 
   });
 
   const project = await createTestProject(tmpPath, { xstateVersion: '4' });
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -5915,7 +5915,7 @@ test('should extract transition with multiple targets as internal when any of it
   });
 
   const project = await createTestProject(tmpPath, { xstateVersion: '4' });
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -6118,7 +6118,7 @@ test('should extract transition with multiple targets as not internal when none 
   });
 
   const project = await createTestProject(tmpPath, { xstateVersion: '4' });
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [

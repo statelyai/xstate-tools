@@ -4,14 +4,14 @@ import {
   createTypeScriptProjectProvider,
 } from '@volar/language-server/node.js';
 import { XStateProject, createProject } from '@xstate/ts-project';
-import type { Program } from 'typescript';
+import type { LanguageService } from 'typescript';
 import {
   Provide,
   create as createTypeScriptService,
 } from 'volar-service-typescript';
 import { applyPatches, getMachineAtIndex } from './protocol';
 
-const projectCache = new WeakMap<Program, XStateProject>();
+const projectCache = new WeakMap<LanguageService, XStateProject>();
 
 const connection = createConnection();
 const server = createServer(connection);
@@ -74,7 +74,7 @@ connection.onRequest(getMachineAtIndex, async ({ uri, machineIndex }) => {
   }
 
   // TODO: it would be faster to extract a single machine instead of all of them
-  const [digraph] = xstateProject.extractMachines(
+  const [digraph] = xstateProject.getMachinesInFile(
     server.env.uriToFileName(uri),
   )[machineIndex];
 
@@ -131,20 +131,23 @@ async function getTypeScriptLanguageService(uri: string) {
 }
 
 async function getXStateProject(uri: string) {
-  const tsProgram = (await getTypeScriptLanguageService(uri)).getProgram();
-
+  const languageService = await getTypeScriptLanguageService(uri);
+  if (!languageService) {
+    return;
+  }
+  const tsProgram = languageService.getProgram();
   if (!tsProgram) {
     return;
   }
-
-  const existing = projectCache.get(tsProgram);
+  const existing = projectCache.get(languageService);
   if (existing) {
+    existing.updateTsProgram(tsProgram);
     return existing;
   }
   const xstateProject = createProject(
     await getTypeScriptModule(uri),
     tsProgram,
   );
-  projectCache.set(tsProgram, xstateProject);
+  projectCache.set(languageService, xstateProject);
   return xstateProject;
 }

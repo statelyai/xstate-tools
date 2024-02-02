@@ -16,7 +16,7 @@ test('should extract an actor with string src (direct)', async () => {
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -102,7 +102,7 @@ test('should extract multiple actors with different string sources (direct)', as
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -239,7 +239,7 @@ test('should extract multiple actors with the same string source (direct)', asyn
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -371,7 +371,7 @@ test('should extract multiple actors with string source (array)', async () => {
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -490,7 +490,7 @@ test('should extract actor with inline source (direct)', async () => {
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -620,7 +620,7 @@ test('should raise error if actor is missing src property', async () => {
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -704,7 +704,7 @@ test('should extract actor id if it is present with a string value', async () =>
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [

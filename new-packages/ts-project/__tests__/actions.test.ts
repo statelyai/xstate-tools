@@ -14,7 +14,7 @@ test('should extract a string entry action (direct)', async () => {
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -88,7 +88,7 @@ test('should extract a string exit action (direct)', async () => {
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -162,7 +162,7 @@ test('should extract a string action (in array)', async () => {
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -236,7 +236,7 @@ test('should extract multiple string actions', async () => {
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -328,7 +328,7 @@ test('should extract a simple parameterized action (direct)', async () => {
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -406,7 +406,7 @@ test('should extract a simple parameterized action (in array)', async () => {
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -480,7 +480,7 @@ test('should extract an inline action (function)', async () => {
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -556,7 +556,7 @@ test('should extract an inline action (builtin)', async () => {
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -630,7 +630,7 @@ test('should error when extracting undefined action (direct)', async () => {
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -689,7 +689,7 @@ test('should error when extracting undefined action (in array)', async () => {
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -752,7 +752,7 @@ test('should extract a transition action', async () => {
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -845,7 +845,7 @@ test('should not register multiple entry actions with duplicated entry property'
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -924,7 +924,7 @@ test('should not register multiple transition actions with duplicated actions pr
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [

@@ -16,7 +16,7 @@ test('should extract a simple state', async () => {
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -99,7 +99,7 @@ test('should extract states recursively', async () => {
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -222,7 +222,7 @@ test("should use the root's id as its key", async () => {
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -281,7 +281,7 @@ test("should not use the non-root's id as its key", async () => {
   });
 
   const project = await createTestProject(tmpPath);
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -357,7 +357,7 @@ test('should extract state.initial with string value', async () => {
 
   const project = await createTestProject(tmpPath);
 
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -433,7 +433,7 @@ test('should extract state.initial with template literal value', async () => {
 
   const project = await createTestProject(tmpPath);
 
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -507,7 +507,7 @@ test('should extract state.initial with undefined value', async () => {
 
   const project = await createTestProject(tmpPath);
 
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -564,7 +564,7 @@ test('should raise error when state.initial property has invalid value', async (
 
   const project = await createTestProject(tmpPath);
 
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -625,7 +625,7 @@ test('should extract state.type with value "parallel"', async () => {
 
   const project = await createTestProject(tmpPath);
 
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -682,7 +682,7 @@ test('should extract state.type with value "final"', async () => {
 
   const project = await createTestProject(tmpPath);
 
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -739,7 +739,7 @@ test('should extract state.type with value "history"', async () => {
 
   const project = await createTestProject(tmpPath);
 
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -796,7 +796,7 @@ test('should extract state.type with value undefined', async () => {
 
   const project = await createTestProject(tmpPath);
 
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -853,7 +853,7 @@ test('should raise error when state.type has invalid value', async () => {
 
   const project = await createTestProject(tmpPath);
 
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -914,7 +914,7 @@ test('should extract state.history with value "shallow"', async () => {
 
   const project = await createTestProject(tmpPath);
 
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -971,7 +971,7 @@ test('should extract state.history with value "deep"', async () => {
 
   const project = await createTestProject(tmpPath);
 
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -1028,7 +1028,7 @@ test('should extract state.history with value true as deep', async () => {
 
   const project = await createTestProject(tmpPath);
 
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -1085,7 +1085,7 @@ test('should extract state.history with value false as shallow', async () => {
 
   const project = await createTestProject(tmpPath);
 
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -1142,7 +1142,7 @@ test('should extract state.history with value undefined', async () => {
 
   const project = await createTestProject(tmpPath);
 
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -1203,7 +1203,7 @@ test('should extract state.description with string value', async () => {
 
   const project = await createTestProject(tmpPath);
 
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -1283,7 +1283,7 @@ test('should extract state.description with template literal value', async () =>
 
   const project = await createTestProject(tmpPath);
 
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -1363,7 +1363,7 @@ test('should extract state.description with undefined value with no errors', asy
 
   const project = await createTestProject(tmpPath);
 
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -1441,7 +1441,7 @@ test('should raise error when state.description has invalid value', async () => 
 
   const project = await createTestProject(tmpPath);
 
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -1532,7 +1532,7 @@ test("should extract state.meta when it's a javascript object", async () => {
 
   const project = await createTestProject(tmpPath);
 
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -1643,7 +1643,7 @@ test("should extract state.meta when it's a javascript object containing nested 
 
   const project = await createTestProject(tmpPath);
 
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -1747,7 +1747,7 @@ test("should extract state.meta when it's a javascript object and contains multi
 
   const project = await createTestProject(tmpPath);
 
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -1836,7 +1836,7 @@ test('should not raise error for state.meta with undefined value', async () => {
 
   const project = await createTestProject(tmpPath);
 
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -1915,7 +1915,7 @@ test('should raise error when state.meta contains any value other than a plain j
 
   const project = await createTestProject(tmpPath);
 
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -1994,7 +1994,7 @@ test('should extract state.context on the root state', async () => {
 
   const project = await createTestProject(tmpPath);
 
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -2058,7 +2058,7 @@ test('should raise error when state.context is provided on any state other than 
 
   const project = await createTestProject(tmpPath);
 
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -2141,7 +2141,7 @@ test('should raise error when state.context has any value other than plain JS ob
 
   const project = await createTestProject(tmpPath);
 
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -2222,7 +2222,7 @@ test('should extract state.context with function value (lazy context)', async ()
 
   const project = await createTestProject(tmpPath);
 
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
