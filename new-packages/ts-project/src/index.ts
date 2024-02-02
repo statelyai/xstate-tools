@@ -245,7 +245,7 @@ export function createProject(
     },
   };
 
-  const api = {
+  return {
     findMachines: (fileName: string): Range[] => {
       const sourceFile = currentProgram.getSourceFile(fileName);
       if (!sourceFile) {
@@ -293,7 +293,6 @@ export function createProject(
       currentProgram = tsProgram;
     },
   };
-  return api;
 }
 
 export type XStateProject = ReturnType<typeof createProject>;
