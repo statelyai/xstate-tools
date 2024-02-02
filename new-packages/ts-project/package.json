@@ -18,7 +18,9 @@
     "./package.json": "./package.json"
   },
   "scripts": {},
-  "dependencies": {},
+  "dependencies": {
+    "immer": "^10.0.3"
+  },
   "devDependencies": {
     "@types/fs-extra": "^11.0.4",
     "fs-extra": "^11.2.0",

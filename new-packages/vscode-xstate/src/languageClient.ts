@@ -1,7 +1,10 @@
 import { RequestType, getTsdk } from '@volar/vscode';
 import { LanguageClient, TransportKind } from '@volar/vscode/node.js';
-import { getMachineAtIndex } from '@xstate/language-server/protocol';
-import type { ExtractorDigraphDef } from '@xstate/ts-project';
+import {
+  applyPatches,
+  getMachineAtIndex,
+} from '@xstate/language-server/protocol';
+import type { ExtractorDigraphDef, Patch } from '@xstate/ts-project';
 import * as vscode from 'vscode';
 import {
   ActorRef,
@@ -20,10 +23,21 @@ type LanguageClientInput = {
   tsdk: Awaited<ReturnType<typeof getTsdk>>['tsdk'];
   isServerEnabled: boolean;
 };
+
+export type OpenMachineData = {
+  uri: string;
+  machineIndex: number;
+};
+
 export type LanguageClientEvent =
   | { type: 'SERVER_ENABLED_CHANGE' }
   | { type: 'WEBVIEW_CLOSED' }
-  | { type: 'OPEN_MACHINE'; digraph: ExtractorDigraphDef };
+  | ({ type: 'OPEN_MACHINE'; digraph: ExtractorDigraphDef } & OpenMachineData)
+  | ({
+      type: 'APPLY_PATCHES';
+      patches: Patch[];
+      reason: 'undo' | 'redo' | undefined;
+    } & OpenMachineData);
 
 export const languageClientMachine = setup({
   types: {} as {
@@ -41,11 +55,39 @@ export const languageClientMachine = setup({
     stopLanguageClient: ({ context }) => context.languageClient.stop(),
     updateDigraph: sendTo('webview', ({ event }) => {
       assertEvent(event, 'OPEN_MACHINE');
-      return {
-        type: 'UPDATE_DIGRAPH',
-        digraph: event.digraph,
-      };
+      return event;
     }),
+    applyPatches: ({ context, event }) => {
+      assertEvent(event, 'APPLY_PATCHES');
+      const { type, ...params } = event;
+      context.languageClient
+        .sendRequest(applyPatches, params)
+        .then((textEdits) => {
+          const workspaceEdit = new vscode.WorkspaceEdit();
+          for (const textEdit of textEdits) {
+            switch (textEdit.type) {
+              case 'replace': {
+                workspaceEdit.replace(
+                  vscode.Uri.parse(params.uri),
+                  new vscode.Range(
+                    new vscode.Position(
+                      textEdit.range.start.line,
+                      textEdit.range.start.character,
+                    ),
+                    new vscode.Position(
+                      textEdit.range.end.line,
+                      textEdit.range.end.character,
+                    ),
+                  ),
+                  textEdit.newText,
+                );
+                break;
+              }
+            }
+          }
+          return vscode.workspace.applyEdit(workspaceEdit);
+        });
+    },
   },
   actors: {
     listenOnServerEnabledChange: fromCallback(
@@ -93,6 +135,8 @@ export const languageClientMachine = setup({
               }
               parent.send({
                 type: 'OPEN_MACHINE',
+                uri,
+                machineIndex,
                 digraph,
               });
             });
@@ -202,10 +246,11 @@ export const languageClientMachine = setup({
                 id: 'webview',
                 input: ({ context, event, self }) => {
                   assertEvent(event, 'OPEN_MACHINE');
+                  const { type, ...params } = event;
                   return {
                     extensionContext: context.extensionContext,
                     parent: self,
-                    digraph: event.digraph,
+                    ...params,
                   };
                 },
               },
@@ -213,6 +258,9 @@ export const languageClientMachine = setup({
                 WEBVIEW_CLOSED: 'webviewClosed',
                 OPEN_MACHINE: {
                   actions: 'updateDigraph',
+                },
+                APPLY_PATCHES: {
+                  actions: 'applyPatches',
                 },
               },
             },

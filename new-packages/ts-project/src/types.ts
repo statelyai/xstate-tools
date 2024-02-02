@@ -205,3 +205,22 @@ export type JsonValue =
   | JsonObject
   | JsonValue[];
 export type JsonObject = { [key: string]: JsonValue };
+
+export interface Position {
+  line: number;
+  character: number;
+}
+
+export interface Range {
+  start: Position;
+  end: Position;
+}
+
+interface ReplaceTextEdit {
+  type: 'replace';
+  fileName: string;
+  range: Range;
+  newText: string;
+}
+
+export type TextEdit = ReplaceTextEdit;

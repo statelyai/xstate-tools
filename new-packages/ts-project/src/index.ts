@@ -1,13 +1,15 @@
+import type { Patch } from 'immer';
 import type { CallExpression, Program, SourceFile } from 'typescript';
 import { extractState } from './state';
 import type {
   ExtractionContext,
   ExtractionError,
   ExtractorDigraphDef,
+  Range,
+  TextEdit,
   TreeNode,
   XStateVersion,
 } from './types';
-export { ExtractorDigraphDef };
 
 function findCreateMachineCalls(
   ts: typeof import('typescript'),
@@ -139,22 +141,12 @@ export interface TSProjectOptions {
   xstateVersion?: XStateVersion | undefined;
 }
 
-interface Position {
-  line: number;
-  character: number;
-}
-
-interface Range {
-  start: Position;
-  end: Position;
-}
-
 export function createProject(
   ts: typeof import('typescript'),
   tsProgram: Program,
   { xstateVersion = '5' }: TSProjectOptions = {},
 ) {
-  return {
+  const api = {
     findMachines: (fileName: string): Range[] => {
       const sourceFile = tsProgram.getSourceFile(fileName);
       if (!sourceFile) {
@@ -197,7 +189,24 @@ export function createProject(
         return extractMachineConfig(ctx, ts, call);
       });
     },
+    // TODO: consider exposing an object representing a file or a machine to the caller of the `extractMachines` and add a similar-ish method there
+    // for now we are just doing through the full extraction process again which is wasteful
+    applyPatches({
+      fileName,
+      machineIndex,
+      patches,
+    }: {
+      fileName: string;
+      machineIndex: number;
+      patches: Patch[];
+    }): TextEdit[] {
+      const extractedMachine = api.extractMachines(fileName)[machineIndex];
+      console.log(extractedMachine, patches);
+      return [];
+    },
   };
+  return api;
 }
 
 export type XStateProject = ReturnType<typeof createProject>;
+export { ExtractorDigraphDef, Patch, TextEdit };
