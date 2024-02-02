@@ -1,10 +1,30 @@
 import type {
   Expression,
-  ObjectLiteralElement,
   ObjectLiteralExpression,
   PropertyAssignment,
 } from 'typescript';
-import { ExtractionContext, JsonObject, JsonValue } from './types';
+import { AstPath, ExtractionContext, JsonObject, JsonValue } from './types';
+
+function enterAstPathSegment(ctx: ExtractionContext, segment: AstPath[number]) {
+  ctx.currentAstPath.push(segment);
+}
+
+function exitAstPathSegment(ctx: ExtractionContext) {
+  ctx.currentAstPath.pop();
+}
+
+export function withAstPathSegment<T>(
+  ctx: ExtractionContext,
+  segment: AstPath[number],
+  cb: () => T,
+): T {
+  try {
+    enterAstPathSegment(ctx, segment);
+    return cb();
+  } finally {
+    exitAstPathSegment(ctx);
+  }
+}
 
 export const uniqueId = () => {
   return Math.random().toString(36).substring(2);
@@ -118,12 +138,15 @@ export const getJsonObject = (
 };
 
 export function mapMaybeArrayElements<T>(
+  ctx: ExtractionContext,
   ts: typeof import('typescript'),
   expression: Expression,
   cb: (element: Expression, index: number) => T,
 ): T[] {
   if (ts.isArrayLiteralExpression(expression)) {
-    return expression.elements.map((element, index) => cb(element, index));
+    return expression.elements.map((element, index) => {
+      return withAstPathSegment(ctx, index, () => cb(element, index));
+    });
   } else {
     return [cb(expression, 0)];
   }
@@ -176,6 +199,7 @@ export function forEachStaticProperty(
     }
 
     seen.add(key);
-    cb(prop, key);
+
+    withAstPathSegment(ctx, i, () => cb(prop, key));
   }
 }

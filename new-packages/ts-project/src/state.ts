@@ -24,6 +24,7 @@ import {
   isUndefined,
   mapMaybeArrayElements,
   uniqueId,
+  withAstPathSegment,
 } from './utils';
 
 const createActionBlock = ({
@@ -86,16 +87,19 @@ const createGuardBlock = ({
   };
 };
 
-function createEdge({
-  sourceId,
-  eventTypeData,
-  internal = true,
-}: {
-  sourceId: string;
-  eventTypeData: Edge['data']['eventTypeData'];
-  internal?: boolean;
-}): Edge {
-  return {
+function createEdge(
+  ctx: ExtractionContext,
+  {
+    sourceId,
+    eventTypeData,
+    internal = true,
+  }: {
+    sourceId: string;
+    eventTypeData: Edge['data']['eventTypeData'];
+    internal?: boolean;
+  },
+): Edge {
+  const edge: Edge = {
     type: 'edge',
     uniqueId: uniqueId(),
     source: sourceId,
@@ -109,6 +113,8 @@ function createEdge({
       internal,
     },
   };
+  ctx.astPaths.edges[edge.uniqueId] = [...ctx.currentAstPath];
+  return edge;
 }
 
 function isForbiddenTarget(
@@ -141,9 +147,14 @@ function getObjectTransitionTargets(
   }
 
   // if we fail extracting the target here then we treat it as an error further down the road
-  return mapMaybeArrayElements(ts, targetProperty.initializer, (expression) => {
-    return ts.isStringLiteralLike(expression) ? expression.text : undefined;
-  });
+  return mapMaybeArrayElements(
+    ctx,
+    ts,
+    targetProperty.initializer,
+    (expression) => {
+      return ts.isStringLiteralLike(expression) ? expression.text : undefined;
+    },
+  );
 }
 
 function extractActionBlocks(
@@ -153,6 +164,7 @@ function extractActionBlocks(
   { parentId }: { parentId: string },
 ) {
   return mapMaybeArrayElements(
+    ctx,
     ts,
     expression,
     (element): ActionBlock | undefined => {
@@ -248,12 +260,13 @@ function extractEdgeGroup(
   },
 ) {
   const mapped = mapMaybeArrayElements(
+    ctx,
     ts,
     transition.initializer,
     (element): [Edge, string[] | undefined] | undefined => {
       if (isForbiddenTarget(ts, element)) {
         return [
-          createEdge({
+          createEdge(ctx, {
             sourceId,
             eventTypeData,
           }),
@@ -262,7 +275,7 @@ function extractEdgeGroup(
       }
       if (ts.isStringLiteralLike(element)) {
         return [
-          createEdge({
+          createEdge(ctx, {
             sourceId,
             eventTypeData,
             internal: getImpliedInternalValue(ctx, [element.text]),
@@ -278,7 +291,7 @@ function extractEdgeGroup(
           return;
         }
 
-        const edge = createEdge({
+        const edge = createEdge(ctx, {
           sourceId,
           eventTypeData,
         });
@@ -503,6 +516,8 @@ export function extractState(
 
   ctx.treeNodes[node.uniqueId] = treeNode;
 
+  ctx.astPaths.nodes[node.uniqueId] = [...ctx.currentAstPath];
+
   if (!state) {
     return treeNode;
   }
@@ -611,16 +626,19 @@ export function extractState(
           });
           return;
         }
-        for (const state of prop.initializer.properties) {
-          if (ts.isPropertyAssignment(state)) {
-            const childKey = getPropertyKey(ctx, ts, state);
+        for (let i = 0; i < prop.initializer.properties.length; i++) {
+          const childState = prop.initializer.properties[i];
+          if (ts.isPropertyAssignment(childState)) {
+            const childKey = getPropertyKey(ctx, ts, childState);
             if (childKey) {
-              const childTreeNode = extractState(ctx, ts, state.initializer, {
-                parentId: node.uniqueId,
-                key: childKey,
-              });
+              const childTreeNode = withAstPathSegment(ctx, i, () =>
+                extractState(ctx, ts, childState.initializer, {
+                  parentId: node.uniqueId,
+                  key: childKey,
+                }),
+              );
               if (!childTreeNode) {
-                continue;
+                return;
               }
               treeNode.children[childKey] = childTreeNode;
             }
@@ -732,6 +750,7 @@ export function extractState(
       }
       case 'invoke': {
         const blocks = mapMaybeArrayElements(
+          ctx,
           ts,
           prop.initializer,
           (element, index): ActorBlock | undefined => {

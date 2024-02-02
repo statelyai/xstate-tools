@@ -6,7 +6,13 @@ import { onExit } from 'signal-exit';
 import { temporaryDirectory } from 'tempy';
 import typescript from 'typescript';
 import { TSProjectOptions, XStateProject, createProject } from '../src/index';
-import { ActorBlock } from '../src/types';
+import { ActorBlock, ExtractorDigraphDef } from '../src/types';
+
+function assert(value: unknown): asserts value {
+  if (!value) {
+    throw new Error('It should not happen.');
+  }
+}
 
 export const js = outdent;
 export const ts = outdent;
