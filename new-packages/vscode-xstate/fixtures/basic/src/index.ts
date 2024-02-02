@@ -6,10 +6,8 @@ createMachine({
     a: {
       on: {
         NEXT: 'b',
-        kappa: 'c',
       },
     },
     b: {},
-    c: {},
   },
 });
