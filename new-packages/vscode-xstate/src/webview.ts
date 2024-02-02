@@ -1,6 +1,6 @@
 import type { ExtractorDigraphDef } from '@xstate/ts-project';
 import * as vscode from 'vscode';
-import { ActorRef, EventObject, Snapshot, fromCallback } from 'xstate';
+import { ActorRef, Snapshot, fromCallback } from 'xstate';
 import { LanguageClientEvent } from './languageClient';
 
 // this should not be an async function, it should return `webviewPanel` synchronously
@@ -66,7 +66,7 @@ async function getWebviewHtml(
 }
 
 export const webviewLogic = fromCallback<
-  EventObject,
+  { type: 'UPDATE_DIGRAPH'; digraph: ExtractorDigraphDef },
   {
     extensionContext: vscode.ExtensionContext;
     parent: ActorRef<Snapshot<unknown>, LanguageClientEvent>;
@@ -77,7 +77,14 @@ export const webviewLogic = fromCallback<
   const webviewPanel = createWebviewPanel();
 
   receive((event) => {
-    // handle events for the webview
+    switch (event.type) {
+      case 'UPDATE_DIGRAPH':
+        webviewPanel.reveal(vscode.ViewColumn.Beside);
+        webviewPanel.webview.postMessage(event);
+        return;
+      default:
+        event.type satisfies never;
+    }
   });
 
   const disposable = vscode.Disposable.from(

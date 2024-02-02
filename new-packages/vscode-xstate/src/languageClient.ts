@@ -9,6 +9,7 @@ import {
   assertEvent,
   fromCallback,
   fromPromise,
+  sendTo,
   setup,
 } from 'xstate';
 import { assertExtendedEvent } from './utils';
@@ -38,6 +39,13 @@ export const languageClientMachine = setup({
   },
   actions: {
     stopLanguageClient: ({ context }) => context.languageClient.stop(),
+    updateDigraph: sendTo('webview', ({ event }) => {
+      assertEvent(event, 'OPEN_MACHINE');
+      return {
+        type: 'UPDATE_DIGRAPH',
+        digraph: event.digraph,
+      };
+    }),
   },
   actors: {
     listenOnServerEnabledChange: fromCallback(
@@ -203,6 +211,9 @@ export const languageClientMachine = setup({
               },
               on: {
                 WEBVIEW_CLOSED: 'webviewClosed',
+                OPEN_MACHINE: {
+                  actions: 'updateDigraph',
+                },
               },
             },
           },
