@@ -10,7 +10,8 @@ export interface TreeNode {
   children: Record<string, TreeNode>;
 }
 
-export type AstPath = (string | number)[];
+// it describes the path to a node in the AST through property indices
+export type AstPath = number[];
 
 type MachineAstPaths = {
   nodes: Record<string, AstPath>;

@@ -1,9 +1,17 @@
 import type {
+  CallExpression,
   Expression,
+  ObjectLiteralElementLike,
   ObjectLiteralExpression,
   PropertyAssignment,
 } from 'typescript';
 import { AstPath, ExtractionContext, JsonObject, JsonValue } from './types';
+
+export function assert(condition: unknown): asserts condition {
+  if (!condition) {
+    throw new Error('Assertion failed');
+  }
+}
 
 function enterAstPathSegment(ctx: ExtractionContext, segment: AstPath[number]) {
   ctx.currentAstPath.push(segment);
@@ -202,4 +210,23 @@ export function forEachStaticProperty(
 
     withAstPathSegment(ctx, i, () => cb(prop, key));
   }
+}
+
+export function findNodeByAstPath(
+  ts: typeof import('typescript'),
+  call: CallExpression,
+  path: AstPath,
+): Expression {
+  let current: Expression | undefined = call.arguments[0];
+  for (const segment of path) {
+    if (!current || !ts.isObjectLiteralExpression(current)) {
+      throw new Error('Invalid node');
+    }
+    const retrieved: ObjectLiteralElementLike = current.properties[segment];
+    if (!retrieved || !ts.isPropertyAssignment(retrieved)) {
+      throw new Error('Invalid node');
+    }
+    current = retrieved.initializer;
+  }
+  return current;
 }

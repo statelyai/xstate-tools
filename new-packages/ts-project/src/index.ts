@@ -1,5 +1,10 @@
-import type { Patch } from 'immer';
-import type { CallExpression, Program, SourceFile } from 'typescript';
+import { enablePatches, type Patch } from 'immer';
+import type {
+  CallExpression,
+  Program,
+  PropertyAssignment,
+  SourceFile,
+} from 'typescript';
 import { extractState } from './state';
 import type {
   ExtractionContext,
@@ -11,6 +16,9 @@ import type {
   TreeNode,
   XStateVersion,
 } from './types';
+import { assert, findNodeByAstPath } from './utils';
+
+enablePatches();
 
 function findCreateMachineCalls(
   ts: typeof import('typescript'),
@@ -193,29 +201,92 @@ function createProjectMachine({
   machineIndex: number;
 }) {
   let state: ProjectMachineState | undefined;
+
+  const findOwnCreateMachineCall = () => {
+    const sourceFile = host.getCurrentProgram().getSourceFile(fileName);
+
+    if (!sourceFile) {
+      throw new Error('File not found');
+    }
+
+    const createMachineCall = findCreateMachineCalls(host.ts, sourceFile)[
+      machineIndex
+    ];
+
+    if (!createMachineCall) {
+      throw new Error('Machine not found');
+    }
+    return { sourceFile, createMachineCall };
+  };
+
   return {
     fileName,
     machineIndex,
     getDigraph() {
-      const sourceFile = host.getCurrentProgram().getSourceFile(fileName);
-
-      if (!sourceFile) {
-        throw new Error('File not found');
-      }
-
-      const createMachineCall = findCreateMachineCalls(host.ts, sourceFile)[
-        machineIndex
-      ];
-
-      if (!createMachineCall) {
-        throw new Error('Machine not found');
-      }
-
+      const { sourceFile, createMachineCall } = findOwnCreateMachineCall();
       state = extractProjectMachine(host, sourceFile, createMachineCall, state);
       return [state.digraph, state.errors] as const;
     },
     applyPatches(patches: Patch[]): TextEdit[] {
-      return [];
+      const edits: TextEdit[] = [];
+      const { sourceFile, createMachineCall } = findOwnCreateMachineCall();
+      const currentState = state!;
+
+      // TODO: enable this, currently it throws - presumably because the patch might contain data that are not part of this local `digraph`
+      // currentState.digraph = applyPatches(
+      //   currentState.digraph!,
+      //   patches,
+      // ) as any;
+
+      for (const patch of patches) {
+        switch (patch.op) {
+          case 'add':
+          case 'remove':
+            break;
+          case 'replace':
+            switch (patch.path[0]) {
+              case 'nodes':
+                const nodeId = patch.path[1];
+                if (patch.path[2] === 'data' && patch.path[3] === 'key') {
+                  const node = findNodeByAstPath(
+                    host.ts,
+                    createMachineCall,
+                    currentState.astPaths.nodes[nodeId],
+                  );
+                  const parentNode = findNodeByAstPath(
+                    host.ts,
+                    createMachineCall,
+                    currentState.astPaths.nodes[nodeId].slice(0, -1),
+                  );
+                  assert(host.ts.isObjectLiteralExpression(parentNode));
+                  const prop = parentNode.properties.find(
+                    (p): p is PropertyAssignment =>
+                      host.ts.isPropertyAssignment(p) && p.initializer === node,
+                  )!;
+                  edits.push({
+                    type: 'replace',
+                    fileName,
+                    range: {
+                      start: host.ts.getLineAndCharacterOfPosition(
+                        sourceFile,
+                        prop.name.getStart(),
+                      ),
+                      end: host.ts.getLineAndCharacterOfPosition(
+                        sourceFile,
+                        prop.name.getEnd(),
+                      ),
+                    },
+                    // TODO: a smarter `newText` should be computed here
+                    // it only has to be stringified when it's not a valid identifier
+                    newText: JSON.stringify(patch.value),
+                  });
+                }
+            }
+            break;
+        }
+      }
+
+      return edits;
     },
   };
 }
