@@ -44,18 +44,25 @@ connection.onInitialize((params) => {
                   return [];
                 }
 
+                const fileName = server.env.uriToFileName(textDocument.uri);
+
                 // TODO: a range is returned here regardless of the extraction status (extraction could error)
                 // DX has to account for this somehow or results with errors have to be ignored (this would be slower but it might be a good tradeoff)
                 return xstateProject
-                  .findMachines(server.env.uriToFileName(textDocument.uri))
-                  .map((range, index) => ({
-                    command: {
-                      title: 'Open Visual Editor',
-                      command: 'stately-xstate/edit-machine',
-                      arguments: [textDocument.uri, index],
-                    },
-                    range,
-                  }));
+                  .findMachines(fileName)
+                  .map((range, index) => {
+                    return {
+                      command: {
+                        title: 'Open Visual Editor',
+                        command: 'stately-xstate/edit-machine',
+                        arguments: [textDocument.uri, index],
+                      },
+                      range: xstateProject.getLinesAndCharactersRange(
+                        fileName,
+                        range,
+                      ),
+                    };
+                  });
               },
             };
           },
@@ -94,10 +101,13 @@ connection.onRequest(applyPatches, async ({ uri, machineIndex, patches }) => {
     patches,
   });
 
-  return edits.map(({ fileName, ...rest }) => ({
-    ...rest,
-    uri: server.env.fileNameToUri(fileName),
-  }));
+  return edits.map(({ fileName, range, ...rest }) => {
+    return {
+      ...rest,
+      uri: server.env.fileNameToUri(fileName),
+      range: xstateProject.getLinesAndCharactersRange(fileName, range),
+    };
+  });
 });
 
 connection.onInitialized(() => {

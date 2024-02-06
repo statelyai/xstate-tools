@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import { createTestProject, replaceUniqueIds, testdir, ts } from './utils';
+import { createTestProject, replaceUniqueIds, testdir, ts } from '../utils';
 
 test('should extract a machine with empty config', async () => {
   const tmpPath = await testdir({
