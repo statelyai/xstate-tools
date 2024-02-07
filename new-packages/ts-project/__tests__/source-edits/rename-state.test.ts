@@ -456,3 +456,47 @@ test('should rename a square bracket state name to an identifier', async () => {
     }
   `);
 });
+
+test('should adjust initial state of the parent when renaming a state', async () => {
+  const tmpPath = await testdir({
+    'tsconfig.json': JSON.stringify({}),
+    'index.ts': ts`
+      import { createMachine } from "xstate";
+
+      createMachine({
+        initial: "foo",
+        states: {
+          foo: {},
+          bar: {},
+        },
+      });
+    `,
+  });
+
+  const project = await createTestProject(tmpPath);
+
+  const textEdits = project.editDigraph(
+    {
+      fileName: 'index.ts',
+      machineIndex: 0,
+    },
+    {
+      type: 'rename_state',
+      path: ['foo'],
+      name: 'NEW_NAME',
+    },
+  );
+  expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
+    {
+      "index.ts": "import { createMachine } from "xstate";
+
+    createMachine({
+      initial: "NEW_NAME",
+      states: {
+        NEW_NAME: {},
+        bar: {},
+      },
+    });",
+    }
+  `);
+});
