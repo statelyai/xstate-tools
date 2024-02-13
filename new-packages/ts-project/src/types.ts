@@ -238,11 +238,18 @@ export interface LinesAndCharactersRange {
   end: LineAndCharacterPosition;
 }
 
-interface ReplaceTextEdit {
+export interface InsertTextEdit {
+  type: 'insert';
+  fileName: string;
+  position: number;
+  newText: string;
+}
+
+export interface ReplaceTextEdit {
   type: 'replace';
   fileName: string;
   range: Range;
   newText: string;
 }
 
-export type TextEdit = ReplaceTextEdit;
+export type TextEdit = InsertTextEdit | ReplaceTextEdit;

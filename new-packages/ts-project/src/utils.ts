@@ -42,7 +42,7 @@ export const uniqueId = () => {
 };
 
 function getLiteralText(
-  ctx: ExtractionContext,
+  ctx: ExtractionContext | undefined,
   ts: typeof import('typescript'),
   node: Expression,
 ) {
@@ -54,7 +54,7 @@ function getLiteralText(
     // for big ints this loses precision or might even return `'Infinity'`
     const text = node.getText();
     if (text !== node.text) {
-      ctx.errors.push({
+      ctx?.errors.push({
         type: 'property_key_no_roundtrip',
       });
     }
@@ -63,7 +63,7 @@ function getLiteralText(
 }
 
 export function getPropertyKey(
-  ctx: ExtractionContext,
+  ctx: ExtractionContext | undefined,
   ts: typeof import('typescript'),
   prop: PropertyAssignment,
 ) {
@@ -78,14 +78,14 @@ export function getPropertyKey(
     if (typeof text === 'string') {
       return text;
     }
-    ctx.errors.push({
+    ctx?.errors.push({
       type: 'property_key_unhandled',
       propertyKind: 'computed',
     });
     return;
   }
   if (ts.isPrivateIdentifier(prop.name)) {
-    ctx.errors.push({
+    ctx?.errors.push({
       type: 'property_key_unhandled',
       propertyKind: 'private',
     });
@@ -179,7 +179,7 @@ export function everyDefined<T>(arr: T[]): arr is NonNullable<T>[] {
 }
 
 export function findProperty(
-  ctx: ExtractionContext,
+  ctx: ExtractionContext | undefined,
   ts: typeof import('typescript'),
   obj: ObjectLiteralExpression,
   key: string,
