@@ -5,19 +5,31 @@ import type {
   PropertyAssignment,
   SourceFile,
 } from 'typescript';
+import { createCodeChanges } from './codeChanges';
+import { safeStringLikeLiteralText } from './safeStringLikeLiteralText';
 import { extractState } from './state';
 import type {
   ExtractionContext,
   ExtractionError,
   ExtractorDigraphDef,
+  InsertTextEdit,
+  LineAndCharacterPosition,
   LinesAndCharactersRange,
   ProjectMachineState,
   Range,
+  ReplaceTextEdit,
   TextEdit,
   TreeNode,
   XStateVersion,
 } from './types';
-import { assert, findNodeByAstPath } from './utils';
+import {
+  assert,
+  findNodeByAstPath,
+  findProperty,
+  getPreferredQuoteCharCode,
+  isValidIdentifier,
+  safePropertyNameString,
+} from './utils';
 
 enablePatches();
 
@@ -229,8 +241,8 @@ function createProjectMachine({
       return [state.digraph, state.errors] as const;
     },
     applyPatches(patches: readonly Patch[]): TextEdit[] {
-      const edits: TextEdit[] = [];
-      const { createMachineCall } = findOwnCreateMachineCall();
+      const codeChanges = createCodeChanges(host.ts);
+      const { sourceFile, createMachineCall } = findOwnCreateMachineCall();
       const currentState = state!;
 
       // TODO: enable this, currently it throws - presumably because the patch might contain data that are not part of this local `digraph`
@@ -264,24 +276,83 @@ function createProjectMachine({
                     (p): p is PropertyAssignment =>
                       host.ts.isPropertyAssignment(p) && p.initializer === node,
                   )!;
-                  edits.push({
-                    type: 'replace',
-                    fileName,
+                  codeChanges.replace(sourceFile, {
                     range: {
                       start: prop.name.getStart(),
                       end: prop.name.getEnd(),
                     },
-                    // TODO: a smarter `newText` should be computed here
-                    // it only has to be stringified when it's not a valid identifier
-                    newText: JSON.stringify(patch.value),
+                    newText: isValidIdentifier(patch.value)
+                      ? patch.value
+                      : safePropertyNameString(
+                          patch.value,
+                          getPreferredQuoteCharCode(host.ts, sourceFile),
+                        ),
                   });
+                  break;
+                }
+                if (patch.path[2] === 'data' && patch.path[3] === 'initial') {
+                  if (typeof patch.value === undefined) {
+                    // removing initial states is not supported in the Studio
+                    // but a patch like this can likely still be received when the last child of a state gets removed
+                    break;
+                  }
+                  const node = findNodeByAstPath(
+                    host.ts,
+                    createMachineCall,
+                    currentState.astPaths.nodes[nodeId],
+                  );
+                  assert(host.ts.isObjectLiteralExpression(node));
+                  const initialProp = findProperty(
+                    undefined,
+                    host.ts,
+                    node,
+                    'initial',
+                  );
+
+                  const initialString = safeStringLikeLiteralText(
+                    patch.value,
+                    getPreferredQuoteCharCode(host.ts, sourceFile),
+                  );
+
+                  if (initialProp) {
+                    codeChanges.replace(sourceFile, {
+                      range: {
+                        start: initialProp.initializer.getStart(),
+                        end: initialProp.initializer.getEnd(),
+                      },
+                      newText: initialString,
+                    });
+                    break;
+                  }
+
+                  const statesProp = findProperty(
+                    undefined,
+                    host.ts,
+                    node,
+                    'states',
+                  );
+
+                  const initialPropertyText = `initial: ${safeStringLikeLiteralText(
+                    patch.value,
+                    getPreferredQuoteCharCode(host.ts, sourceFile),
+                  )}`;
+
+                  if (statesProp) {
+                    codeChanges.insertBeforeProperty(
+                      statesProp,
+                      initialPropertyText,
+                    );
+                    break;
+                  }
+
+                  codeChanges.insertIntoObject(node, initialPropertyText);
                 }
             }
             break;
         }
       }
 
-      return edits;
+      return codeChanges.getTextEdits();
     },
   };
 }
@@ -358,6 +429,14 @@ export function createProject(
     updateTsProgram(tsProgram: Program) {
       currentProgram = tsProgram;
     },
+    getLineAndCharacterOfPosition(
+      fileName: string,
+      position: number,
+    ): LineAndCharacterPosition {
+      const sourceFile = currentProgram.getSourceFile(fileName);
+      assert(sourceFile);
+      return sourceFile.getLineAndCharacterOfPosition(position);
+    },
     getLinesAndCharactersRange(
       fileName: string,
       range: Range,
@@ -373,4 +452,14 @@ export function createProject(
 }
 
 export type XStateProject = ReturnType<typeof createProject>;
-export { ExtractorDigraphDef, LinesAndCharactersRange, Patch, Range, TextEdit };
+
+export {
+  ExtractorDigraphDef,
+  InsertTextEdit,
+  LineAndCharacterPosition,
+  LinesAndCharactersRange,
+  Patch,
+  Range,
+  ReplaceTextEdit,
+  TextEdit,
+};
