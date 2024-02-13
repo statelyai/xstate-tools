@@ -5,15 +5,19 @@ import type {
   PropertyAssignment,
   SourceFile,
 } from 'typescript';
+import { createCodeChanges } from './codeChanges';
 import { safeStringLikeLiteralText } from './safeStringLikeLiteralText';
 import { extractState } from './state';
 import type {
   ExtractionContext,
   ExtractionError,
   ExtractorDigraphDef,
+  InsertTextEdit,
+  LineAndCharacterPosition,
   LinesAndCharactersRange,
   ProjectMachineState,
   Range,
+  ReplaceTextEdit,
   TextEdit,
   TreeNode,
   XStateVersion,
@@ -237,7 +241,7 @@ function createProjectMachine({
       return [state.digraph, state.errors] as const;
     },
     applyPatches(patches: readonly Patch[]): TextEdit[] {
-      const edits: TextEdit[] = [];
+      const codeChanges = createCodeChanges(host.ts);
       const { sourceFile, createMachineCall } = findOwnCreateMachineCall();
       const currentState = state!;
 
@@ -272,9 +276,7 @@ function createProjectMachine({
                     (p): p is PropertyAssignment =>
                       host.ts.isPropertyAssignment(p) && p.initializer === node,
                   )!;
-                  edits.push({
-                    type: 'replace',
-                    fileName,
+                  codeChanges.replace(sourceFile, {
                     range: {
                       start: prop.name.getStart(),
                       end: prop.name.getEnd(),
@@ -300,32 +302,57 @@ function createProjectMachine({
                     currentState.astPaths.nodes[nodeId],
                   );
                   assert(host.ts.isObjectLiteralExpression(node));
-                  const prop = findProperty(
+                  const initialProp = findProperty(
                     undefined,
                     host.ts,
                     node,
                     'initial',
                   );
-                  assert(prop && host.ts.isPropertyAssignment(prop));
-                  edits.push({
-                    type: 'replace',
-                    fileName,
-                    range: {
-                      start: prop.initializer.getStart(),
-                      end: prop.initializer.getEnd(),
-                    },
-                    newText: safeStringLikeLiteralText(
-                      patch.value,
-                      getPreferredQuoteCharCode(host.ts, sourceFile),
-                    ),
-                  });
+
+                  const initialString = safeStringLikeLiteralText(
+                    patch.value,
+                    getPreferredQuoteCharCode(host.ts, sourceFile),
+                  );
+
+                  if (initialProp) {
+                    codeChanges.replace(sourceFile, {
+                      range: {
+                        start: initialProp.initializer.getStart(),
+                        end: initialProp.initializer.getEnd(),
+                      },
+                      newText: initialString,
+                    });
+                    break;
+                  }
+
+                  const statesProp = findProperty(
+                    undefined,
+                    host.ts,
+                    node,
+                    'states',
+                  );
+
+                  const initialPropertyText = `initial: ${safeStringLikeLiteralText(
+                    patch.value,
+                    getPreferredQuoteCharCode(host.ts, sourceFile),
+                  )}`;
+
+                  if (statesProp) {
+                    codeChanges.insertBeforeProperty(
+                      statesProp,
+                      initialPropertyText,
+                    );
+                    break;
+                  }
+
+                  codeChanges.insertIntoObject(node, initialPropertyText);
                 }
             }
             break;
         }
       }
 
-      return edits;
+      return codeChanges.getTextEdits();
     },
   };
 }
@@ -402,6 +429,14 @@ export function createProject(
     updateTsProgram(tsProgram: Program) {
       currentProgram = tsProgram;
     },
+    getLineAndCharacterOfPosition(
+      fileName: string,
+      position: number,
+    ): LineAndCharacterPosition {
+      const sourceFile = currentProgram.getSourceFile(fileName);
+      assert(sourceFile);
+      return sourceFile.getLineAndCharacterOfPosition(position);
+    },
     getLinesAndCharactersRange(
       fileName: string,
       range: Range,
@@ -417,4 +452,14 @@ export function createProject(
 }
 
 export type XStateProject = ReturnType<typeof createProject>;
-export { ExtractorDigraphDef, LinesAndCharactersRange, Patch, Range, TextEdit };
+
+export {
+  ExtractorDigraphDef,
+  InsertTextEdit,
+  LineAndCharacterPosition,
+  LinesAndCharactersRange,
+  Patch,
+  Range,
+  ReplaceTextEdit,
+  TextEdit,
+};

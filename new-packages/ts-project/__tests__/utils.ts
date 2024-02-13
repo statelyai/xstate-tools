@@ -357,15 +357,24 @@ export async function createTestProject(
     applyTextEdits: async (edits: readonly TextEdit[]) => {
       const edited: Record<string, string> = {};
 
-      for (const edit of [...edits].sort(
-        (a, b) => b.range.start - a.range.start,
-      )) {
+      for (const edit of [...edits].sort((a, b) => {
+        const startA = 'range' in a ? a.range.start : a.position;
+        const startB = 'range' in b ? b.range.start : b.position;
+        return startB - startA;
+      })) {
+        const relativeFileName = path.relative(cwd, edit.fileName);
+        const source =
+          edited[relativeFileName] ??
+          program.getSourceFile(edit.fileName)!.text;
         switch (edit.type) {
+          case 'insert':
+            edited[relativeFileName] =
+              source.slice(0, edit.position) +
+              edit.newText +
+              source.slice(edit.position);
+            break;
           case 'replace':
-            const source =
-              edited[edit.fileName] ??
-              program.getSourceFile(edit.fileName)!.text;
-            edited[edit.fileName] =
+            edited[relativeFileName] =
               source.slice(0, edit.range.start) +
               edit.newText +
               source.slice(edit.range.end);
