@@ -1,9 +1,20 @@
 import type {
+  CallExpression,
   Expression,
+  ObjectLiteralElementLike,
   ObjectLiteralExpression,
   PropertyAssignment,
+  SourceFile,
 } from 'typescript';
+import * as charCodes from './charCodes';
+import { safeStringLikeLiteralText } from './safeStringLikeLiteralText';
 import { AstPath, ExtractionContext, JsonObject, JsonValue } from './types';
+
+export function assert(condition: unknown): asserts condition {
+  if (!condition) {
+    throw new Error('Assertion failed');
+  }
+}
 
 function enterAstPathSegment(ctx: ExtractionContext, segment: AstPath[number]) {
   ctx.currentAstPath.push(segment);
@@ -30,40 +41,51 @@ export const uniqueId = () => {
   return Math.random().toString(36).substring(2);
 };
 
+function getLiteralText(
+  ctx: ExtractionContext | undefined,
+  ts: typeof import('typescript'),
+  node: Expression,
+) {
+  if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) {
+    return node.text;
+  }
+  if (ts.isNumericLiteral(node)) {
+    // `.getText()` returns original text whereas `.text` on numeric literals return `(+originalText).toString()`
+    // for big ints this loses precision or might even return `'Infinity'`
+    const text = node.getText();
+    if (text !== node.text) {
+      ctx?.errors.push({
+        type: 'property_key_no_roundtrip',
+      });
+    }
+    return text;
+  }
+}
+
 export function getPropertyKey(
-  ctx: ExtractionContext,
+  ctx: ExtractionContext | undefined,
   ts: typeof import('typescript'),
   prop: PropertyAssignment,
 ) {
   if (ts.isIdentifier(prop.name)) {
     return ts.idText(prop.name);
   }
-  if (
-    ts.isStringLiteral(prop.name) ||
-    ts.isNoSubstitutionTemplateLiteral(prop.name)
-  ) {
-    return prop.name.text;
-  }
-  if (ts.isNumericLiteral(prop.name)) {
-    // `.getText()` returns original text whereas `.text` on numeric literals return `(+originalText).toString()`
-    // for big ints this loses precision or might even return `'Infinity'`
-    const text = prop.name.getText();
-    if (text !== prop.name.text) {
-      ctx.errors.push({
-        type: 'property_key_no_roundtrip',
-      });
-    }
-    return text;
+  if (ts.isExpression(prop.name)) {
+    return getLiteralText(ctx, ts, prop.name);
   }
   if (ts.isComputedPropertyName(prop.name)) {
-    ctx.errors.push({
+    const text = getLiteralText(ctx, ts, prop.name.expression);
+    if (typeof text === 'string') {
+      return text;
+    }
+    ctx?.errors.push({
       type: 'property_key_unhandled',
       propertyKind: 'computed',
     });
     return;
   }
   if (ts.isPrivateIdentifier(prop.name)) {
-    ctx.errors.push({
+    ctx?.errors.push({
       type: 'property_key_unhandled',
       propertyKind: 'private',
     });
@@ -157,7 +179,7 @@ export function everyDefined<T>(arr: T[]): arr is NonNullable<T>[] {
 }
 
 export function findProperty(
-  ctx: ExtractionContext,
+  ctx: ExtractionContext | undefined,
   ts: typeof import('typescript'),
   obj: ObjectLiteralExpression,
   key: string,
@@ -202,4 +224,61 @@ export function forEachStaticProperty(
 
     withAstPathSegment(ctx, i, () => cb(prop, key));
   }
+}
+
+export function findNodeByAstPath(
+  ts: typeof import('typescript'),
+  call: CallExpression,
+  path: AstPath,
+): Expression {
+  let current: Expression | undefined = call.arguments[0];
+  for (const segment of path) {
+    if (!current || !ts.isObjectLiteralExpression(current)) {
+      throw new Error('Invalid node');
+    }
+    const retrieved: ObjectLiteralElementLike = current.properties[segment];
+    if (!retrieved || !ts.isPropertyAssignment(retrieved)) {
+      throw new Error('Invalid node');
+    }
+    current = retrieved.initializer;
+  }
+  return current;
+}
+
+export function isValidIdentifier(name: string): boolean {
+  return /^(?!\d)[\w$]+$/.test(name);
+}
+
+export function getPreferredQuoteCharCode(
+  ts: typeof import('typescript'),
+  sourceFile: SourceFile,
+) {
+  for (const statement of sourceFile.statements) {
+    if (
+      (ts.isImportDeclaration(statement) ||
+        ts.isExportDeclaration(statement)) &&
+      statement.moduleSpecifier &&
+      // it should always be a string literal but TS allows other things here (for which grammar errors are raised)
+      ts.isStringLiteral(statement.moduleSpecifier)
+    ) {
+      return statement.moduleSpecifier.getText().charCodeAt(0) as
+        | typeof charCodes.doubleQuote
+        | typeof charCodes.singleQuote;
+    }
+  }
+
+  return charCodes.doubleQuote;
+}
+
+export function safePropertyNameString(
+  name: string,
+  preferredQuoteCharCode:
+    | typeof charCodes.doubleQuote
+    | typeof charCodes.singleQuote
+    | typeof charCodes.backtick,
+) {
+  const safeString = safeStringLikeLiteralText(name, preferredQuoteCharCode);
+  return safeString.charCodeAt(0) === charCodes.backtick
+    ? `[${safeString}]`
+    : safeString;
 }

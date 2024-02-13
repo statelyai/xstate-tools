@@ -1,12 +1,13 @@
 import realFs from 'fs';
 import * as fs from 'fs-extra';
+import { produceWithPatches, type Draft } from 'immer';
 import outdent from 'outdent';
 import path from 'path';
 import { onExit } from 'signal-exit';
 import { temporaryDirectory } from 'tempy';
 import typescript from 'typescript';
 import { TSProjectOptions, XStateProject, createProject } from '../src/index';
-import { ActorBlock } from '../src/types';
+import { ActorBlock, ExtractorDigraphDef, TextEdit } from '../src/types';
 
 function assert(value: unknown): asserts value {
   if (!value) {
@@ -17,6 +18,15 @@ function assert(value: unknown): asserts value {
 export const js = outdent;
 export const ts = outdent;
 export const tsx = outdent;
+
+function shuffle<T>(arr: T[]): T[] {
+  const copy = [...arr];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
 
 type Fixture = {
   [key: string]: string | { kind: 'symlink'; path: string };
@@ -109,6 +119,157 @@ async function createTestProgram(
   return ts.createProgram(fileNames, options, host);
 }
 
+type TransitionPath =
+  | [type: 'always', transitionIndex: number]
+  | [type: 'after', delay: string | number, transitionIndex: number]
+  | [type: 'on', event: string, transitionIndex: number]
+  | [type: 'onDone', transitionIndex: number]
+  | [
+      type: 'invoke',
+      invokeIndex: number,
+      event: 'onDone',
+      transitionIndex: number,
+    ]
+  | [
+      type: 'invoke',
+      invokeIndex: number,
+      event: 'onError',
+      transitionIndex: number,
+    ];
+
+type ActionPath =
+  | [..._: TransitionPath, actionIndex: number]
+  | [type: 'entry', actionIndex: number]
+  | [type: 'exit', actionIndex: number];
+
+type MachineEdit =
+  | { type: 'add_state'; path: string[]; name: string }
+  | { type: 'remove_state'; path: string[] }
+  | { type: 'rename_state'; path: string[]; name: string }
+  | { type: 'reparent_state'; path: string[]; newParentPath: string[] }
+  | {
+      type: 'set_initial_state';
+      path: string[];
+      initialState: string | undefined;
+    }
+  | { type: 'set_state_id'; path: string[]; id: string | null }
+  | {
+      type: 'set_state_type';
+      path: string[];
+      stateType: 'normal' | 'parallel' | 'final' | 'history';
+      history?: 'shallow' | 'deep';
+    }
+  | {
+      type: 'add_transition';
+      sourcePath: string[];
+      targetPath: string[] | null;
+      transitionPath: TransitionPath;
+      external: boolean;
+      guard?: string;
+    }
+  | {
+      type: 'remove_transition';
+      sourcePath: string[];
+      transitionPath: TransitionPath;
+    }
+  | {
+      type: 'reanchor_transition';
+      sourcePath: string[];
+      newSourcePath?: string[];
+      newTargetPath?: string[] | null;
+      transitionPath: TransitionPath;
+      newTransitionPath?: TransitionPath;
+    }
+  | {
+      type: 'change_transition_path';
+      sourcePath: string[];
+      transitionPath: TransitionPath;
+      newTransitionPath: TransitionPath;
+    }
+  | {
+      type: 'mark_transition_as_external';
+      sourcePath: string[];
+      transitionPath: TransitionPath;
+      external: boolean;
+    }
+  | {
+      type: 'add_action';
+      path: string[];
+      actionPath: ActionPath;
+      name: string;
+    }
+  | {
+      type: 'remove_action';
+      path: string[];
+      actionPath: ActionPath;
+    }
+  | {
+      type: 'edit_action';
+      path: string[];
+      actionPath: ActionPath;
+      name: string;
+    }
+  | {
+      type: 'add_guard';
+      path: string[];
+      transitionPath: TransitionPath;
+      name: string;
+    }
+  | {
+      type: 'remove_guard';
+      path: string[];
+      transitionPath: TransitionPath;
+    }
+  | {
+      type: 'edit_guard';
+      path: string[];
+      transitionPath: TransitionPath;
+      name: string;
+    }
+  | {
+      type: 'add_invoke';
+      path: string[];
+      invokeIndex: number;
+      source: string;
+      id?: string;
+    }
+  | {
+      type: 'remove_invoke';
+      path: string[];
+      invokeIndex: number;
+    }
+  | {
+      type: 'edit_invoke';
+      path: string[];
+      invokeIndex: number;
+      source?: string;
+      id?: string | null;
+    }
+  | {
+      type: 'set_description';
+      statePath: string[];
+      transitionPath?: TransitionPath;
+      description?: string | null;
+    };
+
+function findNodeByStatePath(
+  digraph: Draft<ExtractorDigraphDef>,
+  path: string[],
+) {
+  let marker = digraph.nodes[digraph.root];
+  let parentId = digraph.root;
+
+  for (const segment of path) {
+    const node = Object.values(digraph.nodes).find(
+      (node) => node.parentId === parentId && node.data.key === segment,
+    );
+    assert(node);
+    marker = node;
+    parentId = node.uniqueId;
+  }
+  return marker;
+}
+
 export async function createTestProject(
   cwd: string,
   {
@@ -121,7 +282,109 @@ export async function createTestProject(
     ts: typescript,
     ...options,
   });
-  return createProject(ts, program, { xstateVersion: version });
+  const project = createProject(ts, program, { xstateVersion: version });
+  return {
+    ...project,
+    editDigraph: (
+      {
+        fileName,
+        machineIndex,
+      }: {
+        fileName: string;
+        machineIndex: number;
+      },
+      edit: MachineEdit,
+    ) => {
+      const digraph = project.getMachinesInFile(fileName)[machineIndex][0];
+      assert(digraph);
+      const [, patches] = produceWithPatches(digraph, (digraphDraft) => {
+        switch (edit.type) {
+          case 'add_state':
+          case 'remove_state':
+            throw new Error(`Not implemented: ${edit.type}`);
+          case 'rename_state': {
+            const node = findNodeByStatePath(digraphDraft, edit.path);
+            const oldName = node.data.key;
+
+            node.data.key = edit.name;
+
+            const parentNode = findNodeByStatePath(
+              digraphDraft,
+              edit.path.slice(0, -1),
+            );
+
+            // TODO: it would be great if `.initial` could be a uniqueId and not a resolved value
+            // that would have to be changed in the Studio and adjusted in this package
+            if (parentNode.data.initial === oldName) {
+              parentNode.data.initial = edit.name;
+            }
+            break;
+          }
+          case 'reparent_state':
+            throw new Error(`Not implemented: ${edit.type}`);
+          case 'set_initial_state': {
+            const node = findNodeByStatePath(digraphDraft, edit.path);
+            node.data.initial = edit.initialState;
+            break;
+          }
+          case 'set_state_id':
+          case 'set_state_type':
+          case 'add_transition':
+          case 'remove_transition':
+          case 'reanchor_transition':
+          case 'change_transition_path':
+          case 'mark_transition_as_external':
+          case 'add_action':
+          case 'remove_action':
+          case 'edit_action':
+          case 'add_guard':
+          case 'remove_guard':
+          case 'edit_guard':
+          case 'add_invoke':
+          case 'remove_invoke':
+          case 'edit_invoke':
+          case 'set_description':
+            throw new Error(`Not implemented: ${edit.type}`);
+        }
+      });
+      return project.applyPatches({
+        fileName,
+        machineIndex,
+        // shuffle patches to make sure the order doesn't matter
+        patches: shuffle(patches),
+      });
+    },
+    applyTextEdits: async (edits: readonly TextEdit[]) => {
+      const edited: Record<string, string> = {};
+
+      for (const edit of [...edits].sort((a, b) => {
+        const startA = 'range' in a ? a.range.start : a.position;
+        const startB = 'range' in b ? b.range.start : b.position;
+        return startB - startA;
+      })) {
+        const relativeFileName = path.relative(cwd, edit.fileName);
+        const source =
+          edited[relativeFileName] ??
+          program.getSourceFile(edit.fileName)!.text;
+        switch (edit.type) {
+          case 'insert':
+            edited[relativeFileName] =
+              source.slice(0, edit.position) +
+              edit.newText +
+              source.slice(edit.position);
+            break;
+          case 'replace':
+            edited[relativeFileName] =
+              source.slice(0, edit.range.start) +
+              edit.newText +
+              source.slice(edit.range.end);
+            break;
+        }
+      }
+
+      return edited;
+    },
+  };
 }
 
 function replaceUniqueIdsRecursively(

@@ -10,7 +10,8 @@ export interface TreeNode {
   children: Record<string, TreeNode>;
 }
 
-export type AstPath = (string | number)[];
+// it describes the path to a node in the AST through property indices
+export type AstPath = number[];
 
 type MachineAstPaths = {
   nodes: Record<string, AstPath>;
@@ -222,21 +223,33 @@ export type JsonValue =
   | JsonValue[];
 export type JsonObject = { [key: string]: JsonValue };
 
-export interface Position {
+export interface Range {
+  start: number;
+  end: number;
+}
+
+export interface LineAndCharacterPosition {
   line: number;
   character: number;
 }
 
-export interface Range {
-  start: Position;
-  end: Position;
+export interface LinesAndCharactersRange {
+  start: LineAndCharacterPosition;
+  end: LineAndCharacterPosition;
 }
 
-interface ReplaceTextEdit {
+export interface InsertTextEdit {
+  type: 'insert';
+  fileName: string;
+  position: number;
+  newText: string;
+}
+
+export interface ReplaceTextEdit {
   type: 'replace';
   fileName: string;
   range: Range;
   newText: string;
 }
 
-export type TextEdit = ReplaceTextEdit;
+export type TextEdit = InsertTextEdit | ReplaceTextEdit;
