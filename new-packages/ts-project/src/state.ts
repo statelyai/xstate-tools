@@ -793,7 +793,7 @@ export function extractState(
                   ? srcProperty.initializer.text
                   : `inline:${uniqueId()}`,
                 parentId: node.uniqueId,
-                actorId: actorId ?? `inline:invocation[${index}]`,
+                actorId: actorId ?? `inline:${uniqueId()}:invocation`,
               });
 
               if (onDone) {
