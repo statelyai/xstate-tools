@@ -18,63 +18,63 @@ test('should extract an actor with string src (direct)', async () => {
   const project = await createTestProject(tmpPath);
   expect(replaceUniqueIds(project.extractMachines('index.ts')))
     .toMatchInlineSnapshot(`
-    [
       [
-        {
-          "blocks": {
-            "block-0": {
-              "blockType": "actor",
-              "parentId": "state-0",
-              "properties": {
-                "id": "inline:invocation[0]",
-                "src": "foo",
-              },
-              "sourceId": "foo",
-              "uniqueId": "block-0",
-            },
-          },
-          "data": {
-            "context": {},
-          },
-          "edges": {},
-          "implementations": {
-            "actions": {},
-            "actors": {
-              "foo": {
-                "id": "foo",
-                "name": "foo",
-                "type": "actor",
+        [
+          {
+            "blocks": {
+              "block-0": {
+                "blockType": "actor",
+                "parentId": "state-0",
+                "properties": {
+                  "id": "inline:actor-id-0",
+                  "src": "foo",
+                },
+                "sourceId": "foo",
+                "uniqueId": "block-0",
               },
             },
-            "guards": {},
-          },
-          "nodes": {
-            "state-0": {
-              "data": {
-                "description": undefined,
-                "entry": [],
-                "exit": [],
-                "history": undefined,
-                "initial": undefined,
-                "invoke": [
-                  "block-0",
-                ],
-                "key": "(machine)",
-                "metaEntries": [],
-                "tags": [],
-                "type": "normal",
-              },
-              "parentId": undefined,
-              "type": "node",
-              "uniqueId": "state-0",
+            "data": {
+              "context": {},
             },
+            "edges": {},
+            "implementations": {
+              "actions": {},
+              "actors": {
+                "foo": {
+                  "id": "foo",
+                  "name": "foo",
+                  "type": "actor",
+                },
+              },
+              "guards": {},
+            },
+            "nodes": {
+              "state-0": {
+                "data": {
+                  "description": undefined,
+                  "entry": [],
+                  "exit": [],
+                  "history": undefined,
+                  "initial": undefined,
+                  "invoke": [
+                    "block-0",
+                  ],
+                  "key": "(machine)",
+                  "metaEntries": [],
+                  "tags": [],
+                  "type": "normal",
+                },
+                "parentId": undefined,
+                "type": "node",
+                "uniqueId": "state-0",
+              },
+            },
+            "root": "state-0",
           },
-          "root": "state-0",
-        },
-        [],
-      ],
-    ]
-  `);
+          [],
+        ],
+      ]
+    `);
 });
 
 test('should extract multiple actors with different string sources (direct)', async () => {
@@ -112,7 +112,7 @@ test('should extract multiple actors with different string sources (direct)', as
                 "blockType": "actor",
                 "parentId": "state-1",
                 "properties": {
-                  "id": "inline:invocation[0]",
+                  "id": "inline:actor-id-0",
                   "src": "actor1",
                 },
                 "sourceId": "actor1",
@@ -122,7 +122,7 @@ test('should extract multiple actors with different string sources (direct)', as
                 "blockType": "actor",
                 "parentId": "state-2",
                 "properties": {
-                  "id": "inline:invocation[0]",
+                  "id": "inline:actor-id-1",
                   "src": "actor2",
                 },
                 "sourceId": "actor2",
@@ -249,7 +249,7 @@ test('should extract multiple actors with the same string source (direct)', asyn
                 "blockType": "actor",
                 "parentId": "state-1",
                 "properties": {
-                  "id": "inline:invocation[0]",
+                  "id": "inline:actor-id-0",
                   "src": "actor1",
                 },
                 "sourceId": "actor1",
@@ -259,7 +259,7 @@ test('should extract multiple actors with the same string source (direct)', asyn
                 "blockType": "actor",
                 "parentId": "state-2",
                 "properties": {
-                  "id": "inline:invocation[0]",
+                  "id": "inline:actor-id-1",
                   "src": "actor1",
                 },
                 "sourceId": "actor1",
@@ -381,7 +381,7 @@ test('should extract multiple actors with string source (array)', async () => {
                 "blockType": "actor",
                 "parentId": "state-1",
                 "properties": {
-                  "id": "inline:invocation[0]",
+                  "id": "inline:actor-id-0",
                   "src": "actor1",
                 },
                 "sourceId": "actor1",
@@ -391,7 +391,7 @@ test('should extract multiple actors with string source (array)', async () => {
                 "blockType": "actor",
                 "parentId": "state-1",
                 "properties": {
-                  "id": "inline:invocation[1]",
+                  "id": "inline:actor-id-1",
                   "src": "actor2",
                 },
                 "sourceId": "actor2",
@@ -500,7 +500,7 @@ test('should extract actor with inline source (direct)', async () => {
                 "blockType": "actor",
                 "parentId": "state-1",
                 "properties": {
-                  "id": "inline:invocation[0]",
+                  "id": "inline:actor-id-0",
                   "src": "inline:actor-0",
                 },
                 "sourceId": "inline:actor-0",
@@ -510,7 +510,7 @@ test('should extract actor with inline source (direct)', async () => {
                 "blockType": "actor",
                 "parentId": "state-2",
                 "properties": {
-                  "id": "inline:invocation[0]",
+                  "id": "inline:actor-id-1",
                   "src": "inline:actor-1",
                 },
                 "sourceId": "inline:actor-1",

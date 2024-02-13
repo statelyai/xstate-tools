@@ -162,7 +162,12 @@ export function replaceUniqueIds(
       ),
       ...Object.keys(digraph.edges).map((id, i) => [id, `edge-${i}`] as const),
       ...Object.keys(digraph.nodes).map((id, i) => [id, `state-${i}`] as const),
-
+      ...Object.values(digraph.blocks)
+        .filter((block): block is ActorBlock => block.blockType === 'actor')
+        .filter((block) => block.properties.id.startsWith('inline:'))
+        .map(
+          (block, i) => [block.properties.id, `inline:actor-id-${i}`] as const,
+        ),
       ...Object.keys(digraph.implementations.actions)
         .filter((key) => key.startsWith('inline:'))
         .map((id, i) => [id, `inline:action-${i}`] as const),
