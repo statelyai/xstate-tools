@@ -822,7 +822,7 @@ export function extractState(
             return createActorBlock({
               sourceId: `inline:${uniqueId()}`,
               parentId: node.uniqueId,
-              actorId: `inline:invocation[${index}]`,
+              actorId: `inline:${uniqueId()}:invocation`,
             });
           },
         );
