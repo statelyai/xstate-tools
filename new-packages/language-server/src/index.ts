@@ -101,11 +101,26 @@ connection.onRequest(applyPatches, async ({ uri, machineIndex, patches }) => {
     patches,
   });
 
-  return edits.map(({ fileName, range, ...rest }) => {
+  return edits.map((edit) => {
+    if (edit.type === 'replace') {
+      return {
+        type: 'replace' as const,
+        uri: server.env.fileNameToUri(edit.fileName),
+        range: xstateProject.getLinesAndCharactersRange(
+          edit.fileName,
+          edit.range,
+        ),
+        newText: edit.newText,
+      };
+    }
     return {
-      ...rest,
-      uri: server.env.fileNameToUri(fileName),
-      range: xstateProject.getLinesAndCharactersRange(fileName, range),
+      type: edit.type,
+      uri: server.env.fileNameToUri(edit.fileName),
+      position: xstateProject.getLineAndCharacterOfPosition(
+        edit.fileName,
+        edit.position,
+      ),
+      newText: edit.newText,
     };
   });
 });
