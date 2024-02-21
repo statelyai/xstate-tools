@@ -4,11 +4,16 @@ import type {
   ObjectLiteralElementLike,
   ObjectLiteralExpression,
   PropertyAssignment,
-  SourceFile,
 } from 'typescript';
-import * as charCodes from './charCodes';
-import { safeStringLikeLiteralText } from './safeStringLikeLiteralText';
 import { AstPath, ExtractionContext, JsonObject, JsonValue } from './types';
+
+export function first<T>(arr: readonly T[] | undefined): T | undefined {
+  return arr?.length ? arr[0] : undefined;
+}
+
+export function last<T>(arr: readonly T[] | undefined): T | undefined {
+  return arr?.length ? arr[arr.length - 1] : undefined;
+}
 
 export function assert(condition: unknown): asserts condition {
   if (!condition) {
@@ -178,6 +183,17 @@ export function everyDefined<T>(arr: T[]): arr is NonNullable<T>[] {
   return arr.every((item) => item !== undefined);
 }
 
+export function findLast<T>(
+  arr: readonly T[],
+  predicate: (item: T) => boolean,
+) {
+  for (let i = arr.length - 1; i >= 0; i--) {
+    if (predicate(arr[i])) {
+      return arr[i];
+    }
+  }
+}
+
 export function findProperty(
   ctx: ExtractionContext | undefined,
   ts: typeof import('typescript'),
@@ -243,42 +259,4 @@ export function findNodeByAstPath(
     current = retrieved.initializer;
   }
   return current;
-}
-
-export function isValidIdentifier(name: string): boolean {
-  return /^(?!\d)[\w$]+$/.test(name);
-}
-
-export function getPreferredQuoteCharCode(
-  ts: typeof import('typescript'),
-  sourceFile: SourceFile,
-) {
-  for (const statement of sourceFile.statements) {
-    if (
-      (ts.isImportDeclaration(statement) ||
-        ts.isExportDeclaration(statement)) &&
-      statement.moduleSpecifier &&
-      // it should always be a string literal but TS allows other things here (for which grammar errors are raised)
-      ts.isStringLiteral(statement.moduleSpecifier)
-    ) {
-      return statement.moduleSpecifier.getText().charCodeAt(0) as
-        | typeof charCodes.doubleQuote
-        | typeof charCodes.singleQuote;
-    }
-  }
-
-  return charCodes.doubleQuote;
-}
-
-export function safePropertyNameString(
-  name: string,
-  preferredQuoteCharCode:
-    | typeof charCodes.doubleQuote
-    | typeof charCodes.singleQuote
-    | typeof charCodes.backtick,
-) {
-  const safeString = safeStringLikeLiteralText(name, preferredQuoteCharCode);
-  return safeString.charCodeAt(0) === charCodes.backtick
-    ? `[${safeString}]`
-    : safeString;
 }

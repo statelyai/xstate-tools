@@ -7,7 +7,12 @@ import { onExit } from 'signal-exit';
 import { temporaryDirectory } from 'tempy';
 import typescript from 'typescript';
 import { TSProjectOptions, XStateProject, createProject } from '../src/index';
-import { ActorBlock, ExtractorDigraphDef, TextEdit } from '../src/types';
+import { ActorBlock, ExtractorDigraphDef, Node, TextEdit } from '../src/types';
+import { uniqueId } from '../src/utils';
+
+function toArray<T>(value: T | T[]): T[] {
+  return Array.isArray(value) ? value : [value];
+}
 
 function assert(value: unknown): asserts value {
   if (!value) {
@@ -270,6 +275,81 @@ function findNodeByStatePath(
   return marker;
 }
 
+function produceNewDigraphUsingEdit(
+  digraphDraft: Draft<ExtractorDigraphDef>,
+  edit: MachineEdit,
+) {
+  switch (edit.type) {
+    case 'add_state': {
+      const parent = findNodeByStatePath(digraphDraft, edit.path);
+      const newNode: Node = {
+        type: 'node',
+        uniqueId: uniqueId(),
+        parentId: parent.uniqueId,
+        data: {
+          key: edit.name,
+          initial: undefined,
+          type: 'normal',
+          history: undefined,
+          metaEntries: [],
+          entry: [],
+          exit: [],
+          invoke: [],
+          tags: [],
+          description: undefined,
+        },
+      };
+      digraphDraft.nodes[newNode.uniqueId] = newNode;
+      break;
+    }
+    case 'remove_state':
+      throw new Error(`Not implemented: ${edit.type}`);
+    case 'rename_state': {
+      const node = findNodeByStatePath(digraphDraft, edit.path);
+      const oldName = node.data.key;
+
+      node.data.key = edit.name;
+
+      const parentNode = findNodeByStatePath(
+        digraphDraft,
+        edit.path.slice(0, -1),
+      );
+
+      // TODO: it would be great if `.initial` could be a uniqueId and not a resolved value
+      // that would have to be changed in the Studio and adjusted in this package
+      if (parentNode.data.initial === oldName) {
+        parentNode.data.initial = edit.name;
+      }
+      break;
+    }
+    case 'reparent_state':
+      throw new Error(`Not implemented: ${edit.type}`);
+    case 'set_initial_state': {
+      const node = findNodeByStatePath(digraphDraft, edit.path);
+      node.data.initial = edit.initialState;
+      break;
+    }
+    case 'set_state_id':
+    case 'set_state_type':
+    case 'add_transition':
+    case 'remove_transition':
+    case 'reanchor_transition':
+    case 'change_transition_path':
+    case 'mark_transition_as_external':
+    case 'add_action':
+    case 'remove_action':
+    case 'edit_action':
+    case 'add_guard':
+    case 'remove_guard':
+    case 'edit_guard':
+    case 'add_invoke':
+    case 'remove_invoke':
+    case 'edit_invoke':
+    case 'set_description':
+      throw new Error(`Not implemented: ${edit.type}`);
+  }
+}
+
 export async function createTestProject(
   cwd: string,
   {
@@ -293,58 +373,13 @@ export async function createTestProject(
         fileName: string;
         machineIndex: number;
       },
-      edit: MachineEdit,
+      edits: MachineEdit | MachineEdit[],
     ) => {
       const digraph = project.getMachinesInFile(fileName)[machineIndex][0];
       assert(digraph);
       const [, patches] = produceWithPatches(digraph, (digraphDraft) => {
-        switch (edit.type) {
-          case 'add_state':
-          case 'remove_state':
-            throw new Error(`Not implemented: ${edit.type}`);
-          case 'rename_state': {
-            const node = findNodeByStatePath(digraphDraft, edit.path);
-            const oldName = node.data.key;
-
-            node.data.key = edit.name;
-
-            const parentNode = findNodeByStatePath(
-              digraphDraft,
-              edit.path.slice(0, -1),
-            );
-
-            // TODO: it would be great if `.initial` could be a uniqueId and not a resolved value
-            // that would have to be changed in the Studio and adjusted in this package
-            if (parentNode.data.initial === oldName) {
-              parentNode.data.initial = edit.name;
-            }
-            break;
-          }
-          case 'reparent_state':
-            throw new Error(`Not implemented: ${edit.type}`);
-          case 'set_initial_state': {
-            const node = findNodeByStatePath(digraphDraft, edit.path);
-            node.data.initial = edit.initialState;
-            break;
-          }
-          case 'set_state_id':
-          case 'set_state_type':
-          case 'add_transition':
-          case 'remove_transition':
-          case 'reanchor_transition':
-          case 'change_transition_path':
-          case 'mark_transition_as_external':
-          case 'add_action':
-          case 'remove_action':
-          case 'edit_action':
-          case 'add_guard':
-          case 'remove_guard':
-          case 'edit_guard':
-          case 'add_invoke':
-          case 'remove_invoke':
-          case 'edit_invoke':
-          case 'set_description':
-            throw new Error(`Not implemented: ${edit.type}`);
+        for (const edit of toArray(edits)) {
+          produceNewDigraphUsingEdit(digraphDraft, edit);
         }
       });
       return project.applyPatches({
