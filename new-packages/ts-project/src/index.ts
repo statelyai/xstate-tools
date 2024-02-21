@@ -17,7 +17,13 @@ import type {
   TreeNode,
   XStateVersion,
 } from './types';
-import { assert, findNodeByAstPath } from './utils';
+import {
+  assert,
+  findNodeByAstPath,
+  getPreferredQuoteCharCode,
+  isValidIdentifier,
+  safePropertyNameString,
+} from './utils';
 
 enablePatches();
 
@@ -230,7 +236,7 @@ function createProjectMachine({
     },
     applyPatches(patches: readonly Patch[]): TextEdit[] {
       const edits: TextEdit[] = [];
-      const { createMachineCall } = findOwnCreateMachineCall();
+      const { sourceFile, createMachineCall } = findOwnCreateMachineCall();
       const currentState = state!;
 
       // TODO: enable this, currently it throws - presumably because the patch might contain data that are not part of this local `digraph`
@@ -271,9 +277,12 @@ function createProjectMachine({
                       start: prop.name.getStart(),
                       end: prop.name.getEnd(),
                     },
-                    // TODO: a smarter `newText` should be computed here
-                    // it only has to be stringified when it's not a valid identifier
-                    newText: JSON.stringify(patch.value),
+                    newText: isValidIdentifier(patch.value)
+                      ? patch.value
+                      : safePropertyNameString(
+                          patch.value,
+                          getPreferredQuoteCharCode(host.ts, sourceFile),
+                        ),
                   });
                 }
             }
