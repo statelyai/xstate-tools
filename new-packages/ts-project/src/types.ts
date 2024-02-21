@@ -223,14 +223,19 @@ export type JsonValue =
   | JsonValue[];
 export type JsonObject = { [key: string]: JsonValue };
 
-export interface Position {
+export interface Range {
+  start: number;
+  end: number;
+}
+
+export interface LineAndCharacterPosition {
   line: number;
   character: number;
 }
 
-export interface Range {
-  start: Position;
-  end: Position;
+export interface LinesAndCharactersRange {
+  start: LineAndCharacterPosition;
+  end: LineAndCharacterPosition;
 }
 
 interface ReplaceTextEdit {

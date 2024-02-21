@@ -1,4 +1,8 @@
-import type { ExtractorDigraphDef, Patch } from '@xstate/ts-project';
+import type {
+  ExtractorDigraphDef,
+  LinesAndCharactersRange,
+  Patch,
+} from '@xstate/ts-project';
 import * as vscode from 'vscode-languageserver-protocol';
 
 type DistributiveOmit<T, K extends PropertyKey> = T extends unknown
@@ -7,9 +11,10 @@ type DistributiveOmit<T, K extends PropertyKey> = T extends unknown
 
 type TextEdit = DistributiveOmit<
   import('@xstate/ts-project').TextEdit,
-  'fileName'
+  'fileName' | 'range'
 > & {
   uri: string;
+  range: LinesAndCharactersRange;
 };
 
 export const getMachineAtIndex = new vscode.RequestType<

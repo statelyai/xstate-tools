@@ -10,6 +10,7 @@ import type {
   ExtractionContext,
   ExtractionError,
   ExtractorDigraphDef,
+  LinesAndCharactersRange,
   ProjectMachineState,
   Range,
   TextEdit,
@@ -227,9 +228,9 @@ function createProjectMachine({
       state = extractProjectMachine(host, sourceFile, createMachineCall, state);
       return [state.digraph, state.errors] as const;
     },
-    applyPatches(patches: Patch[]): TextEdit[] {
+    applyPatches(patches: readonly Patch[]): TextEdit[] {
       const edits: TextEdit[] = [];
-      const { sourceFile, createMachineCall } = findOwnCreateMachineCall();
+      const { createMachineCall } = findOwnCreateMachineCall();
       const currentState = state!;
 
       // TODO: enable this, currently it throws - presumably because the patch might contain data that are not part of this local `digraph`
@@ -267,14 +268,8 @@ function createProjectMachine({
                     type: 'replace',
                     fileName,
                     range: {
-                      start: host.ts.getLineAndCharacterOfPosition(
-                        sourceFile,
-                        prop.name.getStart(),
-                      ),
-                      end: host.ts.getLineAndCharacterOfPosition(
-                        sourceFile,
-                        prop.name.getEnd(),
-                      ),
+                      start: prop.name.getStart(),
+                      end: prop.name.getEnd(),
                     },
                     // TODO: a smarter `newText` should be computed here
                     // it only has to be stringified when it's not a valid identifier
@@ -324,8 +319,8 @@ export function createProject(
       }
       return findCreateMachineCalls(ts, sourceFile).map((call) => {
         return {
-          start: sourceFile.getLineAndCharacterOfPosition(call.getStart()),
-          end: sourceFile.getLineAndCharacterOfPosition(call.getEnd()),
+          start: call.getStart(),
+          end: call.getEnd(),
         };
       });
     },
@@ -352,7 +347,7 @@ export function createProject(
     }: {
       fileName: string;
       machineIndex: number;
-      patches: Patch[];
+      patches: readonly Patch[];
     }): TextEdit[] {
       const machine = projectMachines[fileName]?.[machineIndex];
       if (!machine) {
@@ -363,8 +358,19 @@ export function createProject(
     updateTsProgram(tsProgram: Program) {
       currentProgram = tsProgram;
     },
+    getLinesAndCharactersRange(
+      fileName: string,
+      range: Range,
+    ): LinesAndCharactersRange {
+      const sourceFile = currentProgram.getSourceFile(fileName);
+      assert(sourceFile);
+      return {
+        start: sourceFile.getLineAndCharacterOfPosition(range.start),
+        end: sourceFile.getLineAndCharacterOfPosition(range.end),
+      };
+    },
   };
 }
 
 export type XStateProject = ReturnType<typeof createProject>;
-export { ExtractorDigraphDef, Patch, TextEdit };
+export { ExtractorDigraphDef, LinesAndCharactersRange, Patch, Range, TextEdit };
