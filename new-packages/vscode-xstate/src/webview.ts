@@ -87,8 +87,9 @@ export const webviewLogic = fromCallback<
 
   const disposable = vscode.Disposable.from(
     webviewPanel.webview.onDidReceiveMessage(
-      (event: ExtractEvent<LanguageClientEvent, 'APPLY_PATCHES'>) =>
-        parent.send(event),
+      (event: ExtractEvent<LanguageClientEvent, 'APPLY_PATCHES'>) => {
+        parent.send(event);
+      },
     ),
     webviewPanel.onDidDispose(() => {
       parent.send({ type: 'WEBVIEW_CLOSED' });
