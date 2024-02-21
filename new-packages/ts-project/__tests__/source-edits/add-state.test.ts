@@ -8,7 +8,7 @@ test('should append a state after existing states (with trailing comma)', async 
     'index.ts': ts`
       import { createMachine } from "xstate";
 
-      createMachine({s
+      createMachine({
         states: {
           foo: {},
         },
@@ -679,7 +679,7 @@ test(`should be possible to add a state with name that isn't a valid identifier`
     'index.ts': ts`
       import { createMachine } from "xstate";
 
-      createMachine({})
+      createMachine({});
     `,
   });
 
