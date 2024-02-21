@@ -19,6 +19,15 @@ export const js = outdent;
 export const ts = outdent;
 export const tsx = outdent;
 
+function shuffle<T>(arr: T[]): T[] {
+  const copy = [...arr];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
 type Fixture = {
   [key: string]: string | { kind: 'symlink'; path: string };
 };
@@ -141,7 +150,7 @@ type MachineEdit =
   | {
       type: 'set_initial_state';
       path: string[];
-      initialState: string | null;
+      initialState: string | undefined;
     }
   | { type: 'set_state_id'; path: string[]; id: string | null }
   | {
@@ -293,12 +302,31 @@ export async function createTestProject(
           case 'add_state':
           case 'remove_state':
             throw new Error(`Not implemented: ${edit.type}`);
-          case 'rename_state':
+          case 'rename_state': {
             const node = findNodeByStatePath(digraphDraft, edit.path);
+            const oldName = node.data.key;
+
             node.data.key = edit.name;
+
+            const parentNode = findNodeByStatePath(
+              digraphDraft,
+              edit.path.slice(0, -1),
+            );
+
+            // TODO: it would be great if `.initial` could be a uniqueId and not a resolved value
+            // that would have to be changed in the Studio and adjusted in this package
+            if (parentNode.data.initial === oldName) {
+              parentNode.data.initial = edit.name;
+            }
             break;
+          }
           case 'reparent_state':
-          case 'set_initial_state':
+            throw new Error(`Not implemented: ${edit.type}`);
+          case 'set_initial_state': {
+            const node = findNodeByStatePath(digraphDraft, edit.path);
+            node.data.initial = edit.initialState;
+            break;
+          }
           case 'set_state_id':
           case 'set_state_type':
           case 'add_transition':
@@ -319,13 +347,18 @@ export async function createTestProject(
             throw new Error(`Not implemented: ${edit.type}`);
         }
       });
-      return project.applyPatches({ fileName, machineIndex, patches });
+      return project.applyPatches({
+        fileName,
+        machineIndex,
+        // shuffle patches to make sure the order doesn't matter
+        patches: shuffle(patches),
+      });
     },
     applyTextEdits: async (edits: readonly TextEdit[]) => {
       const edited: Record<string, string> = {};
 
       for (const edit of [...edits].sort(
-        (a, b) => a.range.start - b.range.start,
+        (a, b) => b.range.start - a.range.start,
       )) {
         switch (edit.type) {
           case 'replace':

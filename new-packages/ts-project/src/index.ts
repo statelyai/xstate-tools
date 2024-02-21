@@ -5,6 +5,7 @@ import type {
   PropertyAssignment,
   SourceFile,
 } from 'typescript';
+import { safeStringLikeLiteralText } from './safeStringLikeLiteralText';
 import { extractState } from './state';
 import type {
   ExtractionContext,
@@ -20,6 +21,7 @@ import type {
 import {
   assert,
   findNodeByAstPath,
+  findProperty,
   getPreferredQuoteCharCode,
   isValidIdentifier,
   safePropertyNameString,
@@ -283,6 +285,39 @@ function createProjectMachine({
                           patch.value,
                           getPreferredQuoteCharCode(host.ts, sourceFile),
                         ),
+                  });
+                  break;
+                }
+                if (patch.path[2] === 'data' && patch.path[3] === 'initial') {
+                  if (typeof patch.value === undefined) {
+                    // removing initial states is not supported in the Studio
+                    // but a patch like this can likely still be received when the last child of a state gets removed
+                    break;
+                  }
+                  const node = findNodeByAstPath(
+                    host.ts,
+                    createMachineCall,
+                    currentState.astPaths.nodes[nodeId],
+                  );
+                  assert(host.ts.isObjectLiteralExpression(node));
+                  const prop = findProperty(
+                    undefined,
+                    host.ts,
+                    node,
+                    'initial',
+                  );
+                  assert(prop && host.ts.isPropertyAssignment(prop));
+                  edits.push({
+                    type: 'replace',
+                    fileName,
+                    range: {
+                      start: prop.initializer.getStart(),
+                      end: prop.initializer.getEnd(),
+                    },
+                    newText: safeStringLikeLiteralText(
+                      patch.value,
+                      getPreferredQuoteCharCode(host.ts, sourceFile),
+                    ),
                   });
                 }
             }
