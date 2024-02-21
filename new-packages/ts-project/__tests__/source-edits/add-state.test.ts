@@ -672,3 +672,43 @@ test('should successfully add a state to a nested state and use it as initial st
   `,
   );
 });
+
+test(`should be possible to add a state with name that isn't a valid identifier`, async () => {
+  const tmpPath = await testdir({
+    'tsconfig.json': JSON.stringify({}),
+    'index.ts': ts`
+      import { createMachine } from "xstate";
+
+      createMachine({})
+    `,
+  });
+
+  const project = await createTestProject(tmpPath);
+
+  const textEdits = project.editDigraph(
+    {
+      fileName: 'index.ts',
+      machineIndex: 0,
+    },
+    [
+      {
+        type: 'add_state',
+        path: [],
+        name: 'just added',
+      },
+    ],
+  );
+  expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(
+    `
+    {
+      "index.ts": "import { createMachine } from "xstate";
+
+    createMachine({
+    	states: {
+    		"just added": {}
+    	}
+    })",
+    }
+  `,
+  );
+});
