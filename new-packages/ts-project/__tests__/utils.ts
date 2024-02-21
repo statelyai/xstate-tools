@@ -6,7 +6,7 @@ import { onExit } from 'signal-exit';
 import { temporaryDirectory } from 'tempy';
 import typescript from 'typescript';
 import { TSProjectOptions, XStateProject, createProject } from '../src/index';
-import { ActorBlock, ExtractorDigraphDef } from '../src/types';
+import { ActorBlock } from '../src/types';
 
 function assert(value: unknown): asserts value {
   if (!value) {
@@ -149,7 +149,7 @@ function replaceUniqueIdsRecursively(
 }
 
 export function replaceUniqueIds(
-  extracted: ReturnType<XStateProject['extractMachines']>,
+  extracted: ReturnType<XStateProject['getMachinesInFile']>,
 ) {
   return extracted.map(([digraph, errors]) => {
     if (!digraph) {

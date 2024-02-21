@@ -5,6 +5,7 @@ import type {
   ExtractionContext,
   ExtractionError,
   ExtractorDigraphDef,
+  ProjectMachineState,
   Range,
   TextEdit,
   TreeNode,
@@ -141,14 +142,112 @@ export interface TSProjectOptions {
   xstateVersion?: XStateVersion | undefined;
 }
 
+function extractProjectMachine(
+  host: ProjectHost,
+  sourceFile: SourceFile,
+  call: CallExpression,
+  oldState: ProjectMachineState | undefined,
+) {
+  const ctx: ExtractionContext = {
+    sourceFile,
+    xstateVersion: host.xstateVersion,
+    oldState,
+    errors: [],
+    digraph: {
+      nodes: {},
+      edges: {},
+      blocks: {},
+      implementations: {
+        actions: {},
+        actors: {},
+        guards: {},
+      },
+      data: {
+        context: {},
+      },
+    },
+    treeNodes: {},
+    idMap: {},
+    originalTargets: {},
+    currentAstPath: [],
+    astPaths: {
+      nodes: {},
+      edges: {},
+    },
+  };
+  const [digraph, errors] = extractMachineConfig(ctx, host.ts, call);
+  return {
+    digraph,
+    errors,
+    astPaths: ctx.astPaths,
+  };
+}
+
+function createProjectMachine({
+  host,
+  fileName,
+  machineIndex,
+}: {
+  host: ProjectHost;
+  fileName: string;
+  machineIndex: number;
+}) {
+  let state: ProjectMachineState | undefined;
+  return {
+    fileName,
+    machineIndex,
+    getDigraph() {
+      const sourceFile = host.getCurrentProgram().getSourceFile(fileName);
+
+      if (!sourceFile) {
+        throw new Error('File not found');
+      }
+
+      const createMachineCall = findCreateMachineCalls(host.ts, sourceFile)[
+        machineIndex
+      ];
+
+      if (!createMachineCall) {
+        throw new Error('Machine not found');
+      }
+
+      state = extractProjectMachine(host, sourceFile, createMachineCall, state);
+      return [state.digraph, state.errors] as const;
+    },
+    applyPatches(patches: Patch[]): TextEdit[] {
+      return [];
+    },
+  };
+}
+
+type ProjectMachine = ReturnType<typeof createProjectMachine>;
+
+interface ProjectHost {
+  ts: typeof import('typescript');
+  xstateVersion: XStateVersion;
+  getCurrentProgram: () => Program;
+}
+
 export function createProject(
   ts: typeof import('typescript'),
   tsProgram: Program,
   { xstateVersion = '5' }: TSProjectOptions = {},
 ) {
-  const api = {
+  const projectMachines: Record<string, ProjectMachine[]> = {};
+
+  let currentProgram = tsProgram;
+
+  const host: ProjectHost = {
+    ts,
+    xstateVersion,
+    getCurrentProgram() {
+      return currentProgram;
+    },
+  };
+
+  return {
     findMachines: (fileName: string): Range[] => {
-      const sourceFile = tsProgram.getSourceFile(fileName);
+      const sourceFile = currentProgram.getSourceFile(fileName);
       if (!sourceFile) {
         return [];
       }
@@ -159,43 +258,22 @@ export function createProject(
         };
       });
     },
-    extractMachines(fileName: string) {
-      const sourceFile = tsProgram.getSourceFile(fileName);
+    getMachinesInFile(fileName: string) {
+      const existing = projectMachines[fileName];
+      if (existing) {
+        return existing.map((machine) => machine.getDigraph());
+      }
+      const sourceFile = currentProgram.getSourceFile(fileName);
       if (!sourceFile) {
         return [];
       }
-      return findCreateMachineCalls(ts, sourceFile).map((call) => {
-        const ctx: ExtractionContext = {
-          sourceFile,
-          xstateVersion,
-          errors: [],
-          digraph: {
-            nodes: {},
-            edges: {},
-            blocks: {},
-            implementations: {
-              actions: {},
-              actors: {},
-              guards: {},
-            },
-            data: {
-              context: {},
-            },
-          },
-          treeNodes: {},
-          idMap: {},
-          originalTargets: {},
-          currentAstPath: [],
-          astPaths: {
-            nodes: {},
-            edges: {},
-          },
-        };
-        return extractMachineConfig(ctx, ts, call);
-      });
+      const calls = findCreateMachineCalls(ts, sourceFile);
+      const created = calls.map((call, machineIndex) =>
+        createProjectMachine({ host, fileName, machineIndex }),
+      );
+      projectMachines[fileName] = created;
+      return created.map((machine) => machine.getDigraph());
     },
-    // TODO: consider exposing an object representing a file or a machine to the caller of the `extractMachines` and add a similar-ish method there
-    // for now we are just doing through the full extraction process again which is wasteful
     applyPatches({
       fileName,
       machineIndex,
@@ -205,12 +283,16 @@ export function createProject(
       machineIndex: number;
       patches: Patch[];
     }): TextEdit[] {
-      const extractedMachine = api.extractMachines(fileName)[machineIndex];
-      console.log(extractedMachine, patches);
-      return [];
+      const machine = projectMachines[fileName]?.[machineIndex];
+      if (!machine) {
+        throw new Error('Machine not found');
+      }
+      return machine.applyPatches(patches);
+    },
+    updateTsProgram(tsProgram: Program) {
+      currentProgram = tsProgram;
     },
   };
-  return api;
 }
 
 export type XStateProject = ReturnType<typeof createProject>;

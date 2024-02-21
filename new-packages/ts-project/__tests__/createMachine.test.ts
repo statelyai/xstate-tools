@@ -13,7 +13,7 @@ test('should extract a machine with empty config', async () => {
 
   const project = await createTestProject(tmpPath);
 
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -67,7 +67,7 @@ test('should extract a machine created with no config at all', async () => {
 
   const project = await createTestProject(tmpPath);
 
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -127,7 +127,7 @@ test('should extract multiple machines in a single file', async () => {
 
   const project = await createTestProject(tmpPath);
 
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [
@@ -220,7 +220,7 @@ test('should extract a machine created with `setup`', async () => {
 
   const project = await createTestProject(tmpPath);
 
-  expect(replaceUniqueIds(project.extractMachines('index.ts')))
+  expect(replaceUniqueIds(project.getMachinesInFile('index.ts')))
     .toMatchInlineSnapshot(`
       [
         [

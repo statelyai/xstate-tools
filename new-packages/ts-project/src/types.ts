@@ -12,9 +12,21 @@ export interface TreeNode {
 
 export type AstPath = (string | number)[];
 
+type MachineAstPaths = {
+  nodes: Record<string, AstPath>;
+  edges: Record<string, AstPath>;
+};
+
+export interface ProjectMachineState {
+  digraph: ExtractorDigraphDef | undefined;
+  errors: ExtractionError[];
+  astPaths: MachineAstPaths;
+}
+
 export interface ExtractionContext {
   sourceFile: SourceFile;
   xstateVersion: XStateVersion;
+  oldState: ProjectMachineState | undefined;
   errors: ExtractionError[];
   digraph: Pick<
     ExtractorDigraphDef,
@@ -24,10 +36,7 @@ export interface ExtractionContext {
   idMap: Record<string, string>;
   originalTargets: Record<string, string[]>;
   currentAstPath: AstPath;
-  astPaths: {
-    nodes: Record<string, AstPath>;
-    edges: Record<string, AstPath>;
-  };
+  astPaths: MachineAstPaths;
 }
 
 // TODO: add error location/span
