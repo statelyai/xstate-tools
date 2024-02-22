@@ -330,7 +330,18 @@ function produceNewDigraphUsingEdit(
       break;
     }
     case 'set_state_id':
-    case 'set_state_type':
+      // this isn't supported by the Studio anyway
+      throw new Error(`Not implemented: ${edit.type}`);
+    case 'set_state_type': {
+      const node = findNodeByStatePath(digraphDraft, edit.path);
+      node.data.type = edit.stateType;
+      node.data.history = edit.history
+        ? edit.history
+        : edit.stateType === 'history'
+        ? 'shallow'
+        : undefined;
+      break;
+    }
     case 'add_transition':
     case 'remove_transition':
     case 'reanchor_transition':

@@ -633,6 +633,8 @@ export const c = {
 
 export const InsertionPriority = {
   None: 0,
-  States: 1, // at the moment it wouldn't have to exist but it should help to keep `states` close to `initial` so it's listed explicitly here
+  States: 1,
   Initial: 2,
+  History: 3,
+  StateType: 4,
 } as const;
