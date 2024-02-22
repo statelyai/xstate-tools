@@ -254,7 +254,7 @@ type MachineEdit =
       type: 'set_description';
       statePath: string[];
       transitionPath?: TransitionPath;
-      description?: string | null;
+      description?: string | undefined;
     };
 
 function findNodeByStatePath(
@@ -356,8 +356,14 @@ function produceNewDigraphUsingEdit(
     case 'add_invoke':
     case 'remove_invoke':
     case 'edit_invoke':
-    case 'set_description':
       throw new Error(`Not implemented: ${edit.type}`);
+    case 'set_description':
+      const node = findNodeByStatePath(digraphDraft, edit.statePath);
+      if (edit.transitionPath) {
+        throw new Error(`Not implemented`);
+      }
+      node.data.description = edit.description;
+      break;
   }
 }
 

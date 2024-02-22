@@ -160,25 +160,12 @@ function getPreferredQuoteCharCode(
   return charCodes.doubleQuote;
 }
 
-function safePropertyNameString(
-  name: string,
-  preferredQuoteCharCode:
-    | typeof charCodes.doubleQuote
-    | typeof charCodes.singleQuote
-    | typeof charCodes.backtick,
-) {
-  const safeString = safeStringLikeLiteralText(name, preferredQuoteCharCode);
-  return safeString.charCodeAt(0) === charCodes.backtick
-    ? `[${safeString}]`
-    : safeString;
-}
-
 function toSafeStringText(
   ts: typeof import('typescript'),
   sourceFile: SourceFile,
   text: string,
 ) {
-  return safePropertyNameString(
+  return safeStringLikeLiteralText(
     text,
     getPreferredQuoteCharCode(ts, sourceFile),
   );
@@ -189,24 +176,13 @@ function toSafePropertyNameText(
   sourceFile: SourceFile,
   name: string,
 ) {
-  return isValidIdentifier(name)
-    ? name
-    : toSafeStringText(ts, sourceFile, name);
-}
-
-function toInsertedPropertyText(
-  ts: typeof import('typescript'),
-  {
-    sourceFile,
-    name,
-    initializerText,
-  }: {
-    sourceFile: SourceFile;
-    name: string;
-    initializerText: string;
-  },
-) {
-  return `${toSafePropertyNameText(ts, sourceFile, name)}: ${initializerText}`;
+  if (isValidIdentifier(name)) {
+    return name;
+  }
+  const safeString = toSafeStringText(ts, sourceFile, name);
+  return safeString.charCodeAt(0) === charCodes.backtick
+    ? `[${safeString}]`
+    : safeString;
 }
 
 function indentTextWith(text: string, indentation: string) {

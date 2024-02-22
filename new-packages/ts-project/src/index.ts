@@ -446,6 +446,46 @@ function createProjectMachine({
                     InsertionPriority.History,
                   );
                 }
+                if (
+                  patch.path[2] === 'data' &&
+                  patch.path[3] === 'description'
+                ) {
+                  const node = findNodeByAstPath(
+                    host.ts,
+                    createMachineCall,
+                    currentState.astPaths.nodes[nodeId],
+                  );
+                  assert(host.ts.isObjectLiteralExpression(node));
+                  const descriptionProp = findProperty(
+                    undefined,
+                    host.ts,
+                    node,
+                    'description',
+                  );
+                  if (!patch.value) {
+                    if (descriptionProp) {
+                      codeChanges.removeProperty(descriptionProp);
+                    }
+                    break;
+                  }
+
+                  if (descriptionProp) {
+                    codeChanges.replaceRange(sourceFile, {
+                      range: {
+                        start: descriptionProp.initializer.getStart(),
+                        end: descriptionProp.initializer.getEnd(),
+                      },
+                      element: c.string(patch.value),
+                    });
+                    break;
+                  }
+
+                  codeChanges.insertPropertyIntoObject(
+                    node,
+                    'description',
+                    c.string(patch.value),
+                  );
+                }
             }
             break;
         }
