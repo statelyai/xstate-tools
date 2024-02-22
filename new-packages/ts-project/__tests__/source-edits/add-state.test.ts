@@ -35,7 +35,7 @@ test('should append a state after existing states (with trailing comma)', async 
     {
       "index.ts": "import { createMachine } from "xstate";
 
-    createMachine({s
+    createMachine({
       states: {
         foo: {},
         bar: {},
