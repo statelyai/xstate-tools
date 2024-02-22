@@ -489,7 +489,7 @@ export function createCodeChanges(ts: typeof import('typescript')) {
             if (
               change.sourceFile.text[start - whitespace.length - 1] === '\n'
             ) {
-              start -= whitespace.length - 1;
+              start -= whitespace.length + 1;
             } else {
               start -= whitespace.length;
             }
