@@ -60,10 +60,9 @@ function toZeroLengthRange(position: number) {
   return { start: position, end: position };
 }
 
-function getIndentationOfNode({ text }: SourceFile, node: Node) {
-  const start = node.getStart();
-  let indentEnd = start;
-  let current = indentEnd;
+function getIndentationBeforePosition(text: string, position: number) {
+  let indentEnd = position;
+  let current = indentEnd - 1;
 
   while (true) {
     const char = text[current];
@@ -79,6 +78,22 @@ function getIndentationOfNode({ text }: SourceFile, node: Node) {
     current--;
   }
   return text.slice(current + 1, indentEnd);
+}
+
+function getSingleLineWhitespaceBeforePosition(text: string, position: number) {
+  let end = position;
+  let current = end - 1;
+
+  while (true) {
+    const char = text[current];
+
+    if (!/\s/.test(char) || char === '\n' || char === '\r') {
+      break;
+    }
+
+    current--;
+  }
+  return text.slice(current + 1, end);
 }
 
 function getTrailingCommaPosition({ text }: SourceFile, position: number) {
@@ -350,7 +365,10 @@ export function createCodeChanges(ts: typeof import('typescript')) {
                   formattingOptions,
                 ) +
                 ',\n' +
-                getIndentationOfNode(change.sourceFile, change.property),
+                getIndentationBeforePosition(
+                  change.sourceFile.text,
+                  change.property.getStart(),
+                ),
             });
             break;
           }
@@ -415,7 +433,10 @@ export function createCodeChanges(ts: typeof import('typescript')) {
                   '\n' +
                   indentTextWith(
                     propertiesText,
-                    getIndentationOfNode(change.sourceFile, lastElement),
+                    getIndentationBeforePosition(
+                      change.sourceFile.text,
+                      lastElement.getStart(),
+                    ),
                   ) +
                   (!!trailingCommaPosition ? ',' : ''),
               });
@@ -423,9 +444,9 @@ export function createCodeChanges(ts: typeof import('typescript')) {
               break;
             }
 
-            const currentIdentation = getIndentationOfNode(
-              change.sourceFile,
-              change.object,
+            const currentIdentation = getIndentationBeforePosition(
+              change.sourceFile.text,
+              change.object.getStart(),
             );
 
             const lastComment = getLastComment(
@@ -453,13 +474,24 @@ export function createCodeChanges(ts: typeof import('typescript')) {
             break;
           }
           case 'remove_property': {
-            const indentation = getIndentationOfNode(
-              change.sourceFile,
-              change.property,
+            const leadingComment = first(
+              ts.getLeadingCommentRanges(
+                change.sourceFile.text,
+                change.property.getFullStart(),
+              ),
             );
-            let start = change.property.getStart() - indentation.length;
-            if (change.sourceFile.text[start - 1] === '\n') {
-              start -= 1;
+            let start = leadingComment?.pos ?? change.property.getStart();
+
+            const whitespace = getSingleLineWhitespaceBeforePosition(
+              change.sourceFile.text,
+              start,
+            );
+            if (
+              change.sourceFile.text[start - whitespace.length - 1] === '\n'
+            ) {
+              start -= whitespace.length - 1;
+            } else {
+              start -= whitespace.length;
             }
             const trailingComment = last(
               ts.getTrailingCommentRanges(
@@ -474,6 +506,12 @@ export function createCodeChanges(ts: typeof import('typescript')) {
             );
             if (trailingCommaPosition !== -1) {
               end = trailingCommaPosition + 1;
+              const trailingComment = last(
+                ts.getTrailingCommentRanges(change.sourceFile.text, end),
+              );
+              if (trailingComment) {
+                end = trailingComment.end;
+              }
             }
             edits.push({
               type: 'delete',
