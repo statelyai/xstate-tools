@@ -610,7 +610,7 @@ test('should be able to remove an initial state that is not positioned on its ow
       "index.ts": "import { createMachine } from "xstate";
 
     createMachine({
-      id: "root"
+      id: "root",
       states: {
         foo: {},
       },
