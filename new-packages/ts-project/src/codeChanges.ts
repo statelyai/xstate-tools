@@ -34,6 +34,11 @@ interface InsertPropertyIntoObjectCodeChange extends BaseCodeChange {
   value: InsertionElement;
 }
 
+interface RemovePropertyNameChange extends BaseCodeChange {
+  type: 'remove_property';
+  property: PropertyAssignment;
+}
+
 interface ReplacePropertyNameChange extends BaseCodeChange {
   type: 'replace_property_name';
   name: string;
@@ -47,6 +52,7 @@ interface ReplaceRangeCodeChange extends BaseCodeChange {
 type CodeChange =
   | InsertPropertyBeforePropertyCodeChange
   | InsertPropertyIntoObjectCodeChange
+  | RemovePropertyNameChange
   | ReplacePropertyNameChange
   | ReplaceRangeCodeChange;
 
@@ -240,6 +246,17 @@ export function createCodeChanges(ts: typeof import('typescript')) {
         priority,
       });
     },
+    removeProperty: (property: PropertyAssignment) => {
+      changes.push({
+        type: 'remove_property',
+        sourceFile: property.getSourceFile(),
+        range: {
+          start: property.getStart(),
+          end: property.getEnd(),
+        },
+        property,
+      });
+    },
     replacePropertyName: (property: PropertyAssignment, name: string) => {
       changes.push({
         type: 'replace_property_name',
@@ -419,6 +436,14 @@ export function createCodeChanges(ts: typeof import('typescript')) {
                   currentIdentation + formattingOptions.singleIndentation,
                 ) +
                 (!isObjectMultiline ? `\n${currentIdentation}` : ''),
+            });
+            break;
+          }
+          case 'remove_property': {
+            edits.push({
+              type: 'delete',
+              fileName: change.sourceFile.fileName,
+              range: change.range,
             });
             break;
           }

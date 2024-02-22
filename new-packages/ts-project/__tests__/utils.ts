@@ -402,6 +402,10 @@ export async function createTestProject(
           edited[relativeFileName] ??
           program.getSourceFile(edit.fileName)!.text;
         switch (edit.type) {
+          case 'delete':
+            edited[relativeFileName] =
+              source.slice(0, edit.range.start) + source.slice(edit.range.end);
+            break;
           case 'insert':
             edited[relativeFileName] =
               source.slice(0, edit.position) +

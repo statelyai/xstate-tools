@@ -238,6 +238,12 @@ export interface LinesAndCharactersRange {
   end: LineAndCharacterPosition;
 }
 
+export interface DeleteTextEdit {
+  type: 'delete';
+  fileName: string;
+  range: Range;
+}
+
 export interface InsertTextEdit {
   type: 'insert';
   fileName: string;
@@ -252,4 +258,4 @@ export interface ReplaceTextEdit {
   newText: string;
 }
 
-export type TextEdit = InsertTextEdit | ReplaceTextEdit;
+export type TextEdit = DeleteTextEdit | InsertTextEdit | ReplaceTextEdit;

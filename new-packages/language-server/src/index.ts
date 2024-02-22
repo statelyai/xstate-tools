@@ -102,26 +102,37 @@ connection.onRequest(applyPatches, async ({ uri, machineIndex, patches }) => {
   });
 
   return edits.map((edit) => {
-    if (edit.type === 'replace') {
-      return {
-        type: 'replace' as const,
-        uri: server.env.fileNameToUri(edit.fileName),
-        range: xstateProject.getLinesAndCharactersRange(
-          edit.fileName,
-          edit.range,
-        ),
-        newText: edit.newText,
-      };
+    switch (edit.type) {
+      case 'delete':
+        return {
+          type: edit.type,
+          uri: server.env.fileNameToUri(edit.fileName),
+          range: xstateProject.getLinesAndCharactersRange(
+            edit.fileName,
+            edit.range,
+          ),
+        };
+      case 'insert':
+        return {
+          type: edit.type,
+          uri: server.env.fileNameToUri(edit.fileName),
+          position: xstateProject.getLineAndCharacterOfPosition(
+            edit.fileName,
+            edit.position,
+          ),
+          newText: edit.newText,
+        };
+      case 'replace':
+        return {
+          type: 'replace' as const,
+          uri: server.env.fileNameToUri(edit.fileName),
+          range: xstateProject.getLinesAndCharactersRange(
+            edit.fileName,
+            edit.range,
+          ),
+          newText: edit.newText,
+        };
     }
-    return {
-      type: edit.type,
-      uri: server.env.fileNameToUri(edit.fileName),
-      position: xstateProject.getLineAndCharacterOfPosition(
-        edit.fileName,
-        edit.position,
-      ),
-      newText: edit.newText,
-    };
   });
 });
 
