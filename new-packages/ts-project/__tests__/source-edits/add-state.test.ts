@@ -707,7 +707,7 @@ test(`should be possible to add a state with name that isn't a valid identifier`
     	states: {
     		"just added": {}
     	}
-    })",
+    });",
     }
   `,
   );
