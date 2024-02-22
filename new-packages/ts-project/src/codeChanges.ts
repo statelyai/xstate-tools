@@ -62,38 +62,34 @@ function toZeroLengthRange(position: number) {
 
 function getIndentationBeforePosition(text: string, position: number) {
   let indentEnd = position;
-  let current = indentEnd - 1;
 
-  while (true) {
-    const char = text[current];
+  for (let i = indentEnd - 1; i >= 0; i--) {
+    const char = text[i];
 
     if (char === '\n' || char === '\r') {
-      break;
+      return text.slice(i + 1, indentEnd);
     }
 
     if (!/\s/.test(char)) {
-      indentEnd = current;
+      indentEnd = i;
     }
-
-    current--;
   }
-  return text.slice(current + 1, indentEnd);
+
+  return text.slice(0, indentEnd);
 }
 
 function getSingleLineWhitespaceBeforePosition(text: string, position: number) {
   let end = position;
-  let current = end - 1;
 
-  while (true) {
-    const char = text[current];
+  for (let i = end - 1; i >= 0; i--) {
+    const char = text[i];
 
     if (!/\s/.test(char) || char === '\n' || char === '\r') {
-      break;
+      return text.slice(i + 1, end);
     }
-
-    current--;
   }
-  return text.slice(current + 1, end);
+
+  return text.slice(0, end);
 }
 
 function getTrailingCommaPosition({ text }: SourceFile, position: number) {
@@ -486,13 +482,13 @@ export function createCodeChanges(ts: typeof import('typescript')) {
               change.sourceFile.text,
               start,
             );
-            if (
-              change.sourceFile.text[start - whitespace.length - 1] === '\n'
-            ) {
-              start -= whitespace.length + 1;
-            } else {
-              start -= whitespace.length;
-            }
+
+            start -=
+              whitespace.length +
+              (change.sourceFile.text[start - whitespace.length - 1] === '\n'
+                ? 1
+                : 0);
+
             const trailingComment = last(
               ts.getTrailingCommentRanges(
                 change.sourceFile.text,
