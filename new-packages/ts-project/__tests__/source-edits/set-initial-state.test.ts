@@ -278,7 +278,7 @@ test('should add initial state using `states` property indentation', async () =>
   `);
 });
 
-test.only('should be able to remove an initial state from a root', async () => {
+test('should be able to remove an initial state from a root', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
@@ -319,7 +319,53 @@ test.only('should be able to remove an initial state from a root', async () => {
   `);
 });
 
-test.todo(
-  'should be able to remove an initial state from a nested state',
-  () => {},
-);
+test('should be able to remove an initial state from a nested state', async () => {
+  const tmpPath = await testdir({
+    'tsconfig.json': JSON.stringify({}),
+    'index.ts': ts`
+      import { createMachine } from "xstate";
+
+      createMachine({
+        initial: "foo",
+        states: {
+          foo: {
+            initial: "bar",
+            states: {
+              bar: {},
+            },
+          },
+        },
+      });
+    `,
+  });
+
+  const project = await createTestProject(tmpPath);
+
+  const textEdits = project.editDigraph(
+    {
+      fileName: 'index.ts',
+      machineIndex: 0,
+    },
+    {
+      type: 'set_initial_state',
+      path: ['foo'],
+      initialState: undefined,
+    },
+  );
+  expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
+    {
+      "index.ts": "import { createMachine } from "xstate";
+
+    createMachine({
+      initial: "foo",
+      states: {
+        foo: {
+          states: {
+            bar: {},
+          },
+        },
+      },
+    });",
+    }
+  `);
+});

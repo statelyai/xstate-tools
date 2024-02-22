@@ -81,7 +81,20 @@ function getIndentationOfNode({ text }: SourceFile, node: Node) {
   return text.slice(current + 1, indentEnd);
 }
 
-function getTrailingCommaPosition(
+function getTrailingCommaPosition({ text }: SourceFile, position: number) {
+  for (let i = position; i < text.length; i++) {
+    const char = text[i];
+    if (char === ',') {
+      return i;
+    }
+    if (!/\s/.test(char)) {
+      break;
+    }
+  }
+  return -1;
+}
+
+function getObjectTrailingCommaPosition(
   ts: typeof import('typescript'),
   object: ObjectLiteralExpression,
 ) {
@@ -364,7 +377,7 @@ export function createCodeChanges(ts: typeof import('typescript')) {
               .join(',\n');
 
             if (lastElement) {
-              const trailingCommaPosition = getTrailingCommaPosition(
+              const trailingCommaPosition = getObjectTrailingCommaPosition(
                 ts,
                 change.object,
               );
@@ -440,10 +453,35 @@ export function createCodeChanges(ts: typeof import('typescript')) {
             break;
           }
           case 'remove_property': {
+            const indentation = getIndentationOfNode(
+              change.sourceFile,
+              change.property,
+            );
+            let start = change.property.getStart() - indentation.length;
+            if (change.sourceFile.text[start - 1] === '\n') {
+              start -= 1;
+            }
+            const trailingComment = last(
+              ts.getTrailingCommentRanges(
+                change.sourceFile.text,
+                change.range.end,
+              ),
+            );
+            let end = trailingComment?.end ?? change.range.end;
+            const trailingCommaPosition = getTrailingCommaPosition(
+              change.sourceFile,
+              end,
+            );
+            if (trailingCommaPosition !== -1) {
+              end = trailingCommaPosition + 1;
+            }
             edits.push({
               type: 'delete',
               fileName: change.sourceFile.fileName,
-              range: change.range,
+              range: {
+                start,
+                end,
+              },
             });
             break;
           }
