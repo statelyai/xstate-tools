@@ -1,5 +1,4 @@
 import type {
-  Node,
   ObjectLiteralExpression,
   PropertyAssignment,
   SourceFile,

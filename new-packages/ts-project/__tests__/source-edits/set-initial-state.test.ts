@@ -658,3 +658,43 @@ test('should be able to remove an initial state that is between other properties
     }
   `);
 });
+
+test('should be able to remove an initial state that is between other properties and a comment on the same line', async () => {
+  const tmpPath = await testdir({
+    'tsconfig.json': JSON.stringify({}),
+    'index.ts': outdent`
+      import { createMachine } from "xstate";
+
+      createMachine({
+        id: "root",  /* stress test it */    initial: "foo", states: {
+          foo: {},
+        },
+      });
+    `,
+  });
+
+  const project = await createTestProject(tmpPath);
+
+  const textEdits = project.editDigraph(
+    {
+      fileName: 'index.ts',
+      machineIndex: 0,
+    },
+    {
+      type: 'set_initial_state',
+      path: [],
+      initialState: undefined,
+    },
+  );
+  expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
+    {
+      "index.ts": "import { createMachine } from "xstate";
+
+    createMachine({
+      id: "root",  /* stress test it */ states: {
+        foo: {},
+      },
+    });",
+    }
+  `);
+});
