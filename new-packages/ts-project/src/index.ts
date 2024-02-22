@@ -438,6 +438,7 @@ function createProjectMachine({
                     break;
                   }
 
+                  // TODO: insert it after the existing `type` property
                   codeChanges.insertPropertyIntoObject(
                     node,
                     'history',

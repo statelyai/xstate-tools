@@ -468,6 +468,7 @@ export function createCodeChanges(ts: typeof import('typescript')) {
             });
             break;
           }
+          // TODO: implement property counting + collapsing empty objects
           case 'remove_property': {
             const leadingComment = first(
               ts.getLeadingCommentRanges(
