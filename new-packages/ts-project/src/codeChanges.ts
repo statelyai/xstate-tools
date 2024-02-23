@@ -558,7 +558,15 @@ function insertionToText(
       return `${nameText}: ${valueText}`;
     }
     case 'string':
-      return toSafeStringText(ts, sourceFile, element.text);
+      const safeString = toSafeStringText(ts, sourceFile, element.text);
+      return safeString.charCodeAt(0) === charCodes.backtick
+        ? element.formattingPreferences?.allowMultiline
+          ? // it's wasteful to unescape what just got escaped but it's easier
+            safeString.replace(/\\(r|n)/g, (_, p1) =>
+              p1 === 'r' ? '\r' : '\n',
+            )
+          : safeString
+        : safeString;
   }
 }
 
@@ -576,6 +584,11 @@ interface PropertyInsertionElement {
 interface StringInsertionElement {
   type: 'string';
   text: string;
+  formattingPreferences?:
+    | {
+        allowMultiline?: boolean;
+      }
+    | undefined;
 }
 
 type InsertionElement =
@@ -600,10 +613,14 @@ export const c = {
       value,
     };
   },
-  string: (text: string): StringInsertionElement => {
+  string: (
+    text: string,
+    formattingPreferences?: StringInsertionElement['formattingPreferences'],
+  ): StringInsertionElement => {
     return {
       type: 'string' as const,
       text,
+      formattingPreferences,
     };
   },
 };

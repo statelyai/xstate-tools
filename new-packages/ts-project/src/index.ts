@@ -469,13 +469,17 @@ function createProjectMachine({
                     break;
                   }
 
+                  const element = c.string(patch.value, {
+                    allowMultiline: true,
+                  });
+
                   if (descriptionProp) {
                     codeChanges.replaceRange(sourceFile, {
                       range: {
                         start: descriptionProp.initializer.getStart(),
                         end: descriptionProp.initializer.getEnd(),
                       },
-                      element: c.string(patch.value),
+                      element,
                     });
                     break;
                   }
@@ -483,7 +487,7 @@ function createProjectMachine({
                   codeChanges.insertPropertyIntoObject(
                     node,
                     'description',
-                    c.string(patch.value),
+                    element,
                   );
                 }
             }

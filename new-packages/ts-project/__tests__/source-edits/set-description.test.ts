@@ -175,7 +175,9 @@ test('should be possible to add a multiline description', async () => {
       "index.ts": "import { creteMachine } from "xstate";
 
     createMachine({
-    	description: \`wow\\nso much\\nwow\`
+    	description: \`wow
+    	so much
+    	wow\`
     });",
     }
   `);
