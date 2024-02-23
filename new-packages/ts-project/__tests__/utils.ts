@@ -7,8 +7,18 @@ import { onExit } from 'signal-exit';
 import { temporaryDirectory } from 'tempy';
 import typescript from 'typescript';
 import { TSProjectOptions, XStateProject, createProject } from '../src/index';
-import { ActorBlock, ExtractorDigraphDef, Node, TextEdit } from '../src/types';
+import {
+  ActorBlock,
+  Edge,
+  ExtractorDigraphDef,
+  Node,
+  TextEdit,
+} from '../src/types';
 import { uniqueId } from '../src/utils';
+
+// it's not part of the types but it's available at runtime
+// we enable this in this *test* file so it has global effect for our tests
+(typescript as any).Debug.enableDebugInfo();
 
 function toArray<T>(value: T | T[]): T[] {
   return Array.isArray(value) ? value : [value];
@@ -275,6 +285,19 @@ function findNodeByStatePath(
   return marker;
 }
 
+function getEventTypeData(
+  digraphDraft: Draft<ExtractorDigraphDef>,
+  transitionPath: TransitionPath,
+): Edge['data']['eventTypeData'] {
+  if (transitionPath[0] === 'on') {
+    return {
+      type: 'named',
+      eventType: transitionPath[1],
+    };
+  }
+  throw new Error('Not implemented');
+}
+
 function produceNewDigraphUsingEdit(
   digraphDraft: Draft<ExtractorDigraphDef>,
   edit: MachineEdit,
@@ -343,6 +366,26 @@ function produceNewDigraphUsingEdit(
       break;
     }
     case 'add_transition':
+      const sourceNode = findNodeByStatePath(digraphDraft, edit.sourcePath);
+      const targetNode =
+        edit.targetPath && findNodeByStatePath(digraphDraft, edit.targetPath);
+
+      const newEdge: Edge = {
+        type: 'edge',
+        uniqueId: uniqueId(),
+        source: sourceNode.uniqueId,
+        targets: targetNode ? [targetNode.uniqueId] : [],
+        data: {
+          eventTypeData: getEventTypeData(digraphDraft, edit.transitionPath),
+          actions: [],
+          guard: undefined,
+          description: undefined,
+          metaEntries: [],
+          internal: !edit.external,
+        },
+      };
+      digraphDraft.edges[newEdge.uniqueId] = newEdge;
+      break;
     case 'remove_transition':
     case 'reanchor_transition':
     case 'change_transition_path':

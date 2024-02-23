@@ -6,7 +6,7 @@ import type {
 import * as charCodes from './charCodes';
 import { safeStringLikeLiteralText } from './safeStringLikeLiteralText';
 import { Range, TextEdit } from './types';
-import { findLast, first, last } from './utils';
+import { assert, findLast, findProperty, first, last } from './utils';
 
 type Values<T> = T[keyof T];
 
@@ -17,6 +17,13 @@ interface BaseCodeChange {
   sourceFile: SourceFile;
   range: Range;
   priority?: InsertionPriorityType | undefined;
+}
+
+interface InsertAtOptionalObjectPathCodeChange extends BaseCodeChange {
+  type: 'insert_at_optional_object_path';
+  object: ObjectLiteralExpression;
+  path: string[];
+  value: InsertionElement;
 }
 
 interface InsertPropertyBeforePropertyCodeChange extends BaseCodeChange {
@@ -49,6 +56,7 @@ interface ReplaceRangeCodeChange extends BaseCodeChange {
 }
 
 type CodeChange =
+  | InsertAtOptionalObjectPathCodeChange
   | InsertPropertyBeforePropertyCodeChange
   | InsertPropertyIntoObjectCodeChange
   | RemovePropertyNameChange
@@ -214,7 +222,41 @@ function consumeCodeChangeGroupFrom<T extends CodeChange>(
 export function createCodeChanges(ts: typeof import('typescript')) {
   const changes: CodeChange[] = [];
 
-  return {
+  const codeChanges = {
+    insertAtOptionalObjectPath: (
+      object: ObjectLiteralExpression,
+      path: string[],
+      value: InsertionElement,
+      priority?: InsertionPriorityType,
+    ) => {
+      let current = object;
+      for (let i = 0; i < path.length - 1; i++) {
+        const segment = path[i];
+        const prop = findProperty(undefined, ts, current, segment);
+        if (!prop) {
+          codeChanges.insertPropertyIntoObject(
+            current,
+            segment,
+            path
+              .slice(i + 1)
+              .reverse()
+              .reduce(
+                (v, segment) => c.object([c.property(segment, v)]),
+                value,
+              ),
+          );
+          return;
+        }
+        assert(ts.isObjectLiteralExpression(prop.initializer));
+        current = prop.initializer;
+      }
+      codeChanges.insertPropertyIntoObject(
+        current,
+        last(path)!,
+        value,
+        priority,
+      );
+    },
     insertPropertyBeforeProperty: (
       property: PropertyAssignment,
       name: string,
@@ -526,6 +568,8 @@ export function createCodeChanges(ts: typeof import('typescript')) {
       return edits;
     },
   };
+
+  return codeChanges;
 }
 
 function insertionToText(
@@ -535,7 +579,16 @@ function insertionToText(
   formattingOptions: { singleIndentation: string },
 ): string {
   switch (element.type) {
-    case 'object':
+    case 'array': {
+      return (
+        `[` +
+        element.elements
+          .map((e) => insertionToText(ts, sourceFile, e, formattingOptions))
+          .join(', ') +
+        `]`
+      );
+    }
+    case 'object': {
       if (!element.properties.length) {
         return '{}';
       }
@@ -547,6 +600,7 @@ function insertionToText(
         )
         .join(',');
       return '{\n' + properties + '\n}';
+    }
     case 'property': {
       const nameText = toSafePropertyNameText(ts, sourceFile, element.key);
       const valueText = insertionToText(
@@ -567,7 +621,14 @@ function insertionToText(
             )
           : safeString
         : safeString;
+    case 'undefined':
+      return 'undefined';
   }
+}
+
+interface ArrayInsertionElement {
+  type: 'array';
+  elements: InsertionElement[];
 }
 
 interface ObjectInsertionElement {
@@ -591,15 +652,27 @@ interface StringInsertionElement {
     | undefined;
 }
 
-type InsertionElement =
+interface UndefinedInsertionElement {
+  type: 'undefined';
+}
+
+export type InsertionElement =
+  | ArrayInsertionElement
   | ObjectInsertionElement
   | PropertyInsertionElement
-  | StringInsertionElement;
+  | StringInsertionElement
+  | UndefinedInsertionElement;
 
 export const c = {
+  array: (elements: InsertionElement[]): ArrayInsertionElement => {
+    return {
+      type: 'array',
+      elements,
+    };
+  },
   object: (properties: PropertyInsertionElement[]): ObjectInsertionElement => {
     return {
-      type: 'object' as const,
+      type: 'object',
       properties,
     };
   },
@@ -608,7 +681,7 @@ export const c = {
     value: InsertionElement,
   ): PropertyInsertionElement => {
     return {
-      type: 'property' as const,
+      type: 'property',
       key,
       value,
     };
@@ -618,11 +691,14 @@ export const c = {
     formattingPreferences?: StringInsertionElement['formattingPreferences'],
   ): StringInsertionElement => {
     return {
-      type: 'string' as const,
+      type: 'string',
       text,
       formattingPreferences,
     };
   },
+  undefined: (): UndefinedInsertionElement => ({
+    type: 'undefined',
+  }),
 };
 
 export const InsertionPriority = {

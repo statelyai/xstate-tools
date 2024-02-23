@@ -5,16 +5,23 @@ import type {
   PropertyAssignment,
   SourceFile,
 } from 'typescript';
-import { c, createCodeChanges, InsertionPriority } from './codeChanges';
+import {
+  c,
+  createCodeChanges,
+  InsertionElement,
+  InsertionPriority,
+} from './codeChanges';
 import { extractState } from './state';
 import type {
   DeleteTextEdit,
+  Edge,
   ExtractionContext,
   ExtractionError,
   ExtractorDigraphDef,
   InsertTextEdit,
   LineAndCharacterPosition,
   LinesAndCharactersRange,
+  Node,
   ProjectMachineState,
   Range,
   ReplaceTextEdit,
@@ -197,6 +204,22 @@ function extractProjectMachine(
   };
 }
 
+const toTransitionElement = (edge: Edge): InsertionElement => {
+  const transition: Record<string, InsertionElement> = {
+    target: !edge.targets.length
+      ? c.undefined()
+      : // TODO: map node ids to target descriptors
+        c.array(edge.targets.map((t) => c.string(t))),
+  };
+
+  if (Object.keys(transition).length === 1) {
+    // just target
+    return transition.target;
+  }
+
+  return c.object(Object.entries(transition).map(([k, v]) => c.property(k, v)));
+};
+
 function createProjectMachine({
   host,
   fileName,
@@ -252,40 +275,40 @@ function createProjectMachine({
                 // we only support adding empty states here right now
                 // this might become a problem, especially when dealing with copy-pasting
                 // the implementation will have to account for that in the future
-                const newNode = patch.value;
+                const newNode: Node = patch.value;
                 const parentNode = findNodeByAstPath(
                   host.ts,
                   createMachineCall,
-                  currentState.astPaths.nodes[newNode.parentId],
+                  currentState.astPaths.nodes[newNode.parentId!],
                 );
                 assert(host.ts.isObjectLiteralExpression(parentNode));
-                const { key } = patch.value.data;
 
-                const statesProp = findProperty(
-                  undefined,
-                  host.ts,
+                codeChanges.insertAtOptionalObjectPath(
                   parentNode,
-                  'states',
+                  ['states', newNode.data.key],
+                  c.object([]),
+                  InsertionPriority.States,
                 );
-
-                if (statesProp) {
-                  assert(
-                    host.ts.isObjectLiteralExpression(statesProp.initializer),
-                  );
-                  codeChanges.insertPropertyIntoObject(
-                    statesProp.initializer,
-                    key,
-                    c.object([]),
+                break;
+              }
+              case 'edges': {
+                const sourceNode = findNodeByAstPath(
+                  host.ts,
+                  createMachineCall,
+                  currentState.astPaths.nodes[patch.value.source],
+                );
+                const newEdge: Edge = patch.value;
+                const eventTypeData = newEdge.data.eventTypeData;
+                assert(host.ts.isObjectLiteralExpression(sourceNode));
+                if (eventTypeData.type === 'named') {
+                  codeChanges.insertAtOptionalObjectPath(
+                    sourceNode,
+                    ['on', eventTypeData.eventType],
+                    toTransitionElement(newEdge),
                   );
                   break;
                 }
-
-                codeChanges.insertPropertyIntoObject(
-                  parentNode,
-                  'states',
-                  c.object([c.property(key, c.object([]))]),
-                  InsertionPriority.States,
-                );
+                throw new Error('Not implemented');
               }
             }
             break;
