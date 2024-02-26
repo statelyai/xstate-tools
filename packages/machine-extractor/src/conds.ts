@@ -16,13 +16,17 @@ export interface CondNode {
 const CondAsFunctionExpression = createParser({
   babelMatcher: isFunctionOrArrowFunctionExpression,
   parseNode: (node, context): CondNode => {
+    let funcName = '';
+    if (t.isFunctionExpression(node)) {
+      funcName = node.id?.name ?? '';
+    }
     return {
       node,
-      name: '',
+      name: funcName,
       cond: () => {
         return false;
       },
-      declarationType: 'inline',
+      declarationType: funcName ? 'named' : 'inline',
       inlineDeclarationId: context.getNodeHash(node),
     };
   },
@@ -78,11 +82,15 @@ const CondAsNode = createParser({
   babelMatcher: t.isNode,
   parseNode: (node, context): CondNode => {
     const id = context.getNodeHash(node);
+    let varName = '';
+    if (t.isIdentifier(node)) {
+      varName = node.name;
+    }
     return {
       node,
-      name: '',
+      name: varName,
       cond: id,
-      declarationType: 'unknown',
+      declarationType: varName ? 'named' : 'unknown',
       inlineDeclarationId: id,
     };
   },
