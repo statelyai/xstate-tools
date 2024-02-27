@@ -229,7 +229,7 @@ test('should be possible to add a reentering self-transition to the root (explic
   `);
 });
 
-test('should be possible to add a normal self-transition to the root (implicit ID)', async () => {
+test('should be possible to add a non-reentering self-transition to the root (implicit ID)', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
@@ -266,7 +266,7 @@ test('should be possible to add a normal self-transition to the root (implicit I
   `);
 });
 
-test('should be possible to add a normal self-transition to the root (explicit ID)', async () => {
+test('should be possible to add a non-reentering self-transition to the root (explicit ID)', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
@@ -357,7 +357,7 @@ test('should be possible to add an external self-transition to a state', async (
   `);
 });
 
-test('should be possible to add a normal self-transition to a state', async () => {
+test('should be possible to add a non-reentering self-transition to a state', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
@@ -1605,41 +1605,39 @@ test(`should use the closest available ID from the target's ancestry path when a
   `);
 });
 
-test.todo(
-  `should be possible to add a reentering transition with a guard`,
-  async () => {
-    const tmpPath = await testdir({
-      'tsconfig.json': JSON.stringify({}),
-      'index.ts': ts`
-        import { createMachine } from "xstate";
+test(`should be possible to add a reentering transition with a guard`, async () => {
+  const tmpPath = await testdir({
+    'tsconfig.json': JSON.stringify({}),
+    'index.ts': ts`
+      import { createMachine } from "xstate";
 
-        createMachine({
-          initial: "foo",
-          states: {
-            foo: {},
-            bar: {},
-          },
-        });
-      `,
-    });
+      createMachine({
+        initial: "foo",
+        states: {
+          foo: {},
+          bar: {},
+        },
+      });
+    `,
+  });
 
-    const project = await createTestProject(tmpPath);
+  const project = await createTestProject(tmpPath);
 
-    const textEdits = project.editDigraph(
-      {
-        fileName: 'index.ts',
-        machineIndex: 0,
-      },
-      {
-        type: 'add_transition',
-        sourcePath: ['foo'],
-        targetPath: ['bar'],
-        transitionPath: ['on', 'NEXT', 0],
-        reenter: true,
-        guard: 'isItTooLate',
-      },
-    );
-    expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
+  const textEdits = project.editDigraph(
+    {
+      fileName: 'index.ts',
+      machineIndex: 0,
+    },
+    {
+      type: 'add_transition',
+      sourcePath: ['foo'],
+      targetPath: ['bar'],
+      transitionPath: ['on', 'NEXT', 0],
+      reenter: true,
+      guard: 'isItTooLate',
+    },
+  );
+  expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
     {
       "index.ts": "import { createMachine } from "xstate";
 
@@ -1660,43 +1658,40 @@ test.todo(
     });",
     }
   `);
-  },
-);
+});
 
-test.todo(
-  `should be possible to add a normal transition with a guard`,
-  async () => {
-    const tmpPath = await testdir({
-      'tsconfig.json': JSON.stringify({}),
-      'index.ts': ts`
-        import { createMachine } from "xstate";
+test(`should be possible to add a non-reentering transition with a guard`, async () => {
+  const tmpPath = await testdir({
+    'tsconfig.json': JSON.stringify({}),
+    'index.ts': ts`
+      import { createMachine } from "xstate";
 
-        createMachine({
-          initial: "foo",
-          states: {
-            foo: {},
-            bar: {},
-          },
-        });
-      `,
-    });
+      createMachine({
+        initial: "foo",
+        states: {
+          foo: {},
+          bar: {},
+        },
+      });
+    `,
+  });
 
-    const project = await createTestProject(tmpPath);
+  const project = await createTestProject(tmpPath);
 
-    const textEdits = project.editDigraph(
-      {
-        fileName: 'index.ts',
-        machineIndex: 0,
-      },
-      {
-        type: 'add_transition',
-        sourcePath: [],
-        targetPath: ['bar'],
-        transitionPath: ['on', 'NEXT', 0],
-        guard: 'isItTooLate',
-      },
-    );
-    expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
+  const textEdits = project.editDigraph(
+    {
+      fileName: 'index.ts',
+      machineIndex: 0,
+    },
+    {
+      type: 'add_transition',
+      sourcePath: [],
+      targetPath: ['bar'],
+      transitionPath: ['on', 'NEXT', 0],
+      guard: 'isItTooLate',
+    },
+  );
+  expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
     {
       "index.ts": "import { createMachine } from "xstate";
 
@@ -1715,44 +1710,41 @@ test.todo(
     });",
     }
   `);
-  },
-);
+});
 
-test.todo(
-  `should be possible to add a reentering transition to a child with a guard`,
-  async () => {
-    const tmpPath = await testdir({
-      'tsconfig.json': JSON.stringify({}),
-      'index.ts': ts`
-        import { createMachine } from "xstate";
+test(`should be possible to add a reentering transition to a child with a guard`, async () => {
+  const tmpPath = await testdir({
+    'tsconfig.json': JSON.stringify({}),
+    'index.ts': ts`
+      import { createMachine } from "xstate";
 
-        createMachine({
-          initial: "foo",
-          states: {
-            foo: {},
-            bar: {},
-          },
-        });
-      `,
-    });
+      createMachine({
+        initial: "foo",
+        states: {
+          foo: {},
+          bar: {},
+        },
+      });
+    `,
+  });
 
-    const project = await createTestProject(tmpPath);
+  const project = await createTestProject(tmpPath);
 
-    const textEdits = project.editDigraph(
-      {
-        fileName: 'index.ts',
-        machineIndex: 0,
-      },
-      {
-        type: 'add_transition',
-        sourcePath: [],
-        targetPath: ['bar'],
-        transitionPath: ['on', 'NEXT', 0],
-        reenter: true,
-        guard: 'isItTooLate',
-      },
-    );
-    expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
+  const textEdits = project.editDigraph(
+    {
+      fileName: 'index.ts',
+      machineIndex: 0,
+    },
+    {
+      type: 'add_transition',
+      sourcePath: [],
+      targetPath: ['bar'],
+      transitionPath: ['on', 'NEXT', 0],
+      reenter: true,
+      guard: 'isItTooLate',
+    },
+  );
+  expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
     {
       "index.ts": "import { createMachine } from "xstate";
 
@@ -1772,42 +1764,39 @@ test.todo(
     });",
     }
   `);
-  },
-);
+});
 
-test.todo(
-  `should be possible to add a targetless transition with a guard`,
-  async () => {
-    const tmpPath = await testdir({
-      'tsconfig.json': JSON.stringify({}),
-      'index.ts': ts`
-        import { createMachine } from "xstate";
+test(`should be possible to add a targetless transition with a guard`, async () => {
+  const tmpPath = await testdir({
+    'tsconfig.json': JSON.stringify({}),
+    'index.ts': ts`
+      import { createMachine } from "xstate";
 
-        createMachine({
-          initial: "foo",
-          states: {
-            foo: {},
-          },
-        });
-      `,
-    });
+      createMachine({
+        initial: "foo",
+        states: {
+          foo: {},
+        },
+      });
+    `,
+  });
 
-    const project = await createTestProject(tmpPath);
+  const project = await createTestProject(tmpPath);
 
-    const textEdits = project.editDigraph(
-      {
-        fileName: 'index.ts',
-        machineIndex: 0,
-      },
-      {
-        type: 'add_transition',
-        sourcePath: ['foo'],
-        targetPath: null,
-        transitionPath: ['on', 'NEXT', 0],
-        guard: 'isItTooLate',
-      },
-    );
-    expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
+  const textEdits = project.editDigraph(
+    {
+      fileName: 'index.ts',
+      machineIndex: 0,
+    },
+    {
+      type: 'add_transition',
+      sourcePath: ['foo'],
+      targetPath: null,
+      transitionPath: ['on', 'NEXT', 0],
+      guard: 'isItTooLate',
+    },
+  );
+  expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
     {
       "index.ts": "import { createMachine } from "xstate";
 
@@ -1826,5 +1815,4 @@ test.todo(
     });",
     }
   `);
-  },
-);
+});
