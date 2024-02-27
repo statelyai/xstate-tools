@@ -40,7 +40,7 @@ test('should extract transition to a sibling (direct string)', async () => {
                     "type": "named",
                   },
                   "guard": undefined,
-                  "internal": true,
+                  "internal": undefined,
                   "metaEntries": [],
                 },
                 "source": "state-1",
@@ -156,7 +156,7 @@ test('should extract transition to a sibling (string in array)', async () => {
                     "type": "named",
                   },
                   "guard": undefined,
-                  "internal": true,
+                  "internal": undefined,
                   "metaEntries": [],
                 },
                 "source": "state-1",
@@ -272,7 +272,7 @@ test('should extract transition to a sibling (direct object with target)', async
                     "type": "named",
                   },
                   "guard": undefined,
-                  "internal": true,
+                  "internal": undefined,
                   "metaEntries": [],
                 },
                 "source": "state-1",
@@ -388,7 +388,7 @@ test('should extract transition to a sibling (object with target in array)', asy
                     "type": "named",
                   },
                   "guard": undefined,
-                  "internal": true,
+                  "internal": undefined,
                   "metaEntries": [],
                 },
                 "source": "state-1",
@@ -506,7 +506,7 @@ test('should extract transition to a child', async () => {
                     "type": "named",
                   },
                   "guard": undefined,
-                  "internal": true,
+                  "internal": undefined,
                   "metaEntries": [],
                 },
                 "source": "state-1",
@@ -624,7 +624,7 @@ test('should extract transition to an ID', async () => {
                     "type": "named",
                   },
                   "guard": undefined,
-                  "internal": true,
+                  "internal": undefined,
                   "metaEntries": [],
                 },
                 "source": "state-1",
@@ -741,7 +741,7 @@ test('should extract multiple transitions (array of strings)', async () => {
                     "type": "named",
                   },
                   "guard": undefined,
-                  "internal": true,
+                  "internal": undefined,
                   "metaEntries": [],
                 },
                 "source": "state-1",
@@ -760,7 +760,7 @@ test('should extract multiple transitions (array of strings)', async () => {
                     "type": "named",
                   },
                   "guard": undefined,
-                  "internal": true,
+                  "internal": undefined,
                   "metaEntries": [],
                 },
                 "source": "state-1",
@@ -894,7 +894,7 @@ test('should extract multiple transitions (array of objects)', async () => {
                     "type": "named",
                   },
                   "guard": undefined,
-                  "internal": true,
+                  "internal": undefined,
                   "metaEntries": [],
                 },
                 "source": "state-1",
@@ -913,7 +913,7 @@ test('should extract multiple transitions (array of objects)', async () => {
                     "type": "named",
                   },
                   "guard": undefined,
-                  "internal": true,
+                  "internal": undefined,
                   "metaEntries": [],
                 },
                 "source": "state-1",
@@ -1047,7 +1047,7 @@ test('should extract multiple transitions (mixed array)', async () => {
                     "type": "named",
                   },
                   "guard": undefined,
-                  "internal": true,
+                  "internal": undefined,
                   "metaEntries": [],
                 },
                 "source": "state-1",
@@ -1066,7 +1066,7 @@ test('should extract multiple transitions (mixed array)', async () => {
                     "type": "named",
                   },
                   "guard": undefined,
-                  "internal": true,
+                  "internal": undefined,
                   "metaEntries": [],
                 },
                 "source": "state-1",
@@ -1213,7 +1213,7 @@ test('should extract transition with multiple targets (array of strings)', async
                     "type": "named",
                   },
                   "guard": undefined,
-                  "internal": true,
+                  "internal": undefined,
                   "metaEntries": [],
                 },
                 "source": "state-0",
@@ -1397,7 +1397,7 @@ test('should extract forbidden transition (undefined)', async () => {
                     "type": "named",
                   },
                   "guard": undefined,
-                  "internal": true,
+                  "internal": undefined,
                   "metaEntries": [],
                 },
                 "source": "state-1",
@@ -1493,7 +1493,7 @@ test('should extract forbidden transition (null)', async () => {
                     "type": "named",
                   },
                   "guard": undefined,
-                  "internal": true,
+                  "internal": undefined,
                   "metaEntries": [],
                 },
                 "source": "state-1",
@@ -1598,7 +1598,7 @@ test('should extract deep sibling transition', async () => {
                     "type": "named",
                   },
                   "guard": undefined,
-                  "internal": true,
+                  "internal": undefined,
                   "metaEntries": [],
                 },
                 "source": "state-1",
@@ -1754,7 +1754,7 @@ test('should extract deep descendant transition', async () => {
                     "type": "named",
                   },
                   "guard": undefined,
-                  "internal": true,
+                  "internal": undefined,
                   "metaEntries": [],
                 },
                 "source": "state-1",
@@ -1896,7 +1896,7 @@ test('should extract transition to a deep child of an ID target', async () => {
                     "type": "named",
                   },
                   "guard": undefined,
-                  "internal": true,
+                  "internal": undefined,
                   "metaEntries": [],
                 },
                 "source": "state-1",
@@ -2045,7 +2045,7 @@ test('should extract a wildcard transition', async () => {
                     "type": "wildcard",
                   },
                   "guard": undefined,
-                  "internal": true,
+                  "internal": undefined,
                   "metaEntries": [],
                 },
                 "source": "state-1",
@@ -2163,7 +2163,7 @@ test('should extract transition description (single-line)', async () => {
                     "type": "named",
                   },
                   "guard": undefined,
-                  "internal": true,
+                  "internal": undefined,
                   "metaEntries": [],
                 },
                 "source": "state-1",
@@ -2257,7 +2257,7 @@ test('should extract an always transition (direct string)', async () => {
                     "type": "always",
                   },
                   "guard": undefined,
-                  "internal": true,
+                  "internal": undefined,
                   "metaEntries": [],
                 },
                 "source": "state-1",
@@ -2386,7 +2386,7 @@ test('should extract invoke.onDone transition (with invoke.id)', async () => {
                     "type": "invocation.done",
                   },
                   "guard": undefined,
-                  "internal": true,
+                  "internal": undefined,
                   "metaEntries": [],
                 },
                 "source": "state-1",
@@ -2522,7 +2522,7 @@ test('should extract invoke.onDone transition (without invoke.id)', async () => 
                     "type": "invocation.done",
                   },
                   "guard": undefined,
-                  "internal": true,
+                  "internal": undefined,
                   "metaEntries": [],
                 },
                 "source": "state-1",
@@ -2673,7 +2673,7 @@ test('should extract invoke.onDone action', async () => {
                     "type": "invocation.done",
                   },
                   "guard": undefined,
-                  "internal": true,
+                  "internal": undefined,
                   "metaEntries": [],
                 },
                 "source": "state-1",
@@ -2816,7 +2816,7 @@ test('should extract invoke.onError transition (with invoke.id)', async () => {
                     "type": "invocation.error",
                   },
                   "guard": undefined,
-                  "internal": true,
+                  "internal": undefined,
                   "metaEntries": [],
                 },
                 "source": "state-1",
@@ -2952,7 +2952,7 @@ test('should extract invoke.onError transition (without invoke.id)', async () =>
                     "type": "invocation.error",
                   },
                   "guard": undefined,
-                  "internal": true,
+                  "internal": undefined,
                   "metaEntries": [],
                 },
                 "source": "state-1",
@@ -3084,7 +3084,7 @@ test('should extract transition description (multi-line)', async () => {
                     "type": "named",
                   },
                   "guard": undefined,
-                  "internal": true,
+                  "internal": undefined,
                   "metaEntries": [],
                 },
                 "source": "state-1",
@@ -3179,7 +3179,7 @@ test('should extract state.onDone transition (direct string)', async () => {
                     "type": "state.done",
                   },
                   "guard": undefined,
-                  "internal": true,
+                  "internal": undefined,
                   "metaEntries": [],
                 },
                 "source": "state-1",
@@ -3308,7 +3308,7 @@ test("should extract transition.meta when it's a javascript object", async () =>
                     "type": "named",
                   },
                   "guard": undefined,
-                  "internal": true,
+                  "internal": undefined,
                   "metaEntries": [
                     [
                       "str",
@@ -3461,7 +3461,7 @@ test("should extract transition.meta when it's a javascript object containing ne
                     "type": "named",
                   },
                   "guard": undefined,
-                  "internal": true,
+                  "internal": undefined,
                   "metaEntries": [
                     [
                       "arr",
@@ -3607,7 +3607,7 @@ test("should extract transition.meta when it's a javascript object and contains 
                     "type": "named",
                   },
                   "guard": undefined,
-                  "internal": true,
+                  "internal": undefined,
                   "metaEntries": [
                     [
                       "obj",
@@ -3738,7 +3738,7 @@ test('should not raise error for transition.meta with undefined value', async ()
                     "type": "named",
                   },
                   "guard": undefined,
-                  "internal": true,
+                  "internal": undefined,
                   "metaEntries": [],
                 },
                 "source": "state-1",
@@ -3859,7 +3859,7 @@ test('should raise error when transition.meta contains any value other than a pl
                     "type": "named",
                   },
                   "guard": undefined,
-                  "internal": true,
+                  "internal": undefined,
                   "metaEntries": [],
                 },
                 "source": "state-1",
@@ -3980,7 +3980,7 @@ test('should extract after transition (number delay)', async () => {
                     "type": "after",
                   },
                   "guard": undefined,
-                  "internal": true,
+                  "internal": undefined,
                   "metaEntries": [],
                 },
                 "source": "state-1",
@@ -4097,7 +4097,7 @@ test('should extract delayed transition (identifier delay)', async () => {
                     "type": "after",
                   },
                   "guard": undefined,
-                  "internal": true,
+                  "internal": undefined,
                   "metaEntries": [],
                 },
                 "source": "state-1",
@@ -4214,7 +4214,7 @@ test('should extract after transition (string with whitespace delay)', async () 
                     "type": "after",
                   },
                   "guard": undefined,
-                  "internal": true,
+                  "internal": undefined,
                   "metaEntries": [],
                 },
                 "source": "state-1",
@@ -4344,7 +4344,7 @@ test('should extract multiple delayed transitions', async () => {
                     "type": "after",
                   },
                   "guard": undefined,
-                  "internal": true,
+                  "internal": undefined,
                   "metaEntries": [],
                 },
                 "source": "state-1",
@@ -4363,7 +4363,7 @@ test('should extract multiple delayed transitions', async () => {
                     "type": "after",
                   },
                   "guard": "block-0",
-                  "internal": true,
+                  "internal": undefined,
                   "metaEntries": [],
                 },
                 "source": "state-1",
@@ -4463,7 +4463,7 @@ test('should extract multiple delayed transitions', async () => {
     `);
 });
 
-test('should extract a sibling transition as internal by default (direct string)', async () => {
+test('should extract a sibling transition as auto-internal by default (direct string)', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
@@ -4503,7 +4503,7 @@ test('should extract a sibling transition as internal by default (direct string)
                     "type": "named",
                   },
                   "guard": undefined,
-                  "internal": true,
+                  "internal": undefined,
                   "metaEntries": [],
                 },
                 "source": "state-1",
@@ -4580,7 +4580,7 @@ test('should extract a sibling transition as internal by default (direct string)
     `);
 });
 
-test('should extract a descendant transition as internal by default (direct string)', async () => {
+test('should extract a descendant transition as auto-internal by default (direct string)', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
@@ -4622,7 +4622,7 @@ test('should extract a descendant transition as internal by default (direct stri
                     "type": "named",
                   },
                   "guard": undefined,
-                  "internal": true,
+                  "internal": undefined,
                   "metaEntries": [],
                 },
                 "source": "state-1",
@@ -4699,7 +4699,7 @@ test('should extract a descendant transition as internal by default (direct stri
     `);
 });
 
-test('should extract a sibling transition as internal by default (direct object with target)', async () => {
+test('should extract a sibling transition as auto-internal by default (direct object with target)', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
@@ -4739,7 +4739,7 @@ test('should extract a sibling transition as internal by default (direct object 
                     "type": "named",
                   },
                   "guard": undefined,
-                  "internal": true,
+                  "internal": undefined,
                   "metaEntries": [],
                 },
                 "source": "state-1",
@@ -4816,7 +4816,7 @@ test('should extract a sibling transition as internal by default (direct object 
     `);
 });
 
-test('should extract a descendant transition as internal by default (direct object with target)', async () => {
+test('should extract a descendant transition as auto-internal by default (direct object with target)', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
@@ -4860,7 +4860,7 @@ test('should extract a descendant transition as internal by default (direct obje
                     "type": "named",
                   },
                   "guard": undefined,
-                  "internal": true,
+                  "internal": undefined,
                   "metaEntries": [],
                 },
                 "source": "state-1",
@@ -5171,7 +5171,7 @@ test('should extract an explicit non-reentering transition as internal', async (
     `);
 });
 
-test('should extract a sibling transition as not internal by default (direct string, v4)', async () => {
+test('should extract a sibling transition as auto-internal by default (direct string, v4)', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
@@ -5211,7 +5211,7 @@ test('should extract a sibling transition as not internal by default (direct str
                     "type": "named",
                   },
                   "guard": undefined,
-                  "internal": false,
+                  "internal": undefined,
                   "metaEntries": [],
                 },
                 "source": "state-1",
@@ -5288,7 +5288,7 @@ test('should extract a sibling transition as not internal by default (direct str
     `);
 });
 
-test('should extract a descendant transition as internal by default (direct string, v4)', async () => {
+test('should extract a descendant transition as auto-internal by default (direct string, v4)', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
@@ -5330,7 +5330,7 @@ test('should extract a descendant transition as internal by default (direct stri
                     "type": "named",
                   },
                   "guard": undefined,
-                  "internal": true,
+                  "internal": undefined,
                   "metaEntries": [],
                 },
                 "source": "state-1",
@@ -5407,7 +5407,7 @@ test('should extract a descendant transition as internal by default (direct stri
     `);
 });
 
-test('should extract a sibling transition as internal by default (direct object with target, v4)', async () => {
+test('should extract a sibling transition as auto-internal by default (direct object with target, v4)', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
@@ -5447,7 +5447,7 @@ test('should extract a sibling transition as internal by default (direct object 
                     "type": "named",
                   },
                   "guard": undefined,
-                  "internal": false,
+                  "internal": undefined,
                   "metaEntries": [],
                 },
                 "source": "state-1",
@@ -5524,7 +5524,7 @@ test('should extract a sibling transition as internal by default (direct object 
     `);
 });
 
-test('should extract a descendant transition as internal by default (direct object with target, v4)', async () => {
+test('should extract a descendant transition as auto-internal by default (direct object with target, v4)', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
@@ -5568,7 +5568,7 @@ test('should extract a descendant transition as internal by default (direct obje
                     "type": "named",
                   },
                   "guard": undefined,
-                  "internal": true,
+                  "internal": undefined,
                   "metaEntries": [],
                 },
                 "source": "state-1",
@@ -5879,7 +5879,7 @@ test('should extract an explicit non-internal transition as not internal (v4)', 
     `);
 });
 
-test('should extract transition with multiple targets as internal when any of its targets is defined using a descendant target by default (array of strings, v4)', async () => {
+test('should extract transition with multiple targets as auto-internal when any of its targets is defined using a descendant target by default (array of strings, v4)', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
@@ -5934,7 +5934,7 @@ test('should extract transition with multiple targets as internal when any of it
                     "type": "named",
                   },
                   "guard": undefined,
-                  "internal": true,
+                  "internal": undefined,
                   "metaEntries": [],
                 },
                 "source": "state-0",
@@ -6080,7 +6080,7 @@ test('should extract transition with multiple targets as internal when any of it
     `);
 });
 
-test('should extract transition with multiple targets as not internal when none of its targets is defined using a descendant target by default (array of strings, v4)', async () => {
+test('should extract transition with multiple targets as auto-internal when none of its targets is defined using a descendant target by default (array of strings, v4)', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
@@ -6137,7 +6137,7 @@ test('should extract transition with multiple targets as not internal when none 
                     "type": "named",
                   },
                   "guard": undefined,
-                  "internal": false,
+                  "internal": undefined,
                   "metaEntries": [],
                 },
                 "source": "state-0",

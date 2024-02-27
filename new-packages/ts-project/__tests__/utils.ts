@@ -409,7 +409,8 @@ function produceNewDigraphUsingEdit(
           guard: undefined,
           description: undefined,
           metaEntries: [],
-          internal: !edit.reenter,
+          internal:
+            typeof edit.reenter === 'boolean' ? !edit.reenter : undefined,
         },
       };
       digraphDraft.edges[newEdge.uniqueId] = newEdge;

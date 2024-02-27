@@ -318,7 +318,7 @@ const toTransitionElement = (
         ),
   };
 
-  if (!edge.data.internal) {
+  if (edge.data.internal === false) {
     transition.reenter = c.boolean(true);
   }
 
