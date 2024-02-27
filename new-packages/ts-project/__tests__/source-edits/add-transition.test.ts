@@ -5,7 +5,7 @@ test('should be possible to add a targetless transition', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
-      import { creteMachine } from "xstate";
+      import { createMachine } from "xstate";
 
       createMachine({});
     `,
@@ -27,7 +27,7 @@ test('should be possible to add a targetless transition', async () => {
   );
   expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
     {
-      "index.ts": "import { creteMachine } from "xstate";
+      "index.ts": "import { createMachine } from "xstate";
 
     createMachine({
     	on: {
@@ -42,7 +42,7 @@ test('should be possible to add a transition targeting the root from a nested st
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
-      import { creteMachine } from "xstate";
+      import { createMachine } from "xstate";
 
       createMachine({
         initial: "foo",
@@ -72,7 +72,7 @@ test('should be possible to add a transition targeting the root from a nested st
   );
   expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
     {
-      "index.ts": "import { creteMachine } from "xstate";
+      "index.ts": "import { createMachine } from "xstate";
 
     createMachine({
       initial: "foo",
@@ -94,7 +94,7 @@ test('should be possible to add a transition targeting the root from a nested st
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
-      import { creteMachine } from "xstate";
+      import { createMachine } from "xstate";
 
       createMachine({
         id: "groot",
@@ -125,7 +125,7 @@ test('should be possible to add a transition targeting the root from a nested st
   );
   expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
     {
-      "index.ts": "import { creteMachine } from "xstate";
+      "index.ts": "import { createMachine } from "xstate";
 
     createMachine({
       id: "groot",
@@ -148,7 +148,7 @@ test('should be possible to add a reentering self-transition to the root (implic
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
-      import { creteMachine } from "xstate";
+      import { createMachine } from "xstate";
 
       createMachine({});
     `,
@@ -171,7 +171,7 @@ test('should be possible to add a reentering self-transition to the root (implic
   );
   expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
     {
-      "index.ts": "import { creteMachine } from "xstate";
+      "index.ts": "import { createMachine } from "xstate";
 
     createMachine({
     	on: {
@@ -189,7 +189,7 @@ test('should be possible to add a reentering self-transition to the root (explic
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
-      import { creteMachine } from "xstate";
+      import { createMachine } from "xstate";
 
       createMachine({
         id: "groot",
@@ -214,7 +214,7 @@ test('should be possible to add a reentering self-transition to the root (explic
   );
   expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
     {
-      "index.ts": "import { creteMachine } from "xstate";
+      "index.ts": "import { createMachine } from "xstate";
 
     createMachine({
       id: "groot",
@@ -233,7 +233,7 @@ test('should be possible to add a normal self-transition to the root (implicit I
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
-      import { creteMachine } from "xstate";
+      import { createMachine } from "xstate";
 
       createMachine({});
     `,
@@ -255,7 +255,7 @@ test('should be possible to add a normal self-transition to the root (implicit I
   );
   expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
     {
-      "index.ts": "import { creteMachine } from "xstate";
+      "index.ts": "import { createMachine } from "xstate";
 
     createMachine({
     	on: {
@@ -270,7 +270,7 @@ test('should be possible to add a normal self-transition to the root (explicit I
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
-      import { creteMachine } from "xstate";
+      import { createMachine } from "xstate";
 
       createMachine({
         id: "groot",
@@ -294,7 +294,7 @@ test('should be possible to add a normal self-transition to the root (explicit I
   );
   expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
     {
-      "index.ts": "import { creteMachine } from "xstate";
+      "index.ts": "import { createMachine } from "xstate";
 
     createMachine({
       id: "groot",
@@ -310,7 +310,7 @@ test('should be possible to add an external self-transition to a state', async (
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
-      import { creteMachine } from "xstate";
+      import { createMachine } from "xstate";
 
       createMachine({
         initial: "foo",
@@ -338,7 +338,7 @@ test('should be possible to add an external self-transition to a state', async (
   );
   expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
     {
-      "index.ts": "import { creteMachine } from "xstate";
+      "index.ts": "import { createMachine } from "xstate";
 
     createMachine({
       initial: "foo",
@@ -361,7 +361,7 @@ test('should be possible to add a normal self-transition to a state', async () =
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
-      import { creteMachine } from "xstate";
+      import { createMachine } from "xstate";
 
       createMachine({
         initial: "foo",
@@ -388,7 +388,7 @@ test('should be possible to add a normal self-transition to a state', async () =
   );
   expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
     {
-      "index.ts": "import { creteMachine } from "xstate";
+      "index.ts": "import { createMachine } from "xstate";
 
     createMachine({
       initial: "foo",
@@ -408,7 +408,7 @@ test('should be possible to add a transition to an existing `on` key', async () 
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
-      import { creteMachine } from "xstate";
+      import { createMachine } from "xstate";
 
       createMachine({
         initial: "foo",
@@ -441,7 +441,7 @@ test('should be possible to add a transition to an existing `on` key', async () 
   );
   expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
     {
-      "index.ts": "import { creteMachine } from "xstate";
+      "index.ts": "import { createMachine } from "xstate";
 
     createMachine({
       initial: "foo",
@@ -466,7 +466,7 @@ test.todo(
     const tmpPath = await testdir({
       'tsconfig.json': JSON.stringify({}),
       'index.ts': ts`
-        import { creteMachine } from "xstate";
+        import { createMachine } from "xstate";
 
         createMachine({
           initial: "foo",
@@ -507,7 +507,7 @@ test.todo(
     const tmpPath = await testdir({
       'tsconfig.json': JSON.stringify({}),
       'index.ts': ts`
-        import { creteMachine } from "xstate";
+        import { createMachine } from "xstate";
 
         createMachine({
           initial: "foo",
@@ -548,7 +548,7 @@ test.todo(
     const tmpPath = await testdir({
       'tsconfig.json': JSON.stringify({}),
       'index.ts': ts`
-        import { creteMachine } from "xstate";
+        import { createMachine } from "xstate";
 
         createMachine({
           initial: "foo",
@@ -590,7 +590,7 @@ test.todo(
     const tmpPath = await testdir({
       'tsconfig.json': JSON.stringify({}),
       'index.ts': ts`
-        import { creteMachine } from "xstate";
+        import { createMachine } from "xstate";
 
         createMachine({
           initial: "foo",
@@ -631,7 +631,7 @@ test.todo(
     const tmpPath = await testdir({
       'tsconfig.json': JSON.stringify({}),
       'index.ts': ts`
-        import { creteMachine } from "xstate";
+        import { createMachine } from "xstate";
 
         createMachine({
           initial: "foo",
@@ -670,7 +670,7 @@ test("should be possible to add a transition to invoke's onDone", async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
-      import { creteMachine } from "xstate";
+      import { createMachine } from "xstate";
 
       createMachine({
         initial: "foo",
@@ -702,7 +702,7 @@ test("should be possible to add a transition to invoke's onDone", async () => {
   );
   expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
     {
-      "index.ts": "import { creteMachine } from "xstate";
+      "index.ts": "import { createMachine } from "xstate";
 
     createMachine({
       initial: "foo",
@@ -724,7 +724,7 @@ test("should be possible to add a transition to invoke's onError", async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
-      import { creteMachine } from "xstate";
+      import { createMachine } from "xstate";
 
       createMachine({
         initial: "foo",
@@ -756,7 +756,7 @@ test("should be possible to add a transition to invoke's onError", async () => {
   );
   expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
     {
-      "index.ts": "import { creteMachine } from "xstate";
+      "index.ts": "import { createMachine } from "xstate";
 
     createMachine({
       initial: "foo",
@@ -778,7 +778,7 @@ test("should be possible to add a transition to the last invoke's onDone", async
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
-      import { creteMachine } from "xstate";
+      import { createMachine } from "xstate";
 
       createMachine({
         initial: "foo",
@@ -815,7 +815,7 @@ test("should be possible to add a transition to the last invoke's onDone", async
   );
   expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
     {
-      "index.ts": "import { creteMachine } from "xstate";
+      "index.ts": "import { createMachine } from "xstate";
 
     createMachine({
       initial: "foo",
@@ -842,7 +842,7 @@ test("should be possible to add a transition to the first invoke's onDone", asyn
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
-      import { creteMachine } from "xstate";
+      import { createMachine } from "xstate";
 
       createMachine({
         initial: "foo",
@@ -879,7 +879,7 @@ test("should be possible to add a transition to the first invoke's onDone", asyn
   );
   expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
     {
-      "index.ts": "import { creteMachine } from "xstate";
+      "index.ts": "import { createMachine } from "xstate";
 
     createMachine({
       initial: "foo",
@@ -906,7 +906,7 @@ test("should be possible to add a transition to a middle invoke's onDone", async
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
-      import { creteMachine } from "xstate";
+      import { createMachine } from "xstate";
 
       createMachine({
         initial: "foo",
@@ -946,7 +946,7 @@ test("should be possible to add a transition to a middle invoke's onDone", async
   );
   expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
     {
-      "index.ts": "import { creteMachine } from "xstate";
+      "index.ts": "import { createMachine } from "xstate";
 
     createMachine({
       initial: "foo",
@@ -976,7 +976,7 @@ test("should be possible to add a transition to state's onDone", async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
-      import { creteMachine } from "xstate";
+      import { createMachine } from "xstate";
 
       createMachine({
         initial: "foo",
@@ -1004,7 +1004,7 @@ test("should be possible to add a transition to state's onDone", async () => {
   );
   expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
     {
-      "index.ts": "import { creteMachine } from "xstate";
+      "index.ts": "import { createMachine } from "xstate";
 
     createMachine({
       initial: "foo",
@@ -1023,7 +1023,7 @@ test('should be possible to add an always transition', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
-      import { creteMachine } from "xstate";
+      import { createMachine } from "xstate";
 
       createMachine({
         initial: "foo",
@@ -1051,7 +1051,7 @@ test('should be possible to add an always transition', async () => {
   );
   expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
     {
-      "index.ts": "import { creteMachine } from "xstate";
+      "index.ts": "import { createMachine } from "xstate";
 
     createMachine({
       initial: "foo",
@@ -1070,7 +1070,7 @@ test('should use a relative child target when adding a transition to a child', a
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
-      import { creteMachine } from "xstate";
+      import { createMachine } from "xstate";
 
       createMachine({
         initial: "foo",
@@ -1098,7 +1098,7 @@ test('should use a relative child target when adding a transition to a child', a
   );
   expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
     {
-      "index.ts": "import { creteMachine } from "xstate";
+      "index.ts": "import { createMachine } from "xstate";
 
     createMachine({
       initial: "foo",
@@ -1118,7 +1118,7 @@ test('should use a relative descendant target when adding a transition to a deep
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
-      import { creteMachine } from "xstate";
+      import { createMachine } from "xstate";
 
       createMachine({
         initial: "foo",
@@ -1154,7 +1154,7 @@ test('should use a relative descendant target when adding a transition to a deep
   );
   expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
     {
-      "index.ts": "import { creteMachine } from "xstate";
+      "index.ts": "import { createMachine } from "xstate";
 
     createMachine({
       initial: "foo",
@@ -1182,7 +1182,7 @@ test('should use a relative descendant target when adding a transition to a deep
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
-      import { creteMachine } from "xstate";
+      import { createMachine } from "xstate";
 
       createMachine({
         initial: "foo",
@@ -1218,7 +1218,7 @@ test('should use a relative descendant target when adding a transition to a deep
   );
   expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
     {
-      "index.ts": "import { creteMachine } from "xstate";
+      "index.ts": "import { createMachine } from "xstate";
 
     createMachine({
       initial: "foo",
@@ -1246,7 +1246,7 @@ test('should use a sibling-like target when adding a transition to a deep descen
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
-      import { creteMachine } from "xstate";
+      import { createMachine } from "xstate";
 
       createMachine({
         initial: "a",
@@ -1287,7 +1287,7 @@ test('should use a sibling-like target when adding a transition to a deep descen
   );
   expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
     {
-      "index.ts": "import { creteMachine } from "xstate";
+      "index.ts": "import { createMachine } from "xstate";
 
     createMachine({
       initial: "a",
@@ -1321,7 +1321,7 @@ test('should use an ID-based target when adding a transition to a distant state 
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
-      import { creteMachine } from "xstate";
+      import { createMachine } from "xstate";
 
       createMachine({
         initial: "a",
@@ -1359,7 +1359,7 @@ test('should use an ID-based target when adding a transition to a distant state 
   );
   expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
     {
-      "index.ts": "import { creteMachine } from "xstate";
+      "index.ts": "import { createMachine } from "xstate";
 
     createMachine({
       initial: "a",
@@ -1390,7 +1390,7 @@ test('should use an ID-based target when adding a transition to a distant state 
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
-      import { creteMachine } from "xstate";
+      import { createMachine } from "xstate";
 
       createMachine({
         id: "groot",
@@ -1429,7 +1429,7 @@ test('should use an ID-based target when adding a transition to a distant state 
   );
   expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
     {
-      "index.ts": "import { creteMachine } from "xstate";
+      "index.ts": "import { createMachine } from "xstate";
 
     createMachine({
       id: "groot",
@@ -1461,7 +1461,7 @@ test(`should use target's ID when available and when adding a transition to a di
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
-      import { creteMachine } from "xstate";
+      import { createMachine } from "xstate";
 
       createMachine({
         id: "groot",
@@ -1502,7 +1502,7 @@ test(`should use target's ID when available and when adding a transition to a di
   );
   expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
     {
-      "index.ts": "import { creteMachine } from "xstate";
+      "index.ts": "import { createMachine } from "xstate";
 
     createMachine({
       id: "groot",
@@ -1536,7 +1536,7 @@ test(`should use the closest available ID from the target's ancestry path when a
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
-      import { creteMachine } from "xstate";
+      import { createMachine } from "xstate";
 
       createMachine({
         id: "groot",
@@ -1576,7 +1576,7 @@ test(`should use the closest available ID from the target's ancestry path when a
   );
   expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
     {
-      "index.ts": "import { creteMachine } from "xstate";
+      "index.ts": "import { createMachine } from "xstate";
 
     createMachine({
       id: "groot",
@@ -1611,7 +1611,7 @@ test.todo(
     const tmpPath = await testdir({
       'tsconfig.json': JSON.stringify({}),
       'index.ts': ts`
-        import { creteMachine } from "xstate";
+        import { createMachine } from "xstate";
 
         createMachine({
           initial: "foo",
@@ -1641,7 +1641,7 @@ test.todo(
     );
     expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
     {
-      "index.ts": "import { creteMachine } from "xstate";
+      "index.ts": "import { createMachine } from "xstate";
 
     createMachine({
       initial: "foo",
@@ -1669,7 +1669,7 @@ test.todo(
     const tmpPath = await testdir({
       'tsconfig.json': JSON.stringify({}),
       'index.ts': ts`
-        import { creteMachine } from "xstate";
+        import { createMachine } from "xstate";
 
         createMachine({
           initial: "foo",
@@ -1698,7 +1698,7 @@ test.todo(
     );
     expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
     {
-      "index.ts": "import { creteMachine } from "xstate";
+      "index.ts": "import { createMachine } from "xstate";
 
     createMachine({
       initial: "foo",
@@ -1724,7 +1724,7 @@ test.todo(
     const tmpPath = await testdir({
       'tsconfig.json': JSON.stringify({}),
       'index.ts': ts`
-        import { creteMachine } from "xstate";
+        import { createMachine } from "xstate";
 
         createMachine({
           initial: "foo",
@@ -1754,7 +1754,7 @@ test.todo(
     );
     expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
     {
-      "index.ts": "import { creteMachine } from "xstate";
+      "index.ts": "import { createMachine } from "xstate";
 
     createMachine({
       initial: "foo",
@@ -1781,7 +1781,7 @@ test.todo(
     const tmpPath = await testdir({
       'tsconfig.json': JSON.stringify({}),
       'index.ts': ts`
-        import { creteMachine } from "xstate";
+        import { createMachine } from "xstate";
 
         createMachine({
           initial: "foo",
@@ -1809,7 +1809,7 @@ test.todo(
     );
     expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
     {
-      "index.ts": "import { creteMachine } from "xstate";
+      "index.ts": "import { createMachine } from "xstate";
 
     createMachine({
       initial: "foo",
