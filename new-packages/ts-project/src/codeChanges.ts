@@ -1,4 +1,6 @@
 import type {
+  ArrayLiteralExpression,
+  Node,
   ObjectLiteralExpression,
   PropertyAssignment,
   SourceFile,
@@ -6,7 +8,14 @@ import type {
 import * as charCodes from './charCodes';
 import { safeStringLikeLiteralText } from './safeStringLikeLiteralText';
 import { Range, TextEdit } from './types';
-import { assert, findLast, findProperty, first, last } from './utils';
+import {
+  assert,
+  assertUnreachable,
+  findLast,
+  findProperty,
+  first,
+  last,
+} from './utils';
 
 type Values<T> = T[keyof T];
 
@@ -24,6 +33,13 @@ interface InsertAtOptionalObjectPathCodeChange extends BaseCodeChange {
   object: ObjectLiteralExpression;
   path: string[];
   value: InsertionElement;
+}
+
+interface InsertElementIntoArrayCodeChange extends BaseCodeChange {
+  type: 'insert_element_into_array';
+  array: ArrayLiteralExpression;
+  value: InsertionElement;
+  index: number;
 }
 
 interface InsertPropertyBeforePropertyCodeChange extends BaseCodeChange {
@@ -55,13 +71,21 @@ interface ReplaceRangeCodeChange extends BaseCodeChange {
   element: InsertionElement;
 }
 
+interface ReplaceWithCodeChange extends BaseCodeChange {
+  type: 'replace_with';
+  current: Node;
+  replacement: InsertionElement;
+}
+
 type CodeChange =
   | InsertAtOptionalObjectPathCodeChange
+  | InsertElementIntoArrayCodeChange
   | InsertPropertyBeforePropertyCodeChange
   | InsertPropertyIntoObjectCodeChange
   | RemovePropertyNameChange
   | ReplacePropertyNameChange
-  | ReplaceRangeCodeChange;
+  | ReplaceRangeCodeChange
+  | ReplaceWithCodeChange;
 
 function toZeroLengthRange(position: number) {
   return { start: position, end: position };
@@ -225,13 +249,14 @@ export function createCodeChanges(ts: typeof import('typescript')) {
   const codeChanges = {
     insertAtOptionalObjectPath: (
       object: ObjectLiteralExpression,
-      path: string[],
+      path: (string | number)[],
       value: InsertionElement,
       priority?: InsertionPriorityType,
     ) => {
       let current = object;
       for (let i = 0; i < path.length - 1; i++) {
         const segment = path[i];
+        assert(typeof segment === 'string');
         const prop = findProperty(undefined, ts, current, segment);
         if (!prop) {
           codeChanges.insertPropertyIntoObject(
@@ -240,23 +265,102 @@ export function createCodeChanges(ts: typeof import('typescript')) {
             path
               .slice(i + 1)
               .reverse()
-              .reduce(
-                (v, segment) => c.object([c.property(segment, v)]),
-                value,
-              ),
+              .reduce((v, segment) => {
+                if (typeof segment === 'number') {
+                  // if the previous segment doesn't exist then this always ought to be the first item in an arrayifiable property
+                  // and we can just skip this numeric segment
+                  assert(segment === 0);
+                  return v;
+                }
+                return c.object([c.property(segment, v)]);
+              }, value),
           );
           return;
+        }
+        const nextSegment = path[i + 1];
+        if (typeof nextSegment === 'number') {
+          const isNextTheLastSegment = i + 1 === path.length - 1;
+          // skip next segment as we are processing it here
+          i++;
+
+          if (isNextTheLastSegment) {
+            if (!ts.isArrayLiteralExpression(prop.initializer)) {
+              const existing = prop.initializer;
+              assert(nextSegment === 0 || nextSegment === 1);
+              const existingRaw = c.raw(existing.getFullText());
+
+              if (nextSegment === 0) {
+                codeChanges.replaceWith(
+                  existing,
+                  c.array([value, existingRaw]),
+                );
+                return;
+              }
+              if (nextSegment === 1) {
+                codeChanges.replaceWith(
+                  existing,
+                  c.array([existingRaw, value]),
+                );
+                return;
+              }
+
+              assertUnreachable();
+            }
+
+            codeChanges.insertElementIntoArray(
+              prop.initializer,
+              value,
+              nextSegment,
+            );
+            return;
+          }
+          assert(
+            ts.isArrayLiteralExpression(prop.initializer) || nextSegment === 0,
+          );
+          const existingElement = ts.isArrayLiteralExpression(prop.initializer)
+            ? prop.initializer.elements[nextSegment]
+            : prop.initializer;
+          assert(ts.isObjectLiteralExpression(existingElement));
+          current = existingElement;
+          continue;
         }
         assert(ts.isObjectLiteralExpression(prop.initializer));
         current = prop.initializer;
       }
+      const lastSegment = last(path);
+      assert(typeof lastSegment === 'string');
       codeChanges.insertPropertyIntoObject(
         current,
-        last(path)!,
+        lastSegment,
         value,
         priority,
       );
     },
+
+    insertElementIntoArray(
+      array: ArrayLiteralExpression,
+      value: InsertionElement,
+      index: number,
+    ) {
+      assert(index >= 0 && index <= array.elements.length);
+
+      changes.push({
+        type: 'insert_element_into_array',
+        sourceFile: array.getSourceFile(),
+
+        range: toZeroLengthRange(
+          index === 0
+            ? array.getStart() + 1 // after opening square bracket
+            : index === array.elements.length - 1
+            ? array.getEnd() - 1 // before closing square bracket
+            : array.elements[index - 1].getEnd() + 1, // after comma located after the previous element
+        ),
+        array,
+        value,
+        index,
+      });
+    },
+
     insertPropertyBeforeProperty: (
       property: PropertyAssignment,
       name: string,
@@ -318,6 +422,18 @@ export function createCodeChanges(ts: typeof import('typescript')) {
         sourceFile,
         range,
         element,
+      });
+    },
+    replaceWith: (current: Node, replacement: InsertionElement) => {
+      changes.push({
+        type: 'replace_with',
+        sourceFile: current.getSourceFile(),
+        range: {
+          start: current.getStart(),
+          end: current.getEnd(),
+        },
+        current,
+        replacement,
       });
     },
 
@@ -562,6 +678,8 @@ export function createCodeChanges(ts: typeof import('typescript')) {
               ),
             });
             break;
+          case 'replace_with':
+            throw new Error('Not implemented');
         }
       }
 
@@ -577,13 +695,16 @@ function insertionToText(
   sourceFile: SourceFile,
   element: InsertionElement,
   formattingOptions: { singleIndentation: string },
+  depth = 0,
 ): string {
   switch (element.type) {
     case 'array': {
       return (
         `[` +
         element.elements
-          .map((e) => insertionToText(ts, sourceFile, e, formattingOptions))
+          .map((e) =>
+            insertionToText(ts, sourceFile, e, formattingOptions, depth),
+          )
           .join(', ') +
         `]`
       );
@@ -595,11 +716,17 @@ function insertionToText(
       const properties = element.properties
         .map(
           (prop) =>
-            formattingOptions.singleIndentation +
-            insertionToText(ts, sourceFile, prop, formattingOptions),
+            formattingOptions.singleIndentation.repeat(depth + 1) +
+            insertionToText(ts, sourceFile, prop, formattingOptions, depth + 1),
         )
-        .join(',');
-      return '{\n' + properties + '\n}';
+        .join(',\n');
+      return (
+        '{\n' +
+        properties +
+        '\n' +
+        formattingOptions.singleIndentation.repeat(depth) +
+        '}'
+      );
     }
     case 'property': {
       const nameText = toSafePropertyNameText(ts, sourceFile, element.key);
@@ -608,6 +735,7 @@ function insertionToText(
         sourceFile,
         element.value,
         formattingOptions,
+        depth,
       );
       return `${nameText}: ${valueText}`;
     }
@@ -623,6 +751,10 @@ function insertionToText(
         : safeString;
     case 'undefined':
       return 'undefined';
+    case 'boolean':
+      return element.value ? 'true' : 'false';
+    case 'raw':
+      return element.value;
   }
 }
 
@@ -656,12 +788,24 @@ interface UndefinedInsertionElement {
   type: 'undefined';
 }
 
+interface BooleanInsertionElement {
+  type: 'boolean';
+  value: boolean;
+}
+
+interface RawInsertionElement {
+  type: 'raw';
+  value: string;
+}
+
 export type InsertionElement =
   | ArrayInsertionElement
   | ObjectInsertionElement
   | PropertyInsertionElement
   | StringInsertionElement
-  | UndefinedInsertionElement;
+  | UndefinedInsertionElement
+  | BooleanInsertionElement
+  | RawInsertionElement;
 
 export const c = {
   array: (elements: InsertionElement[]): ArrayInsertionElement => {
@@ -698,6 +842,14 @@ export const c = {
   },
   undefined: (): UndefinedInsertionElement => ({
     type: 'undefined',
+  }),
+  boolean: (value: boolean): BooleanInsertionElement => ({
+    type: 'boolean',
+    value,
+  }),
+  raw: (value: string): RawInsertionElement => ({
+    type: 'raw',
+    value,
   }),
 };
 

@@ -29,9 +29,17 @@ import type {
   TreeNode,
   XStateVersion,
 } from './types';
-import { assert, findNodeByAstPath, findProperty } from './utils';
+import {
+  assert,
+  assertUnreachable,
+  findNodeByAstPath,
+  findProperty,
+  invert,
+} from './utils';
 
 enablePatches();
+
+const DEFAULT_ROOT_ID = '(machine)';
 
 function findCreateMachineCalls(
   ts: typeof import('typescript'),
@@ -72,7 +80,7 @@ function resolvePathOrigin(
     return ctx.treeNodes[sourceId];
   }
   if (origin[0] === '#') {
-    const originId = ctx.idMap[origin.slice(1)];
+    const originId = ctx.idToNodeIdMap[origin.slice(1)];
     return ctx.treeNodes[originId];
   }
 
@@ -168,7 +176,7 @@ function extractProjectMachine(
   sourceFile: SourceFile,
   call: CallExpression,
   oldState: ProjectMachineState | undefined,
-) {
+): ProjectMachineState {
   const ctx: ExtractionContext = {
     sourceFile,
     xstateVersion: host.xstateVersion,
@@ -188,7 +196,7 @@ function extractProjectMachine(
       },
     },
     treeNodes: {},
-    idMap: {},
+    idToNodeIdMap: {},
     originalTargets: {},
     currentAstPath: [],
     astPaths: {
@@ -201,16 +209,124 @@ function extractProjectMachine(
     digraph,
     errors,
     astPaths: ctx.astPaths,
+    idMap: invert(ctx.idToNodeIdMap),
   };
 }
 
-const toTransitionElement = (edge: Edge): InsertionElement => {
+function getPathNodes(digraph: ExtractorDigraphDef, node: Node) {
+  const nodes: Node[] = [node];
+  let current = node;
+  while (current.parentId) {
+    current = digraph.nodes[current.parentId];
+    nodes.push(current);
+  }
+  return nodes;
+}
+
+function getBestTargetDescriptor(
+  sourceId: string,
+  targetId: string,
+  projectMachineState: ProjectMachineState,
+): string {
+  const digraph = projectMachineState.digraph;
+  assert(digraph);
+  const source = digraph.nodes[sourceId];
+  const target = digraph.nodes[targetId];
+
+  if (!target.parentId) {
+    return `#${projectMachineState.idMap[targetId] || DEFAULT_ROOT_ID}`;
+  }
+
+  if (sourceId === targetId) {
+    return source.data.key;
+  }
+
+  const targetPathNodes = getPathNodes(digraph, target);
+  const sourcePathNodes = getPathNodes(digraph, source);
+  const sourcePathNodesSet = new Set(sourcePathNodes);
+
+  const commonNode = targetPathNodes.find((ancestor) =>
+    sourcePathNodesSet.has(ancestor),
+  )!;
+
+  if (commonNode === source) {
+    return (
+      '.' +
+      targetPathNodes
+        .slice(0, -sourcePathNodes.length)
+        .map((n) => n.data.key)
+        .reverse()
+        .join('.')
+    );
+  }
+
+  if (source.parentId && commonNode === digraph.nodes[source.parentId]) {
+    return targetPathNodes
+      .slice(0, -(sourcePathNodes.length - 1))
+      .map((n) => n.data.key)
+      .reverse()
+      .join('.');
+  }
+
+  // short circuit
+  if (projectMachineState.idMap[targetId]) {
+    return `#${projectMachineState.idMap[targetId]}`;
+  }
+
+  let current = target;
+
+  for (let i = 0; i < targetPathNodes.length; i++) {
+    const id = projectMachineState.idMap[current.uniqueId];
+    if (id || !current.parentId) {
+      return [`#${id || DEFAULT_ROOT_ID}`]
+        .concat(
+          targetPathNodes
+            .slice(0, i)
+            .map((n) => n.data.key)
+            .reverse(),
+        )
+        .join('.');
+    }
+
+    current = digraph.nodes[current.parentId];
+  }
+
+  assertUnreachable();
+}
+
+const toTransitionElement = (
+  edge: Edge,
+  projectMachineState: ProjectMachineState,
+): InsertionElement => {
   const transition: Record<string, InsertionElement> = {
     target: !edge.targets.length
       ? c.undefined()
-      : // TODO: map node ids to target descriptors
-        c.array(edge.targets.map((t) => c.string(t))),
+      : edge.targets.length === 1
+      ? c.string(
+          getBestTargetDescriptor(
+            edge.source,
+            edge.targets[0],
+            projectMachineState,
+          ),
+        )
+      : c.array(
+          edge.targets.map((t) =>
+            c.string(
+              getBestTargetDescriptor(edge.source, t, projectMachineState),
+            ),
+          ),
+        ),
   };
+
+  if (!edge.data.internal) {
+    transition.reenter = c.boolean(true);
+  }
+
+  if (edge.data.description) {
+    transition.description = c.string(edge.data.description, {
+      allowMultiline: true,
+    });
+  }
 
   if (Object.keys(transition).length === 1) {
     // just target
@@ -219,6 +335,39 @@ const toTransitionElement = (edge: Edge): InsertionElement => {
 
   return c.object(Object.entries(transition).map(([k, v]) => c.property(k, v)));
 };
+
+function getTransitionInsertionPath(
+  edge: Edge,
+  projectMachineState: ProjectMachineState,
+) {
+  const source = projectMachineState.digraph!.nodes[edge.source];
+  const eventTypeData = edge.data.eventTypeData;
+  switch (eventTypeData.type) {
+    case 'after':
+      throw new Error('Not implemented');
+    case 'named':
+      return ['on', eventTypeData.eventType];
+    case 'invocation.done':
+      return [
+        'invoke',
+        source.data.invoke.indexOf(eventTypeData.invocationId),
+        'onDone',
+      ];
+    case 'invocation.error':
+      return [
+        'invoke',
+        source.data.invoke.indexOf(eventTypeData.invocationId),
+        'onError',
+      ];
+    case 'state.done':
+      return ['onDone'];
+    case 'always':
+      return ['always'];
+    case 'wildcard':
+    case 'init':
+      throw new Error('Not implemented');
+  }
+}
 
 function createProjectMachine({
   host,
@@ -298,17 +447,15 @@ function createProjectMachine({
                   currentState.astPaths.nodes[patch.value.source],
                 );
                 const newEdge: Edge = patch.value;
-                const eventTypeData = newEdge.data.eventTypeData;
+
                 assert(host.ts.isObjectLiteralExpression(sourceNode));
-                if (eventTypeData.type === 'named') {
-                  codeChanges.insertAtOptionalObjectPath(
-                    sourceNode,
-                    ['on', eventTypeData.eventType],
-                    toTransitionElement(newEdge),
-                  );
-                  break;
-                }
-                throw new Error('Not implemented');
+
+                codeChanges.insertAtOptionalObjectPath(
+                  sourceNode,
+                  // TODO: include the index in the group
+                  getTransitionInsertionPath(newEdge, currentState),
+                  toTransitionElement(newEdge, currentState),
+                );
               }
             }
             break;
