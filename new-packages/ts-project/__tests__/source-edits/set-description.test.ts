@@ -5,7 +5,7 @@ test('should be possible to add a description to the root', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
-      import { creteMachine } from "xstate";
+      import { createMachine } from "xstate";
 
       createMachine({});
     `,
@@ -26,7 +26,7 @@ test('should be possible to add a description to the root', async () => {
   );
   expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
     {
-      "index.ts": "import { creteMachine } from "xstate";
+      "index.ts": "import { createMachine } from "xstate";
 
     createMachine({
     	description: "Wow, so much wow"
@@ -39,7 +39,7 @@ test('should be possible to add a description to a nested state', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
-      import { creteMachine } from "xstate";
+      import { createMachine } from "xstate";
 
       createMachine({
         states: {
@@ -64,7 +64,7 @@ test('should be possible to add a description to a nested state', async () => {
   );
   expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
     {
-      "index.ts": "import { creteMachine } from "xstate";
+      "index.ts": "import { createMachine } from "xstate";
 
     createMachine({
       states: {
@@ -81,7 +81,7 @@ test('should be possible to update a description at the root', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
-      import { creteMachine } from "xstate";
+      import { createMachine } from "xstate";
 
       createMachine({
         description: "really dull description",
@@ -104,7 +104,7 @@ test('should be possible to update a description at the root', async () => {
   );
   expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
     {
-      "index.ts": "import { creteMachine } from "xstate";
+      "index.ts": "import { createMachine } from "xstate";
 
     createMachine({
       description: "Wow, so much wow",
@@ -117,7 +117,7 @@ test('should be possible to remove a description at the root', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
-      import { creteMachine } from "xstate";
+      import { createMachine } from "xstate";
 
       createMachine({
         description: "really dull description",
@@ -139,7 +139,7 @@ test('should be possible to remove a description at the root', async () => {
   );
   expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
     {
-      "index.ts": "import { creteMachine } from "xstate";
+      "index.ts": "import { createMachine } from "xstate";
 
     createMachine({
     });",
@@ -151,7 +151,7 @@ test('should be possible to add a multiline description', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
-      import { creteMachine } from "xstate";
+      import { createMachine } from "xstate";
 
       createMachine({});
     `,
@@ -172,7 +172,7 @@ test('should be possible to add a multiline description', async () => {
   );
   expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
     {
-      "index.ts": "import { creteMachine } from "xstate";
+      "index.ts": "import { createMachine } from "xstate";
 
     createMachine({
     	description: \`wow
