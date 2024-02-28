@@ -136,17 +136,21 @@ function getTrailingCommaPosition({ text }: SourceFile, position: number) {
   return -1;
 }
 
-function getObjectTrailingCommaPosition(
+function getContainerTrailingCommaPosition(
   ts: typeof import('typescript'),
-  object: ObjectLiteralExpression,
+  container: ObjectLiteralExpression | ArrayLiteralExpression,
 ) {
-  if (!object.properties.hasTrailingComma) {
+  if (
+    container.kind === ts.SyntaxKind.ObjectLiteralExpression
+      ? !container.properties.hasTrailingComma
+      : !container.elements.hasTrailingComma
+  ) {
     return;
   }
 
-  // this should always be in the middle of the children: [openBrace, syntaxList, closeBrace]
+  // this should always be in the middle of the children: [openToken, syntaxList, closeToken]
   // erring on the safe side it's being searched for here
-  const syntaxList = object
+  const syntaxList = container
     .getChildren()
     .find((child) => child.kind === ts.SyntaxKind.SyntaxList)!;
 
@@ -475,17 +479,167 @@ export function createCodeChanges(ts: typeof import('typescript')) {
           singleIndentation: getSingleIndentation(change.sourceFile),
         };
         switch (change.type) {
+          case 'insert_element_into_array': {
+            // TODO: this could be smarter about consuming multiple insertions into the same array at once
+            // Studio doesn't currently do that though
+
+            // this has very similar logic to `insert_property_before_property` and `insert_property_into_object`
+            // some deduplication could be done but it's not worth it for now
+            // it's disputable but this currently is in a single handler on purpose
+            // the reasoning is that *order* is important with arrays whereas it's not with objects (beyond the fact that the last property with the same name wins)
+            // so it's easier to have some control and validation here if it's centralized
+            // the content of the handler could still delegate to a shared function though
+            if (change.index < change.array.elements.length) {
+              const existingElement = change.array.elements[change.index];
+
+              const hasNewLineBeforeElement = change.sourceFile.text
+                .slice(
+                  existingElement.getFullStart(),
+                  existingElement.getStart(),
+                )
+                .includes('\n');
+
+              edits.push({
+                type: 'insert',
+                fileName: change.sourceFile.fileName,
+                position:
+                  (hasNewLineBeforeElement
+                    ? first(
+                        ts.getLeadingCommentRanges(
+                          change.sourceFile.text,
+                          existingElement.getFullStart(),
+                        ),
+                      )?.pos
+                    : last(
+                        ts.getTrailingCommentRanges(
+                          change.sourceFile.text,
+                          existingElement.getFullStart(),
+                        ),
+                      )?.pos) || existingElement.getStart(),
+                newText:
+                  insertionToText(
+                    ts,
+                    change.sourceFile,
+                    change.value,
+                    formattingOptions,
+                  ) +
+                  ',\n' +
+                  getIndentationBeforePosition(
+                    change.sourceFile.text,
+                    existingElement.getStart(),
+                  ),
+              });
+              break;
+            }
+
+            const lastElement = last(change.array.elements);
+
+            const insertedText = insertionToText(
+              ts,
+              change.sourceFile,
+              change.value,
+              formattingOptions,
+            );
+
+            if (lastElement) {
+              const trailingCommaPosition = getContainerTrailingCommaPosition(
+                ts,
+                change.array,
+              );
+
+              // this specifically targets only trailing comments
+              // if there are leading comments (below this node) then we don't want to move them to be before what we are about to insert
+              const lastTrailingComment = last(
+                ts.getTrailingCommentRanges(
+                  change.sourceFile.text,
+                  trailingCommaPosition
+                    ? trailingCommaPosition + 1
+                    : lastElement.getEnd(),
+                ),
+              );
+
+              if (!trailingCommaPosition && lastTrailingComment) {
+                edits.push({
+                  type: 'insert',
+                  fileName: change.sourceFile.fileName,
+                  position: lastElement.getEnd(),
+                  newText: `,`,
+                });
+              }
+
+              edits.push({
+                type: 'insert',
+                fileName: change.sourceFile.fileName,
+                position: lastTrailingComment
+                  ? lastTrailingComment.end
+                  : trailingCommaPosition
+                  ? trailingCommaPosition + 1
+                  : lastElement.getEnd(),
+                newText:
+                  (!trailingCommaPosition && !lastTrailingComment ? ',' : '') +
+                  '\n' +
+                  indentTextWith(
+                    insertedText,
+                    getIndentationBeforePosition(
+                      change.sourceFile.text,
+                      lastElement.getStart(),
+                    ),
+                  ) +
+                  (!!trailingCommaPosition ? ',' : ''),
+              });
+
+              break;
+            }
+            const currentIdentation = getIndentationBeforePosition(
+              change.sourceFile.text,
+              change.array.getStart(),
+            );
+
+            const lastComment = getLastComment(
+              ts,
+              change.sourceFile,
+              change.array.getStart() + 1,
+            );
+
+            const isArrayMultiline = change.sourceFile.text
+              .slice(change.array.getStart(), change.array.getEnd())
+              .includes('\n');
+
+            edits.push({
+              type: 'insert',
+              fileName: change.sourceFile.fileName,
+              position: lastComment?.end ?? change.array.getStart() + 1,
+              newText:
+                '\n' +
+                indentTextWith(
+                  insertedText,
+                  currentIdentation + formattingOptions.singleIndentation,
+                ) +
+                (!isArrayMultiline ? `\n${currentIdentation}` : ''),
+            });
+            break;
+          }
           case 'insert_property_before_property': {
+            const hasNewLineBeforeProperty = change.sourceFile.text
+              .slice(change.property.getFullStart(), change.property.getStart())
+              .includes('\n');
             edits.push({
               type: 'insert',
               fileName: change.sourceFile.fileName,
               position:
-                first(
-                  ts.getLeadingCommentRanges(
-                    change.sourceFile.text,
-                    change.property.getFullStart(),
-                  ),
-                )?.pos || change.property.getStart(),
+                (hasNewLineBeforeProperty
+                  ? first(
+                      ts.getLeadingCommentRanges(
+                        change.sourceFile.text,
+                        change.property.getFullStart(),
+                      ),
+                    )?.pos
+                  : last(
+                      ts.getTrailingCommentRanges(
+                        change.sourceFile.text,
+                        change.property.getFullStart(),
+                      ),
+                    )?.pos) || change.property.getStart(),
               newText:
                 insertionToText(
                   ts,
@@ -524,7 +678,7 @@ export function createCodeChanges(ts: typeof import('typescript')) {
               .join(',\n');
 
             if (lastElement) {
-              const trailingCommaPosition = getObjectTrailingCommaPosition(
+              const trailingCommaPosition = getContainerTrailingCommaPosition(
                 ts,
                 change.object,
               );

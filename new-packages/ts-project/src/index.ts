@@ -11,10 +11,12 @@ import {
   InsertionElement,
   InsertionPriority,
 } from './codeChanges';
+import { shallowEqual } from './shallowEqual';
 import { extractState } from './state';
 import type {
   DeleteTextEdit,
   Edge,
+  EventTypeData,
   ExtractionContext,
   ExtractionError,
   ExtractorDigraphDef,
@@ -344,34 +346,50 @@ const toTransitionElement = (
   return c.object(Object.entries(transition).map(([k, v]) => c.property(k, v)));
 };
 
+/** @internal */
+export function getEdgeGroup(
+  digraph: Pick<ExtractorDigraphDef, 'edges' | 'edgeRefs'>,
+  eventTypeData: EventTypeData,
+) {
+  return digraph.edgeRefs.filter((id) =>
+    shallowEqual(digraph.edges[id].data.eventTypeData, eventTypeData),
+  );
+}
+
 function getTransitionInsertionPath(
   edge: Edge,
   projectMachineState: ProjectMachineState,
 ) {
-  const source = projectMachineState.digraph!.nodes[edge.source];
+  const digraph = projectMachineState.digraph;
+  assert(digraph);
+  const source = digraph.nodes[edge.source];
   const eventTypeData = edge.data.eventTypeData;
+  const edgeIndex = getEdgeGroup(digraph, eventTypeData).indexOf(edge.uniqueId);
   switch (eventTypeData.type) {
     case 'after':
       throw new Error('Not implemented');
     case 'named':
-      return ['on', eventTypeData.eventType];
+      return ['on', eventTypeData.eventType, edgeIndex];
     case 'invocation.done':
       return [
         'invoke',
         source.data.invoke.indexOf(eventTypeData.invocationId),
         'onDone',
+        edgeIndex,
       ];
     case 'invocation.error':
       return [
         'invoke',
         source.data.invoke.indexOf(eventTypeData.invocationId),
         'onError',
+        edgeIndex,
       ];
     case 'state.done':
-      return ['onDone'];
+      return ['onDone', edgeIndex];
     case 'always':
-      return ['always'];
+      return ['always', edgeIndex];
     case 'wildcard':
+      return ['on', '*', edgeIndex];
     case 'init':
       throw new Error('Not implemented');
   }
@@ -460,7 +478,6 @@ function createProjectMachine({
 
                 codeChanges.insertAtOptionalObjectPath(
                   sourceNode,
-                  // TODO: include the index in the group
                   getTransitionInsertionPath(newEdge, currentState),
                   toTransitionElement(newEdge, currentState),
                 );
