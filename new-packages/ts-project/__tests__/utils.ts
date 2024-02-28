@@ -11,11 +11,12 @@ import { createGuardBlock, registerGuardBlock } from '../src/state';
 import {
   ActorBlock,
   Edge,
+  EventTypeData,
   ExtractorDigraphDef,
   Node,
   TextEdit,
 } from '../src/types';
-import { uniqueId } from '../src/utils';
+import { last, uniqueId } from '../src/utils';
 
 // it's not part of the types but it's available at runtime
 // we enable this in this *test* file so it has global effect for our tests
@@ -295,7 +296,7 @@ function getEventTypeData(
     transitionPath: TransitionPath;
     sourcePath: string[];
   },
-): Edge['data']['eventTypeData'] {
+): EventTypeData {
   switch (transitionPath[0]) {
     case 'on':
       return {
@@ -325,6 +326,53 @@ function getEventTypeData(
   }
 
   throw new Error('Not implemented');
+}
+
+function is(x: unknown, y: unknown) {
+  if (x === y) {
+    return x !== 0 || y !== 0 || 1 / x === 1 / y;
+  } else {
+    return x !== x && y !== y;
+  }
+}
+
+// From https://github.com/reduxjs/react-redux/blob/720f0ba79236cdc3e1115f4ef9a7760a21784b48/src/utils/shallowEqual.ts
+function shallowEqual(objA: any, objB: any) {
+  if (is(objA, objB)) return true;
+
+  if (
+    typeof objA !== 'object' ||
+    objA === null ||
+    typeof objB !== 'object' ||
+    objB === null
+  ) {
+    return false;
+  }
+
+  const keysA = Object.keys(objA);
+  const keysB = Object.keys(objB);
+
+  if (keysA.length !== keysB.length) return false;
+
+  for (let i = 0; i < keysA.length; i++) {
+    if (
+      !Object.prototype.hasOwnProperty.call(objB, keysA[i]) ||
+      !is(objA[keysA[i]], objB[keysA[i]])
+    ) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function getEdgeGroup(
+  digraphDraft: Draft<ExtractorDigraphDef>,
+  eventTypeData: EventTypeData,
+) {
+  return digraphDraft.edgeRefs.filter((id) =>
+    shallowEqual(digraphDraft.edges[id].data.eventTypeData, eventTypeData),
+  );
 }
 
 function produceNewDigraphUsingEdit(
@@ -398,6 +446,7 @@ function produceNewDigraphUsingEdit(
       const sourceNode = findNodeByStatePath(digraphDraft, edit.sourcePath);
       const targetNode =
         edit.targetPath && findNodeByStatePath(digraphDraft, edit.targetPath);
+      const eventTypeData = getEventTypeData(digraphDraft, edit);
 
       const newEdge: Edge = {
         type: 'edge',
@@ -405,7 +454,7 @@ function produceNewDigraphUsingEdit(
         source: sourceNode.uniqueId,
         targets: targetNode ? [targetNode.uniqueId] : [],
         data: {
-          eventTypeData: getEventTypeData(digraphDraft, edit),
+          eventTypeData,
           actions: [],
           guard: undefined,
           description: undefined,
@@ -423,7 +472,23 @@ function produceNewDigraphUsingEdit(
         registerGuardBlock(digraphDraft, block, newEdge);
       }
 
+      const existingGroup = getEdgeGroup(digraphDraft, eventTypeData);
+
       digraphDraft.edges[newEdge.uniqueId] = newEdge;
+
+      if (existingGroup.length) {
+        const index = last(edit.transitionPath);
+        assert(typeof index === 'number');
+        const insertionIndex =
+          index === existingGroup.length
+            ? digraphDraft.edgeRefs.indexOf(last(existingGroup)! + 1)
+            : digraphDraft.edgeRefs.indexOf(existingGroup[index]);
+        digraphDraft.edgeRefs.splice(insertionIndex, 0, newEdge.uniqueId);
+      } else {
+        assert(last(edit.transitionPath) === 0);
+        digraphDraft.edgeRefs.push(newEdge.uniqueId);
+      }
+
       break;
     case 'remove_transition':
     case 'reanchor_transition':

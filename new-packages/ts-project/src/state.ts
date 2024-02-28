@@ -431,6 +431,9 @@ function extractEdgeGroup(
 
   for (const [edge, targets] of mapped) {
     ctx.digraph.edges[edge.uniqueId] = edge;
+    // we only care about edges within the same group to be in the same relative order to each other in `edgeRefs`
+    // so this can simply be appended here since we iterate over a group here from left to right
+    ctx.digraph.edgeRefs.push(edge.uniqueId);
     if (targets) {
       ctx.originalTargets[edge.uniqueId] = targets;
     }

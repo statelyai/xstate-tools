@@ -36,6 +36,7 @@ test('should extract an actor with string src (direct)', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [],
             "edges": {},
             "implementations": {
               "actions": {},
@@ -132,6 +133,7 @@ test('should extract multiple actors with different string sources (direct)', as
             "data": {
               "context": {},
             },
+            "edgeRefs": [],
             "edges": {},
             "implementations": {
               "actions": {},
@@ -269,6 +271,7 @@ test('should extract multiple actors with the same string source (direct)', asyn
             "data": {
               "context": {},
             },
+            "edgeRefs": [],
             "edges": {},
             "implementations": {
               "actions": {},
@@ -401,6 +404,7 @@ test('should extract multiple actors with string source (array)', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [],
             "edges": {},
             "implementations": {
               "actions": {},
@@ -520,6 +524,7 @@ test('should extract actor with inline source (direct)', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [],
             "edges": {},
             "implementations": {
               "actions": {},
@@ -629,6 +634,7 @@ test('should raise error if actor is missing src property', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [],
             "edges": {},
             "implementations": {
               "actions": {},
@@ -724,6 +730,7 @@ test('should extract actor id if it is present with a string value', async () =>
             "data": {
               "context": {},
             },
+            "edgeRefs": [],
             "edges": {},
             "implementations": {
               "actions": {},

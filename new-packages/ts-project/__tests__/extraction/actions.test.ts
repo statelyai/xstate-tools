@@ -34,6 +34,7 @@ test('should extract a string entry action (direct)', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [],
             "edges": {},
             "implementations": {
               "actions": {
@@ -108,6 +109,7 @@ test('should extract a string exit action (direct)', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [],
             "edges": {},
             "implementations": {
               "actions": {
@@ -182,6 +184,7 @@ test('should extract a string action (in array)', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [],
             "edges": {},
             "implementations": {
               "actions": {
@@ -266,6 +269,7 @@ test('should extract multiple string actions', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [],
             "edges": {},
             "implementations": {
               "actions": {
@@ -348,6 +352,7 @@ test('should extract a simple parameterized action (direct)', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [],
             "edges": {},
             "implementations": {
               "actions": {
@@ -426,6 +431,7 @@ test('should extract a simple parameterized action (in array)', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [],
             "edges": {},
             "implementations": {
               "actions": {
@@ -500,6 +506,7 @@ test('should extract an inline action (function)', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [],
             "edges": {},
             "implementations": {
               "actions": {
@@ -576,6 +583,7 @@ test('should extract an inline action (builtin)', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [],
             "edges": {},
             "implementations": {
               "actions": {
@@ -639,6 +647,7 @@ test('should error when extracting undefined action (direct)', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [],
             "edges": {},
             "implementations": {
               "actions": {},
@@ -698,6 +707,7 @@ test('should error when extracting undefined action (in array)', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [],
             "edges": {},
             "implementations": {
               "actions": {},
@@ -772,6 +782,9 @@ test('should extract a transition action', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -865,6 +878,7 @@ test('should not register multiple entry actions with duplicated entry property'
             "data": {
               "context": {},
             },
+            "edgeRefs": [],
             "edges": {},
             "implementations": {
               "actions": {
@@ -944,6 +958,9 @@ test('should not register multiple transition actions with duplicated actions pr
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+            ],
             "edges": {
               "edge-0": {
                 "data": {

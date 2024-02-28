@@ -160,6 +160,7 @@ function extractMachineConfig(
       blocks: ctx.digraph.blocks,
       nodes: ctx.digraph.nodes,
       edges: ctx.digraph.edges,
+      edgeRefs: ctx.digraph.edgeRefs,
       implementations: ctx.digraph.implementations,
       data: ctx.digraph.data,
     },
@@ -185,6 +186,7 @@ function extractProjectMachine(
     digraph: {
       nodes: {},
       edges: {},
+      edgeRefs: [],
       blocks: {},
       implementations: {
         actions: {},
