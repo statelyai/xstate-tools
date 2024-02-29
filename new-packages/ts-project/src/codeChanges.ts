@@ -304,11 +304,11 @@ export function createCodeChanges(ts: typeof import('typescript')) {
               const existing = prop.initializer;
 
               if (nextSegment === 0) {
-                codeChanges.wrapIntoArrayWith(existing, 'append', value);
+                codeChanges.wrapIntoArrayWith(existing, 'prepend', value);
                 return;
               }
               if (nextSegment === 1) {
-                codeChanges.wrapIntoArrayWith(existing, 'prepend', value);
+                codeChanges.wrapIntoArrayWith(existing, 'append', value);
                 return;
               }
 
@@ -861,6 +861,51 @@ export function createCodeChanges(ts: typeof import('typescript')) {
               change.current.getStart(),
             );
             const hasNewLine = change.current.getFullText().includes('\n');
+
+            const newElementIndentation = hasNewLine
+              ? currentIdentation
+              : currentIdentation + formattingOptions.singleIndentation;
+
+            let beforePosition;
+            let beforeText = '';
+
+            if (hasNewLine) {
+              beforePosition = change.current.getFullStart();
+              beforeText += ` [`;
+              if (change.insertionType === 'prepend') {
+                beforeText += `\n` + newElementIndentation;
+              }
+            } else {
+              const leadingTrivia = change.sourceFile.text.slice(
+                change.current.getFullStart(),
+                change.current.getStart(),
+              );
+              beforePosition =
+                change.current.getFullStart() +
+                getLeadingWhitespaceLength(leadingTrivia);
+              beforeText += `[\n` + newElementIndentation;
+            }
+
+            if (change.insertionType === 'prepend') {
+              beforeText +=
+                insertionToText(
+                  ts,
+                  change.sourceFile,
+                  change.newElement,
+                  formattingOptions,
+                ) + ',';
+              if (!hasNewLine) {
+                beforeText += '\n' + newElementIndentation;
+              }
+            }
+
+            edits.push({
+              type: 'insert',
+              fileName: change.sourceFile.fileName,
+              position: beforePosition,
+              newText: beforeText,
+            });
+
             const trailingComment = last(
               ts.getTrailingCommentRanges(
                 change.sourceFile.text,
@@ -868,33 +913,7 @@ export function createCodeChanges(ts: typeof import('typescript')) {
               ),
             );
 
-            const newElementIndentation = hasNewLine
-              ? currentIdentation
-              : currentIdentation + formattingOptions.singleIndentation;
-
-            if (hasNewLine) {
-              edits.push({
-                type: 'insert',
-                fileName: change.sourceFile.fileName,
-                position: change.current.getFullStart(),
-                newText: ` [`,
-              });
-            } else {
-              const leadingTrivia = change.sourceFile.text.slice(
-                change.current.getFullStart(),
-                change.current.getStart(),
-              );
-              edits.push({
-                type: 'insert',
-                fileName: change.sourceFile.fileName,
-                position:
-                  change.current.getFullStart() +
-                  getLeadingWhitespaceLength(leadingTrivia),
-                newText: `[\n` + newElementIndentation,
-              });
-            }
-
-            if (trailingComment) {
+            if (change.insertionType === 'append' && trailingComment) {
               edits.push({
                 type: 'insert',
                 fileName: change.sourceFile.fileName,
@@ -903,20 +922,28 @@ export function createCodeChanges(ts: typeof import('typescript')) {
               });
             }
 
-            edits.push({
-              type: 'insert',
-              fileName: change.sourceFile.fileName,
-              position: trailingComment?.end ?? change.current.getEnd(),
-              newText:
-                (trailingComment ? '' : `,`) +
-                `\n` +
+            let afterPosition = trailingComment?.end ?? change.current.getEnd();
+            let afterText = '';
+
+            if (change.insertionType === 'append') {
+              afterText +=
+                (trailingComment ? '' : ',') +
+                '\n' +
                 newElementIndentation +
                 insertionToText(
                   ts,
                   change.sourceFile,
                   change.newElement,
                   formattingOptions,
-                ) +
+                );
+            }
+
+            edits.push({
+              type: 'insert',
+              fileName: change.sourceFile.fileName,
+              position: afterPosition,
+              newText:
+                afterText +
                 '\n' +
                 getIndentationBeforePosition(
                   change.sourceFile.text,
@@ -924,7 +951,6 @@ export function createCodeChanges(ts: typeof import('typescript')) {
                 ) +
                 `]`,
             });
-
             break;
           }
         }
