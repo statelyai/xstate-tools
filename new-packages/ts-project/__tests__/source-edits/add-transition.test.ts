@@ -1279,46 +1279,422 @@ test('should be possible to add a transition in the middle of the existing array
   `);
 });
 
-test.todo(
-  'should be possible to add a transition at the end of an upgraded array',
-  async () => {
-    const tmpPath = await testdir({
-      'tsconfig.json': JSON.stringify({}),
-      'index.ts': ts`
-        import { createMachine } from "xstate";
+test('should be possible to add a transition at the end of an upgraded array (single line, comma directly after it)', async () => {
+  const tmpPath = await testdir({
+    'tsconfig.json': JSON.stringify({}),
+    'index.ts': ts`
+      import { createMachine } from "xstate";
 
-        createMachine({
-          initial: "foo",
-          states: {
-            foo: {
-              on: {
-                NEXT: "bar",
-              },
+      createMachine({
+        initial: "foo",
+        states: {
+          foo: {
+            on: {
+              NEXT: "bar",
             },
-            bar: {},
-            baz: {},
           },
-        });
-      `,
-    });
+          bar: {},
+          baz: {},
+        },
+      });
+    `,
+  });
 
-    const project = await createTestProject(tmpPath);
+  const project = await createTestProject(tmpPath);
 
-    const textEdits = project.editDigraph(
-      {
-        fileName: 'index.ts',
-        machineIndex: 0,
+  const textEdits = project.editDigraph(
+    {
+      fileName: 'index.ts',
+      machineIndex: 0,
+    },
+    {
+      type: 'add_transition',
+      sourcePath: ['foo'],
+      targetPath: ['baz'],
+      transitionPath: ['on', 'NEXT', 1],
+    },
+  );
+  expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
+    {
+      "index.ts": "import { createMachine } from "xstate";
+
+    createMachine({
+      initial: "foo",
+      states: {
+        foo: {
+          on: {
+            NEXT: [
+              "bar",
+              "baz"
+            ],
+          },
+        },
+        bar: {},
+        baz: {},
       },
-      {
-        type: 'add_transition',
-        sourcePath: ['foo'],
-        targetPath: ['baz'],
-        transitionPath: ['on', 'NEXT', 1],
+    });",
+    }
+  `);
+});
+
+test('should be possible to add a transition at the end of an upgraded array (single line, comma directly after it, comment before it)', async () => {
+  const tmpPath = await testdir({
+    'tsconfig.json': JSON.stringify({}),
+    'index.ts': ts`
+      import { createMachine } from "xstate";
+
+      createMachine({
+        initial: "foo",
+        states: {
+          foo: {
+            on: {
+              NEXT: /* comm */ "bar",
+            },
+          },
+          bar: {},
+          baz: {},
+        },
+      });
+    `,
+  });
+
+  const project = await createTestProject(tmpPath);
+
+  const textEdits = project.editDigraph(
+    {
+      fileName: 'index.ts',
+      machineIndex: 0,
+    },
+    {
+      type: 'add_transition',
+      sourcePath: ['foo'],
+      targetPath: ['baz'],
+      transitionPath: ['on', 'NEXT', 1],
+    },
+  );
+  expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
+    {
+      "index.ts": "import { createMachine } from "xstate";
+
+    createMachine({
+      initial: "foo",
+      states: {
+        foo: {
+          on: {
+            NEXT: [
+              /* comm */ "bar",
+              "baz"
+            ],
+          },
+        },
+        bar: {},
+        baz: {},
       },
-    );
-    expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot();
-  },
-);
+    });",
+    }
+  `);
+});
+
+test('should be possible to add a transition at the end of an upgraded array (existing value on subsequent line)', async () => {
+  const tmpPath = await testdir({
+    'tsconfig.json': JSON.stringify({}),
+    'index.ts': outdent`
+      import { createMachine } from "xstate";
+
+      createMachine({
+        initial: "foo",
+        states: {
+          foo: {
+            on: {
+              NEXT:
+                "bar",
+            },
+          },
+          bar: {},
+          baz: {},
+        },
+      });
+    `,
+  });
+
+  const project = await createTestProject(tmpPath);
+
+  const textEdits = project.editDigraph(
+    {
+      fileName: 'index.ts',
+      machineIndex: 0,
+    },
+    {
+      type: 'add_transition',
+      sourcePath: ['foo'],
+      targetPath: ['baz'],
+      transitionPath: ['on', 'NEXT', 1],
+    },
+  );
+  expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
+    {
+      "index.ts": "import { createMachine } from "xstate";
+
+    createMachine({
+      initial: "foo",
+      states: {
+        foo: {
+          on: {
+            NEXT: [
+              "bar",
+              "baz"
+            ],
+          },
+        },
+        bar: {},
+        baz: {},
+      },
+    });",
+    }
+  `);
+});
+
+test('should be possible to add a transition at the end of an upgraded array (existing value on subsequent line, trailing comma on yet another line)', async () => {
+  const tmpPath = await testdir({
+    'tsconfig.json': JSON.stringify({}),
+    'index.ts': outdent`
+      import { createMachine } from "xstate";
+
+      createMachine({
+        initial: "foo",
+        states: {
+          foo: {
+            on: {
+              NEXT:
+                "bar"
+
+                ,
+            },
+          },
+          bar: {},
+          baz: {},
+        },
+      });
+    `,
+  });
+
+  const project = await createTestProject(tmpPath);
+
+  const textEdits = project.editDigraph(
+    {
+      fileName: 'index.ts',
+      machineIndex: 0,
+    },
+    {
+      type: 'add_transition',
+      sourcePath: ['foo'],
+      targetPath: ['baz'],
+      transitionPath: ['on', 'NEXT', 1],
+    },
+  );
+  expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
+    {
+      "index.ts": "import { createMachine } from "xstate";
+
+    createMachine({
+      initial: "foo",
+      states: {
+        foo: {
+          on: {
+            NEXT: [
+              "bar",
+              "baz"
+            ]
+
+              ,
+          },
+        },
+        bar: {},
+        baz: {},
+      },
+    });",
+    }
+  `);
+});
+
+test('should be possible to add a transition at the end of an upgraded array (existing value on subsequent line, with trailing comment)', async () => {
+  const tmpPath = await testdir({
+    'tsconfig.json': JSON.stringify({}),
+    'index.ts': outdent`
+      import { createMachine } from "xstate";
+
+      createMachine({
+        initial: "foo",
+        states: {
+          foo: {
+            on: {
+              NEXT:
+                "bar" // comment
+            },
+          },
+          bar: {},
+          baz: {},
+        },
+      });
+    `,
+  });
+
+  const project = await createTestProject(tmpPath);
+
+  const textEdits = project.editDigraph(
+    {
+      fileName: 'index.ts',
+      machineIndex: 0,
+    },
+    {
+      type: 'add_transition',
+      sourcePath: ['foo'],
+      targetPath: ['baz'],
+      transitionPath: ['on', 'NEXT', 1],
+    },
+  );
+  expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
+    {
+      "index.ts": "import { createMachine } from "xstate";
+
+    createMachine({
+      initial: "foo",
+      states: {
+        foo: {
+          on: {
+            NEXT: [
+              "bar", // comment
+              "baz"
+            ]
+          },
+        },
+        bar: {},
+        baz: {},
+      },
+    });",
+    }
+  `);
+});
+
+test('should be possible to add a transition at the end of an upgraded array (existing value on subsequent line, multi-line comment below it)', async () => {
+  const tmpPath = await testdir({
+    'tsconfig.json': JSON.stringify({}),
+    'index.ts': outdent`
+      import { createMachine } from "xstate";
+
+      createMachine({
+        initial: "foo",
+        states: {
+          foo: {
+            on: {
+              NEXT:
+                "bar"
+                /* comment */
+            },
+          },
+          bar: {},
+          baz: {},
+        },
+      });
+    `,
+  });
+
+  const project = await createTestProject(tmpPath);
+
+  const textEdits = project.editDigraph(
+    {
+      fileName: 'index.ts',
+      machineIndex: 0,
+    },
+    {
+      type: 'add_transition',
+      sourcePath: ['foo'],
+      targetPath: ['baz'],
+      transitionPath: ['on', 'NEXT', 1],
+    },
+  );
+  expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
+    {
+      "index.ts": "import { createMachine } from "xstate";
+
+    createMachine({
+      initial: "foo",
+      states: {
+        foo: {
+          on: {
+            NEXT: [
+              "bar",
+              "baz"
+            ]
+              /* comment */
+          },
+        },
+        bar: {},
+        baz: {},
+      },
+    });",
+    }
+  `);
+});
+
+test('should be possible to add a transition at the end of an upgraded array (existing value on subsequent line, with trailing comment and comma after it)', async () => {
+  const tmpPath = await testdir({
+    'tsconfig.json': JSON.stringify({}),
+    'index.ts': outdent`
+      import { createMachine } from "xstate";
+
+      createMachine({
+        initial: "foo",
+        states: {
+          foo: {
+            on: {
+              NEXT:
+                "bar" /* comment */ ,
+            },
+          },
+          bar: {},
+          baz: {},
+        },
+      });
+    `,
+  });
+
+  const project = await createTestProject(tmpPath);
+
+  const textEdits = project.editDigraph(
+    {
+      fileName: 'index.ts',
+      machineIndex: 0,
+    },
+    {
+      type: 'add_transition',
+      sourcePath: ['foo'],
+      targetPath: ['baz'],
+      transitionPath: ['on', 'NEXT', 1],
+    },
+  );
+  expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
+    {
+      "index.ts": "import { createMachine } from "xstate";
+
+    createMachine({
+      initial: "foo",
+      states: {
+        foo: {
+          on: {
+            NEXT: [
+              "bar", /* comment */
+              "baz"
+            ] ,
+          },
+        },
+        bar: {},
+        baz: {},
+      },
+    });",
+    }
+  `);
+});
 
 test.todo(
   'should be possible to add a transition at the start of an upgraded array',

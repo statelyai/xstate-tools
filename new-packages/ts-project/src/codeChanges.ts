@@ -77,6 +77,13 @@ interface ReplaceWithCodeChange extends BaseCodeChange {
   replacement: InsertionElement;
 }
 
+interface WrapIntoArrayWithCodeChange extends BaseCodeChange {
+  type: 'wrap_into_array_with';
+  current: Node;
+  insertionType: 'append' | 'prepend';
+  newElement: InsertionElement;
+}
+
 type CodeChange =
   | InsertAtOptionalObjectPathCodeChange
   | InsertElementIntoArrayCodeChange
@@ -85,7 +92,8 @@ type CodeChange =
   | RemovePropertyNameChange
   | ReplacePropertyNameChange
   | ReplaceRangeCodeChange
-  | ReplaceWithCodeChange;
+  | ReplaceWithCodeChange
+  | WrapIntoArrayWithCodeChange;
 
 function toZeroLengthRange(position: number) {
   return { start: position, end: position };
@@ -121,6 +129,10 @@ function getSingleLineWhitespaceBeforePosition(text: string, position: number) {
   }
 
   return text.slice(0, end);
+}
+
+function getLeadingWhitespaceLength(text: string) {
+  return text.match(/^\s*/)?.[0].length || 0;
 }
 
 function getTrailingCommaPosition({ text }: SourceFile, position: number) {
@@ -290,21 +302,13 @@ export function createCodeChanges(ts: typeof import('typescript')) {
           if (isNextTheLastSegment) {
             if (!ts.isArrayLiteralExpression(prop.initializer)) {
               const existing = prop.initializer;
-              assert(nextSegment === 0 || nextSegment === 1);
-              const existingRaw = c.raw(existing.getFullText());
 
               if (nextSegment === 0) {
-                codeChanges.replaceWith(
-                  existing,
-                  c.array([value, existingRaw]),
-                );
+                codeChanges.wrapIntoArrayWith(existing, 'append', value);
                 return;
               }
               if (nextSegment === 1) {
-                codeChanges.replaceWith(
-                  existing,
-                  c.array([existingRaw, value]),
-                );
+                codeChanges.wrapIntoArrayWith(existing, 'prepend', value);
                 return;
               }
 
@@ -438,6 +442,23 @@ export function createCodeChanges(ts: typeof import('typescript')) {
         },
         current,
         replacement,
+      });
+    },
+    wrapIntoArrayWith: (
+      current: Node,
+      insertionType: 'append' | 'prepend',
+      newElement: InsertionElement,
+    ) => {
+      changes.push({
+        type: 'wrap_into_array_with',
+        sourceFile: current.getSourceFile(),
+        range: {
+          start: current.getStart(),
+          end: current.getEnd(),
+        },
+        current,
+        insertionType,
+        newElement,
       });
     },
 
@@ -834,6 +855,78 @@ export function createCodeChanges(ts: typeof import('typescript')) {
             break;
           case 'replace_with':
             throw new Error('Not implemented');
+          case 'wrap_into_array_with': {
+            const currentIdentation = getIndentationBeforePosition(
+              change.sourceFile.text,
+              change.current.getStart(),
+            );
+            const hasNewLine = change.current.getFullText().includes('\n');
+            const trailingComment = last(
+              ts.getTrailingCommentRanges(
+                change.sourceFile.text,
+                change.current.getEnd(),
+              ),
+            );
+
+            const newElementIndentation = hasNewLine
+              ? currentIdentation
+              : currentIdentation + formattingOptions.singleIndentation;
+
+            if (hasNewLine) {
+              edits.push({
+                type: 'insert',
+                fileName: change.sourceFile.fileName,
+                position: change.current.getFullStart(),
+                newText: ` [`,
+              });
+            } else {
+              const leadingTrivia = change.sourceFile.text.slice(
+                change.current.getFullStart(),
+                change.current.getStart(),
+              );
+              edits.push({
+                type: 'insert',
+                fileName: change.sourceFile.fileName,
+                position:
+                  change.current.getFullStart() +
+                  getLeadingWhitespaceLength(leadingTrivia),
+                newText: `[\n` + newElementIndentation,
+              });
+            }
+
+            if (trailingComment) {
+              edits.push({
+                type: 'insert',
+                fileName: change.sourceFile.fileName,
+                position: change.current.getEnd(),
+                newText: ',',
+              });
+            }
+
+            edits.push({
+              type: 'insert',
+              fileName: change.sourceFile.fileName,
+              position: trailingComment?.end ?? change.current.getEnd(),
+              newText:
+                (trailingComment ? '' : `,`) +
+                `\n` +
+                newElementIndentation +
+                insertionToText(
+                  ts,
+                  change.sourceFile,
+                  change.newElement,
+                  formattingOptions,
+                ) +
+                '\n' +
+                getIndentationBeforePosition(
+                  change.sourceFile.text,
+                  change.current.getFullStart(),
+                ) +
+                `]`,
+            });
+
+            break;
+          }
         }
       }
 
