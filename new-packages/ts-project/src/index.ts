@@ -369,6 +369,83 @@ function createProjectMachine({
                     InsertionPriority.Initial,
                   );
                 }
+                if (patch.path[2] === 'data' && patch.path[3] === 'type') {
+                  const node = findNodeByAstPath(
+                    host.ts,
+                    createMachineCall,
+                    currentState.astPaths.nodes[nodeId],
+                  );
+                  assert(host.ts.isObjectLiteralExpression(node));
+                  const typeProp = findProperty(
+                    undefined,
+                    host.ts,
+                    node,
+                    'type',
+                  );
+                  if (patch.value === 'normal') {
+                    if (typeProp) {
+                      codeChanges.removeProperty(typeProp);
+                    }
+                    break;
+                  }
+
+                  if (typeProp) {
+                    codeChanges.replaceRange(sourceFile, {
+                      range: {
+                        start: typeProp.initializer.getStart(),
+                        end: typeProp.initializer.getEnd(),
+                      },
+                      element: c.string(patch.value),
+                    });
+                    break;
+                  }
+
+                  codeChanges.insertPropertyIntoObject(
+                    node,
+                    'type',
+                    c.string(patch.value),
+                    InsertionPriority.StateType,
+                  );
+                }
+                if (patch.path[2] === 'data' && patch.path[3] === 'history') {
+                  const node = findNodeByAstPath(
+                    host.ts,
+                    createMachineCall,
+                    currentState.astPaths.nodes[nodeId],
+                  );
+                  assert(host.ts.isObjectLiteralExpression(node));
+                  const historyProp = findProperty(
+                    undefined,
+                    host.ts,
+                    node,
+                    'history',
+                  );
+                  if (patch.value === undefined || patch.value === 'shallow') {
+                    if (historyProp) {
+                      codeChanges.removeProperty(historyProp);
+                    }
+                    break;
+                  }
+
+                  if (historyProp) {
+                    codeChanges.replaceRange(sourceFile, {
+                      range: {
+                        start: historyProp.initializer.getStart(),
+                        end: historyProp.initializer.getEnd(),
+                      },
+                      element: c.string(patch.value),
+                    });
+                    break;
+                  }
+
+                  // TODO: insert it after the existing `type` property
+                  codeChanges.insertPropertyIntoObject(
+                    node,
+                    'history',
+                    c.string(patch.value),
+                    InsertionPriority.History,
+                  );
+                }
             }
             break;
         }
