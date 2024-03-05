@@ -32,7 +32,7 @@ export interface ExtractionContext {
   errors: ExtractionError[];
   digraph: Pick<
     ExtractorDigraphDef,
-    'blocks' | 'nodes' | 'edges' | 'implementations' | 'data'
+    'blocks' | 'nodes' | 'edges' | 'edgeRefs' | 'implementations' | 'data'
   >;
   treeNodes: Record<string, TreeNode>;
   idToNodeIdMap: ProjectMachineState['idMap'];
@@ -205,6 +205,7 @@ export type ExtractorDigraphDef = {
   blocks: Record<string, Block>;
   nodes: Record<string, Node>;
   edges: Record<string, Edge>;
+  edgeRefs: string[];
   implementations: {
     actions: Record<string, { type: 'action'; id: string; name: string }>;
     actors: Record<string, { type: 'actor'; id: string; name: string }>;

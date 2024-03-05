@@ -77,6 +77,13 @@ interface ReplaceWithCodeChange extends BaseCodeChange {
   replacement: InsertionElement;
 }
 
+interface WrapIntoArrayWithCodeChange extends BaseCodeChange {
+  type: 'wrap_into_array_with';
+  current: Node;
+  insertionType: 'append' | 'prepend';
+  newElement: InsertionElement;
+}
+
 type CodeChange =
   | InsertAtOptionalObjectPathCodeChange
   | InsertElementIntoArrayCodeChange
@@ -85,7 +92,8 @@ type CodeChange =
   | RemovePropertyNameChange
   | ReplacePropertyNameChange
   | ReplaceRangeCodeChange
-  | ReplaceWithCodeChange;
+  | ReplaceWithCodeChange
+  | WrapIntoArrayWithCodeChange;
 
 function toZeroLengthRange(position: number) {
   return { start: position, end: position };
@@ -123,6 +131,10 @@ function getSingleLineWhitespaceBeforePosition(text: string, position: number) {
   return text.slice(0, end);
 }
 
+function getLeadingWhitespaceLength(text: string) {
+  return text.match(/^\s*/)?.[0].length || 0;
+}
+
 function getTrailingCommaPosition({ text }: SourceFile, position: number) {
   for (let i = position; i < text.length; i++) {
     const char = text[i];
@@ -136,17 +148,21 @@ function getTrailingCommaPosition({ text }: SourceFile, position: number) {
   return -1;
 }
 
-function getObjectTrailingCommaPosition(
+function getContainerTrailingCommaPosition(
   ts: typeof import('typescript'),
-  object: ObjectLiteralExpression,
+  container: ObjectLiteralExpression | ArrayLiteralExpression,
 ) {
-  if (!object.properties.hasTrailingComma) {
+  if (
+    container.kind === ts.SyntaxKind.ObjectLiteralExpression
+      ? !container.properties.hasTrailingComma
+      : !container.elements.hasTrailingComma
+  ) {
     return;
   }
 
-  // this should always be in the middle of the children: [openBrace, syntaxList, closeBrace]
+  // this should always be in the middle of the children: [openToken, syntaxList, closeToken]
   // erring on the safe side it's being searched for here
-  const syntaxList = object
+  const syntaxList = container
     .getChildren()
     .find((child) => child.kind === ts.SyntaxKind.SyntaxList)!;
 
@@ -286,21 +302,13 @@ export function createCodeChanges(ts: typeof import('typescript')) {
           if (isNextTheLastSegment) {
             if (!ts.isArrayLiteralExpression(prop.initializer)) {
               const existing = prop.initializer;
-              assert(nextSegment === 0 || nextSegment === 1);
-              const existingRaw = c.raw(existing.getFullText());
 
               if (nextSegment === 0) {
-                codeChanges.replaceWith(
-                  existing,
-                  c.array([value, existingRaw]),
-                );
+                codeChanges.wrapIntoArrayWith(existing, 'prepend', value);
                 return;
               }
               if (nextSegment === 1) {
-                codeChanges.replaceWith(
-                  existing,
-                  c.array([existingRaw, value]),
-                );
+                codeChanges.wrapIntoArrayWith(existing, 'append', value);
                 return;
               }
 
@@ -436,6 +444,23 @@ export function createCodeChanges(ts: typeof import('typescript')) {
         replacement,
       });
     },
+    wrapIntoArrayWith: (
+      current: Node,
+      insertionType: 'append' | 'prepend',
+      newElement: InsertionElement,
+    ) => {
+      changes.push({
+        type: 'wrap_into_array_with',
+        sourceFile: current.getSourceFile(),
+        range: {
+          start: current.getStart(),
+          end: current.getEnd(),
+        },
+        current,
+        insertionType,
+        newElement,
+      });
+    },
 
     getTextEdits: (): TextEdit[] => {
       const edits: TextEdit[] = [];
@@ -475,17 +500,167 @@ export function createCodeChanges(ts: typeof import('typescript')) {
           singleIndentation: getSingleIndentation(change.sourceFile),
         };
         switch (change.type) {
+          case 'insert_element_into_array': {
+            // TODO: this could be smarter about consuming multiple insertions into the same array at once
+            // Studio doesn't currently do that though
+
+            // this has very similar logic to `insert_property_before_property` and `insert_property_into_object`
+            // some deduplication could be done but it's not worth it for now
+            // it's disputable but this currently is in a single handler on purpose
+            // the reasoning is that *order* is important with arrays whereas it's not with objects (beyond the fact that the last property with the same name wins)
+            // so it's easier to have some control and validation here if it's centralized
+            // the content of the handler could still delegate to a shared function though
+            if (change.index < change.array.elements.length) {
+              const existingElement = change.array.elements[change.index];
+
+              const hasNewLineBeforeElement = change.sourceFile.text
+                .slice(
+                  existingElement.getFullStart(),
+                  existingElement.getStart(),
+                )
+                .includes('\n');
+
+              edits.push({
+                type: 'insert',
+                fileName: change.sourceFile.fileName,
+                position:
+                  (hasNewLineBeforeElement
+                    ? first(
+                        ts.getLeadingCommentRanges(
+                          change.sourceFile.text,
+                          existingElement.getFullStart(),
+                        ),
+                      )?.pos
+                    : last(
+                        ts.getTrailingCommentRanges(
+                          change.sourceFile.text,
+                          existingElement.getFullStart(),
+                        ),
+                      )?.pos) || existingElement.getStart(),
+                newText:
+                  insertionToText(
+                    ts,
+                    change.sourceFile,
+                    change.value,
+                    formattingOptions,
+                  ) +
+                  ',\n' +
+                  getIndentationBeforePosition(
+                    change.sourceFile.text,
+                    existingElement.getStart(),
+                  ),
+              });
+              break;
+            }
+
+            const lastElement = last(change.array.elements);
+
+            const insertedText = insertionToText(
+              ts,
+              change.sourceFile,
+              change.value,
+              formattingOptions,
+            );
+
+            if (lastElement) {
+              const trailingCommaPosition = getContainerTrailingCommaPosition(
+                ts,
+                change.array,
+              );
+
+              // this specifically targets only trailing comments
+              // if there are leading comments (below this node) then we don't want to move them to be before what we are about to insert
+              const lastTrailingComment = last(
+                ts.getTrailingCommentRanges(
+                  change.sourceFile.text,
+                  trailingCommaPosition
+                    ? trailingCommaPosition + 1
+                    : lastElement.getEnd(),
+                ),
+              );
+
+              if (!trailingCommaPosition && lastTrailingComment) {
+                edits.push({
+                  type: 'insert',
+                  fileName: change.sourceFile.fileName,
+                  position: lastElement.getEnd(),
+                  newText: `,`,
+                });
+              }
+
+              edits.push({
+                type: 'insert',
+                fileName: change.sourceFile.fileName,
+                position: lastTrailingComment
+                  ? lastTrailingComment.end
+                  : trailingCommaPosition
+                  ? trailingCommaPosition + 1
+                  : lastElement.getEnd(),
+                newText:
+                  (!trailingCommaPosition && !lastTrailingComment ? ',' : '') +
+                  '\n' +
+                  indentTextWith(
+                    insertedText,
+                    getIndentationBeforePosition(
+                      change.sourceFile.text,
+                      lastElement.getStart(),
+                    ),
+                  ) +
+                  (!!trailingCommaPosition ? ',' : ''),
+              });
+
+              break;
+            }
+            const currentIdentation = getIndentationBeforePosition(
+              change.sourceFile.text,
+              change.array.getStart(),
+            );
+
+            const lastComment = getLastComment(
+              ts,
+              change.sourceFile,
+              change.array.getStart() + 1,
+            );
+
+            const isArrayMultiline = change.sourceFile.text
+              .slice(change.array.getStart(), change.array.getEnd())
+              .includes('\n');
+
+            edits.push({
+              type: 'insert',
+              fileName: change.sourceFile.fileName,
+              position: lastComment?.end ?? change.array.getStart() + 1,
+              newText:
+                '\n' +
+                indentTextWith(
+                  insertedText,
+                  currentIdentation + formattingOptions.singleIndentation,
+                ) +
+                (!isArrayMultiline ? `\n${currentIdentation}` : ''),
+            });
+            break;
+          }
           case 'insert_property_before_property': {
+            const hasNewLineBeforeProperty = change.sourceFile.text
+              .slice(change.property.getFullStart(), change.property.getStart())
+              .includes('\n');
             edits.push({
               type: 'insert',
               fileName: change.sourceFile.fileName,
               position:
-                first(
-                  ts.getLeadingCommentRanges(
-                    change.sourceFile.text,
-                    change.property.getFullStart(),
-                  ),
-                )?.pos || change.property.getStart(),
+                (hasNewLineBeforeProperty
+                  ? first(
+                      ts.getLeadingCommentRanges(
+                        change.sourceFile.text,
+                        change.property.getFullStart(),
+                      ),
+                    )?.pos
+                  : last(
+                      ts.getTrailingCommentRanges(
+                        change.sourceFile.text,
+                        change.property.getFullStart(),
+                      ),
+                    )?.pos) || change.property.getStart(),
               newText:
                 insertionToText(
                   ts,
@@ -524,7 +699,7 @@ export function createCodeChanges(ts: typeof import('typescript')) {
               .join(',\n');
 
             if (lastElement) {
-              const trailingCommaPosition = getObjectTrailingCommaPosition(
+              const trailingCommaPosition = getContainerTrailingCommaPosition(
                 ts,
                 change.object,
               );
@@ -680,6 +855,104 @@ export function createCodeChanges(ts: typeof import('typescript')) {
             break;
           case 'replace_with':
             throw new Error('Not implemented');
+          case 'wrap_into_array_with': {
+            const currentIdentation = getIndentationBeforePosition(
+              change.sourceFile.text,
+              change.current.getStart(),
+            );
+            const hasNewLine = change.current.getFullText().includes('\n');
+
+            const newElementIndentation = hasNewLine
+              ? currentIdentation
+              : currentIdentation + formattingOptions.singleIndentation;
+
+            let beforePosition;
+            let beforeText = '';
+
+            if (hasNewLine) {
+              beforePosition = change.current.getFullStart();
+              beforeText += ` [`;
+              if (change.insertionType === 'prepend') {
+                beforeText += `\n` + newElementIndentation;
+              }
+            } else {
+              const leadingTrivia = change.sourceFile.text.slice(
+                change.current.getFullStart(),
+                change.current.getStart(),
+              );
+              beforePosition =
+                change.current.getFullStart() +
+                getLeadingWhitespaceLength(leadingTrivia);
+              beforeText += `[\n` + newElementIndentation;
+            }
+
+            if (change.insertionType === 'prepend') {
+              beforeText +=
+                insertionToText(
+                  ts,
+                  change.sourceFile,
+                  change.newElement,
+                  formattingOptions,
+                ) + ',';
+              if (!hasNewLine) {
+                beforeText += '\n' + newElementIndentation;
+              }
+            }
+
+            edits.push({
+              type: 'insert',
+              fileName: change.sourceFile.fileName,
+              position: beforePosition,
+              newText: beforeText,
+            });
+
+            const trailingComment = last(
+              ts.getTrailingCommentRanges(
+                change.sourceFile.text,
+                change.current.getEnd(),
+              ),
+            );
+
+            if (change.insertionType === 'append' && trailingComment) {
+              edits.push({
+                type: 'insert',
+                fileName: change.sourceFile.fileName,
+                position: change.current.getEnd(),
+                newText: ',',
+              });
+            }
+
+            let afterPosition = trailingComment?.end ?? change.current.getEnd();
+            let afterText = '';
+
+            if (change.insertionType === 'append') {
+              afterText +=
+                (trailingComment ? '' : ',') +
+                '\n' +
+                newElementIndentation +
+                insertionToText(
+                  ts,
+                  change.sourceFile,
+                  change.newElement,
+                  formattingOptions,
+                );
+            }
+
+            edits.push({
+              type: 'insert',
+              fileName: change.sourceFile.fileName,
+              position: afterPosition,
+              newText:
+                afterText +
+                '\n' +
+                getIndentationBeforePosition(
+                  change.sourceFile.text,
+                  change.current.getFullStart(),
+                ) +
+                `]`,
+            });
+            break;
+          }
         }
       }
 

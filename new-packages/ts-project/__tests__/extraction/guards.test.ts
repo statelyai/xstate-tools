@@ -45,6 +45,9 @@ test('should extract guard from transition (string)', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -182,6 +185,9 @@ test('should extract guard (inline)', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -321,6 +327,9 @@ test('should extract parameterized guards', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -458,6 +467,9 @@ test('should extract higher order guards as inline', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -630,6 +642,11 @@ test('should extract multiple guards', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+              "edge-1",
+              "edge-2",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -832,6 +849,9 @@ test('should support XState v4 guard', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -970,6 +990,9 @@ test('should raise error if both guard and cond are provided, pick guard over co
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -1112,6 +1135,9 @@ test('should raise error if both guard and cond are provided, pick guard over co
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -1242,6 +1268,9 @@ test('should raise error for parameterized guard is missing type property', asyn
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -1368,6 +1397,9 @@ test('should raise error for parameterized guard with invalid type property', as
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+            ],
             "edges": {
               "edge-0": {
                 "data": {

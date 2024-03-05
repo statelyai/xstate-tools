@@ -6,16 +6,22 @@ import path from 'path';
 import { onExit } from 'signal-exit';
 import { temporaryDirectory } from 'tempy';
 import typescript from 'typescript';
-import { TSProjectOptions, XStateProject, createProject } from '../src/index';
+import {
+  TSProjectOptions,
+  XStateProject,
+  createProject,
+  getEdgeGroup,
+} from '../src/index';
 import { createGuardBlock, registerGuardBlock } from '../src/state';
 import {
   ActorBlock,
   Edge,
+  EventTypeData,
   ExtractorDigraphDef,
   Node,
   TextEdit,
 } from '../src/types';
-import { uniqueId } from '../src/utils';
+import { last, uniqueId } from '../src/utils';
 
 // it's not part of the types but it's available at runtime
 // we enable this in this *test* file so it has global effect for our tests
@@ -295,7 +301,7 @@ function getEventTypeData(
     transitionPath: TransitionPath;
     sourcePath: string[];
   },
-): Edge['data']['eventTypeData'] {
+): EventTypeData {
   switch (transitionPath[0]) {
     case 'on':
       return {
@@ -398,6 +404,7 @@ function produceNewDigraphUsingEdit(
       const sourceNode = findNodeByStatePath(digraphDraft, edit.sourcePath);
       const targetNode =
         edit.targetPath && findNodeByStatePath(digraphDraft, edit.targetPath);
+      const eventTypeData = getEventTypeData(digraphDraft, edit);
 
       const newEdge: Edge = {
         type: 'edge',
@@ -405,7 +412,7 @@ function produceNewDigraphUsingEdit(
         source: sourceNode.uniqueId,
         targets: targetNode ? [targetNode.uniqueId] : [],
         data: {
-          eventTypeData: getEventTypeData(digraphDraft, edit),
+          eventTypeData,
           actions: [],
           guard: undefined,
           description: undefined,
@@ -423,7 +430,23 @@ function produceNewDigraphUsingEdit(
         registerGuardBlock(digraphDraft, block, newEdge);
       }
 
+      const existingGroup = getEdgeGroup(digraphDraft, eventTypeData);
+
       digraphDraft.edges[newEdge.uniqueId] = newEdge;
+
+      if (existingGroup.length) {
+        const index = last(edit.transitionPath);
+        assert(typeof index === 'number');
+        const insertionIndex =
+          index === existingGroup.length
+            ? digraphDraft.edgeRefs.indexOf(last(existingGroup)!) + 1
+            : digraphDraft.edgeRefs.indexOf(existingGroup[index]);
+        digraphDraft.edgeRefs.splice(insertionIndex, 0, newEdge.uniqueId);
+      } else {
+        assert(last(edit.transitionPath) === 0);
+        digraphDraft.edgeRefs.push(newEdge.uniqueId);
+      }
+
       break;
     case 'remove_transition':
     case 'reanchor_transition':

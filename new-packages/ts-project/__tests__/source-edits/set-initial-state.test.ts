@@ -147,7 +147,7 @@ test('should add initial state to root', async () => {
   `);
 });
 
-test("should add initial state before `states` property's comments", async () => {
+test("should add initial state before `states` property's comments on previous lines", async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
@@ -184,6 +184,90 @@ test("should add initial state before `states` property's comments", async () =>
       initial: "bar",
       // comment
       states: {
+        foo: {},
+        bar: {},
+      },
+    });",
+    }
+  `);
+});
+
+test("should add initial state before `states` property's comments on the same line (no newline between it and the previous token)", async () => {
+  const tmpPath = await testdir({
+    'tsconfig.json': JSON.stringify({}),
+    'index.ts': outdent`
+      import { createMachine } from "xstate";
+
+      createMachine({ /* comment */ states: {
+          foo: {},
+          bar: {},
+        },
+      });
+    `,
+  });
+
+  const project = await createTestProject(tmpPath);
+
+  const textEdits = project.editDigraph(
+    {
+      fileName: 'index.ts',
+      machineIndex: 0,
+    },
+    {
+      type: 'set_initial_state',
+      path: [],
+      initialState: 'bar',
+    },
+  );
+  expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
+    {
+      "index.ts": "import { createMachine } from "xstate";
+
+    createMachine({ initial: "bar",
+    /* comment */ states: {
+        foo: {},
+        bar: {},
+      },
+    });",
+    }
+  `);
+});
+
+test("should add initial state before `states` property's comments on the same line (newline between it and the previous token)", async () => {
+  const tmpPath = await testdir({
+    'tsconfig.json': JSON.stringify({}),
+    'index.ts': outdent`
+      import { createMachine } from "xstate";
+
+      createMachine({
+        /* comment */ states: {
+          foo: {},
+          bar: {},
+        },
+      });
+    `,
+  });
+
+  const project = await createTestProject(tmpPath);
+
+  const textEdits = project.editDigraph(
+    {
+      fileName: 'index.ts',
+      machineIndex: 0,
+    },
+    {
+      type: 'set_initial_state',
+      path: [],
+      initialState: 'bar',
+    },
+  );
+  expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
+    {
+      "index.ts": "import { createMachine } from "xstate";
+
+    createMachine({
+      initial: "bar",
+      /* comment */ states: {
         foo: {},
         bar: {},
       },

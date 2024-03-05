@@ -25,6 +25,7 @@ test('should extract a simple state', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [],
             "edges": {},
             "implementations": {
               "actions": {},
@@ -108,6 +109,7 @@ test('should extract states recursively', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [],
             "edges": {},
             "implementations": {
               "actions": {},
@@ -231,6 +233,7 @@ test("should use the root's id as its key", async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [],
             "edges": {},
             "implementations": {
               "actions": {},
@@ -290,6 +293,7 @@ test("should not use the non-root's id as its key", async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [],
             "edges": {},
             "implementations": {
               "actions": {},
@@ -366,6 +370,7 @@ test('should extract state.initial with string value', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [],
             "edges": {},
             "implementations": {
               "actions": {},
@@ -442,6 +447,7 @@ test('should extract state.initial with template literal value', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [],
             "edges": {},
             "implementations": {
               "actions": {},
@@ -516,6 +522,7 @@ test('should extract state.initial with undefined value', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [],
             "edges": {},
             "implementations": {
               "actions": {},
@@ -573,6 +580,7 @@ test('should raise error when state.initial property has invalid value', async (
             "data": {
               "context": {},
             },
+            "edgeRefs": [],
             "edges": {},
             "implementations": {
               "actions": {},
@@ -634,6 +642,7 @@ test('should extract state.type with value "parallel"', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [],
             "edges": {},
             "implementations": {
               "actions": {},
@@ -691,6 +700,7 @@ test('should extract state.type with value "final"', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [],
             "edges": {},
             "implementations": {
               "actions": {},
@@ -748,6 +758,7 @@ test('should extract state.type with value "history"', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [],
             "edges": {},
             "implementations": {
               "actions": {},
@@ -805,6 +816,7 @@ test('should extract state.type with value undefined', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [],
             "edges": {},
             "implementations": {
               "actions": {},
@@ -862,6 +874,7 @@ test('should raise error when state.type has invalid value', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [],
             "edges": {},
             "implementations": {
               "actions": {},
@@ -923,6 +936,7 @@ test('should extract state.history with value "shallow"', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [],
             "edges": {},
             "implementations": {
               "actions": {},
@@ -980,6 +994,7 @@ test('should extract state.history with value "deep"', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [],
             "edges": {},
             "implementations": {
               "actions": {},
@@ -1037,6 +1052,7 @@ test('should extract state.history with value true as deep', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [],
             "edges": {},
             "implementations": {
               "actions": {},
@@ -1094,6 +1110,7 @@ test('should extract state.history with value false as shallow', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [],
             "edges": {},
             "implementations": {
               "actions": {},
@@ -1151,6 +1168,7 @@ test('should extract state.history with value undefined', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [],
             "edges": {},
             "implementations": {
               "actions": {},
@@ -1212,6 +1230,7 @@ test('should extract state.description with string value', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [],
             "edges": {},
             "implementations": {
               "actions": {},
@@ -1292,6 +1311,7 @@ test('should extract state.description with template literal value', async () =>
             "data": {
               "context": {},
             },
+            "edgeRefs": [],
             "edges": {},
             "implementations": {
               "actions": {},
@@ -1372,6 +1392,7 @@ test('should extract state.description with undefined value with no errors', asy
             "data": {
               "context": {},
             },
+            "edgeRefs": [],
             "edges": {},
             "implementations": {
               "actions": {},
@@ -1450,6 +1471,7 @@ test('should raise error when state.description has invalid value', async () => 
             "data": {
               "context": {},
             },
+            "edgeRefs": [],
             "edges": {},
             "implementations": {
               "actions": {},
@@ -1541,6 +1563,7 @@ test("should extract state.meta when it's a javascript object", async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [],
             "edges": {},
             "implementations": {
               "actions": {},
@@ -1652,6 +1675,7 @@ test("should extract state.meta when it's a javascript object containing nested 
             "data": {
               "context": {},
             },
+            "edgeRefs": [],
             "edges": {},
             "implementations": {
               "actions": {},
@@ -1756,6 +1780,7 @@ test("should extract state.meta when it's a javascript object and contains multi
             "data": {
               "context": {},
             },
+            "edgeRefs": [],
             "edges": {},
             "implementations": {
               "actions": {},
@@ -1845,6 +1870,7 @@ test('should not raise error for state.meta with undefined value', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [],
             "edges": {},
             "implementations": {
               "actions": {},
@@ -1924,6 +1950,7 @@ test('should raise error when state.meta contains any value other than a plain j
             "data": {
               "context": {},
             },
+            "edgeRefs": [],
             "edges": {},
             "implementations": {
               "actions": {},
@@ -2005,6 +2032,7 @@ test('should extract state.context on the root state', async () => {
                 "foo": "bar",
               },
             },
+            "edgeRefs": [],
             "edges": {},
             "implementations": {
               "actions": {},
@@ -2067,6 +2095,7 @@ test('should raise error when state.context is provided on any state other than 
             "data": {
               "context": {},
             },
+            "edgeRefs": [],
             "edges": {},
             "implementations": {
               "actions": {},
@@ -2150,6 +2179,7 @@ test('should raise error when state.context has any value other than plain JS ob
             "data": {
               "context": {},
             },
+            "edgeRefs": [],
             "edges": {},
             "implementations": {
               "actions": {},
@@ -2235,6 +2265,7 @@ test('should extract state.context with function value (lazy context)', async ()
           }
         }}}",
             },
+            "edgeRefs": [],
             "edges": {},
             "implementations": {
               "actions": {},

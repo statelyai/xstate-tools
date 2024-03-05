@@ -30,6 +30,9 @@ test('should extract transition to a sibling (direct string)', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -146,6 +149,9 @@ test('should extract transition to a sibling (string in array)', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -262,6 +268,9 @@ test('should extract transition to a sibling (direct object with target)', async
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -378,6 +387,9 @@ test('should extract transition to a sibling (object with target in array)', asy
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -496,6 +508,9 @@ test('should extract transition to a child', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -614,6 +629,9 @@ test('should extract transition to an ID', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -731,6 +749,10 @@ test('should extract multiple transitions (array of strings)', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+              "edge-1",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -884,6 +906,10 @@ test('should extract multiple transitions (array of objects)', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+              "edge-1",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -1037,6 +1063,10 @@ test('should extract multiple transitions (mixed array)', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+              "edge-1",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -1203,6 +1233,9 @@ test('should extract transition with multiple targets (array of strings)', async
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -1387,6 +1420,9 @@ test('should extract forbidden transition (undefined)', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -1483,6 +1519,9 @@ test('should extract forbidden transition (null)', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -1588,6 +1627,9 @@ test('should extract deep sibling transition', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -1744,6 +1786,9 @@ test('should extract deep descendant transition', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -1886,6 +1931,9 @@ test('should extract transition to a deep child of an ID target', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -2036,6 +2084,9 @@ test('should extract a wildcard transition', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -2153,6 +2204,9 @@ test('should extract transition description (single-line)', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -2248,6 +2302,9 @@ test('should extract an always transition (direct string)', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -2376,6 +2433,9 @@ test('should extract invoke.onDone transition (with invoke.id)', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -2512,6 +2572,9 @@ test('should extract invoke.onDone transition (without invoke.id)', async () => 
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -2661,6 +2724,9 @@ test('should extract invoke.onDone action', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -2806,6 +2872,9 @@ test('should extract invoke.onError transition (with invoke.id)', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -2942,6 +3011,9 @@ test('should extract invoke.onError transition (without invoke.id)', async () =>
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -3072,6 +3144,9 @@ test('should extract transition description (multi-line)', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -3170,6 +3245,9 @@ test('should extract state.onDone transition (direct string)', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -3298,6 +3376,9 @@ test("should extract transition.meta when it's a javascript object", async () =>
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -3451,6 +3532,9 @@ test("should extract transition.meta when it's a javascript object containing ne
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -3597,6 +3681,9 @@ test("should extract transition.meta when it's a javascript object and contains 
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -3728,6 +3815,9 @@ test('should not raise error for transition.meta with undefined value', async ()
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -3849,6 +3939,9 @@ test('should raise error when transition.meta contains any value other than a pl
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -3970,6 +4063,9 @@ test('should extract after transition (number delay)', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -4087,6 +4183,9 @@ test('should extract delayed transition (identifier delay)', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -4204,6 +4303,9 @@ test('should extract after transition (string with whitespace delay)', async () 
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -4334,6 +4436,10 @@ test('should extract multiple delayed transitions', async () => {
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+              "edge-1",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -4493,6 +4599,9 @@ test('should extract a sibling transition as auto-internal by default (direct st
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -4612,6 +4721,9 @@ test('should extract a descendant transition as auto-internal by default (direct
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -4729,6 +4841,9 @@ test('should extract a sibling transition as auto-internal by default (direct ob
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -4850,6 +4965,9 @@ test('should extract a descendant transition as auto-internal by default (direct
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -4967,6 +5085,9 @@ test('should extract an explicit reentering transition as not internal', async (
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -5084,6 +5205,9 @@ test('should extract an explicit non-reentering transition as internal', async (
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -5201,6 +5325,9 @@ test('should extract a sibling transition as auto-internal by default (direct st
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -5320,6 +5447,9 @@ test('should extract a descendant transition as auto-internal by default (direct
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -5437,6 +5567,9 @@ test('should extract a sibling transition as auto-internal by default (direct ob
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -5558,6 +5691,9 @@ test('should extract a descendant transition as auto-internal by default (direct
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -5675,6 +5811,9 @@ test('should extract an explicit internal transition as internal (v4)', async ()
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -5792,6 +5931,9 @@ test('should extract an explicit non-internal transition as not internal (v4)', 
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -5924,6 +6066,9 @@ test('should extract transition with multiple targets as auto-internal when any 
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
@@ -6127,6 +6272,9 @@ test('should extract transition with multiple targets as auto-internal when none
             "data": {
               "context": {},
             },
+            "edgeRefs": [
+              "edge-0",
+            ],
             "edges": {
               "edge-0": {
                 "data": {
