@@ -377,7 +377,7 @@ export function createCodeChanges(ts: typeof import('typescript')) {
       changes.push({
         type: 'insert_property_before_property',
         sourceFile: property.getSourceFile(),
-        range: toZeroLengthRange(property.getFullStart()),
+        range: toZeroLengthRange(property.pos),
         property,
         name,
         value,
@@ -514,10 +514,7 @@ export function createCodeChanges(ts: typeof import('typescript')) {
               const existingElement = change.array.elements[change.index];
 
               const hasNewLineBeforeElement = change.sourceFile.text
-                .slice(
-                  existingElement.getFullStart(),
-                  existingElement.getStart(),
-                )
+                .slice(existingElement.pos, existingElement.getStart())
                 .includes('\n');
 
               edits.push({
@@ -528,13 +525,13 @@ export function createCodeChanges(ts: typeof import('typescript')) {
                     ? first(
                         ts.getLeadingCommentRanges(
                           change.sourceFile.text,
-                          existingElement.getFullStart(),
+                          existingElement.pos,
                         ),
                       )?.pos
                     : last(
                         ts.getTrailingCommentRanges(
                           change.sourceFile.text,
-                          existingElement.getFullStart(),
+                          existingElement.pos,
                         ),
                       )?.pos) || existingElement.getStart(),
                 newText:
@@ -642,7 +639,7 @@ export function createCodeChanges(ts: typeof import('typescript')) {
           }
           case 'insert_property_before_property': {
             const hasNewLineBeforeProperty = change.sourceFile.text
-              .slice(change.property.getFullStart(), change.property.getStart())
+              .slice(change.property.pos, change.property.getStart())
               .includes('\n');
             edits.push({
               type: 'insert',
@@ -652,13 +649,13 @@ export function createCodeChanges(ts: typeof import('typescript')) {
                   ? first(
                       ts.getLeadingCommentRanges(
                         change.sourceFile.text,
-                        change.property.getFullStart(),
+                        change.property.pos,
                       ),
                     )?.pos
                   : last(
                       ts.getTrailingCommentRanges(
                         change.sourceFile.text,
-                        change.property.getFullStart(),
+                        change.property.pos,
                       ),
                     )?.pos) || change.property.getStart(),
               newText:
@@ -782,7 +779,7 @@ export function createCodeChanges(ts: typeof import('typescript')) {
             const leadingComment = first(
               ts.getLeadingCommentRanges(
                 change.sourceFile.text,
-                change.property.getFullStart(),
+                change.property.pos,
               ),
             );
             let start = leadingComment?.pos ?? change.property.getStart();
@@ -870,19 +867,18 @@ export function createCodeChanges(ts: typeof import('typescript')) {
             let beforeText = '';
 
             if (hasNewLine) {
-              beforePosition = change.current.getFullStart();
+              beforePosition = change.current.pos;
               beforeText += ` [`;
               if (change.insertionType === 'prepend') {
                 beforeText += `\n` + newElementIndentation;
               }
             } else {
               const leadingTrivia = change.sourceFile.text.slice(
-                change.current.getFullStart(),
+                change.current.pos,
                 change.current.getStart(),
               );
               beforePosition =
-                change.current.getFullStart() +
-                getLeadingWhitespaceLength(leadingTrivia);
+                change.current.pos + getLeadingWhitespaceLength(leadingTrivia);
               beforeText += `[\n` + newElementIndentation;
             }
 
@@ -947,7 +943,7 @@ export function createCodeChanges(ts: typeof import('typescript')) {
                 '\n' +
                 getIndentationBeforePosition(
                   change.sourceFile.text,
-                  change.current.getFullStart(),
+                  change.current.pos,
                 ) +
                 `]`,
             });
