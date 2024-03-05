@@ -37,6 +37,7 @@ import {
   findNodeByAstPath,
   findProperty,
   invert,
+  last,
 } from './utils';
 
 enablePatches();
@@ -395,6 +396,66 @@ function getTransitionInsertionPath(
   }
 }
 
+function areAboutSameArray(a: unknown[], b: unknown[]) {
+  if (a.length !== b.length) {
+    return false;
+  }
+  // we ignore the last element since it's the affected index
+  // it's a variable information in each patch
+  for (let i = 0; i < a.length - 1; i++) {
+    if (a[i] !== b[i]) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function consumeArrayInsertionAtIndex(
+  patches: Patch[],
+  start: number,
+  data: unknown[],
+) {
+  const first = patches[start];
+  // currently this function is only meant to be used from within replace handlers
+  // insertions at the last index are handled by the add handler and they don't require any special handling
+  assert(first.op === 'replace');
+  const firstIndex = last(first.path)!;
+  assert(typeof firstIndex === 'number');
+
+  for (let i = start + 1; i < patches.length; i++) {
+    const patch = patches[i];
+    if (!areAboutSameArray(first.path, patch.path)) {
+      if (i === 0) {
+        // if the very next patch after the first one doesn't have the same path
+        // it means that it's a simple change and we return from here immediately
+        // letting the caller to handle the replacing logic
+        return;
+      }
+      // the logic here is not prepared for any other situations
+      // e.g. it wouldn't handle well a shuffled array or some multi-item insertions
+      assertUnreachable();
+    }
+
+    if (patch.op !== 'replace' && patch.op !== 'add') {
+      assertUnreachable();
+    }
+    // to be extra sure that we are consuming the correct type of change
+    // we could also take the previous state of the array into consideration
+    // currently we just check if all of the latter items are at increasing indices
+    const currentIndex = last(patch.path);
+    const distance = i - start;
+    assert(currentIndex === firstIndex + distance);
+
+    if (patch.op === 'add') {
+      // this should be the very last item in the array
+      assert(currentIndex === data.length - 1);
+      return { index: firstIndex, value: first.value, skipped: distance };
+    }
+  }
+
+  assertUnreachable();
+}
+
 function createProjectMachine({
   host,
   fileName,
@@ -442,11 +503,27 @@ function createProjectMachine({
         patches,
       ) as any;
 
-      for (const patch of patches) {
+      const deferredArrayPatches: Patch[] = [];
+
+      for (let i = 0; i < patches.length; i++) {
+        const patch = patches[i];
+
         switch (patch.op) {
           case 'add':
             switch (patch.path[0]) {
               case 'nodes': {
+                // if the path is longer than 2 then we are adding something within an existing state
+                // if it's 2 then we are adding a new state itself
+                if (patch.path.length > 2) {
+                  if (
+                    patch.path[2] === 'data' &&
+                    (patch.path[3] === 'entry' || patch.path[3] === 'exit')
+                  ) {
+                    deferredArrayPatches.push(patch);
+                  }
+                  break;
+                }
+                assert(patch.path.length === 2);
                 // we only support adding empty states here right now
                 // this might become a problem, especially when dealing with copy-pasting
                 // the implementation will have to account for that in the future
@@ -467,6 +544,15 @@ function createProjectMachine({
                 break;
               }
               case 'edges': {
+                // if the path is longer than 2 then we are adding something within an existing edge
+                // if it's 2 then we are adding a new edge itself
+                if (patch.path.length > 2) {
+                  if (patch.path[2] === 'data' && patch.path[3] === 'actions') {
+                    deferredArrayPatches.push(patch);
+                  }
+                  break;
+                }
+                assert(patch.path.length === 2);
                 const sourceNode = findNodeByAstPath(
                   host.ts,
                   createMachineCall,
@@ -489,13 +575,22 @@ function createProjectMachine({
           case 'replace':
             switch (patch.path[0]) {
               case 'nodes':
+                if (
+                  patch.path[2] === 'data' &&
+                  (patch.path[3] === 'entry' || patch.path[3] === 'exit')
+                ) {
+                  deferredArrayPatches.push(patch);
+                  break;
+                }
                 const nodeId = patch.path[1];
+                const node = findNodeByAstPath(
+                  host.ts,
+                  createMachineCall,
+                  currentState.astPaths.nodes[nodeId],
+                );
+                assert(host.ts.isObjectLiteralExpression(node));
+
                 if (patch.path[2] === 'data' && patch.path[3] === 'key') {
-                  const node = findNodeByAstPath(
-                    host.ts,
-                    createMachineCall,
-                    currentState.astPaths.nodes[nodeId],
-                  );
                   const parentNode = findNodeByAstPath(
                     host.ts,
                     createMachineCall,
@@ -510,12 +605,6 @@ function createProjectMachine({
                   break;
                 }
                 if (patch.path[2] === 'data' && patch.path[3] === 'initial') {
-                  const node = findNodeByAstPath(
-                    host.ts,
-                    createMachineCall,
-                    currentState.astPaths.nodes[nodeId],
-                  );
-                  assert(host.ts.isObjectLiteralExpression(node));
                   const initialProp = findProperty(
                     undefined,
                     host.ts,
@@ -565,12 +654,6 @@ function createProjectMachine({
                   );
                 }
                 if (patch.path[2] === 'data' && patch.path[3] === 'type') {
-                  const node = findNodeByAstPath(
-                    host.ts,
-                    createMachineCall,
-                    currentState.astPaths.nodes[nodeId],
-                  );
-                  assert(host.ts.isObjectLiteralExpression(node));
                   const typeProp = findProperty(
                     undefined,
                     host.ts,
@@ -603,12 +686,6 @@ function createProjectMachine({
                   );
                 }
                 if (patch.path[2] === 'data' && patch.path[3] === 'history') {
-                  const node = findNodeByAstPath(
-                    host.ts,
-                    createMachineCall,
-                    currentState.astPaths.nodes[nodeId],
-                  );
-                  assert(host.ts.isObjectLiteralExpression(node));
                   const historyProp = findProperty(
                     undefined,
                     host.ts,
@@ -645,12 +722,6 @@ function createProjectMachine({
                   patch.path[2] === 'data' &&
                   patch.path[3] === 'description'
                 ) {
-                  const node = findNodeByAstPath(
-                    host.ts,
-                    createMachineCall,
-                    currentState.astPaths.nodes[nodeId],
-                  );
-                  assert(host.ts.isObjectLiteralExpression(node));
                   const descriptionProp = findProperty(
                     undefined,
                     host.ts,
@@ -685,6 +756,168 @@ function createProjectMachine({
                     element,
                   );
                 }
+              case 'edges': {
+                if (patch.path[2] === 'data' && patch.path[3] === 'actions') {
+                  deferredArrayPatches.push(patch);
+                  break;
+                }
+              }
+            }
+            break;
+        }
+      }
+
+      const sortedArrayPatches = [...deferredArrayPatches].sort((a, b) => {
+        if (areAboutSameArray(a.path, b.path)) {
+          return (last(a.path) as number) - (last(b.path) as number);
+        }
+        return 0;
+      });
+
+      for (let i = 0; i < sortedArrayPatches.length; i++) {
+        const patch = sortedArrayPatches[i];
+
+        switch (patch.op) {
+          case 'add':
+            switch (patch.path[0]) {
+              case 'nodes': {
+                const nodeId = patch.path[1];
+                const node = findNodeByAstPath(
+                  host.ts,
+                  createMachineCall,
+                  currentState.astPaths.nodes[nodeId],
+                );
+                assert(host.ts.isObjectLiteralExpression(node));
+
+                if (
+                  patch.path[2] === 'data' &&
+                  (patch.path[3] === 'entry' || patch.path[3] === 'exit')
+                ) {
+                  const index = patch.path[4];
+                  assert(typeof index === 'number');
+                  // effectively the current implementation can only receive an `add` patch about this when it corresponds to a simple push
+                  // insertions at index are handled by the replace handler and multi-item insertions are not handled at all
+                  assert(
+                    index ===
+                      currentState.digraph!.nodes[nodeId].data[patch.path[3]]
+                        .length -
+                        1,
+                  );
+                  assert(typeof index === 'number');
+                  const actionId = patch.value;
+                  assert(typeof actionId === 'string');
+
+                  codeChanges.insertAtOptionalObjectPath(
+                    node,
+                    [patch.path[3], index],
+                    c.string(currentState.digraph!.blocks[actionId].sourceId),
+                  );
+                }
+                break;
+              }
+              case 'edges': {
+                const edgeId = patch.path[1];
+                const edge = findNodeByAstPath(
+                  host.ts,
+                  createMachineCall,
+                  currentState.astPaths.edges[edgeId],
+                );
+                // TODO: this isn't always true, it's a temporary assertion
+                assert(host.ts.isObjectLiteralExpression(edge));
+                if (patch.path[2] === 'data' && patch.path[3] === 'actions') {
+                  const index = patch.path[4];
+                  assert(typeof index === 'number');
+                  // effectively the current implementation can only receive an `add` patch about this when it corresponds to a simple push
+                  // insertions at index are handled by the replace handler and multi-item insertions are not handled at all
+                  assert(
+                    index ===
+                      currentState.digraph!.edges[edgeId].data.actions.length -
+                        1,
+                  );
+                  assert(typeof index === 'number');
+                  const actionId = patch.value;
+                  assert(typeof actionId === 'string');
+
+                  codeChanges.insertAtOptionalObjectPath(
+                    edge,
+                    [patch.path[3], index],
+                    c.string(currentState.digraph!.blocks[actionId].sourceId),
+                  );
+                }
+                break;
+              }
+            }
+            break;
+          case 'remove':
+            break;
+          case 'replace':
+            switch (patch.path[0]) {
+              case 'nodes': {
+                const nodeId = patch.path[1];
+                const node = findNodeByAstPath(
+                  host.ts,
+                  createMachineCall,
+                  currentState.astPaths.nodes[nodeId],
+                );
+                assert(host.ts.isObjectLiteralExpression(node));
+                if (
+                  patch.path[2] === 'data' &&
+                  (patch.path[3] === 'entry' || patch.path[3] === 'exit')
+                ) {
+                  const insertion = consumeArrayInsertionAtIndex(
+                    sortedArrayPatches,
+                    i,
+                    currentState.digraph!.nodes[nodeId].data[patch.path[3]],
+                  );
+
+                  if (insertion) {
+                    i += insertion.skipped;
+
+                    codeChanges.insertAtOptionalObjectPath(
+                      node,
+                      [patch.path[3], insertion.index],
+                      c.string(
+                        currentState.digraph!.blocks[insertion.value].sourceId,
+                      ),
+                    );
+                    break;
+                  }
+                  break;
+                }
+                break;
+              }
+              case 'edges': {
+                const edgeId = patch.path[1];
+                const edge = findNodeByAstPath(
+                  host.ts,
+                  createMachineCall,
+                  currentState.astPaths.edges[edgeId],
+                );
+                // TODO: this isn't always true, it's a temporary assertion
+                assert(host.ts.isObjectLiteralExpression(edge));
+                if (patch.path[2] === 'data' && patch.path[3] === 'actions') {
+                  const insertion = consumeArrayInsertionAtIndex(
+                    sortedArrayPatches,
+                    i,
+                    currentState.digraph!.edges[edgeId].data[patch.path[3]],
+                  );
+
+                  if (insertion) {
+                    i += insertion.skipped;
+
+                    codeChanges.insertAtOptionalObjectPath(
+                      edge,
+                      [patch.path[3], insertion.index],
+                      c.string(
+                        currentState.digraph!.blocks[insertion.value].sourceId,
+                      ),
+                    );
+                    break;
+                  }
+                  break;
+                }
+                break;
+              }
             }
             break;
         }
