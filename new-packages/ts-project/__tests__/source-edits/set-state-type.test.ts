@@ -5,7 +5,7 @@ test("should be possible to set state's type to final", async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
-      import { creteMachine } from "xstate";
+      import { createMachine } from "xstate";
 
       createMachine({
         initial: "a",
@@ -36,7 +36,7 @@ test("should be possible to set state's type to final", async () => {
   );
   expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
     {
-      "index.ts": "import { creteMachine } from "xstate";
+      "index.ts": "import { createMachine } from "xstate";
 
     createMachine({
       initial: "a",
@@ -59,7 +59,7 @@ test("should be possible to set state's type to parallel", async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
-      import { creteMachine } from "xstate";
+      import { createMachine } from "xstate";
 
       createMachine({
         initial: "a",
@@ -90,7 +90,7 @@ test("should be possible to set state's type to parallel", async () => {
   );
   expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
     {
-      "index.ts": "import { creteMachine } from "xstate";
+      "index.ts": "import { createMachine } from "xstate";
 
     createMachine({
       initial: "a",
@@ -113,7 +113,7 @@ test("should be possible to set state's type to shallow history (default)", asyn
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
-      import { creteMachine } from "xstate";
+      import { createMachine } from "xstate";
 
       createMachine({
         initial: "a",
@@ -144,7 +144,7 @@ test("should be possible to set state's type to shallow history (default)", asyn
   );
   expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
     {
-      "index.ts": "import { creteMachine } from "xstate";
+      "index.ts": "import { createMachine } from "xstate";
 
     createMachine({
       initial: "a",
@@ -167,7 +167,7 @@ test("should be possible to set state's type to deep history", async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
-      import { creteMachine } from "xstate";
+      import { createMachine } from "xstate";
 
       createMachine({
         initial: "a",
@@ -199,7 +199,7 @@ test("should be possible to set state's type to deep history", async () => {
   );
   expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
     {
-      "index.ts": "import { creteMachine } from "xstate";
+      "index.ts": "import { createMachine } from "xstate";
 
     createMachine({
       initial: "a",
@@ -223,7 +223,7 @@ test('should be possible to change history type from implicit shallow to deep', 
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
-      import { creteMachine } from "xstate";
+      import { createMachine } from "xstate";
 
       createMachine({
         initial: "a",
@@ -257,7 +257,7 @@ test('should be possible to change history type from implicit shallow to deep', 
   );
   expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
     {
-      "index.ts": "import { creteMachine } from "xstate";
+      "index.ts": "import { createMachine } from "xstate";
 
     createMachine({
       initial: "a",
@@ -281,7 +281,7 @@ test('should be possible to change history type from explicit shallow to deep', 
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
-      import { creteMachine } from "xstate";
+      import { createMachine } from "xstate";
 
       createMachine({
         initial: "a",
@@ -316,7 +316,7 @@ test('should be possible to change history type from explicit shallow to deep', 
   );
   expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
     {
-      "index.ts": "import { creteMachine } from "xstate";
+      "index.ts": "import { createMachine } from "xstate";
 
     createMachine({
       initial: "a",
@@ -340,7 +340,7 @@ test('should be possible to change history type from deep to shallow', async () 
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
-      import { creteMachine } from "xstate";
+      import { createMachine } from "xstate";
 
       createMachine({
         initial: "a",
@@ -375,7 +375,7 @@ test('should be possible to change history type from deep to shallow', async () 
   );
   expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
     {
-      "index.ts": "import { creteMachine } from "xstate";
+      "index.ts": "import { createMachine } from "xstate";
 
     createMachine({
       initial: "a",
@@ -398,7 +398,7 @@ test("should be possible to set state's type to normal when it's already implici
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
-      import { creteMachine } from "xstate";
+      import { createMachine } from "xstate";
 
       createMachine({
         initial: "a",
@@ -430,7 +430,7 @@ test(`should be possible to set state's type to normal when it is of a different
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
-      import { creteMachine } from "xstate";
+      import { createMachine } from "xstate";
 
       createMachine({
         initial: "a",
@@ -463,7 +463,7 @@ test(`should be possible to set state's type to normal when it is of a different
   );
   expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
     {
-      "index.ts": "import { creteMachine } from "xstate";
+      "index.ts": "import { createMachine } from "xstate";
 
     createMachine({
       initial: "a",
@@ -485,7 +485,7 @@ test(`should be possible to set state's type to normal when it is a deep history
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
-      import { creteMachine } from "xstate";
+      import { createMachine } from "xstate";
 
       createMachine({
         initial: "a",
@@ -519,7 +519,7 @@ test(`should be possible to set state's type to normal when it is a deep history
   );
   expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
     {
-      "index.ts": "import { creteMachine } from "xstate";
+      "index.ts": "import { createMachine } from "xstate";
 
     createMachine({
       initial: "a",
@@ -541,7 +541,7 @@ test(`should be possible to set state's type to parallel when it is a deep histo
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
-      import { creteMachine } from "xstate";
+      import { createMachine } from "xstate";
 
       createMachine({
         initial: "a",
@@ -575,7 +575,7 @@ test(`should be possible to set state's type to parallel when it is a deep histo
   );
   expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
     {
-      "index.ts": "import { creteMachine } from "xstate";
+      "index.ts": "import { createMachine } from "xstate";
 
     createMachine({
       initial: "a",
@@ -598,7 +598,7 @@ test(`should be possible to set state's type to final when it is a deep history 
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
     'index.ts': ts`
-      import { creteMachine } from "xstate";
+      import { createMachine } from "xstate";
 
       createMachine({
         initial: "a",
@@ -632,7 +632,7 @@ test(`should be possible to set state's type to final when it is a deep history 
   );
   expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
     {
-      "index.ts": "import { creteMachine } from "xstate";
+      "index.ts": "import { createMachine } from "xstate";
 
     createMachine({
       initial: "a",
