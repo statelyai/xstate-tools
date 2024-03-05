@@ -1,4 +1,4 @@
-import { enablePatches, type Patch } from 'immer';
+import { applyPatches, enablePatches, type Patch } from 'immer';
 import type {
   CallExpression,
   Program,
@@ -318,6 +318,12 @@ const toTransitionElement = (
         ),
   };
 
+  if (edge.data.guard) {
+    transition.guard = c.string(
+      projectMachineState.digraph!.blocks[edge.data.guard].sourceId,
+    );
+  }
+
   if (edge.data.internal === false) {
     transition.reenter = c.boolean(true);
   }
@@ -405,16 +411,16 @@ function createProjectMachine({
       state = extractProjectMachine(host, sourceFile, createMachineCall, state);
       return [state.digraph, state.errors] as const;
     },
-    applyPatches(patches: readonly Patch[]): TextEdit[] {
+    applyPatches(patches: Patch[]): TextEdit[] {
       const codeChanges = createCodeChanges(host.ts);
       const { sourceFile, createMachineCall } = findOwnCreateMachineCall();
       const currentState = state!;
 
-      // TODO: enable this, currently it throws - presumably because the patch might contain data that are not part of this local `digraph`
-      // currentState.digraph = applyPatches(
-      //   currentState.digraph!,
-      //   patches,
-      // ) as any;
+      // TODO: currently it throws when running with the Studio open - presumably because the patch might contain data that are not part of this local `digraph`
+      currentState.digraph = applyPatches(
+        currentState.digraph!,
+        patches,
+      ) as any;
 
       for (const patch of patches) {
         switch (patch.op) {
@@ -731,7 +737,7 @@ export function createProject(
     }: {
       fileName: string;
       machineIndex: number;
-      patches: readonly Patch[];
+      patches: Patch[];
     }): TextEdit[] {
       const machine = projectMachines[fileName]?.[machineIndex];
       if (!machine) {

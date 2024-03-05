@@ -67,7 +67,8 @@ export function createActorBlock({
     },
   };
 }
-const createGuardBlock = ({
+/** @internal */
+export const createGuardBlock = ({
   sourceId,
   parentId,
 }: {
@@ -202,14 +203,15 @@ function extractActionBlocks(
   );
 }
 
-function registerGuardBlock(
-  ctx: ExtractionContext,
+/** @internal */
+export function registerGuardBlock(
+  digraph: Pick<ExtractionContext['digraph'], 'blocks' | 'implementations'>, // `Pick` avoids the "Excessive stack depth comparing types" when passing immerified draft as argument in tests
   block: GuardBlock,
   edge: Edge,
 ) {
   edge.data.guard = block.uniqueId;
-  ctx.digraph.blocks[block.uniqueId] = block;
-  ctx.digraph.implementations.guards[block.sourceId] ??= {
+  digraph.blocks[block.uniqueId] = block;
+  digraph.implementations.guards[block.sourceId] ??= {
     type: 'guard',
     id: block.sourceId,
     name: block.sourceId,
@@ -311,7 +313,7 @@ function extractEdgeGroup(
                   sourceId: prop.initializer.text,
                   parentId: edge.uniqueId,
                 });
-                registerGuardBlock(ctx, block, edge);
+                registerGuardBlock(ctx.digraph, block, edge);
                 return;
               }
               if (ts.isObjectLiteralExpression(prop.initializer)) {
@@ -330,7 +332,7 @@ function extractEdgeGroup(
                     sourceId: typeProperty.initializer.text,
                     parentId: edge.uniqueId,
                   });
-                  registerGuardBlock(ctx, block, edge);
+                  registerGuardBlock(ctx.digraph, block, edge);
                   return;
                 }
 
@@ -343,7 +345,7 @@ function extractEdgeGroup(
                 sourceId: `inline:${uniqueId()}`,
                 parentId: edge.uniqueId,
               });
-              registerGuardBlock(ctx, block, edge);
+              registerGuardBlock(ctx.digraph, block, edge);
               return;
             }
             case 'actions': {

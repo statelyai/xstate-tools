@@ -7,6 +7,7 @@ import { onExit } from 'signal-exit';
 import { temporaryDirectory } from 'tempy';
 import typescript from 'typescript';
 import { TSProjectOptions, XStateProject, createProject } from '../src/index';
+import { createGuardBlock, registerGuardBlock } from '../src/state';
 import {
   ActorBlock,
   Edge,
@@ -413,6 +414,15 @@ function produceNewDigraphUsingEdit(
             typeof edit.reenter === 'boolean' ? !edit.reenter : undefined,
         },
       };
+
+      if (edit.guard) {
+        const block = createGuardBlock({
+          sourceId: edit.guard,
+          parentId: newEdge.uniqueId,
+        });
+        registerGuardBlock(digraphDraft, block, newEdge);
+      }
+
       digraphDraft.edges[newEdge.uniqueId] = newEdge;
       break;
     case 'remove_transition':
