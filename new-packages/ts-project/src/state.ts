@@ -92,11 +92,9 @@ function createEdge(
   {
     sourceId,
     eventTypeData,
-    internal = true,
   }: {
     sourceId: string;
     eventTypeData: Edge['data']['eventTypeData'];
-    internal?: boolean;
   },
 ): Edge {
   const edge: Edge = {
@@ -110,7 +108,7 @@ function createEdge(
       guard: undefined,
       description: undefined,
       metaEntries: [],
-      internal,
+      internal: undefined,
     },
   };
   ctx.astPaths.edges[edge.uniqueId] = [...ctx.currentAstPath];
@@ -234,19 +232,6 @@ function registerActionBlocks(
   }
 }
 
-/**
- * returns the auto-assigned internal value when no explicit configuration for this property is found
- */
-function getImpliedInternalValue(
-  ctx: ExtractionContext,
-  targets: string[] | undefined,
-) {
-  if (ctx.xstateVersion !== '4') {
-    return true;
-  }
-  return targets ? targets.some((t) => t.startsWith('.')) : true;
-}
-
 function extractEdgeGroup(
   ctx: ExtractionContext,
   ts: typeof import('typescript'),
@@ -278,7 +263,6 @@ function extractEdgeGroup(
           createEdge(ctx, {
             sourceId,
             eventTypeData,
-            internal: getImpliedInternalValue(ctx, [element.text]),
           }),
           [element.text],
         ];
@@ -432,10 +416,6 @@ function extractEdgeGroup(
             }
           }
         });
-
-        if (!seenInternalProp) {
-          edge.data.internal = getImpliedInternalValue(ctx, targets);
-        }
 
         return [edge, targets];
       }
