@@ -8,6 +8,11 @@ import * as vscode from 'vscode-languageserver-protocol';
 
 type TextEdit =
   | {
+      type: 'delete';
+      uri: string;
+      range: LinesAndCharactersRange;
+    }
+  | {
       type: 'insert';
       uri: string;
       position: LineAndCharacterPosition;

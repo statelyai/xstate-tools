@@ -1,5 +1,4 @@
 import type {
-  Node,
   ObjectLiteralExpression,
   PropertyAssignment,
   SourceFile,
@@ -34,6 +33,11 @@ interface InsertPropertyIntoObjectCodeChange extends BaseCodeChange {
   value: InsertionElement;
 }
 
+interface RemovePropertyNameChange extends BaseCodeChange {
+  type: 'remove_property';
+  property: PropertyAssignment;
+}
+
 interface ReplacePropertyNameChange extends BaseCodeChange {
   type: 'replace_property_name';
   name: string;
@@ -47,6 +51,7 @@ interface ReplaceRangeCodeChange extends BaseCodeChange {
 type CodeChange =
   | InsertPropertyBeforePropertyCodeChange
   | InsertPropertyIntoObjectCodeChange
+  | RemovePropertyNameChange
   | ReplacePropertyNameChange
   | ReplaceRangeCodeChange;
 
@@ -54,28 +59,52 @@ function toZeroLengthRange(position: number) {
   return { start: position, end: position };
 }
 
-function getIndentationOfNode({ text }: SourceFile, node: Node) {
-  const start = node.getStart();
-  let indentEnd = start;
-  let current = indentEnd;
+function getIndentationBeforePosition(text: string, position: number) {
+  let indentEnd = position;
 
-  while (true) {
-    const char = text[current];
+  for (let i = indentEnd - 1; i >= 0; i--) {
+    const char = text[i];
 
     if (char === '\n' || char === '\r') {
-      break;
+      return text.slice(i + 1, indentEnd);
     }
 
     if (!/\s/.test(char)) {
-      indentEnd = current;
+      indentEnd = i;
     }
-
-    current--;
   }
-  return text.slice(current + 1, indentEnd);
+
+  return text.slice(0, indentEnd);
 }
 
-function getTrailingCommaPosition(
+function getSingleLineWhitespaceBeforePosition(text: string, position: number) {
+  let end = position;
+
+  for (let i = end - 1; i >= 0; i--) {
+    const char = text[i];
+
+    if (!/\s/.test(char) || char === '\n' || char === '\r') {
+      return text.slice(i + 1, end);
+    }
+  }
+
+  return text.slice(0, end);
+}
+
+function getTrailingCommaPosition({ text }: SourceFile, position: number) {
+  for (let i = position; i < text.length; i++) {
+    const char = text[i];
+    if (char === ',') {
+      return i;
+    }
+    if (!/\s/.test(char)) {
+      break;
+    }
+  }
+  return -1;
+}
+
+function getObjectTrailingCommaPosition(
   ts: typeof import('typescript'),
   object: ObjectLiteralExpression,
 ) {
@@ -240,6 +269,17 @@ export function createCodeChanges(ts: typeof import('typescript')) {
         priority,
       });
     },
+    removeProperty: (property: PropertyAssignment) => {
+      changes.push({
+        type: 'remove_property',
+        sourceFile: property.getSourceFile(),
+        range: {
+          start: property.getStart(),
+          end: property.getEnd(),
+        },
+        property,
+      });
+    },
     replacePropertyName: (property: PropertyAssignment, name: string) => {
       changes.push({
         type: 'replace_property_name',
@@ -320,7 +360,10 @@ export function createCodeChanges(ts: typeof import('typescript')) {
                   formattingOptions,
                 ) +
                 ',\n' +
-                getIndentationOfNode(change.sourceFile, change.property),
+                getIndentationBeforePosition(
+                  change.sourceFile.text,
+                  change.property.getStart(),
+                ),
             });
             break;
           }
@@ -347,7 +390,7 @@ export function createCodeChanges(ts: typeof import('typescript')) {
               .join(',\n');
 
             if (lastElement) {
-              const trailingCommaPosition = getTrailingCommaPosition(
+              const trailingCommaPosition = getObjectTrailingCommaPosition(
                 ts,
                 change.object,
               );
@@ -385,7 +428,10 @@ export function createCodeChanges(ts: typeof import('typescript')) {
                   '\n' +
                   indentTextWith(
                     propertiesText,
-                    getIndentationOfNode(change.sourceFile, lastElement),
+                    getIndentationBeforePosition(
+                      change.sourceFile.text,
+                      lastElement.getStart(),
+                    ),
                   ) +
                   (!!trailingCommaPosition ? ',' : ''),
               });
@@ -393,9 +439,9 @@ export function createCodeChanges(ts: typeof import('typescript')) {
               break;
             }
 
-            const currentIdentation = getIndentationOfNode(
-              change.sourceFile,
-              change.object,
+            const currentIdentation = getIndentationBeforePosition(
+              change.sourceFile.text,
+              change.object.getStart(),
             );
 
             const lastComment = getLastComment(
@@ -419,6 +465,56 @@ export function createCodeChanges(ts: typeof import('typescript')) {
                   currentIdentation + formattingOptions.singleIndentation,
                 ) +
                 (!isObjectMultiline ? `\n${currentIdentation}` : ''),
+            });
+            break;
+          }
+          case 'remove_property': {
+            const leadingComment = first(
+              ts.getLeadingCommentRanges(
+                change.sourceFile.text,
+                change.property.getFullStart(),
+              ),
+            );
+            let start = leadingComment?.pos ?? change.property.getStart();
+
+            const whitespace = getSingleLineWhitespaceBeforePosition(
+              change.sourceFile.text,
+              start,
+            );
+
+            start -=
+              whitespace.length +
+              (change.sourceFile.text[start - whitespace.length - 1] === '\n'
+                ? 1
+                : 0);
+
+            const trailingComment = last(
+              ts.getTrailingCommentRanges(
+                change.sourceFile.text,
+                change.range.end,
+              ),
+            );
+            let end = trailingComment?.end ?? change.range.end;
+            const trailingCommaPosition = getTrailingCommaPosition(
+              change.sourceFile,
+              end,
+            );
+            if (trailingCommaPosition !== -1) {
+              end = trailingCommaPosition + 1;
+              const trailingComment = last(
+                ts.getTrailingCommentRanges(change.sourceFile.text, end),
+              );
+              if (trailingComment) {
+                end = trailingComment.end;
+              }
+            }
+            edits.push({
+              type: 'delete',
+              fileName: change.sourceFile.fileName,
+              range: {
+                start,
+                end,
+              },
             });
             break;
           }

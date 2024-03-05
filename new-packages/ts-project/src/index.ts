@@ -8,6 +8,7 @@ import type {
 import { c, createCodeChanges, InsertionPriority } from './codeChanges';
 import { extractState } from './state';
 import type {
+  DeleteTextEdit,
   ExtractionContext,
   ExtractionError,
   ExtractorDigraphDef,
@@ -314,11 +315,6 @@ function createProjectMachine({
                   break;
                 }
                 if (patch.path[2] === 'data' && patch.path[3] === 'initial') {
-                  if (typeof patch.value === undefined) {
-                    // removing initial states is not supported in the Studio
-                    // but a patch like this can likely still be received when the last child of a state gets removed
-                    break;
-                  }
                   const node = findNodeByAstPath(
                     host.ts,
                     createMachineCall,
@@ -331,6 +327,13 @@ function createProjectMachine({
                     node,
                     'initial',
                   );
+                  if (patch.value === undefined) {
+                    // this check is defensive, it should always be there
+                    if (initialProp) {
+                      codeChanges.removeProperty(initialProp);
+                    }
+                    break;
+                  }
 
                   if (initialProp) {
                     codeChanges.replaceRange(sourceFile, {
@@ -473,6 +476,7 @@ export function createProject(
 export type XStateProject = ReturnType<typeof createProject>;
 
 export {
+  DeleteTextEdit,
   ExtractorDigraphDef,
   InsertTextEdit,
   LineAndCharacterPosition,

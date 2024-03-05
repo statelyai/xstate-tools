@@ -66,6 +66,22 @@ export const languageClientMachine = setup({
           const workspaceEdit = new vscode.WorkspaceEdit();
           for (const textEdit of textEdits) {
             switch (textEdit.type) {
+              case 'delete': {
+                workspaceEdit.delete(
+                  vscode.Uri.parse(params.uri),
+                  new vscode.Range(
+                    new vscode.Position(
+                      textEdit.range.start.line,
+                      textEdit.range.start.character,
+                    ),
+                    new vscode.Position(
+                      textEdit.range.end.line,
+                      textEdit.range.end.character,
+                    ),
+                  ),
+                );
+                break;
+              }
               case 'insert': {
                 workspaceEdit.insert(
                   vscode.Uri.parse(params.uri),
