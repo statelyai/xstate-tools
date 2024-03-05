@@ -5,8 +5,7 @@ import type {
   PropertyAssignment,
   SourceFile,
 } from 'typescript';
-import { createCodeChanges } from './codeChanges';
-import { safeStringLikeLiteralText } from './safeStringLikeLiteralText';
+import { c, createCodeChanges, InsertionPriority } from './codeChanges';
 import { extractState } from './state';
 import type {
   ExtractionContext,
@@ -22,14 +21,7 @@ import type {
   TreeNode,
   XStateVersion,
 } from './types';
-import {
-  assert,
-  findNodeByAstPath,
-  findProperty,
-  getPreferredQuoteCharCode,
-  isValidIdentifier,
-  safePropertyNameString,
-} from './utils';
+import { assert, findNodeByAstPath, findProperty } from './utils';
 
 enablePatches();
 
@@ -254,6 +246,48 @@ function createProjectMachine({
       for (const patch of patches) {
         switch (patch.op) {
           case 'add':
+            switch (patch.path[0]) {
+              case 'nodes': {
+                // we only support adding empty states here right now
+                // this might become a problem, especially when dealing with copy-pasting
+                // the implementation will have to account for that in the future
+                const newNode = patch.value;
+                const parentNode = findNodeByAstPath(
+                  host.ts,
+                  createMachineCall,
+                  currentState.astPaths.nodes[newNode.parentId],
+                );
+                assert(host.ts.isObjectLiteralExpression(parentNode));
+                const { key } = patch.value.data;
+
+                const statesProp = findProperty(
+                  undefined,
+                  host.ts,
+                  parentNode,
+                  'states',
+                );
+
+                if (statesProp) {
+                  assert(
+                    host.ts.isObjectLiteralExpression(statesProp.initializer),
+                  );
+                  codeChanges.insertPropertyIntoObject(
+                    statesProp.initializer,
+                    key,
+                    c.object([]),
+                  );
+                  break;
+                }
+
+                codeChanges.insertPropertyIntoObject(
+                  parentNode,
+                  'states',
+                  c.object([c.property(key, c.object([]))]),
+                  InsertionPriority.States,
+                );
+              }
+            }
+            break;
           case 'remove':
             break;
           case 'replace':
@@ -276,18 +310,7 @@ function createProjectMachine({
                     (p): p is PropertyAssignment =>
                       host.ts.isPropertyAssignment(p) && p.initializer === node,
                   )!;
-                  codeChanges.replace(sourceFile, {
-                    range: {
-                      start: prop.name.getStart(),
-                      end: prop.name.getEnd(),
-                    },
-                    newText: isValidIdentifier(patch.value)
-                      ? patch.value
-                      : safePropertyNameString(
-                          patch.value,
-                          getPreferredQuoteCharCode(host.ts, sourceFile),
-                        ),
-                  });
+                  codeChanges.replacePropertyName(prop, patch.value);
                   break;
                 }
                 if (patch.path[2] === 'data' && patch.path[3] === 'initial') {
@@ -309,18 +332,13 @@ function createProjectMachine({
                     'initial',
                   );
 
-                  const initialString = safeStringLikeLiteralText(
-                    patch.value,
-                    getPreferredQuoteCharCode(host.ts, sourceFile),
-                  );
-
                   if (initialProp) {
-                    codeChanges.replace(sourceFile, {
+                    codeChanges.replaceRange(sourceFile, {
                       range: {
                         start: initialProp.initializer.getStart(),
                         end: initialProp.initializer.getEnd(),
                       },
-                      newText: initialString,
+                      element: c.string(patch.value),
                     });
                     break;
                   }
@@ -332,20 +350,21 @@ function createProjectMachine({
                     'states',
                   );
 
-                  const initialPropertyText = `initial: ${safeStringLikeLiteralText(
-                    patch.value,
-                    getPreferredQuoteCharCode(host.ts, sourceFile),
-                  )}`;
-
                   if (statesProp) {
-                    codeChanges.insertBeforeProperty(
+                    codeChanges.insertPropertyBeforeProperty(
                       statesProp,
-                      initialPropertyText,
+                      'initial',
+                      c.string(patch.value),
                     );
                     break;
                   }
 
-                  codeChanges.insertIntoObject(node, initialPropertyText);
+                  codeChanges.insertPropertyIntoObject(
+                    node,
+                    'initial',
+                    c.string(patch.value),
+                    InsertionPriority.Initial,
+                  );
                 }
             }
             break;
