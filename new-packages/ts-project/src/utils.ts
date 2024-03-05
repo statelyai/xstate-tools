@@ -21,6 +21,18 @@ export function assert(condition: unknown): asserts condition {
   }
 }
 
+export function assertUnreachable(): never {
+  throw new Error('It should be unreachable');
+}
+
+export function invert(obj: Record<string, string>): Record<string, string> {
+  const result: Record<string, string> = {};
+  for (const key of Object.keys(obj)) {
+    result[obj[key]] = key;
+  }
+  return result;
+}
+
 function enterAstPathSegment(ctx: ExtractionContext, segment: AstPath[number]) {
   ctx.currentAstPath.push(segment);
 }

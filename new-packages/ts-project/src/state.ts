@@ -535,7 +535,7 @@ export function extractState(
     switch (propKey) {
       case 'id': {
         if (ts.isStringLiteralLike(prop.initializer)) {
-          ctx.idMap[prop.initializer.text] = node.uniqueId;
+          ctx.idToNodeIdMap[prop.initializer.text] = node.uniqueId;
 
           if (!node.parentId) {
             node.data.key = prop.initializer.text;

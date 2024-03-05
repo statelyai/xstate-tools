@@ -22,6 +22,7 @@ export interface ProjectMachineState {
   digraph: ExtractorDigraphDef | undefined;
   errors: ExtractionError[];
   astPaths: MachineAstPaths;
+  idMap: Record<string, string>;
 }
 
 export interface ExtractionContext {
@@ -34,7 +35,7 @@ export interface ExtractionContext {
     'blocks' | 'nodes' | 'edges' | 'implementations' | 'data'
   >;
   treeNodes: Record<string, TreeNode>;
-  idMap: Record<string, string>;
+  idToNodeIdMap: ProjectMachineState['idMap'];
   originalTargets: Record<string, string[]>;
   currentAstPath: AstPath;
   astPaths: MachineAstPaths;
