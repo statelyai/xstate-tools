@@ -355,82 +355,111 @@ test('should be possible to add an entry action in the middle of existing entry 
   `);
 });
 
-test.todo(
-  'should be possible to add a transition action to the root',
-  async () => {
-    const tmpPath = await testdir({
-      'tsconfig.json': JSON.stringify({}),
-      'index.ts': ts`
-        import { createMachine } from "xstate";
+test('should be possible to add a transition action to the root', async () => {
+  const tmpPath = await testdir({
+    'tsconfig.json': JSON.stringify({}),
+    'index.ts': ts`
+      import { createMachine } from "xstate";
 
-        createMachine({
-          on: {
-            FOO: ".a",
-          },
-          states: {
-            a: {},
-          },
-        });
-      `,
-    });
+      createMachine({
+        on: {
+          FOO: ".a",
+        },
+        states: {
+          a: {},
+        },
+      });
+    `,
+  });
 
-    const project = await createTestProject(tmpPath);
+  const project = await createTestProject(tmpPath);
 
-    const textEdits = project.editDigraph(
-      {
-        fileName: 'index.ts',
-        machineIndex: 0,
+  const textEdits = project.editDigraph(
+    {
+      fileName: 'index.ts',
+      machineIndex: 0,
+    },
+    {
+      type: 'add_action',
+      path: [],
+      actionPath: ['on', 'FOO', 0, 0],
+      name: 'doStuff',
+    },
+  );
+  expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
+    {
+      "index.ts": "import { createMachine } from "xstate";
+
+    createMachine({
+      on: {
+        FOO: {
+          target: ".a",
+          actions: "doStuff"
+        },
       },
-      {
-        type: 'add_action',
-        path: [],
-        actionPath: ['on', 'FOO', 0, 0],
-        name: 'doStuff',
+      states: {
+        a: {},
       },
-    );
-    expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot();
-  },
-);
+    });",
+    }
+  `);
+});
 
-test.todo(
-  `should be possible to add a transition action to invoke's onDone`,
-  async () => {
-    const tmpPath = await testdir({
-      'tsconfig.json': JSON.stringify({}),
-      'index.ts': ts`
-        import { createMachine } from "xstate";
+test(`should be possible to add a transition action to invoke's onDone`, async () => {
+  const tmpPath = await testdir({
+    'tsconfig.json': JSON.stringify({}),
+    'index.ts': ts`
+      import { createMachine } from "xstate";
 
-        createMachine({
-          states: {
-            a: {
-              invoke: {
-                src: "callDavid",
-                onDone: "b",
-              },
+      createMachine({
+        states: {
+          a: {
+            invoke: {
+              src: "callDavid",
+              onDone: "b",
             },
-            b: {},
           },
-        });
-      `,
-    });
+          b: {},
+        },
+      });
+    `,
+  });
 
-    const project = await createTestProject(tmpPath);
+  const project = await createTestProject(tmpPath);
 
-    const textEdits = project.editDigraph(
-      {
-        fileName: 'index.ts',
-        machineIndex: 0,
+  const textEdits = project.editDigraph(
+    {
+      fileName: 'index.ts',
+      machineIndex: 0,
+    },
+    {
+      type: 'add_action',
+      path: ['a'],
+      actionPath: ['invoke', 0, 'onDone', 0, 0],
+      name: 'getRaise',
+    },
+  );
+  expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
+    {
+      "index.ts": "import { createMachine } from "xstate";
+
+    createMachine({
+      states: {
+        a: {
+          invoke: {
+            src: "callDavid",
+            onDone: {
+              target: "b",
+              actions: "getRaise"
+            },
+          },
+        },
+        b: {},
       },
-      {
-        type: 'add_action',
-        path: ['a'],
-        actionPath: ['invoke', 0, 'onDone', 0, 0],
-        name: 'getRaise',
-      },
-    );
-    expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot();
-  },
-);
+    });",
+    }
+  `);
+});
 
 test(`should be possible to add a transition action to an object transition`, async () => {
   const tmpPath = await testdir({

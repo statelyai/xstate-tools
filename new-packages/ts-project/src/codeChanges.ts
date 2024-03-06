@@ -84,6 +84,13 @@ interface WrapIntoArrayWithCodeChange extends BaseCodeChange {
   newElement: InsertionElement;
 }
 
+interface WrapIntoObjectCodeChange extends BaseCodeChange {
+  type: 'wrap_into_object';
+  current: Node;
+  reuseAs: string;
+  newProperties: PropertyInsertionElement[];
+}
+
 type CodeChange =
   | InsertAtOptionalObjectPathCodeChange
   | InsertElementIntoArrayCodeChange
@@ -93,7 +100,8 @@ type CodeChange =
   | ReplacePropertyNameChange
   | ReplaceRangeCodeChange
   | ReplaceWithCodeChange
-  | WrapIntoArrayWithCodeChange;
+  | WrapIntoArrayWithCodeChange
+  | WrapIntoObjectCodeChange;
 
 function toZeroLengthRange(position: number) {
   return { start: position, end: position };
@@ -459,6 +467,28 @@ export function createCodeChanges(ts: typeof import('typescript')) {
         current,
         insertionType,
         newElement,
+      });
+    },
+    wrapIntoObject: (
+      current: Node,
+      {
+        reuseAs,
+        newProperties,
+      }: {
+        reuseAs: string;
+        newProperties: PropertyInsertionElement[];
+      },
+    ) => {
+      changes.push({
+        type: 'wrap_into_object',
+        sourceFile: current.getSourceFile(),
+        range: {
+          start: current.getStart(),
+          end: current.getEnd(),
+        },
+        current,
+        reuseAs,
+        newProperties,
       });
     },
 
@@ -946,6 +976,92 @@ export function createCodeChanges(ts: typeof import('typescript')) {
                   change.current.pos,
                 ) +
                 `]`,
+            });
+            break;
+          }
+          case 'wrap_into_object': {
+            // TODO: this handler shares a lot of the core logic with `wrap_into_array_with`
+            // ideally this would get deduplicated heavily as the problems of wrapping a single item in an array and in object are very similar
+            const currentIdentation = getIndentationBeforePosition(
+              change.sourceFile.text,
+              change.current.getStart(),
+            );
+            const hasNewLine = change.current.getFullText().includes('\n');
+
+            const newElementIndentation = hasNewLine
+              ? currentIdentation
+              : currentIdentation + formattingOptions.singleIndentation;
+
+            let beforePosition;
+            let beforeText = '';
+
+            if (hasNewLine) {
+              beforePosition = change.current.pos;
+              beforeText += ` {`;
+            } else {
+              const leadingTrivia = change.sourceFile.text.slice(
+                change.current.pos,
+                change.current.getStart(),
+              );
+              beforePosition =
+                change.current.pos + getLeadingWhitespaceLength(leadingTrivia);
+              beforeText += `{\n` + newElementIndentation;
+            }
+
+            beforeText += change.reuseAs + ': ';
+
+            edits.push({
+              type: 'insert',
+              fileName: change.sourceFile.fileName,
+              position: beforePosition,
+              newText: beforeText,
+            });
+
+            const trailingComment = last(
+              ts.getTrailingCommentRanges(
+                change.sourceFile.text,
+                change.current.getEnd(),
+              ),
+            );
+
+            if (trailingComment) {
+              edits.push({
+                type: 'insert',
+                fileName: change.sourceFile.fileName,
+                position: change.current.getEnd(),
+                newText: ',',
+              });
+            }
+
+            let afterPosition = trailingComment?.end ?? change.current.getEnd();
+            let afterText =
+              (trailingComment ? '' : ',') +
+              '\n' +
+              change.newProperties
+                .map(
+                  (property) =>
+                    newElementIndentation +
+                    insertionToText(
+                      ts,
+                      change.sourceFile,
+                      property,
+                      formattingOptions,
+                    ),
+                )
+                .join(',\n');
+
+            edits.push({
+              type: 'insert',
+              fileName: change.sourceFile.fileName,
+              position: afterPosition,
+              newText:
+                afterText +
+                '\n' +
+                getIndentationBeforePosition(
+                  change.sourceFile.text,
+                  change.current.pos,
+                ) +
+                `}`,
             });
             break;
           }
