@@ -528,15 +528,15 @@ function createProjectMachine({
                 // this might become a problem, especially when dealing with copy-pasting
                 // the implementation will have to account for that in the future
                 const newNode: Node = patch.value;
-                const parentNode = findNodeByAstPath(
+                const parentStateNode = findNodeByAstPath(
                   host.ts,
                   createMachineCall,
                   currentState.astPaths.nodes[newNode.parentId!],
                 );
-                assert(host.ts.isObjectLiteralExpression(parentNode));
+                assert(host.ts.isObjectLiteralExpression(parentStateNode));
 
                 codeChanges.insertAtOptionalObjectPath(
-                  parentNode,
+                  parentStateNode,
                   ['states', newNode.data.key],
                   c.object([]),
                   InsertionPriority.States,
@@ -549,6 +549,7 @@ function createProjectMachine({
                 if (patch.path.length > 2) {
                   if (patch.path[2] === 'data' && patch.path[3] === 'actions') {
                     deferredArrayPatches.push(patch);
+                    break;
                   }
                   break;
                 }
@@ -583,23 +584,24 @@ function createProjectMachine({
                   break;
                 }
                 const nodeId = patch.path[1];
-                const node = findNodeByAstPath(
+                const stateNode = findNodeByAstPath(
                   host.ts,
                   createMachineCall,
                   currentState.astPaths.nodes[nodeId],
                 );
-                assert(host.ts.isObjectLiteralExpression(node));
+                assert(host.ts.isObjectLiteralExpression(stateNode));
 
                 if (patch.path[2] === 'data' && patch.path[3] === 'key') {
-                  const parentNode = findNodeByAstPath(
+                  const parenStatetNode = findNodeByAstPath(
                     host.ts,
                     createMachineCall,
                     currentState.astPaths.nodes[nodeId].slice(0, -1),
                   );
-                  assert(host.ts.isObjectLiteralExpression(parentNode));
-                  const prop = parentNode.properties.find(
+                  assert(host.ts.isObjectLiteralExpression(parenStatetNode));
+                  const prop = parenStatetNode.properties.find(
                     (p): p is PropertyAssignment =>
-                      host.ts.isPropertyAssignment(p) && p.initializer === node,
+                      host.ts.isPropertyAssignment(p) &&
+                      p.initializer === stateNode,
                   )!;
                   codeChanges.replacePropertyName(prop, patch.value);
                   break;
@@ -608,7 +610,7 @@ function createProjectMachine({
                   const initialProp = findProperty(
                     undefined,
                     host.ts,
-                    node,
+                    stateNode,
                     'initial',
                   );
                   if (patch.value === undefined) {
@@ -633,7 +635,7 @@ function createProjectMachine({
                   const statesProp = findProperty(
                     undefined,
                     host.ts,
-                    node,
+                    stateNode,
                     'states',
                   );
 
@@ -647,7 +649,7 @@ function createProjectMachine({
                   }
 
                   codeChanges.insertPropertyIntoObject(
-                    node,
+                    stateNode,
                     'initial',
                     c.string(patch.value),
                     InsertionPriority.Initial,
@@ -657,7 +659,7 @@ function createProjectMachine({
                   const typeProp = findProperty(
                     undefined,
                     host.ts,
-                    node,
+                    stateNode,
                     'type',
                   );
                   if (patch.value === 'normal') {
@@ -679,7 +681,7 @@ function createProjectMachine({
                   }
 
                   codeChanges.insertPropertyIntoObject(
-                    node,
+                    stateNode,
                     'type',
                     c.string(patch.value),
                     InsertionPriority.StateType,
@@ -689,7 +691,7 @@ function createProjectMachine({
                   const historyProp = findProperty(
                     undefined,
                     host.ts,
-                    node,
+                    stateNode,
                     'history',
                   );
                   if (patch.value === undefined || patch.value === 'shallow') {
@@ -712,7 +714,7 @@ function createProjectMachine({
 
                   // TODO: insert it after the existing `type` property
                   codeChanges.insertPropertyIntoObject(
-                    node,
+                    stateNode,
                     'history',
                     c.string(patch.value),
                     InsertionPriority.History,
@@ -725,7 +727,7 @@ function createProjectMachine({
                   const descriptionProp = findProperty(
                     undefined,
                     host.ts,
-                    node,
+                    stateNode,
                     'description',
                   );
                   if (!patch.value) {
@@ -751,16 +753,42 @@ function createProjectMachine({
                   }
 
                   codeChanges.insertPropertyIntoObject(
-                    node,
+                    stateNode,
                     'description',
                     element,
                   );
                 }
+                break;
               case 'edges': {
                 if (patch.path[2] === 'data' && patch.path[3] === 'actions') {
                   deferredArrayPatches.push(patch);
                   break;
                 }
+                const edge = currentState.digraph!.edges[patch.path[1]];
+                const transitionNode = findNodeByAstPath(
+                  host.ts,
+                  createMachineCall,
+                  currentState.astPaths.edges[edge.uniqueId],
+                );
+                if (patch.path[2] === 'data' && patch.path[3] === 'guard') {
+                  const guardElement = c.string(
+                    currentState.digraph!.blocks[edge.data.guard!].sourceId,
+                  );
+                  if (!host.ts.isObjectLiteralExpression(transitionNode)) {
+                    codeChanges.wrapIntoObject(transitionNode, {
+                      reuseAs: 'target',
+                      newProperties: [c.property('guard', guardElement)],
+                    });
+                    break;
+                  }
+                  codeChanges.insertPropertyIntoObject(
+                    transitionNode,
+                    'guard',
+                    guardElement,
+                  );
+                  break;
+                }
+                break;
               }
             }
             break;
@@ -782,12 +810,12 @@ function createProjectMachine({
             switch (patch.path[0]) {
               case 'nodes': {
                 const nodeId = patch.path[1];
-                const node = findNodeByAstPath(
+                const stateNode = findNodeByAstPath(
                   host.ts,
                   createMachineCall,
                   currentState.astPaths.nodes[nodeId],
                 );
-                assert(host.ts.isObjectLiteralExpression(node));
+                assert(host.ts.isObjectLiteralExpression(stateNode));
 
                 if (
                   patch.path[2] === 'data' &&
@@ -808,7 +836,7 @@ function createProjectMachine({
                   assert(typeof actionId === 'string');
 
                   codeChanges.insertAtOptionalObjectPath(
-                    node,
+                    stateNode,
                     [patch.path[3], index],
                     c.string(currentState.digraph!.blocks[actionId].sourceId),
                   );
@@ -817,7 +845,7 @@ function createProjectMachine({
               }
               case 'edges': {
                 const edgeId = patch.path[1];
-                const edge = findNodeByAstPath(
+                const transitionNode = findNodeByAstPath(
                   host.ts,
                   createMachineCall,
                   currentState.astPaths.edges[edgeId],
@@ -836,10 +864,10 @@ function createProjectMachine({
                   const actionId = patch.value;
                   assert(typeof actionId === 'string');
 
-                  if (!host.ts.isObjectLiteralExpression(edge)) {
+                  if (!host.ts.isObjectLiteralExpression(transitionNode)) {
                     assert(index === 0);
 
-                    codeChanges.wrapIntoObject(edge, {
+                    codeChanges.wrapIntoObject(transitionNode, {
                       reuseAs: 'target',
                       newProperties: [
                         c.property(
@@ -853,7 +881,7 @@ function createProjectMachine({
                     break;
                   }
                   codeChanges.insertAtOptionalObjectPath(
-                    edge,
+                    transitionNode,
                     [patch.path[3], index],
                     c.string(currentState.digraph!.blocks[actionId].sourceId),
                   );
@@ -868,12 +896,12 @@ function createProjectMachine({
             switch (patch.path[0]) {
               case 'nodes': {
                 const nodeId = patch.path[1];
-                const node = findNodeByAstPath(
+                const stateNode = findNodeByAstPath(
                   host.ts,
                   createMachineCall,
                   currentState.astPaths.nodes[nodeId],
                 );
-                assert(host.ts.isObjectLiteralExpression(node));
+                assert(host.ts.isObjectLiteralExpression(stateNode));
                 if (
                   patch.path[2] === 'data' &&
                   (patch.path[3] === 'entry' || patch.path[3] === 'exit')
@@ -888,7 +916,7 @@ function createProjectMachine({
                     i += insertion.skipped;
 
                     codeChanges.insertAtOptionalObjectPath(
-                      node,
+                      stateNode,
                       [patch.path[3], insertion.index],
                       c.string(
                         currentState.digraph!.blocks[insertion.value].sourceId,
@@ -902,14 +930,14 @@ function createProjectMachine({
               }
               case 'edges': {
                 const edgeId = patch.path[1];
-                const edge = findNodeByAstPath(
+                const transitionNode = findNodeByAstPath(
                   host.ts,
                   createMachineCall,
                   currentState.astPaths.edges[edgeId],
                 );
                 if (patch.path[2] === 'data' && patch.path[3] === 'actions') {
                   // this should always be true - if we are replacing an action within an edge then the edge already has to be an object literal
-                  assert(host.ts.isObjectLiteralExpression(edge));
+                  assert(host.ts.isObjectLiteralExpression(transitionNode));
                   const insertion = consumeArrayInsertionAtIndex(
                     sortedArrayPatches,
                     i,
@@ -920,7 +948,7 @@ function createProjectMachine({
                     i += insertion.skipped;
 
                     codeChanges.insertAtOptionalObjectPath(
-                      edge,
+                      transitionNode,
                       [patch.path[3], insertion.index],
                       c.string(
                         currentState.digraph!.blocks[insertion.value].sourceId,

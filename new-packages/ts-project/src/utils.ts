@@ -239,7 +239,7 @@ export function forEachStaticProperty(
     }
     const key = getPropertyKey(ctx, ts, prop);
 
-    if (!key) {
+    if (typeof key !== 'string') {
       // error should already be reported by `getPropertyKey`
       continue;
     }
@@ -259,16 +259,30 @@ export function findNodeByAstPath(
   call: CallExpression,
   path: AstPath,
 ): Expression {
-  let current: Expression | undefined = call.arguments[0];
+  if (!call.arguments[0]) {
+    throw new Error('Invalid node');
+  }
+
+  let current = call.arguments[0];
+
   for (const segment of path) {
-    if (!current || !ts.isObjectLiteralExpression(current)) {
-      throw new Error('Invalid node');
+    if (ts.isObjectLiteralExpression(current)) {
+      const retrieved = current.properties[segment];
+      if (!retrieved || !ts.isPropertyAssignment(retrieved)) {
+        throw new Error('Invalid node');
+      }
+      current = retrieved.initializer;
+      continue;
     }
-    const retrieved: ObjectLiteralElementLike = current.properties[segment];
-    if (!retrieved || !ts.isPropertyAssignment(retrieved)) {
-      throw new Error('Invalid node');
+    if (ts.isArrayLiteralExpression(current)) {
+      const retrieved = current.elements[segment];
+      if (!retrieved) {
+        throw new Error('Invalid node');
+      }
+      current = retrieved;
+      continue;
     }
-    current = retrieved.initializer;
+    throw new Error('Invalid node');
   }
   return current;
 }

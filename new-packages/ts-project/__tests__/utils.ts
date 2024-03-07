@@ -499,7 +499,25 @@ function produceNewDigraphUsingEdit(
     }
     case 'remove_action':
     case 'edit_action':
-    case 'add_guard':
+      throw new Error(`Not implemented: ${edit.type}`);
+    case 'add_guard': {
+      const eventTypeData = getEventTypeData(digraphDraft, {
+        sourcePath: edit.path,
+        transitionPath: edit.transitionPath,
+      });
+      const edge =
+        digraphDraft.edges[
+          getEdgeGroup(digraphDraft, eventTypeData)[
+            last(edit.transitionPath) as number
+          ]
+        ];
+      const block = createGuardBlock({
+        sourceId: edit.name,
+        parentId: edge.uniqueId,
+      });
+      registerGuardBlock(digraphDraft, block, edge);
+      break;
+    }
     case 'remove_guard':
     case 'edit_guard':
     case 'add_invoke':
