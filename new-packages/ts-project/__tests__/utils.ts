@@ -500,8 +500,40 @@ function produceNewDigraphUsingEdit(
       break;
     }
     case 'remove_action':
-    case 'edit_action':
       throw new Error(`Not implemented: ${edit.type}`);
+    case 'edit_action': {
+      const node = findNodeByStatePath(digraphDraft, edit.path);
+      if (edit.actionPath[0] === 'entry' || edit.actionPath[0] === 'exit') {
+        const [groupName, index] = edit.actionPath;
+        const blockId = node.data[groupName][index];
+        digraphDraft.blocks[blockId].sourceId = edit.name;
+        digraphDraft.implementations.actions[edit.name] ??= {
+          type: 'action',
+          id: edit.name,
+          name: edit.name,
+        };
+        break;
+      }
+      const transitionPath = edit.actionPath.slice(0, -1) as TransitionPath;
+      const eventTypeData = getEventTypeData(digraphDraft, {
+        sourcePath: edit.path,
+        transitionPath,
+      });
+      const edge =
+        digraphDraft.edges[
+          getEdgeGroup(digraphDraft, eventTypeData)[
+            last(transitionPath) as number
+          ]
+        ];
+      const blockId = edge.data.actions[last(edit.actionPath) as number];
+      digraphDraft.blocks[blockId].sourceId = edit.name;
+      digraphDraft.implementations.actions[edit.name] ??= {
+        type: 'action',
+        id: edit.name,
+        name: edit.name,
+      };
+      break;
+    }
     case 'add_guard': {
       const eventTypeData = getEventTypeData(digraphDraft, {
         sourcePath: edit.path,
