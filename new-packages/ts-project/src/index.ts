@@ -14,6 +14,7 @@ import {
 import { shallowEqual } from './shallowEqual';
 import { extractState } from './state';
 import type {
+  ActorBlock,
   DeleteTextEdit,
   Edge,
   EventTypeData,
@@ -299,10 +300,10 @@ function getBestTargetDescriptor(
   assertUnreachable();
 }
 
-const toTransitionElement = (
+function toTransitionElement(
   edge: Edge,
   projectMachineState: ProjectMachineState,
-): InsertionElement => {
+): InsertionElement {
   const transition: Record<string, InsertionElement> = {
     target: !edge.targets.length
       ? c.undefined()
@@ -345,7 +346,17 @@ const toTransitionElement = (
   }
 
   return c.object(Object.entries(transition).map(([k, v]) => c.property(k, v)));
-};
+}
+
+function toInvokeElement(block: ActorBlock) {
+  const invoke: Record<string, InsertionElement> = {
+    src: c.string(block.sourceId),
+  };
+  if (block.properties.id && !block.properties.id.startsWith('inline:')) {
+    invoke.id = c.string(block.properties.id);
+  }
+  return c.object(Object.entries(invoke).map(([k, v]) => c.property(k, v)));
+}
 
 /** @internal */
 export function getEdgeGroup(
@@ -517,7 +528,9 @@ function createProjectMachine({
                 if (patch.path.length > 2) {
                   if (
                     patch.path[2] === 'data' &&
-                    (patch.path[3] === 'entry' || patch.path[3] === 'exit')
+                    (patch.path[3] === 'entry' ||
+                      patch.path[3] === 'exit' ||
+                      patch.path[3] === 'invoke')
                   ) {
                     deferredArrayPatches.push(patch);
                   }
@@ -578,7 +591,9 @@ function createProjectMachine({
               case 'nodes':
                 if (
                   patch.path[2] === 'data' &&
-                  (patch.path[3] === 'entry' || patch.path[3] === 'exit')
+                  (patch.path[3] === 'entry' ||
+                    patch.path[3] === 'exit' ||
+                    patch.path[3] === 'invoke')
                 ) {
                   deferredArrayPatches.push(patch);
                   break;
@@ -831,7 +846,6 @@ function createProjectMachine({
                         .length -
                         1,
                   );
-                  assert(typeof index === 'number');
                   const actionId = patch.value;
                   assert(typeof actionId === 'string');
 
@@ -840,7 +854,31 @@ function createProjectMachine({
                     [patch.path[3], index],
                     c.string(currentState.digraph!.blocks[actionId].sourceId),
                   );
+                  break;
                 }
+                if (patch.path[2] === 'data' && patch.path[3] === 'invoke') {
+                  const index = patch.path[4];
+                  assert(typeof index === 'number');
+                  // effectively the current implementation can only receive an `add` patch about this when it corresponds to a simple push
+                  // insertions at index are handled by the replace handler and multi-item insertions are not handled at all
+                  assert(
+                    index ===
+                      currentState.digraph!.nodes[nodeId].data.invoke.length -
+                        1,
+                  );
+                  const actorId = patch.value;
+                  assert(typeof actorId === 'string');
+
+                  const block = currentState.digraph!.blocks[actorId];
+                  assert(block.blockType === 'actor');
+
+                  codeChanges.insertAtOptionalObjectPath(
+                    stateNode,
+                    ['invoke', index],
+                    toInvokeElement(block),
+                  );
+                }
+
                 break;
               }
               case 'edges': {
@@ -924,6 +962,29 @@ function createProjectMachine({
                     );
                     break;
                   }
+                  // TODO: handle simple replacement here
+                  break;
+                }
+                if (patch.path[2] === 'data' && patch.path[3] === 'invoke') {
+                  const insertion = consumeArrayInsertionAtIndex(
+                    sortedArrayPatches,
+                    i,
+                    currentState.digraph!.nodes[nodeId].data.invoke,
+                  );
+
+                  if (insertion) {
+                    i += insertion.skipped;
+                    const block = currentState.digraph!.blocks[insertion.value];
+                    assert(block.blockType === 'actor');
+
+                    codeChanges.insertAtOptionalObjectPath(
+                      stateNode,
+                      ['invoke', insertion.index],
+                      toInvokeElement(block),
+                    );
+                    break;
+                  }
+                  // TODO: handle simple replacement here
                   break;
                 }
                 break;
