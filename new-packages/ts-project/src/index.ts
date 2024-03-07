@@ -1,6 +1,7 @@
 import { applyPatches, enablePatches, type Patch } from 'immer';
 import type {
   CallExpression,
+  Expression,
   Program,
   PropertyAssignment,
   SourceFile,
@@ -468,6 +469,21 @@ function consumeArrayInsertionAtIndex(
   assertUnreachable();
 }
 
+function updateParameterizedObjectLocation(
+  ts: typeof import('typescript'),
+  codeChanges: CodeChanges,
+  expression: Expression,
+  newType: string,
+) {
+  if (ts.isObjectLiteralExpression(expression)) {
+    const typeProperty = findProperty(undefined, ts, expression, 'type');
+    assert(!!typeProperty);
+    codeChanges.replaceWith(typeProperty.initializer, c.string(newType));
+    return;
+  }
+  codeChanges.replaceWith(expression, c.string(newType));
+}
+
 function createProjectMachine({
   host,
   fileName,
@@ -849,48 +865,22 @@ function createProjectMachine({
                       const element =
                         actionsProperty.initializer.elements[actionIndex];
                       assert(!!element);
-                      if (host.ts.isObjectLiteralExpression(element)) {
-                        const typeProperty = findProperty(
-                          undefined,
-                          host.ts,
-                          element,
-                          'type',
-                        );
-                        assert(!!typeProperty);
-                        codeChanges.replaceWith(
-                          typeProperty.initializer,
-                          c.string(block.sourceId),
-                        );
-                        break;
-                      }
-                      codeChanges.replaceWith(
+
+                      updateParameterizedObjectLocation(
+                        host.ts,
+                        codeChanges,
                         element,
-                        c.string(block.sourceId),
+                        block.sourceId,
                       );
                       break;
                     }
                     assert(actionIndex === 0);
-                    if (
-                      host.ts.isObjectLiteralExpression(
-                        actionsProperty.initializer,
-                      )
-                    ) {
-                      const typeProperty = findProperty(
-                        undefined,
-                        host.ts,
-                        actionsProperty.initializer,
-                        'type',
-                      );
-                      assert(!!typeProperty);
-                      codeChanges.replaceWith(
-                        typeProperty.initializer,
-                        c.string(block.sourceId),
-                      );
-                      break;
-                    }
-                    codeChanges.replaceWith(
+
+                    updateParameterizedObjectLocation(
+                      host.ts,
+                      codeChanges,
                       actionsProperty.initializer,
-                      c.string(block.sourceId),
+                      block.sourceId,
                     );
                     break;
                   }
