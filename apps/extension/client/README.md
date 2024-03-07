@@ -1,5 +1,7 @@
 XState VSCode enhances the XState development experience by providing VSCode users with features like visual editing, autocomplete, typegen and linting.
 
+**⚠️ NOTE:** The XState VSCode extension currently only works for **XState version 4**. We are working on support for XState version 5.
+
 ## Quickstart
 
 1. [Install via the Visual Studio Code Marketplace →](https://marketplace.visualstudio.com/items?itemName=statelyai.stately-vscode)
