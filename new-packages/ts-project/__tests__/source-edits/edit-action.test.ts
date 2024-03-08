@@ -305,115 +305,247 @@ test('should be possible to update object exit action name in an array', async (
   `);
 });
 
-test.todo(
-  'should be possible to update a single transition action name',
-  async () => {
-    const tmpPath = await testdir({
-      'tsconfig.json': JSON.stringify({}),
-      'index.ts': ts`
-        import { createMachine } from "xstate";
+test('should be possible to update a single transition action name', async () => {
+  const tmpPath = await testdir({
+    'tsconfig.json': JSON.stringify({}),
+    'index.ts': ts`
+      import { createMachine } from "xstate";
 
-        createMachine({
-          on: {
-            CALL_HIM_MAYBE: {
+      createMachine({
+        on: {
+          CALL_HIM_MAYBE: {
+            actions: "callDavid",
+          },
+        },
+      });
+    `,
+  });
+
+  const project = await createTestProject(tmpPath);
+
+  const textEdits = project.editDigraph(
+    {
+      fileName: 'index.ts',
+      machineIndex: 0,
+    },
+    {
+      type: 'edit_action',
+      path: [],
+      actionPath: ['on', 'CALL_HIM_MAYBE', 0, 0],
+      name: 'getRaise',
+    },
+  );
+  expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
+    {
+      "index.ts": "import { createMachine } from "xstate";
+
+    createMachine({
+      on: {
+        CALL_HIM_MAYBE: {
+          actions: "getRaise",
+        },
+      },
+    });",
+    }
+  `);
+});
+
+test('should be possible to update a single transition object action name', async () => {
+  const tmpPath = await testdir({
+    'tsconfig.json': JSON.stringify({}),
+    'index.ts': ts`
+      import { createMachine } from "xstate";
+
+      createMachine({
+        on: {
+          CALL_HIM_MAYBE: {
+            actions: { type: "callDavid" },
+          },
+        },
+      });
+    `,
+  });
+
+  const project = await createTestProject(tmpPath);
+
+  const textEdits = project.editDigraph(
+    {
+      fileName: 'index.ts',
+      machineIndex: 0,
+    },
+    {
+      type: 'edit_action',
+      path: [],
+      actionPath: ['on', 'CALL_HIM_MAYBE', 0, 0],
+      name: 'getRaise',
+    },
+  );
+  expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
+    {
+      "index.ts": "import { createMachine } from "xstate";
+
+    createMachine({
+      on: {
+        CALL_HIM_MAYBE: {
+          actions: { type: "getRaise" },
+        },
+      },
+    });",
+    }
+  `);
+});
+
+test('should be possible to update an action name within the nth guarded transition', async () => {
+  const tmpPath = await testdir({
+    'tsconfig.json': JSON.stringify({}),
+    'index.ts': ts`
+      import { createMachine } from "xstate";
+
+      createMachine({
+        on: {
+          CALL_HIM_MAYBE: [
+            {
+              guard: "isItTooLate",
+            },
+            {
               actions: "callDavid",
             },
+          ],
+        },
+      });
+    `,
+  });
+
+  const project = await createTestProject(tmpPath);
+
+  const textEdits = project.editDigraph(
+    {
+      fileName: 'index.ts',
+      machineIndex: 0,
+    },
+    {
+      type: 'edit_action',
+      path: [],
+      actionPath: ['on', 'CALL_HIM_MAYBE', 1, 0],
+      name: 'getRaise',
+    },
+  );
+  expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
+    {
+      "index.ts": "import { createMachine } from "xstate";
+
+    createMachine({
+      on: {
+        CALL_HIM_MAYBE: [
+          {
+            guard: "isItTooLate",
           },
-        });
-      `,
-    });
-
-    const project = await createTestProject(tmpPath);
-
-    const textEdits = project.editDigraph(
-      {
-        fileName: 'index.ts',
-        machineIndex: 0,
-      },
-      {
-        type: 'edit_action',
-        path: [],
-        actionPath: ['on', 'CALL_HIM_MAYBE', 0, 0],
-        name: 'getRaise',
-      },
-    );
-    expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot();
-  },
-);
-
-test.todo(
-  'should be possible to update a single transition object action name',
-  async () => {
-    const tmpPath = await testdir({
-      'tsconfig.json': JSON.stringify({}),
-      'index.ts': ts`
-        import { createMachine } from "xstate";
-
-        createMachine({
-          on: {
-            CALL_HIM_MAYBE: {
-              actions: { type: "callDavid" },
-            },
+          {
+            actions: "getRaise",
           },
-        });
-      `,
-    });
-
-    const project = await createTestProject(tmpPath);
-
-    const textEdits = project.editDigraph(
-      {
-        fileName: 'index.ts',
-        machineIndex: 0,
+        ],
       },
-      {
-        type: 'edit_action',
-        path: [],
-        actionPath: ['on', 'CALL_HIM_MAYBE', 0, 0],
-        name: 'getRaise',
+    });",
+    }
+  `);
+});
+
+test('should be possible to update a transition action name in an array', async () => {
+  const tmpPath = await testdir({
+    'tsconfig.json': JSON.stringify({}),
+    'index.ts': ts`
+      import { createMachine } from "xstate";
+
+      createMachine({
+        on: {
+          CALL_HIM_MAYBE: {
+            actions: ["callDavid", "keepTheJob"],
+          },
+        },
+      });
+    `,
+  });
+
+  const project = await createTestProject(tmpPath);
+
+  const textEdits = project.editDigraph(
+    {
+      fileName: 'index.ts',
+      machineIndex: 0,
+    },
+    {
+      type: 'edit_action',
+      path: [],
+      actionPath: ['on', 'CALL_HIM_MAYBE', 0, 1],
+      name: 'getRaise',
+    },
+  );
+  expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
+    {
+      "index.ts": "import { createMachine } from "xstate";
+
+    createMachine({
+      on: {
+        CALL_HIM_MAYBE: {
+          actions: ["callDavid", "getRaise"],
+        },
       },
-    );
-    expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot();
-  },
-);
+    });",
+    }
+  `);
+});
 
-test.todo(
-  'should be possible to update an action name within the nth guarded transition',
-  async () => {
-    const tmpPath = await testdir({
-      'tsconfig.json': JSON.stringify({}),
-      'index.ts': ts`
-        import { createMachine } from "xstate";
+test('should be possible to update an object transition action name in an array', async () => {
+  const tmpPath = await testdir({
+    'tsconfig.json': JSON.stringify({}),
+    'index.ts': ts`
+      import { createMachine } from "xstate";
 
-        createMachine({
-          on: {
-            CALL_HIM_MAYBE: [
+      createMachine({
+        on: {
+          CALL_HIM_MAYBE: {
+            actions: [
+              "callDavid",
               {
-                guard: "isItTooLate",
-              },
-              {
-                actions: "callDavid",
+                type: "keepTheJob",
               },
             ],
           },
-        });
-      `,
-    });
+        },
+      });
+    `,
+  });
 
-    const project = await createTestProject(tmpPath);
+  const project = await createTestProject(tmpPath);
 
-    const textEdits = project.editDigraph(
-      {
-        fileName: 'index.ts',
-        machineIndex: 0,
+  const textEdits = project.editDigraph(
+    {
+      fileName: 'index.ts',
+      machineIndex: 0,
+    },
+    {
+      type: 'edit_action',
+      path: [],
+      actionPath: ['on', 'CALL_HIM_MAYBE', 0, 1],
+      name: 'getRaise',
+    },
+  );
+  expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
+    {
+      "index.ts": "import { createMachine } from "xstate";
+
+    createMachine({
+      on: {
+        CALL_HIM_MAYBE: {
+          actions: [
+            "callDavid",
+            {
+              type: "getRaise",
+            },
+          ],
+        },
       },
-      {
-        type: 'edit_action',
-        path: [],
-        actionPath: ['on', 'CALL_HIM_MAYBE', 1, 0],
-        name: 'getRaise',
-      },
-    );
-    expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot();
-  },
-);
+    });",
+    }
+  `);
+});

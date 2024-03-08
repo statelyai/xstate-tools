@@ -833,6 +833,48 @@ function createProjectMachine({
                       // there is no way to know where to look for this parent
                       // so if it wasn't a node we try to find it in the edges
                       const edge = currentState.digraph!.edges[block.parentId];
+                      const transitionNode = findNodeByAstPath(
+                        host.ts,
+                        createMachineCall,
+                        currentState.astPaths.edges[edge.uniqueId],
+                      );
+                      assert(host.ts.isObjectLiteralExpression(transitionNode));
+
+                      const actionIndex = edge.data.actions.indexOf(blockId);
+
+                      const actionsProperty = findProperty(
+                        undefined,
+                        host.ts,
+                        transitionNode,
+                        'actions',
+                      );
+                      assert(!!actionsProperty);
+
+                      if (
+                        host.ts.isArrayLiteralExpression(
+                          actionsProperty.initializer,
+                        )
+                      ) {
+                        const element =
+                          actionsProperty.initializer.elements[actionIndex];
+                        assert(!!element);
+
+                        updateParameterizedObjectLocation(
+                          host.ts,
+                          codeChanges,
+                          element,
+                          block.sourceId,
+                        );
+                        break;
+                      }
+                      assert(actionIndex === 0);
+
+                      updateParameterizedObjectLocation(
+                        host.ts,
+                        codeChanges,
+                        actionsProperty.initializer,
+                        block.sourceId,
+                      );
                       break;
                     }
                     const stateNode = findNodeByAstPath(
