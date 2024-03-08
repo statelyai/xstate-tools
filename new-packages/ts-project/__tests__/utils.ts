@@ -407,7 +407,7 @@ function produceNewDigraphUsingEdit(
         : undefined;
       break;
     }
-    case 'add_transition':
+    case 'add_transition': {
       const sourceNode = findNodeByStatePath(digraphDraft, edit.sourcePath);
       const targetNode =
         edit.targetPath && findNodeByStatePath(digraphDraft, edit.targetPath);
@@ -455,6 +455,7 @@ function produceNewDigraphUsingEdit(
       }
 
       break;
+    }
     case 'remove_transition':
     case 'reanchor_transition':
     case 'change_transition_path':
@@ -553,8 +554,28 @@ function produceNewDigraphUsingEdit(
       break;
     }
     case 'remove_guard':
-    case 'edit_guard':
       throw new Error(`Not implemented: ${edit.type}`);
+    case 'edit_guard': {
+      const eventTypeData = getEventTypeData(digraphDraft, {
+        sourcePath: edit.path,
+        transitionPath: edit.transitionPath,
+      });
+      const edge =
+        digraphDraft.edges[
+          getEdgeGroup(digraphDraft, eventTypeData)[
+            last(edit.transitionPath) as number
+          ]
+        ];
+      const blockId = edge.data.guard;
+      assert(typeof blockId === 'string');
+      digraphDraft.blocks[blockId].sourceId = edit.name;
+      digraphDraft.implementations.guards[edit.name] ??= {
+        type: 'guard',
+        id: edit.name,
+        name: edit.name,
+      };
+      break;
+    }
     case 'add_invoke': {
       const node = findNodeByStatePath(digraphDraft, edit.path);
       const block = createActorBlock({
@@ -573,13 +594,14 @@ function produceNewDigraphUsingEdit(
     case 'remove_invoke':
     case 'edit_invoke':
       throw new Error(`Not implemented: ${edit.type}`);
-    case 'set_description':
+    case 'set_description': {
       const node = findNodeByStatePath(digraphDraft, edit.statePath);
       if (edit.transitionPath) {
         throw new Error(`Not implemented`);
       }
       node.data.description = edit.description;
       break;
+    }
   }
 }
 
