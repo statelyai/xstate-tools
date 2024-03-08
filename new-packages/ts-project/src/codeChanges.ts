@@ -14,6 +14,7 @@ import {
   findLast,
   findProperty,
   first,
+  getPropertyKey,
   last,
 } from './utils';
 
@@ -407,16 +408,24 @@ export function createCodeChanges(ts: typeof import('typescript')) {
         priority,
       });
     },
-    removeProperty: (property: PropertyAssignment) => {
-      changes.push({
-        type: 'remove_property',
-        sourceFile: property.getSourceFile(),
-        range: {
-          start: property.getStart(),
-          end: property.getEnd(),
-        },
-        property,
-      });
+    removeObjectProperty: (object: ObjectLiteralExpression, name: string) => {
+      for (const property of object.properties) {
+        if (
+          !ts.isPropertyAssignment(property) ||
+          getPropertyKey(undefined, ts, property) !== name
+        ) {
+          continue;
+        }
+        changes.push({
+          type: 'remove_property',
+          sourceFile: property.getSourceFile(),
+          range: {
+            start: property.getStart(),
+            end: property.getEnd(),
+          },
+          property,
+        });
+      }
     },
     replacePropertyName: (property: PropertyAssignment, name: string) => {
       changes.push({

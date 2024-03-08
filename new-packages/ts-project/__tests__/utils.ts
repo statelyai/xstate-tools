@@ -592,8 +592,25 @@ function produceNewDigraphUsingEdit(
       break;
     }
     case 'remove_invoke':
-    case 'edit_invoke':
       throw new Error(`Not implemented: ${edit.type}`);
+    case 'edit_invoke': {
+      const node = findNodeByStatePath(digraphDraft, edit.path);
+      const blockId = node.data.invoke[edit.invokeIndex];
+      const block = digraphDraft.blocks[blockId];
+      if (edit.source) {
+        block.sourceId = edit.source;
+        digraphDraft.implementations.actors[edit.source] ??= {
+          type: 'actor',
+          id: edit.source,
+          name: edit.source,
+        };
+      }
+      if ('id' in edit) {
+        assert(block.blockType === 'actor');
+        block.properties.id = edit.id ?? '';
+      }
+      break;
+    }
     case 'set_description': {
       const node = findNodeByStatePath(digraphDraft, edit.statePath);
       if (edit.transitionPath) {
