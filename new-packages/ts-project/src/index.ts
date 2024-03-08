@@ -652,13 +652,10 @@ function createProjectMachine({
                   );
 
                   if (initialProp) {
-                    codeChanges.replaceRange(sourceFile, {
-                      range: {
-                        start: initialProp.initializer.getStart(),
-                        end: initialProp.initializer.getEnd(),
-                      },
-                      element: c.string(patch.value),
-                    });
+                    codeChanges.replaceWith(
+                      initialProp.initializer,
+                      c.string(patch.value),
+                    );
                     break;
                   }
 
@@ -698,13 +695,10 @@ function createProjectMachine({
                   );
 
                   if (typeProp) {
-                    codeChanges.replaceRange(sourceFile, {
-                      range: {
-                        start: typeProp.initializer.getStart(),
-                        end: typeProp.initializer.getEnd(),
-                      },
-                      element: c.string(patch.value),
-                    });
+                    codeChanges.replaceWith(
+                      typeProp.initializer,
+                      c.string(patch.value),
+                    );
                     break;
                   }
 
@@ -729,13 +723,10 @@ function createProjectMachine({
                   );
 
                   if (historyProp) {
-                    codeChanges.replaceRange(sourceFile, {
-                      range: {
-                        start: historyProp.initializer.getStart(),
-                        end: historyProp.initializer.getEnd(),
-                      },
-                      element: c.string(patch.value),
-                    });
+                    codeChanges.replaceWith(
+                      historyProp.initializer,
+                      c.string(patch.value),
+                    );
                     break;
                   }
 
@@ -768,13 +759,10 @@ function createProjectMachine({
                   });
 
                   if (descriptionProp) {
-                    codeChanges.replaceRange(sourceFile, {
-                      range: {
-                        start: descriptionProp.initializer.getStart(),
-                        end: descriptionProp.initializer.getEnd(),
-                      },
+                    codeChanges.replaceWith(
+                      descriptionProp.initializer,
                       element,
-                    });
+                    );
                     break;
                   }
 
@@ -812,6 +800,51 @@ function createProjectMachine({
                     'guard',
                     guardElement,
                   );
+                  break;
+                }
+                if (patch.path[2] === 'data' && patch.path[3] === 'internal') {
+                  const internal: unknown = patch.value;
+                  assert(
+                    typeof internal === 'boolean' || internal === undefined,
+                  );
+                  const reenter =
+                    typeof internal === 'boolean' ? !internal : undefined;
+
+                  if (typeof reenter === 'boolean') {
+                    if (!host.ts.isObjectLiteralExpression(transitionNode)) {
+                      codeChanges.wrapIntoObject(transitionNode, {
+                        reuseAs: 'target',
+                        newProperties: [
+                          c.property('reenter', c.boolean(reenter)),
+                        ],
+                      });
+                      break;
+                    }
+                    const reenterProp = findProperty(
+                      undefined,
+                      host.ts,
+                      transitionNode,
+                      'reenter',
+                    );
+                    if (reenterProp) {
+                      codeChanges.replaceWith(
+                        reenterProp.initializer,
+                        c.boolean(reenter),
+                      );
+                      break;
+                    }
+                    codeChanges.insertPropertyIntoObject(
+                      transitionNode,
+                      'reenter',
+                      c.boolean(reenter),
+                    );
+                    break;
+                  }
+
+                  if (host.ts.isObjectLiteralExpression(transitionNode)) {
+                    codeChanges.removeObjectProperty(transitionNode, 'reenter');
+                    break;
+                  }
                   break;
                 }
                 break;

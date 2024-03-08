@@ -216,10 +216,10 @@ type MachineEdit =
       newTransitionPath: TransitionPath;
     }
   | {
-      type: 'mark_transition_as_external';
+      type: 'mark_transition_as_reentering';
       sourcePath: string[];
       transitionPath: TransitionPath;
-      external: boolean;
+      reenter?: boolean | undefined;
     }
   | {
       type: 'add_action';
@@ -459,8 +459,19 @@ function produceNewDigraphUsingEdit(
     case 'remove_transition':
     case 'reanchor_transition':
     case 'change_transition_path':
-    case 'mark_transition_as_external':
       throw new Error(`Not implemented`);
+    case 'mark_transition_as_reentering': {
+      const eventTypeData = getEventTypeData(digraphDraft, edit);
+      const edge =
+        digraphDraft.edges[
+          getEdgeGroup(digraphDraft, eventTypeData)[
+            last(edit.transitionPath) as number
+          ]
+        ];
+      edge.data.internal =
+        typeof edit.reenter === 'boolean' ? !edit.reenter : undefined;
+      break;
+    }
     case 'add_action': {
       const node = findNodeByStatePath(digraphDraft, edit.path);
       if (edit.actionPath[0] === 'entry' || edit.actionPath[0] === 'exit') {
