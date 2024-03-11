@@ -12,7 +12,12 @@ import {
   createProject,
   getEdgeGroup,
 } from '../src/index';
-import { createGuardBlock, registerGuardBlock } from '../src/state';
+import {
+  createActionBlock,
+  createGuardBlock,
+  registerActionBlocks,
+  registerGuardBlock,
+} from '../src/state';
 import {
   ActorBlock,
   Edge,
@@ -452,7 +457,46 @@ function produceNewDigraphUsingEdit(
     case 'reanchor_transition':
     case 'change_transition_path':
     case 'mark_transition_as_external':
-    case 'add_action':
+      throw new Error(`Not implemented`);
+    case 'add_action': {
+      const node = findNodeByStatePath(digraphDraft, edit.path);
+      if (edit.actionPath[0] === 'entry' || edit.actionPath[0] === 'exit') {
+        const [groupName, index] = edit.actionPath;
+        const block = createActionBlock({
+          sourceId: edit.name,
+          parentId: node.uniqueId,
+        });
+        registerActionBlocks(
+          digraphDraft,
+          [block],
+          node.data[groupName],
+          index,
+        );
+        break;
+      }
+      const transitionPath = edit.actionPath.slice(0, -1) as TransitionPath;
+      const eventTypeData = getEventTypeData(digraphDraft, {
+        sourcePath: edit.path,
+        transitionPath,
+      });
+      const edge =
+        digraphDraft.edges[
+          getEdgeGroup(digraphDraft, eventTypeData)[
+            last(transitionPath) as number
+          ]
+        ];
+      const block = createActionBlock({
+        sourceId: edit.name,
+        parentId: edge.uniqueId,
+      });
+      registerActionBlocks(
+        digraphDraft,
+        [block],
+        edge.data.actions,
+        last(edit.actionPath) as number,
+      );
+      break;
+    }
     case 'remove_action':
     case 'edit_action':
     case 'add_guard':

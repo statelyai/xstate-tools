@@ -27,13 +27,14 @@ import {
   withAstPathSegment,
 } from './utils';
 
-const createActionBlock = ({
+/** @internal */
+export function createActionBlock({
   sourceId,
   parentId,
 }: {
   sourceId: string;
   parentId: string;
-}): ActionBlock => {
+}): ActionBlock {
   const blockId = uniqueId();
   return {
     blockType: 'action',
@@ -45,7 +46,7 @@ const createActionBlock = ({
       params: {},
     },
   };
-};
+}
 export function createActorBlock({
   sourceId,
   parentId,
@@ -218,15 +219,22 @@ export function registerGuardBlock(
   };
 }
 
-function registerActionBlocks(
-  ctx: ExtractionContext,
+/** @internal */
+export function registerActionBlocks(
+  digraph: Pick<ExtractionContext['digraph'], 'blocks' | 'implementations'>,
   blocks: ActionBlock[],
   parentContainer: string[],
+  index?: number,
 ) {
-  for (const block of blocks) {
-    parentContainer.push(block.uniqueId);
-    ctx.digraph.blocks[block.uniqueId] = block;
-    ctx.digraph.implementations.actions[block.sourceId] ??= {
+  for (let i = 0; i < blocks.length; i++) {
+    const block = blocks[i];
+    if (typeof index === 'number') {
+      parentContainer.splice(index + i, 0, block.uniqueId);
+    } else {
+      parentContainer.push(block.uniqueId);
+    }
+    digraph.blocks[block.uniqueId] = block;
+    digraph.implementations.actions[block.sourceId] ??= {
       type: 'action',
       id: block.sourceId,
       name: block.sourceId,
@@ -360,7 +368,7 @@ function extractEdgeGroup(
                 return;
               }
 
-              registerActionBlocks(ctx, blocks, edge.data.actions);
+              registerActionBlocks(ctx.digraph, blocks, edge.data.actions);
               return;
             }
             case 'internal': {
@@ -730,7 +738,7 @@ export function extractState(
           return;
         }
 
-        registerActionBlocks(ctx, blocks, node.data[propKey]);
+        registerActionBlocks(ctx.digraph, blocks, node.data[propKey]);
         return;
       }
       case 'invoke': {
