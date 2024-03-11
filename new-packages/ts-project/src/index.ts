@@ -926,8 +926,35 @@ function createProjectMachine({
                     );
                     break;
                   }
-                  case 'actor':
-                  case 'guard':
+                  case 'actor': {
+                    break;
+                  }
+                  case 'guard': {
+                    const edge = currentState.digraph!.edges[block.parentId];
+                    const transitionNode = findNodeByAstPath(
+                      host.ts,
+                      createMachineCall,
+                      currentState.astPaths.edges[edge.uniqueId],
+                    );
+                    assert(host.ts.isObjectLiteralExpression(transitionNode));
+
+                    const guardProperty = findProperty(
+                      undefined,
+                      host.ts,
+                      transitionNode,
+                      'guard',
+                    );
+
+                    assert(!!guardProperty);
+
+                    updateParameterizedObjectLocation(
+                      host.ts,
+                      codeChanges,
+                      guardProperty.initializer,
+                      block.sourceId,
+                    );
+                    break;
+                  }
                 }
               }
             }
