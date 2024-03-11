@@ -757,29 +757,11 @@ export function extractState(
                 return;
               }
 
-              let actorId: string | undefined;
-              let onDone: PropertyAssignment | undefined;
-              let onError: PropertyAssignment | undefined;
-
-              forEachStaticProperty(ctx, ts, element, (prop, key) => {
-                switch (key) {
-                  case 'id': {
-                    if (ts.isStringLiteralLike(prop.initializer)) {
-                      actorId = prop.initializer.text;
-                      return;
-                    }
-                    return;
-                  }
-                  case 'onDone': {
-                    onDone = prop;
-                    return;
-                  }
-                  case 'onError': {
-                    onError = prop;
-                    return;
-                  }
-                }
-              });
+              const idProperty = findProperty(ctx, ts, element, 'id');
+              const actorId =
+                idProperty && ts.isStringLiteralLike(idProperty.initializer)
+                  ? idProperty.initializer.text
+                  : undefined;
 
               const block = createActorBlock({
                 sourceId: ts.isStringLiteralLike(srcProperty.initializer)
@@ -789,25 +771,30 @@ export function extractState(
                 actorId: actorId ?? `inline:${uniqueId()}:invocation`,
               });
 
-              if (onDone) {
-                extractEdgeGroup(ctx, ts, onDone, {
-                  sourceId: node.uniqueId,
-                  eventTypeData: {
-                    type: 'invocation.done',
-                    invocationId: block.uniqueId,
-                  },
-                });
-              }
-
-              if (onError) {
-                extractEdgeGroup(ctx, ts, onError, {
-                  sourceId: node.uniqueId,
-                  eventTypeData: {
-                    type: 'invocation.error',
-                    invocationId: block.uniqueId,
-                  },
-                });
-              }
+              forEachStaticProperty(ctx, ts, element, (prop, key) => {
+                switch (key) {
+                  case 'onDone': {
+                    extractEdgeGroup(ctx, ts, prop, {
+                      sourceId: node.uniqueId,
+                      eventTypeData: {
+                        type: 'invocation.done',
+                        invocationId: block.uniqueId,
+                      },
+                    });
+                    return;
+                  }
+                  case 'onError': {
+                    extractEdgeGroup(ctx, ts, prop, {
+                      sourceId: node.uniqueId,
+                      eventTypeData: {
+                        type: 'invocation.error',
+                        invocationId: block.uniqueId,
+                      },
+                    });
+                    return;
+                  }
+                }
+              });
 
               return block;
             }

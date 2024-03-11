@@ -6,10 +6,10 @@ import type {
   SourceFile,
 } from 'typescript';
 import {
-  c,
-  createCodeChanges,
   InsertionElement,
   InsertionPriority,
+  c,
+  createCodeChanges,
 } from './codeChanges';
 import { shallowEqual } from './shallowEqual';
 import { extractState } from './state';
@@ -822,8 +822,6 @@ function createProjectMachine({
                   createMachineCall,
                   currentState.astPaths.edges[edgeId],
                 );
-                // TODO: this isn't always true, it's a temporary assertion
-                assert(host.ts.isObjectLiteralExpression(edge));
                 if (patch.path[2] === 'data' && patch.path[3] === 'actions') {
                   const index = patch.path[4];
                   assert(typeof index === 'number');
@@ -838,6 +836,22 @@ function createProjectMachine({
                   const actionId = patch.value;
                   assert(typeof actionId === 'string');
 
+                  if (!host.ts.isObjectLiteralExpression(edge)) {
+                    assert(index === 0);
+
+                    codeChanges.wrapIntoObject(edge, {
+                      reuseAs: 'target',
+                      newProperties: [
+                        c.property(
+                          'actions',
+                          c.string(
+                            currentState.digraph!.blocks[actionId].sourceId,
+                          ),
+                        ),
+                      ],
+                    });
+                    break;
+                  }
                   codeChanges.insertAtOptionalObjectPath(
                     edge,
                     [patch.path[3], index],
@@ -893,9 +907,9 @@ function createProjectMachine({
                   createMachineCall,
                   currentState.astPaths.edges[edgeId],
                 );
-                // TODO: this isn't always true, it's a temporary assertion
-                assert(host.ts.isObjectLiteralExpression(edge));
                 if (patch.path[2] === 'data' && patch.path[3] === 'actions') {
+                  // this should always be true - if we are replacing an action within an edge then the edge already has to be an object literal
+                  assert(host.ts.isObjectLiteralExpression(edge));
                   const insertion = consumeArrayInsertionAtIndex(
                     sortedArrayPatches,
                     i,
