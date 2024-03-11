@@ -639,19 +639,17 @@ function createProjectMachine({
                   break;
                 }
                 if (patch.path[2] === 'data' && patch.path[3] === 'initial') {
+                  if (patch.value === undefined) {
+                    codeChanges.removeObjectProperty(stateNode, 'initial');
+                    break;
+                  }
+
                   const initialProp = findProperty(
                     undefined,
                     host.ts,
                     stateNode,
                     'initial',
                   );
-                  if (patch.value === undefined) {
-                    // this check is defensive, it should always be there
-                    if (initialProp) {
-                      codeChanges.removeProperty(initialProp);
-                    }
-                    break;
-                  }
 
                   if (initialProp) {
                     codeChanges.replaceRange(sourceFile, {
@@ -688,18 +686,16 @@ function createProjectMachine({
                   );
                 }
                 if (patch.path[2] === 'data' && patch.path[3] === 'type') {
+                  if (patch.value === 'normal') {
+                    codeChanges.removeObjectProperty(stateNode, 'type');
+                    break;
+                  }
                   const typeProp = findProperty(
                     undefined,
                     host.ts,
                     stateNode,
                     'type',
                   );
-                  if (patch.value === 'normal') {
-                    if (typeProp) {
-                      codeChanges.removeProperty(typeProp);
-                    }
-                    break;
-                  }
 
                   if (typeProp) {
                     codeChanges.replaceRange(sourceFile, {
@@ -720,18 +716,17 @@ function createProjectMachine({
                   );
                 }
                 if (patch.path[2] === 'data' && patch.path[3] === 'history') {
+                  if (patch.value === undefined || patch.value === 'shallow') {
+                    codeChanges.removeObjectProperty(stateNode, 'history');
+                    break;
+                  }
+
                   const historyProp = findProperty(
                     undefined,
                     host.ts,
                     stateNode,
                     'history',
                   );
-                  if (patch.value === undefined || patch.value === 'shallow') {
-                    if (historyProp) {
-                      codeChanges.removeProperty(historyProp);
-                    }
-                    break;
-                  }
 
                   if (historyProp) {
                     codeChanges.replaceRange(sourceFile, {
@@ -756,18 +751,17 @@ function createProjectMachine({
                   patch.path[2] === 'data' &&
                   patch.path[3] === 'description'
                 ) {
+                  if (!patch.value) {
+                    codeChanges.removeObjectProperty(stateNode, 'description');
+                    break;
+                  }
+
                   const descriptionProp = findProperty(
                     undefined,
                     host.ts,
                     stateNode,
                     'description',
                   );
-                  if (!patch.value) {
-                    if (descriptionProp) {
-                      codeChanges.removeProperty(descriptionProp);
-                    }
-                    break;
-                  }
 
                   const element = c.string(patch.value, {
                     allowMultiline: true,
@@ -828,6 +822,9 @@ function createProjectMachine({
                 const block = currentState.digraph!.blocks[blockId];
                 switch (block.blockType) {
                   case 'action': {
+                    if (patch.path[2] !== 'sourceId') {
+                      break;
+                    }
                     const node = currentState.digraph!.nodes[block.parentId];
                     if (!node) {
                       // there is no way to know where to look for this parent
@@ -927,9 +924,88 @@ function createProjectMachine({
                     break;
                   }
                   case 'actor': {
+                    const node = currentState.digraph!.nodes[block.parentId];
+                    const stateNode = findNodeByAstPath(
+                      host.ts,
+                      createMachineCall,
+                      currentState.astPaths.nodes[node.uniqueId],
+                    );
+                    assert(host.ts.isObjectLiteralExpression(stateNode));
+                    const invokeIndex = node.data.invoke.indexOf(blockId);
+                    const invokeProperty = findProperty(
+                      undefined,
+                      host.ts,
+                      stateNode,
+                      'invoke',
+                    );
+                    assert(!!invokeProperty);
+
+                    let invokeNode = invokeProperty.initializer;
+
+                    if (
+                      host.ts.isArrayLiteralExpression(
+                        invokeProperty.initializer,
+                      )
+                    ) {
+                      invokeNode =
+                        invokeProperty.initializer.elements[invokeIndex];
+                      assert(!!invokeNode);
+                    }
+
+                    assert(host.ts.isObjectLiteralExpression(invokeNode));
+
+                    if (patch.path[2] === 'sourceId') {
+                      const srcProperty = findProperty(
+                        undefined,
+                        host.ts,
+                        invokeNode,
+                        'src',
+                      );
+
+                      assert(!!srcProperty);
+
+                      codeChanges.replaceWith(
+                        srcProperty.initializer,
+                        c.string(block.sourceId),
+                      );
+                      break;
+                    }
+
+                    if (
+                      patch.path[2] === 'properties' &&
+                      patch.path[3] === 'id'
+                    ) {
+                      const actorId = block.properties.id;
+                      if (actorId && !actorId.startsWith('inline:')) {
+                        const idProperty = findProperty(
+                          undefined,
+                          host.ts,
+                          invokeNode,
+                          'id',
+                        );
+                        if (idProperty) {
+                          codeChanges.replaceWith(
+                            idProperty.initializer,
+                            c.string(actorId),
+                          );
+                          break;
+                        }
+                        codeChanges.insertPropertyIntoObject(
+                          invokeNode,
+                          'id',
+                          c.string(actorId),
+                        );
+                        break;
+                      }
+                      codeChanges.removeObjectProperty(invokeNode, 'id');
+                      break;
+                    }
                     break;
                   }
                   case 'guard': {
+                    if (patch.path[2] !== 'sourceId') {
+                      break;
+                    }
                     const edge = currentState.digraph!.edges[block.parentId];
                     const transitionNode = findNodeByAstPath(
                       host.ts,
