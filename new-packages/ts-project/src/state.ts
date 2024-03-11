@@ -47,6 +47,8 @@ export function createActionBlock({
     },
   };
 }
+
+/** @internal */
 export function createActorBlock({
   sourceId,
   parentId,
@@ -68,6 +70,7 @@ export function createActorBlock({
     },
   };
 }
+
 /** @internal */
 export const createGuardBlock = ({
   sourceId,
@@ -236,6 +239,29 @@ export function registerActionBlocks(
     digraph.blocks[block.uniqueId] = block;
     digraph.implementations.actions[block.sourceId] ??= {
       type: 'action',
+      id: block.sourceId,
+      name: block.sourceId,
+    };
+  }
+}
+
+/** @internal */
+export function registerActorBlocks(
+  digraph: Pick<ExtractionContext['digraph'], 'blocks' | 'implementations'>,
+  blocks: ActorBlock[],
+  parentContainer: string[],
+  index?: number,
+) {
+  for (let i = 0; i < blocks.length; i++) {
+    const block = blocks[i];
+    if (typeof index === 'number') {
+      parentContainer.splice(index + i, 0, block.uniqueId);
+    } else {
+      parentContainer.push(block.uniqueId);
+    }
+    digraph.blocks[block.uniqueId] = block;
+    digraph.implementations.actors[block.sourceId] ??= {
+      type: 'actor',
       id: block.sourceId,
       name: block.sourceId,
     };
@@ -814,15 +840,7 @@ export function extractState(
           return;
         }
 
-        for (const block of blocks) {
-          node.data[propKey].push(block.uniqueId);
-          ctx.digraph.blocks[block.uniqueId] = block;
-          ctx.digraph.implementations.actors[block.sourceId] ??= {
-            type: 'actor',
-            id: block.sourceId,
-            name: block.sourceId,
-          };
-        }
+        registerActorBlocks(ctx.digraph, blocks, node.data.invoke);
         return;
       }
     }

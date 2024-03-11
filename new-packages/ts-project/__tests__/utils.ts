@@ -14,8 +14,10 @@ import {
 } from '../src/index';
 import {
   createActionBlock,
+  createActorBlock,
   createGuardBlock,
   registerActionBlocks,
+  registerActorBlocks,
   registerGuardBlock,
 } from '../src/state';
 import {
@@ -520,7 +522,22 @@ function produceNewDigraphUsingEdit(
     }
     case 'remove_guard':
     case 'edit_guard':
-    case 'add_invoke':
+      throw new Error(`Not implemented: ${edit.type}`);
+    case 'add_invoke': {
+      const node = findNodeByStatePath(digraphDraft, edit.path);
+      const block = createActorBlock({
+        sourceId: edit.source,
+        parentId: node.uniqueId,
+        actorId: edit.id ?? `inline:${uniqueId()}:invocation`,
+      });
+      registerActorBlocks(
+        digraphDraft,
+        [block],
+        node.data.invoke,
+        edit.invokeIndex,
+      );
+      break;
+    }
     case 'remove_invoke':
     case 'edit_invoke':
       throw new Error(`Not implemented: ${edit.type}`);
