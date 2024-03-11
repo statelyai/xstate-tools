@@ -2,6 +2,56 @@ import { outdent } from 'outdent';
 import { expect, test } from 'vitest';
 import { createTestProject, testdir, ts } from '../utils';
 
+test(`should append a state after existing states of a nested state`, async () => {
+  const tmpPath = await testdir({
+    'tsconfig.json': JSON.stringify({}),
+    'index.ts': ts`
+      import { createMachine } from "xstate";
+
+      createMachine({
+        states: {
+          foo: {
+            states: {
+              bar: {},
+            },
+          },
+        },
+      });
+    `,
+  });
+
+  const project = await createTestProject(tmpPath);
+
+  const textEdits = project.editDigraph(
+    {
+      fileName: 'index.ts',
+      machineIndex: 0,
+    },
+
+    {
+      type: 'add_state',
+      path: ['foo'],
+      name: 'just_added',
+    },
+  );
+  expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
+    {
+      "index.ts": "import { createMachine } from "xstate";
+
+    createMachine({
+      states: {
+        foo: {
+          states: {
+            bar: {},
+            just_added: {},
+          },
+        },
+      },
+    });",
+    }
+  `);
+});
+
 test('should append a state after existing states (with trailing comma)', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
@@ -617,6 +667,43 @@ test('should successfully add a state to the root and use it as initial state of
   );
 });
 
+// this shouldn't be possible in the Studio but we handle this here regardless
+test('should be possible to add a state to the empty root (without making it its initial state)', async () => {
+  const tmpPath = await testdir({
+    'tsconfig.json': JSON.stringify({}),
+    'index.ts': ts`
+      import { createMachine } from "xstate";
+
+      createMachine({});
+    `,
+  });
+
+  const project = await createTestProject(tmpPath);
+
+  const textEdits = project.editDigraph(
+    {
+      fileName: 'index.ts',
+      machineIndex: 0,
+    },
+    {
+      type: 'add_state',
+      path: [],
+      name: 'just_added',
+    },
+  );
+  expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
+    {
+      "index.ts": "import { createMachine } from "xstate";
+
+    createMachine({
+    	states: {
+    		just_added: {}
+    	}
+    });",
+    }
+  `);
+});
+
 test('should successfully add a state to a nested state and use it as initial state of its parent', async () => {
   const tmpPath = await testdir({
     'tsconfig.json': JSON.stringify({}),
@@ -711,4 +798,50 @@ test(`should be possible to add a state with name that isn't a valid identifier`
     }
   `,
   );
+});
+
+test(`should be possible to add a state to an empty nested state`, async () => {
+  const tmpPath = await testdir({
+    'tsconfig.json': JSON.stringify({}),
+    'index.ts': ts`
+      import { createMachine } from "xstate";
+
+      createMachine({
+        states: {
+          foo: {},
+        },
+      });
+    `,
+  });
+
+  const project = await createTestProject(tmpPath);
+
+  const textEdits = project.editDigraph(
+    {
+      fileName: 'index.ts',
+      machineIndex: 0,
+    },
+    [
+      {
+        type: 'add_state',
+        path: ['foo'],
+        name: 'just_added',
+      },
+    ],
+  );
+  expect(await project.applyTextEdits(textEdits)).toMatchInlineSnapshot(`
+    {
+      "index.ts": "import { createMachine } from "xstate";
+
+    createMachine({
+      states: {
+        foo: {
+          states: {
+            just_added: {}
+          }
+        },
+      },
+    });",
+    }
+  `);
 });
