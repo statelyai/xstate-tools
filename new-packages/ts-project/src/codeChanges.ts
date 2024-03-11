@@ -881,7 +881,18 @@ export function createCodeChanges(ts: typeof import('typescript')) {
             });
             break;
           case 'replace_with':
-            throw new Error('Not implemented');
+            edits.push({
+              type: 'replace',
+              fileName: change.sourceFile.fileName,
+              range: change.range,
+              newText: insertionToText(
+                ts,
+                change.sourceFile,
+                change.replacement,
+                formattingOptions,
+              ),
+            });
+            break;
           case 'wrap_into_array_with': {
             const currentIdentation = getIndentationBeforePosition(
               change.sourceFile.text,
@@ -1245,3 +1256,5 @@ export const InsertionPriority = {
   History: 3,
   StateType: 4,
 } as const;
+
+export type CodeChanges = ReturnType<typeof createCodeChanges>;

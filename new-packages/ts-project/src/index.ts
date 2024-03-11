@@ -1,11 +1,13 @@
 import { applyPatches, enablePatches, type Patch } from 'immer';
 import type {
   CallExpression,
+  Expression,
   Program,
   PropertyAssignment,
   SourceFile,
 } from 'typescript';
 import {
+  CodeChanges,
   InsertionElement,
   InsertionPriority,
   c,
@@ -467,6 +469,21 @@ function consumeArrayInsertionAtIndex(
   assertUnreachable();
 }
 
+function updateParameterizedObjectLocation(
+  ts: typeof import('typescript'),
+  codeChanges: CodeChanges,
+  expression: Expression,
+  newType: string,
+) {
+  if (ts.isObjectLiteralExpression(expression)) {
+    const typeProperty = findProperty(undefined, ts, expression, 'type');
+    assert(!!typeProperty);
+    codeChanges.replaceWith(typeProperty.initializer, c.string(newType));
+    return;
+  }
+  codeChanges.replaceWith(expression, c.string(newType));
+}
+
 function createProjectMachine({
   host,
   fileName,
@@ -805,6 +822,114 @@ function createProjectMachine({
                 }
                 break;
               }
+              case 'blocks': {
+                const blockId = patch.path[1];
+                assert(typeof blockId === 'string');
+                const block = currentState.digraph!.blocks[blockId];
+                switch (block.blockType) {
+                  case 'action': {
+                    const node = currentState.digraph!.nodes[block.parentId];
+                    if (!node) {
+                      // there is no way to know where to look for this parent
+                      // so if it wasn't a node we try to find it in the edges
+                      const edge = currentState.digraph!.edges[block.parentId];
+                      const transitionNode = findNodeByAstPath(
+                        host.ts,
+                        createMachineCall,
+                        currentState.astPaths.edges[edge.uniqueId],
+                      );
+                      assert(host.ts.isObjectLiteralExpression(transitionNode));
+
+                      const actionIndex = edge.data.actions.indexOf(blockId);
+
+                      const actionsProperty = findProperty(
+                        undefined,
+                        host.ts,
+                        transitionNode,
+                        'actions',
+                      );
+                      assert(!!actionsProperty);
+
+                      if (
+                        host.ts.isArrayLiteralExpression(
+                          actionsProperty.initializer,
+                        )
+                      ) {
+                        const element =
+                          actionsProperty.initializer.elements[actionIndex];
+                        assert(!!element);
+
+                        updateParameterizedObjectLocation(
+                          host.ts,
+                          codeChanges,
+                          element,
+                          block.sourceId,
+                        );
+                        break;
+                      }
+                      assert(actionIndex === 0);
+
+                      updateParameterizedObjectLocation(
+                        host.ts,
+                        codeChanges,
+                        actionsProperty.initializer,
+                        block.sourceId,
+                      );
+                      break;
+                    }
+                    const stateNode = findNodeByAstPath(
+                      host.ts,
+                      createMachineCall,
+                      currentState.astPaths.nodes[node.uniqueId],
+                    );
+                    assert(host.ts.isObjectLiteralExpression(stateNode));
+
+                    // there is no way to know where this block is used
+                    // so we have to look for it in both entry actions and exit actions
+                    const entryIndex = node.data.entry.indexOf(blockId);
+                    const [actionType, actionIndex] =
+                      entryIndex !== -1
+                        ? ['entry', entryIndex]
+                        : ['exit', node.data.exit.indexOf(blockId)];
+
+                    const actionsProperty = findProperty(
+                      undefined,
+                      host.ts,
+                      stateNode,
+                      actionType,
+                    );
+                    assert(!!actionsProperty);
+                    if (
+                      host.ts.isArrayLiteralExpression(
+                        actionsProperty.initializer,
+                      )
+                    ) {
+                      const element =
+                        actionsProperty.initializer.elements[actionIndex];
+                      assert(!!element);
+
+                      updateParameterizedObjectLocation(
+                        host.ts,
+                        codeChanges,
+                        element,
+                        block.sourceId,
+                      );
+                      break;
+                    }
+                    assert(actionIndex === 0);
+
+                    updateParameterizedObjectLocation(
+                      host.ts,
+                      codeChanges,
+                      actionsProperty.initializer,
+                      block.sourceId,
+                    );
+                    break;
+                  }
+                  case 'actor':
+                  case 'guard':
+                }
+              }
             }
             break;
         }
@@ -962,7 +1087,8 @@ function createProjectMachine({
                     );
                     break;
                   }
-                  // TODO: handle simple replacement here
+                  // we don't have to handle simple replacement here
+                  // the type of the action is actually referenced in the blocks, not here
                   break;
                 }
                 if (patch.path[2] === 'data' && patch.path[3] === 'invoke') {
