@@ -484,6 +484,17 @@ function updateParameterizedObjectLocation(
   codeChanges.replaceWith(expression, c.string(newType));
 }
 
+function hasPatchPath(obj: {}, path: Patch['path']) {
+  for (let i = 0; i < path.length; i++) {
+    const segment = path[i];
+    if (!(segment in obj)) {
+      return false;
+    }
+    obj = obj[segment as never];
+  }
+  return true;
+}
+
 function createProjectMachine({
   host,
   fileName,
@@ -525,16 +536,22 @@ function createProjectMachine({
       const { sourceFile, createMachineCall } = findOwnCreateMachineCall();
       const currentState = state!;
 
-      // TODO: currently it throws when running with the Studio open - presumably because the patch might contain data that are not part of this local `digraph`
+      const filteredPatches = patches.filter((patch) => {
+        if (patch.op === 'add') {
+          return hasPatchPath(currentState.digraph!, patch.path.slice(0, -1));
+        }
+        return hasPatchPath(currentState.digraph!, patch.path);
+      });
+
       currentState.digraph = applyPatches(
         currentState.digraph!,
-        patches,
+        filteredPatches,
       ) as any;
 
       const deferredArrayPatches: Patch[] = [];
 
-      for (let i = 0; i < patches.length; i++) {
-        const patch = patches[i];
+      for (let i = 0; i < filteredPatches.length; i++) {
+        const patch = filteredPatches[i];
 
         switch (patch.op) {
           case 'add':
