@@ -301,8 +301,13 @@ async function handleDocumentChange(textDocument: TextDocument): Promise<void> {
           message: displayedMachine.error.message,
         });
       } else {
-        const { configError, machineResult } =
+        const extractionResult =
           extractionResults[displayedMachine.machineIndex];
+
+        if (!extractionResult) {
+          throw new Error('Oops');
+        }
+        const { configError, machineResult } = extractionResult;
 
         if (configError) {
           connection.sendNotification('extractionError', {
@@ -671,8 +676,15 @@ connection.onRequest('getMachineAtIndex', ({ uri, machineIndex }) => {
     throw new Error('There were no machines recognized in this document');
   }
 
-  const machineResult =
-    cachedDocument.extractionResults[machineIndex].machineResult;
+  const extractionResult = cachedDocument.extractionResults[machineIndex];
+
+  if (!extractionResult) {
+    throw new Error(
+      'no extraction result found for given index ' + machineIndex,
+    );
+  }
+
+  const machineResult = extractionResult.machineResult;
 
   if (!machineResult) {
     throw new Error(
@@ -726,8 +738,15 @@ connection.onRequest('getMachineAtCursorPosition', ({ uri, position }) => {
     );
   }
 
-  const machineResult =
-    cachedDocument.extractionResults[machineResultIndex].machineResult;
+  const extractionResult = cachedDocument.extractionResults[machineResultIndex];
+
+  if (!extractionResult) {
+    throw new Error(
+      'no extraction result found for given index ' + machineResultIndex,
+    );
+  }
+
+  const machineResult = extractionResult.machineResult;
 
   return {
     config: machineResult.toConfig()!,
@@ -754,30 +773,27 @@ connection.onRequest('applyMachineEdits', ({ machineEdits, reason }) => {
   const cachedDocument = documentsCache.get(displayedUri)!;
   const isLayoutStringOnlyUpdate =
     machineEdits.length === 1 &&
-    machineEdits[0].type === 'update_layout_string';
+    machineEdits[0]!.type === 'update_layout_string';
 
   let modified: ReturnType<
     MachineExtractResult['modify'] | MachineExtractResult['restore']
   >;
 
+  const extractionResult =
+    cachedDocument.extractionResults[displayedMachine.machineIndex];
+  if (!extractionResult) {
+    throw new Error('No extraction result found');
+  }
   if (!isLayoutStringOnlyUpdate && reason === 'undo') {
     const item = cachedDocument.undoStack.pop();
+
     if (item) {
-      modified =
-        cachedDocument.extractionResults[
-          displayedMachine.machineIndex
-        ].machineResult.restore(item);
+      modified = extractionResult.machineResult.restore(item);
     } else {
-      modified =
-        cachedDocument.extractionResults[
-          displayedMachine.machineIndex
-        ].machineResult.modify(machineEdits);
+      modified = extractionResult.machineResult.modify(machineEdits);
     }
   } else {
-    const modifyResult =
-      cachedDocument.extractionResults[
-        displayedMachine.machineIndex
-      ].machineResult.modify(machineEdits);
+    const modifyResult = extractionResult.machineResult.modify(machineEdits);
 
     modified = modifyResult;
 
@@ -808,12 +824,10 @@ connection.onRequest('applyMachineEdits', ({ machineEdits, reason }) => {
 
   // this kinda also should update types, but at the moment we don't need it
   // and the whole thing will be refactored anyway
-  cachedDocument.extractionResults[
-    displayedMachine.machineIndex
-  ].machineResult = getMachineExtractResult({
+  extractionResult.machineResult = getMachineExtractResult({
     file,
     fileContent: newDocumentText,
-    node: machineNodes[displayedMachine.machineIndex],
+    node: machineNodes[displayedMachine.machineIndex]!, // TODO: check
   })!;
 
   return {
@@ -859,9 +873,14 @@ connection.onRequest('getNodePosition', ({ path }) => {
     return;
   }
 
-  const machineResult =
-    cachedDocument.extractionResults[displayedMachine.machineIndex]
-      .machineResult;
+  const extractionResult =
+    cachedDocument.extractionResults[displayedMachine.machineIndex];
+
+  if (!extractionResult) {
+    throw new Error('No extraction result found');
+  }
+
+  const machineResult = extractionResult.machineResult;
 
   const node = machineResult.getStateNodeByPath(path);
 

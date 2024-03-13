@@ -575,6 +575,7 @@ function createProjectMachine({
                 // this might become a problem, especially when dealing with copy-pasting
                 // the implementation will have to account for that in the future
                 const newNode: Node = patch.value;
+                console.log(578);
                 const parentStateNode = findNodeByAstPath(
                   host.ts,
                   createMachineCall,
@@ -601,6 +602,8 @@ function createProjectMachine({
                   break;
                 }
                 assert(patch.path.length === 2);
+                console.log('>>', patch);
+                console.log(Object.keys(currentState.astPaths.nodes));
                 const sourceNode = findNodeByAstPath(
                   host.ts,
                   createMachineCall,
@@ -633,6 +636,7 @@ function createProjectMachine({
                   break;
                 }
                 const nodeId = patch.path[1];
+                console.log(578);
                 const stateNode = findNodeByAstPath(
                   host.ts,
                   createMachineCall,
@@ -641,6 +645,7 @@ function createProjectMachine({
                 assert(host.ts.isObjectLiteralExpression(stateNode));
 
                 if (patch.path[2] === 'data' && patch.path[3] === 'key') {
+                  console.log(647);
                   const parenStatetNode = findNodeByAstPath(
                     host.ts,
                     createMachineCall,
@@ -796,6 +801,7 @@ function createProjectMachine({
                   break;
                 }
                 const edge = currentState.digraph!.edges[patch.path[1]];
+                console.log(803);
                 const transitionNode = findNodeByAstPath(
                   host.ts,
                   createMachineCall,
@@ -880,6 +886,7 @@ function createProjectMachine({
                       // there is no way to know where to look for this parent
                       // so if it wasn't a node we try to find it in the edges
                       const edge = currentState.digraph!.edges[block.parentId];
+                      console.log(888);
                       const transitionNode = findNodeByAstPath(
                         host.ts,
                         createMachineCall,
@@ -924,6 +931,7 @@ function createProjectMachine({
                       );
                       break;
                     }
+                    console.log(933);
                     const stateNode = findNodeByAstPath(
                       host.ts,
                       createMachineCall,
@@ -1103,6 +1111,7 @@ function createProjectMachine({
             switch (patch.path[0]) {
               case 'nodes': {
                 const nodeId = patch.path[1];
+                console.log(1113);
                 const stateNode = findNodeByAstPath(
                   host.ts,
                   createMachineCall,

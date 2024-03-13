@@ -265,6 +265,7 @@ export function findNodeByAstPath(
 
   let current = call.arguments[0];
 
+  console.log(268, path);
   for (const segment of path) {
     if (ts.isObjectLiteralExpression(current)) {
       const retrieved = current.properties[segment];

@@ -246,6 +246,7 @@ export class MachineExtractResult {
       }
 
       definition.states?.properties.forEach((stateNode) => {
+        console.log(249, path);
         getSubNodes(stateNode.result, [...path, stateNode.key]);
       });
     };
@@ -1895,6 +1896,7 @@ function getPropByPath(ast: RecastObjectExpression, path: (string | number)[]) {
       'As we have to return a *prop* the last element of the path must be a string',
     );
   }
+  console.log(1899, path);
   const pathCopy = [...path];
   let segment: (typeof path)[number] | undefined;
   let current: RecastNode | undefined | null = ast;
@@ -1990,6 +1992,7 @@ function getTransitionObject(
   obj: RecastObjectExpression,
   path: TransitionPath,
 ) {
+  console.log(1995, path);
   const pathCopy = [...path];
   let segment: (typeof path)[number] | undefined;
   let current: RecastNode = obj;

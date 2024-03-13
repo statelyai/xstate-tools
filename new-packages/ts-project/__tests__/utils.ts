@@ -288,6 +288,7 @@ function findNodeByStatePath(
   let marker = digraph.nodes[digraph.root];
   let parentId = digraph.root;
 
+  console.log(291, path);
   for (const segment of path) {
     const node = Object.values(digraph.nodes).find(
       (node) => node.parentId === parentId && node.data.key === segment,

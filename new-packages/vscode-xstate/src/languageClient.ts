@@ -8,8 +8,10 @@ import type { ExtractorDigraphDef, Patch } from '@xstate/ts-project';
 import * as vscode from 'vscode';
 import {
   ActorRef,
+  ExtractEvent,
   Snapshot,
   assertEvent,
+  assign,
   fromCallback,
   fromPromise,
   sendTo,
@@ -45,6 +47,8 @@ export const languageClientMachine = setup({
     context: {
       extensionContext: vscode.ExtensionContext;
       languageClient: LanguageClient;
+      patchesToApply: ExtractEvent<LanguageClientEvent, 'APPLY_PATCHES'>[];
+      nextPatch: ExtractEvent<LanguageClientEvent, 'APPLY_PATCHES'> | undefined;
     };
     events: LanguageClientEvent;
     children: {
@@ -190,6 +194,67 @@ export const languageClientMachine = setup({
       },
     ),
     webviewLogic,
+    applyPatches: fromPromise(async ({ input }) => {
+      console.log('applying patches');
+      const { context, event } = input;
+      assertEvent(event, 'APPLY_PATCHES');
+      const { type, ...params } = event;
+      const textEdits = await context.languageClient.sendRequest(
+        applyPatches,
+        params,
+      );
+
+      const workspaceEdit = new vscode.WorkspaceEdit();
+      for (const textEdit of textEdits) {
+        switch (textEdit.type) {
+          case 'delete': {
+            workspaceEdit.delete(
+              vscode.Uri.parse(params.uri),
+              new vscode.Range(
+                new vscode.Position(
+                  textEdit.range.start.line,
+                  textEdit.range.start.character,
+                ),
+                new vscode.Position(
+                  textEdit.range.end.line,
+                  textEdit.range.end.character,
+                ),
+              ),
+            );
+            break;
+          }
+          case 'insert': {
+            workspaceEdit.insert(
+              vscode.Uri.parse(params.uri),
+              new vscode.Position(
+                textEdit.position.line,
+                textEdit.position.character,
+              ),
+              textEdit.newText,
+            );
+            break;
+          }
+          case 'replace': {
+            workspaceEdit.replace(
+              vscode.Uri.parse(params.uri),
+              new vscode.Range(
+                new vscode.Position(
+                  textEdit.range.start.line,
+                  textEdit.range.start.character,
+                ),
+                new vscode.Position(
+                  textEdit.range.end.line,
+                  textEdit.range.end.character,
+                ),
+              ),
+              textEdit.newText,
+            );
+            break;
+          }
+        }
+      }
+      return vscode.workspace.applyEdit(workspaceEdit);
+    }),
   },
 }).createMachine({
   context: ({ input }) => {
@@ -210,6 +275,8 @@ export const languageClientMachine = setup({
           },
         },
       ),
+      patchesToApply: [],
+      nextPatch: undefined,
     };
   },
   invoke: {
@@ -287,7 +354,39 @@ export const languageClientMachine = setup({
                   actions: 'updateDigraph',
                 },
                 APPLY_PATCHES: {
-                  actions: 'applyPatches',
+                  actions: assign({
+                    patchesToApply: ({ context, event }) => {
+                      return context.patchesToApply.concat(event);
+                    },
+                  }),
+                },
+              },
+              initial: 'appliedPatches',
+              states: {
+                applyingPatches: {
+                  invoke: {
+                    src: 'applyPatches',
+                    input: ({ context }) => ({
+                      context,
+                      event: context.nextPatch!,
+                    }),
+                    onDone: {
+                      target: 'appliedPatches',
+                    },
+                  },
+                },
+                appliedPatches: {
+                  always: {
+                    guard: ({ context }) => context.patchesToApply.length > 0,
+                    actions: assign(({ context }) => {
+                      const nextPatch = context.patchesToApply.shift()!;
+                      return {
+                        patchesToApply: context.patchesToApply,
+                        nextPatch,
+                      };
+                    }),
+                    target: 'applyingPatches',
+                  },
                 },
               },
             },
