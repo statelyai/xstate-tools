@@ -1,0 +1,10 @@
+{
+  "extends": [
+    "@tsconfig/node16/tsconfig.json",
+    "@tsconfig/strictest/tsconfig.json"
+  ],
+  "compilerOptions": {
+    "module": "node16"
+  },
+  "include": ["src"]
+}
