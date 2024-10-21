@@ -1,0 +1,17 @@
+{
+  "name": "@xstate/codemods",
+  "version": "0.0.0",
+  "license": "MIT",
+  "main": "dist/xstate-codemods.cjs.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "dependencies": {
+    "typescript": "^4.9.4"
+  },
+  "devDependencies": {
+    "@tsconfig/node16": "^1.0.3",
+    "@tsconfig/strictest": "^2.0.0",
+    "outdent": "^0.8.0"
+  }
+}
