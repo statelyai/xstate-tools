@@ -176,7 +176,7 @@ export const handleTypegenNestingConfig = () => {
             break;
           case learnMoreOption:
             vscode.env.openExternal(
-              Uri.parse('https://stately.ai/blog/nesting-xstate-typegen-files'),
+              Uri.parse('https://stately.ai/blog/nesting-typegen-files'),
             );
             break;
         }
