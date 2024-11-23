@@ -373,10 +373,10 @@ export class MachineExtractResult {
         return false;
       }
 
-      return (
-        comment.loc!.end.line ===
-        this.machineCallResult.callee.loc!.start.line - 1
-      );
+      const proximity =
+        this.machineCallResult.callee.loc!.start.line - comment.loc!.end.line;
+
+      return Math.abs(proximity) <= 2;
     });
 
     if (!layoutComment) return undefined;
