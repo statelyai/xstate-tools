@@ -1,9 +1,7 @@
 import { StringLiteral, TemplateLiteral } from './scalars';
 import { unionType } from './unionType';
-import { objectTypeWithKnownKeys } from './utils';
+import { objectOf } from './utils';
 
-export const MetaDescription = unionType([StringLiteral, TemplateLiteral]);
+export const MetaValues = unionType([StringLiteral, TemplateLiteral]);
 
-export const StateMeta = objectTypeWithKnownKeys({
-  description: MetaDescription,
-});
+export const StateMeta = objectOf(MetaValues);

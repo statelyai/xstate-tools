@@ -115,10 +115,14 @@ const parseStateNode = (
     config.always = getTransitions(astResult.always, opts);
   }
 
-  if (astResult.meta?.description) {
-    config.meta = {
-      description: astResult.meta.description.value,
-    };
+  if (astResult.meta) {
+    config.meta = astResult.meta.properties.reduce(
+      (meta, props) => ({
+        ...meta,
+        [props.key]: props.result.value,
+      }),
+      {},
+    );
   }
 
   if (astResult.onDone) {
